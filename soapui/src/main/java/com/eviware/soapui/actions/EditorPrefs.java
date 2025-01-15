@@ -30,7 +30,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Preferences class for UISettings
@@ -101,12 +100,7 @@ public class EditorPrefs implements Prefs {
             abortCheckBox = editorForm.appendCheckBox(ABORT_ON_INVALID_REQUEST, "Abort invalid requests", true);
             editorForm.appendCheckBox(AUTO_VALIDATE_RESPONSE, "Always validate response messages", true);
 
-            autoValidateCheckBox.addActionListener(new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    abortCheckBox.setEnabled(autoValidateCheckBox.isSelected());
-                }
-            });
+            autoValidateCheckBox.addActionListener(e -> abortCheckBox.setEnabled(autoValidateCheckBox.isSelected()));
         }
 
         return editorForm;

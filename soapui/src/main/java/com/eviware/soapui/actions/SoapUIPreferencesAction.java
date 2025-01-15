@@ -32,7 +32,6 @@ import com.eviware.soapui.support.factory.SoapUIFactoryRegistryListener;
 import com.eviware.soapui.support.types.StringToStringMap;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -40,8 +39,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -71,8 +68,8 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
     public static final String VERSIONUPDATE_SETTINGS = "Version Update Settings";
     private static SoapUIPreferencesAction instance;
     private SwingConfigurationDialogImpl dialog;
-    private final List<Prefs> prefs = new ArrayList<Prefs>();
-    private final Map<PrefsFactory, Prefs> prefsFactories = new HashMap<PrefsFactory, Prefs>();
+    private final List<Prefs> prefs = new ArrayList<>();
+    private final Map<PrefsFactory, Prefs> prefsFactories = new HashMap<>();
     private DefaultListModel<String> prefsListModel;
     private JPanel prefsPanel;
 
@@ -159,7 +156,7 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
     }
 
     public Prefs[] getPrefs() {
-        return prefs.toArray(new Prefs[prefs.size()]);
+        return prefs.toArray(new Prefs[0]);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -200,7 +197,7 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
         dialog = new SwingConfigurationDialogImpl("SoapUI Preferences", HelpUrls.PREFERENCES_HELP_URL, "Set global SoapUI settings", UISupport.OPTIONS_ICON);
         dialog.setSize(new Dimension(1000, 700));
 
-        prefsListModel = new DefaultListModel<String>();
+        prefsListModel = new DefaultListModel<>();
         JList prefItems = new JList(prefsListModel);
         prefItems.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         prefsPanel = new JPanel(new CardLayout());
@@ -209,12 +206,7 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
             addPrefToTabs(pref);
         }
 
-        prefItems.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                selectPrefs(prefsListModel.get(prefItems.getSelectedIndex()));
-            }
-        });
+        prefItems.addListSelectionListener(e -> selectPrefs(prefsListModel.get(prefItems.getSelectedIndex())));
 
         JSplitPane split = UISupport.createHorizontalSplit(new JScrollPane(prefItems), new JScrollPane(prefsPanel));
         split.setDividerLocation(250);

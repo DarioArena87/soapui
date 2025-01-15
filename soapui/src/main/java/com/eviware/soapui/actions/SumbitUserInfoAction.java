@@ -34,8 +34,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -56,18 +54,13 @@ public class SumbitUserInfoAction {
     private static final String TERMS_OF_USE_URL = "https://smartbear.com/terms-of-use/";
     private static final String PRIVACY_POLICY_URL = "https://smartbear.com/privacy/";
 
-    public SumbitUserInfoAction() {
-    }
-
     public void show() {
         CollectUserInfoDialog cui = new CollectUserInfoDialog();
         cui.setVisible(true);
     }
 
-    private class CollectUserInfoDialog extends JDialog {
+    private static class CollectUserInfoDialog extends JDialog {
         private static final String VALID_EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-        private JLabel title;
-        private JEditorPane description;
         private JFriendlyTextField textFieldFirstName;
         private JFriendlyTextField textFieldLastName;
         private JFriendlyTextField textFieldEmail;
@@ -105,7 +98,7 @@ public class SumbitUserInfoAction {
                                        "\">" +
                                        PRIVACY_POLICY +
                                        "</a>.";
-            jBaseUserPanel.add(buildCaptionPanel(DIALOG_MAIN_TEXT, dialogDescription), BorderLayout.NORTH);
+            jBaseUserPanel.add(buildCaptionPanel(dialogDescription), BorderLayout.NORTH);
             jBaseUserPanel.add(buildControlsPanel());
 
             jBasePanel.add(jCaption, BorderLayout.NORTH);
@@ -121,19 +114,19 @@ public class SumbitUserInfoAction {
             curLabel.setBackground(Color.WHITE);
         }
 
-        private JPanel buildCaptionPanel(String titleStr, String descriptionStr) {
+        private JPanel buildCaptionPanel(String descriptionStr) {
             JPanel jRoot = new JPanel(new BorderLayout());
             jRoot.setBorder(new EmptyBorder(10, 30, 0, 25));
             setBackgroundColor(jRoot);
             jRoot.setPreferredSize(new Dimension(200, 100));
 
-            title = new JLabel();
+            JLabel title = new JLabel();
             setBackgroundColor(title);
-            title.setText("<html><div style=\"font-size: 11px\"><b>" + titleStr + "</b></div></html>");
+            title.setText("<html><div style=\"font-size: 11px\"><b>" + DIALOG_MAIN_TEXT + "</b></div></html>");
 
             Font font = UISupport.getEditorFont();
             String fontFamily = font.getFamily();
-            description = new JEditorPane("text/html", "<html>" + "<div style=\"font-size: 9px\" face=\"" + fontFamily + "\">" + descriptionStr + "</div></html>");
+            JEditorPane description = new JEditorPane("text/html", "<html>" + "<div style=\"font-size: 9px\" face=\"" + fontFamily + "\">" + descriptionStr + "</div></html>");
             setBackgroundColor(description);
             description.setBorder(new EmptyBorder(5, 0, 0, 0));
             description.setEditable(false);
@@ -199,12 +192,9 @@ public class SumbitUserInfoAction {
             jOkBtn.setOpaque(true);
             jOkBtn.setForeground(Color.WHITE);
             jOkBtn.setPreferredSize(new Dimension(300, 24));
-            jOkBtn.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (handleOk()) {
-                        setVisible(false);
-                    }
+            jOkBtn.addActionListener(e -> {
+                if (handleOk()) {
+                    setVisible(false);
                 }
             });
 
@@ -221,12 +211,7 @@ public class SumbitUserInfoAction {
             }
             jSkip.setOpaque(true);
             jSkip.setPreferredSize(new Dimension(60, 20));
-            jSkip.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setVisible(false);
-                }
-            });
+            jSkip.addActionListener(e -> setVisible(false));
 
             JPanel buttonsContent = new JPanel(new BorderLayout());
             buttonsContent.setBorder(new EmptyBorder(20, 0, 20, 0));
@@ -267,7 +252,7 @@ public class SumbitUserInfoAction {
         }
 
         private boolean validateFormValues() {
-            List<String> fieldErrors = new ArrayList<String>();
+            List<String> fieldErrors = new ArrayList<>();
             if (StringUtils.isNullOrEmpty(getUserFirstName())) {
                 fieldErrors.add("your first name");
             }

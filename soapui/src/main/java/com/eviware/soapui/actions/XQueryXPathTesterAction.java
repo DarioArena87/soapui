@@ -27,7 +27,6 @@ import org.apache.xmlbeans.XmlOptions;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -52,7 +51,6 @@ import java.lang.reflect.InvocationTargetException;
 
 public class XQueryXPathTesterAction extends AbstractAction {
     private JDialog dialog;
-    private JSplitPane mainSplit;
     private RSyntaxTextArea resultArea;
     private JSplitPane querySplit;
     private RSyntaxTextArea inputArea;
@@ -77,7 +75,7 @@ public class XQueryXPathTesterAction extends AbstractAction {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 
-        mainSplit = UISupport.createHorizontalSplit(createQueryPanel(), createResultPanel());
+        JSplitPane mainSplit = UISupport.createHorizontalSplit(createQueryPanel(), createResultPanel());
         mainSplit.setResizeWeight(0.4);
         panel.add(mainSplit, BorderLayout.CENTER);
         panel.add(createStatusBar(), BorderLayout.SOUTH);
@@ -168,8 +166,6 @@ public class XQueryXPathTesterAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
             try {
-                // XmlObject xmlObject = XmlObject.Factory.parse(
-                // inputArea.getText() );
                 XmlObject xmlObject = XmlUtils.createXmlObject(inputArea.getText());
                 XmlObject[] objects;
 
@@ -181,13 +177,13 @@ public class XQueryXPathTesterAction extends AbstractAction {
                     objects = xmlObject.selectPath(xpathArea.getText());
                 }
 
-                StringBuffer result = new StringBuffer();
+                StringBuilder result = new StringBuilder();
                 XmlOptions options = new XmlOptions();
                 options.setSaveOuter();
 
-                for (int c = 0; c < objects.length; c++) {
+                for (XmlObject object : objects) {
 
-                    result.append(objects[c].xmlText(options));
+                    result.append(object.xmlText(options));
                     result.append("\n");
                 }
 

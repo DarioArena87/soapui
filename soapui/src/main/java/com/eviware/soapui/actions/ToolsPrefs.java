@@ -79,20 +79,19 @@ public class ToolsPrefs implements Prefs {
     /**
      * Get the tools to be displayed in the Eclipse plugin.
      *
-     * @return
      */
     public String[][] getEclipseTools() {
         // Return all tools except .NET related and tools that are part of
         // Eclipse.
-        ArrayList<String[]> list = new ArrayList<String[]>();
+        ArrayList<String[]> list = new ArrayList<>();
         for (String[] s : TOOLS) {
             String tool = s[0];
 
             // Filter out .NET related tools.
-            if (tool != DOTNET && tool != GSOAP &&
+            if (!tool.equals(DOTNET) && !tool.equals(GSOAP) &&
 
                 // Filter out tools that are part of Eclipse.
-                tool != JAVAC && tool != ANT) {
+                !tool.equals(JAVAC) && !tool.equals(ANT)) {
                 list.add(s);
             }
         }
@@ -137,15 +136,15 @@ public class ToolsPrefs implements Prefs {
     }
 
     public void storeValues(StringToStringMap values, Settings settings) {
-        for (int i = 0; i < TOOLS.length; i++) {
-            settings.setString(TOOLS[i][1], values.get(TOOLS[i][0]));
+        for (String[] tool : TOOLS) {
+            settings.setString(tool[1], values.get(tool[0]));
         }
     }
 
     public StringToStringMap getValues(Settings settings) {
         StringToStringMap toolsValues = new StringToStringMap();
-        for (int i = 0; i < TOOLS.length; i++) {
-            toolsValues.put(TOOLS[i][0], settings.getString(TOOLS[i][1], ""));
+        for (String[] tool : TOOLS) {
+            toolsValues.put(tool[0], settings.getString(tool[1], ""));
         }
         return toolsValues;
     }

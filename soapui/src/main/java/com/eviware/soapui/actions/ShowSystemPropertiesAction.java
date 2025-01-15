@@ -19,7 +19,6 @@ package com.eviware.soapui.actions;
 import com.eviware.soapui.support.UISupport;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -34,10 +33,10 @@ public class ShowSystemPropertiesAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         Properties properties = System.getProperties();
 
-        List<String> keys = new ArrayList<String>();
+        List<String> keys = new ArrayList<>();
         for (Object key : properties.keySet()) {
             keys.add(key.toString());
         }

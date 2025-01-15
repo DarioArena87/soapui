@@ -22,7 +22,6 @@ import com.eviware.soapui.settings.ToolsSettings;
 import com.eviware.soapui.support.UISupport;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Map;

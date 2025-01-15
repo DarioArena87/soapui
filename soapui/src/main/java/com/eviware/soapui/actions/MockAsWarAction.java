@@ -26,7 +26,6 @@ import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
 import com.eviware.soapui.tools.MockAsWar;
 import com.eviware.x.form.XFormDialog;
 import com.eviware.x.form.XFormField;
-import com.eviware.x.form.XFormFieldListener;
 import com.eviware.x.form.support.ADialogBuilder;
 import com.eviware.x.form.support.AField;
 import com.eviware.x.form.support.AField.AFieldType;
@@ -58,7 +57,7 @@ public class MockAsWarAction extends AbstractSoapUIAction<WsdlProject> {
 
         XFormField settingFile = getPreFilledSettings();
 
-        XFormField warFile = dialog.getFormField(MockAsWarDialog.WAR_FILE);
+        dialog.getFormField(MockAsWarDialog.WAR_FILE);
 
         String passwordForEncryption = project.getSettings().getString(ProjectSettings.SHADOW_PASSWORD, null);
         project.getSettings().setString(ProjectSettings.SHADOW_PASSWORD, null);
@@ -106,11 +105,7 @@ public class MockAsWarAction extends AbstractSoapUIAction<WsdlProject> {
 
     private void buildDialog() {
         dialog = ADialogBuilder.buildDialog(MockAsWarDialog.class);
-        dialog.getFormField(MockAsWarDialog.GLOBAL_SETTINGS).addFormFieldListener(new XFormFieldListener() {
-            public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
-                dialog.getFormField(MockAsWarDialog.SETTINGS_FILE).setEnabled(Boolean.valueOf(newValue));
-            }
-        });
+        dialog.getFormField(MockAsWarDialog.GLOBAL_SETTINGS).addFormFieldListener((sourceField, newValue, oldValue) -> dialog.getFormField(MockAsWarDialog.SETTINGS_FILE).setEnabled(Boolean.parseBoolean(newValue)));
 
         dialog.getFormField(MockAsWarDialog.WAR_DIRECTORY).addFormFieldValidator(new RequiredValidator("WAR Directory is required"));
     }

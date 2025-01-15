@@ -46,9 +46,6 @@ public class ExportProjectAction extends AbstractSoapUIAction<WsdlProject> {
                 }
 
                 String fileName = file.getAbsolutePath();
-                if (fileName == null) {
-                    return;
-                }
 
                 exporter.exportProject(fileName);
             }
