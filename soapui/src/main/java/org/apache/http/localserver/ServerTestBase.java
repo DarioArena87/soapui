@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -41,10 +41,6 @@
 
 package org.apache.http.localserver;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
 import org.apache.http.HttpHost;
 import org.apache.http.HttpVersion;
 import org.apache.http.conn.scheme.PlainSocketFactory;
@@ -61,6 +57,10 @@ import org.apache.http.protocol.HttpRequestExecutor;
 import org.apache.http.protocol.RequestConnControl;
 import org.apache.http.protocol.RequestContent;
 import org.junit.Before;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 /**
  * Base class for tests using {@link LocalTestServer LocalTestServer}. Note that
@@ -151,7 +151,6 @@ public abstract class ServerTestBase extends BasicServerTestBase {
         }
 
         localServer.start();
-
     } // setUp
 
     /**
@@ -187,5 +186,4 @@ public abstract class ServerTestBase extends BasicServerTestBase {
 
         return conn;
     }
-
 }

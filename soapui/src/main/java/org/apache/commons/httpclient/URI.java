@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * $HeadURL: https://svn.apache.org/repos/asf/jakarta/httpcomponents/oac.hc3x/tags/HTTPCLIENT_3_1/src/java/org/apache/commons/httpclient/URI.java $
  * $Revision: 564973 $
  * $Date: 2007-08-11 22:51:47 +0200 (Sat, 11 Aug 2007) $
@@ -44,18 +44,18 @@
 
 package org.apache.commons.httpclient;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.httpclient.util.EncodingUtil;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.BitSet;
 import java.util.Hashtable;
-
-import org.apache.commons.codec.DecoderException;
-import org.apache.commons.codec.net.URLCodec;
-import org.apache.commons.httpclient.util.EncodingUtil;
+import java.util.Locale;
 
 /**
  * The interface for the URI(Uniform Resource Identifiers) version of RFC 2396.
@@ -132,14 +132,1106 @@ import org.apache.commons.httpclient.util.EncodingUtil;
  */
 public class URI implements Cloneable, Comparable, Serializable {
 
-
     // ----------------------------------------------------------- Constructors
+
+    /**
+     * BitSet for within the userinfo component like user and password.
+     */
+    public static final BitSet within_userinfo = new BitSet(256);
+    /**
+     * BitSet for control.
+     */
+    public static final BitSet control = new BitSet(256);
+    /**
+     * BitSet for space.
+     */
+    public static final BitSet space = new BitSet(256);
+    /**
+     * BitSet for delims.
+     */
+    public static final BitSet delims = new BitSet(256);
+    /**
+     * BitSet for unwise.
+     */
+    public static final BitSet unwise = new BitSet(256);
+    /**
+     * Disallowed rel_path before escaping.
+     */
+    public static final BitSet disallowed_rel_path = new BitSet(256);
+    /**
+     * Disallowed opaque_part before escaping.
+     */
+    public static final BitSet disallowed_opaque_part = new BitSet(256);
+    /**
+     * Those characters that are allowed for the authority component.
+     */
+    public static final BitSet allowed_authority = new BitSet(256);
+    /**
+     * Those characters that are allowed for the opaque_part.
+     */
+    public static final BitSet allowed_opaque_part = new BitSet(256);
+    /**
+     * Those characters that are allowed for the reg_name.
+     */
+    public static final BitSet allowed_reg_name = new BitSet(256);
+    /**
+     * Those characters that are allowed for the userinfo component.
+     */
+    public static final BitSet allowed_userinfo = new BitSet(256);
+    /**
+     * Those characters that are allowed for within the userinfo component.
+     */
+    public static final BitSet allowed_within_userinfo = new BitSet(256);
+    /**
+     * Those characters that are allowed for the IPv6reference component.
+     * The characters '[', ']' in IPv6reference should be excluded.
+     */
+    public static final BitSet allowed_IPv6reference = new BitSet(256);
+    /**
+     * Those characters that are allowed for the host component.
+     * The characters '[', ']' in IPv6reference should be excluded.
+     */
+    public static final BitSet allowed_host = new BitSet(256);
+    /**
+     * Those characters that are allowed for the authority component.
+     */
+    public static final BitSet allowed_within_authority = new BitSet(256);
+    /**
+     * Those characters that are allowed for the abs_path.
+     */
+    public static final BitSet allowed_abs_path = new BitSet(256);
+    /**
+     * Those characters that are allowed for the rel_path.
+     */
+    public static final BitSet allowed_rel_path = new BitSet(256);
+
+    // --------------------------------------------------- Instance Variables
+    /**
+     * Those characters that are allowed within the path.
+     */
+    public static final BitSet allowed_within_path = new BitSet(256);
+    /**
+     * Those characters that are allowed for the query component.
+     */
+    public static final BitSet allowed_query = new BitSet(256);
+    /**
+     * Those characters that are allowed within the query component.
+     */
+    public static final BitSet allowed_within_query = new BitSet(256);
+    /**
+     * Those characters that are allowed for the fragment component.
+     */
+    public static final BitSet allowed_fragment = new BitSet(256);
+    /**
+     * The root path.
+     */
+    protected static final char[] rootPath = {'/'};
+    /**
+     * The percent "%" character always has the reserved purpose of being the
+     * escape indicator, it must be escaped as "%25" in order to be used as
+     * data within a URI.
+     */
+    protected static final BitSet percent = new BitSet(256);
+    /**
+     * BitSet for digit.
+     * <p><blockquote><pre>
+     * digit    = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" |
+     *            "8" | "9"
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet digit = new BitSet(256);
+    /**
+     * BitSet for alpha.
+     * <p><blockquote><pre>
+     * alpha         = lowalpha | upalpha
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet alpha = new BitSet(256);
+    /**
+     * BitSet for alphanum (join of alpha &amp; digit).
+     * <p><blockquote><pre>
+     *  alphanum      = alpha | digit
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet alphanum = new BitSet(256);
+    /**
+     * BitSet for hex.
+     * <p><blockquote><pre>
+     * hex           = digit | "A" | "B" | "C" | "D" | "E" | "F" |
+     *                         "a" | "b" | "c" | "d" | "e" | "f"
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet hex = new BitSet(256);
+    /**
+     * BitSet for escaped.
+     * <p><blockquote><pre>
+     * escaped       = "%" hex hex
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet escaped = new BitSet(256);
+    /**
+     * BitSet for mark.
+     * <p><blockquote><pre>
+     * mark          = "-" | "_" | "." | "!" | "~" | "*" | "'" |
+     *                 "(" | ")"
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet mark = new BitSet(256);
+    /**
+     * Data characters that are allowed in a URI but do not have a reserved
+     * purpose are called unreserved.
+     * <p><blockquote><pre>
+     * unreserved    = alphanum | mark
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet unreserved = new BitSet(256);
+    /**
+     * BitSet for reserved.
+     * <p><blockquote><pre>
+     * reserved      = ";" | "/" | "?" | ":" | "@" | "&amp;" | "=" | "+" |
+     *                 "$" | ","
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet reserved = new BitSet(256);
+    /**
+     * BitSet for uric.
+     * <p><blockquote><pre>
+     * uric          = reserved | unreserved | escaped
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet uric = new BitSet(256);
+    /**
+     * BitSet for fragment (alias for uric).
+     * <p><blockquote><pre>
+     * fragment      = *uric
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet fragment = uric;
+    /**
+     * BitSet for query (alias for uric).
+     * <p><blockquote><pre>
+     * query         = *uric
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet query = uric;
+    /**
+     * BitSet for pchar.
+     * <p><blockquote><pre>
+     * pchar         = unreserved | escaped |
+     *                 ":" | "@" | "&amp;" | "=" | "+" | "$" | ","
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet pchar = new BitSet(256);
+    /**
+     * BitSet for param (alias for pchar).
+     * <p><blockquote><pre>
+     * param         = *pchar
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet param = pchar;
+
+    // ---------------------- Generous characters for each component validation
+    /**
+     * BitSet for segment.
+     * <p><blockquote><pre>
+     * segment       = *pchar *( ";" param )
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet segment = new BitSet(256);
+    /**
+     * BitSet for path segments.
+     * <p><blockquote><pre>
+     * path_segments = segment *( "/" segment )
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet path_segments = new BitSet(256);
+    /**
+     * URI absolute path.
+     * <p><blockquote><pre>
+     * abs_path      = "/"  path_segments
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet abs_path = new BitSet(256);
+    /**
+     * URI bitset for encoding typical non-slash characters.
+     * <p><blockquote><pre>
+     * uric_no_slash = unreserved | escaped | ";" | "?" | ":" | "@" |
+     *                 "&amp;" | "=" | "+" | "$" | ","
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet uric_no_slash = new BitSet(256);
+    /**
+     * URI bitset that combines uric_no_slash and uric.
+     * <p><blockquote><pre>
+     * opaque_part   = uric_no_slash *uric
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet opaque_part = new BitSet(256);
+    /**
+     * URI bitset that combines absolute path and opaque part.
+     * <p><blockquote><pre>
+     * path          = [ abs_path | opaque_part ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet path = new BitSet(256);
+    /**
+     * Port, a logical alias for digit.
+     */
+    protected static final BitSet port = digit;
+    /**
+     * Bitset that combines digit and dot fo IPv$address.
+     * <p><blockquote><pre>
+     * IPv4address   = 1*digit "." 1*digit "." 1*digit "." 1*digit
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet IPv4address = new BitSet(256);
+    /**
+     * RFC 2373.
+     * <p><blockquote><pre>
+     * IPv6address = hexpart [ ":" IPv4address ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet IPv6address = new BitSet(256);
+    /**
+     * RFC 2732, 2373.
+     * <p><blockquote><pre>
+     * IPv6reference   = "[" IPv6address "]"
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet IPv6reference = new BitSet(256);
+    /**
+     * BitSet for toplabel.
+     * <p><blockquote><pre>
+     * toplabel      = alpha | alpha *( alphanum | "-" ) alphanum
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet toplabel = new BitSet(256);
+    /**
+     * BitSet for domainlabel.
+     * <p><blockquote><pre>
+     * domainlabel   = alphanum | alphanum *( alphanum | "-" ) alphanum
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet domainlabel = toplabel;
+    /**
+     * BitSet for hostname.
+     * <p><blockquote><pre>
+     * hostname      = *( domainlabel "." ) toplabel [ "." ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet hostname = new BitSet(256);
+    /**
+     * BitSet for host.
+     * <p><blockquote><pre>
+     * host          = hostname | IPv4address | IPv6reference
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet host = new BitSet(256);
+    /**
+     * BitSet for hostport.
+     * <p><blockquote><pre>
+     * hostport      = host [ ":" port ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet hostport = new BitSet(256);
+    /**
+     * Bitset for userinfo.
+     * <p><blockquote><pre>
+     * userinfo      = *( unreserved | escaped |
+     *                    ";" | ":" | "&amp;" | "=" | "+" | "$" | "," )
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet userinfo = new BitSet(256);
+    /**
+     * Bitset for server.
+     * <p><blockquote><pre>
+     * server        = [ [ userinfo "@" ] hostport ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet server = new BitSet(256);
+    /**
+     * BitSet for reg_name.
+     * <p><blockquote><pre>
+     * reg_name      = 1*( unreserved | escaped | "$" | "," |
+     *                     ";" | ":" | "@" | "&amp;" | "=" | "+" )
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet reg_name = new BitSet(256);
+    /**
+     * BitSet for authority.
+     * <p><blockquote><pre>
+     * authority     = server | reg_name
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet authority = new BitSet(256);
+    /**
+     * BitSet for scheme.
+     * <p><blockquote><pre>
+     * scheme        = alpha *( alpha | digit | "+" | "-" | "." )
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet scheme = new BitSet(256);
+    /**
+     * BitSet for rel_segment.
+     * <p><blockquote><pre>
+     * rel_segment   = 1*( unreserved | escaped |
+     *                     ";" | "@" | "&amp;" | "=" | "+" | "$" | "," )
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet rel_segment = new BitSet(256);
+    /**
+     * BitSet for rel_path.
+     * <p><blockquote><pre>
+     * rel_path      = rel_segment [ abs_path ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet rel_path = new BitSet(256);
+    /**
+     * BitSet for net_path.
+     * <p><blockquote><pre>
+     * net_path      = "//" authority [ abs_path ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet net_path = new BitSet(256);
+    /**
+     * BitSet for hier_part.
+     * <p><blockquote><pre>
+     * hier_part     = ( net_path | abs_path ) [ "?" query ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet hier_part = new BitSet(256);
+    /**
+     * BitSet for relativeURI.
+     * <p><blockquote><pre>
+     * relativeURI   = ( net_path | abs_path | rel_path ) [ "?" query ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet relativeURI = new BitSet(256);
+    /**
+     * BitSet for absoluteURI.
+     * <p><blockquote><pre>
+     * absoluteURI   = scheme ":" ( hier_part | opaque_part )
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet absoluteURI = new BitSet(256);
+    /**
+     * BitSet for URI-reference.
+     * <p><blockquote><pre>
+     * URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
+     * </pre></blockquote><p>
+     */
+    protected static final BitSet URI_reference = new BitSet(256);
+    /**
+     * Version ID for serialization
+     */
+    static final long serialVersionUID = 604752400577948726L;
+    /**
+     * The default charset of the protocol.  RFC 2277, 2396
+     */
+    protected static String defaultProtocolCharset = "UTF-8";
+    /**
+     * The default charset of the document.  RFC 2277, 2396
+     * The platform's charset is used for the document by default.
+     */
+    protected static String defaultDocumentCharset = null;
+    protected static String defaultDocumentCharsetByLocale = null;
+    protected static String defaultDocumentCharsetByPlatform = null;
+
+    // Static initializer for defaultDocumentCharset
+    static {
+        Locale locale = Locale.getDefault();
+        // in order to support backward compatiblity
+        if (locale != null) {
+            defaultDocumentCharsetByLocale = LocaleToCharsetMap.getCharset(locale);
+            // set the default document charset
+            defaultDocumentCharset = defaultDocumentCharsetByLocale;
+        }
+        // in order to support platform encoding
+        try {
+            defaultDocumentCharsetByPlatform = System.getProperty("file.encoding");
+        }
+        catch (SecurityException ignore) {
+        }
+        if (defaultDocumentCharset == null) {
+            // set the default document charset
+            defaultDocumentCharset = defaultDocumentCharsetByPlatform;
+        }
+    }
+
+    // Static initializer for percent
+    static {
+        percent.set('%');
+    }
+
+    // Static initializer for digit
+    static {
+        for (int i = '0'; i <= '9'; i++) {
+            digit.set(i);
+        }
+    }
+
+    // Static initializer for alpha
+    static {
+        for (int i = 'a'; i <= 'z'; i++) {
+            alpha.set(i);
+        }
+        for (int i = 'A'; i <= 'Z'; i++) {
+            alpha.set(i);
+        }
+    }
+
+    // Static initializer for alphanum
+    static {
+        alphanum.or(alpha);
+        alphanum.or(digit);
+    }
+
+    // Static initializer for hex
+    static {
+        hex.or(digit);
+        for (int i = 'a'; i <= 'f'; i++) {
+            hex.set(i);
+        }
+        for (int i = 'A'; i <= 'F'; i++) {
+            hex.set(i);
+        }
+    }
+
+    // Static initializer for escaped
+    static {
+        escaped.or(percent);
+        escaped.or(hex);
+    }
+
+    // Static initializer for mark
+    static {
+        mark.set('-');
+        mark.set('_');
+        mark.set('.');
+        mark.set('!');
+        mark.set('~');
+        mark.set('*');
+        mark.set('\'');
+        mark.set('(');
+        mark.set(')');
+    }
+
+    // Static initializer for unreserved
+    static {
+        unreserved.or(alphanum);
+        unreserved.or(mark);
+    }
+
+    // Static initializer for reserved
+    static {
+        reserved.set(';');
+        reserved.set('/');
+        reserved.set('?');
+        reserved.set(':');
+        reserved.set('@');
+        reserved.set('&');
+        reserved.set('=');
+        reserved.set('+');
+        reserved.set('$');
+        reserved.set(',');
+    }
+
+    // Static initializer for uric
+    static {
+        uric.or(reserved);
+        uric.or(unreserved);
+        uric.or(escaped);
+    }
+
+    // Static initializer for pchar
+    static {
+        pchar.or(unreserved);
+        pchar.or(escaped);
+        pchar.set(':');
+        pchar.set('@');
+        pchar.set('&');
+        pchar.set('=');
+        pchar.set('+');
+        pchar.set('$');
+        pchar.set(',');
+    }
+
+    // Static initializer for segment
+    static {
+        segment.or(pchar);
+        segment.set(';');
+        segment.or(param);
+    }
+
+    // Static initializer for path_segments
+    static {
+        path_segments.set('/');
+        path_segments.or(segment);
+    }
+
+    // Static initializer for abs_path
+    static {
+        abs_path.set('/');
+        abs_path.or(path_segments);
+    }
+
+    // Static initializer for uric_no_slash
+    static {
+        uric_no_slash.or(unreserved);
+        uric_no_slash.or(escaped);
+        uric_no_slash.set(';');
+        uric_no_slash.set('?');
+        uric_no_slash.set(';');
+        uric_no_slash.set('@');
+        uric_no_slash.set('&');
+        uric_no_slash.set('=');
+        uric_no_slash.set('+');
+        uric_no_slash.set('$');
+        uric_no_slash.set(',');
+    }
+
+    // Static initializer for opaque_part
+    static {
+        // it's generous. because first character must not include a slash
+        opaque_part.or(uric_no_slash);
+        opaque_part.or(uric);
+    }
+
+    // Static initializer for path
+    static {
+        path.or(abs_path);
+        path.or(opaque_part);
+    }
+
+    // Static initializer for IPv4address
+    static {
+        IPv4address.or(digit);
+        IPv4address.set('.');
+    }
+
+    // Static initializer for IPv6address reference
+    static {
+        IPv6address.or(hex); // hexpart
+        IPv6address.set(':');
+        IPv6address.or(IPv4address);
+    }
+
+    // Static initializer for IPv6reference
+    static {
+        IPv6reference.set('[');
+        IPv6reference.or(IPv6address);
+        IPv6reference.set(']');
+    }
+
+    // Static initializer for toplabel
+    static {
+        toplabel.or(alphanum);
+        toplabel.set('-');
+    }
+
+    // Static initializer for hostname
+    static {
+        hostname.or(toplabel);
+        // hostname.or(domainlabel);
+        hostname.set('.');
+    }
+
+    // Static initializer for host
+    static {
+        host.or(hostname);
+        // host.or(IPv4address);
+        host.or(IPv6reference); // IPv4address
+    }
+
+    // Static initializer for hostport
+    static {
+        hostport.or(host);
+        hostport.set(':');
+        hostport.or(port);
+    }
+
+    // Static initializer for userinfo
+    static {
+        userinfo.or(unreserved);
+        userinfo.or(escaped);
+        userinfo.set(';');
+        userinfo.set(':');
+        userinfo.set('&');
+        userinfo.set('=');
+        userinfo.set('+');
+        userinfo.set('$');
+        userinfo.set(',');
+    }
+
+    // Static initializer for within_userinfo
+    static {
+        within_userinfo.or(userinfo);
+        within_userinfo.clear(';'); // reserved within authority
+        within_userinfo.clear(':');
+        within_userinfo.clear('@');
+        within_userinfo.clear('?');
+        within_userinfo.clear('/');
+    }
+
+    // Static initializer for server
+    static {
+        server.or(userinfo);
+        server.set('@');
+        server.or(hostport);
+    }
+
+    // Static initializer for reg_name
+    static {
+        reg_name.or(unreserved);
+        reg_name.or(escaped);
+        reg_name.set('$');
+        reg_name.set(',');
+        reg_name.set(';');
+        reg_name.set(':');
+        reg_name.set('@');
+        reg_name.set('&');
+        reg_name.set('=');
+        reg_name.set('+');
+    }
+
+    // Static initializer for authority
+    static {
+        authority.or(server);
+        authority.or(reg_name);
+    }
+
+    // Static initializer for scheme
+    static {
+        scheme.or(alpha);
+        scheme.or(digit);
+        scheme.set('+');
+        scheme.set('-');
+        scheme.set('.');
+    }
+
+    // Static initializer for rel_segment
+    static {
+        rel_segment.or(unreserved);
+        rel_segment.or(escaped);
+        rel_segment.set(';');
+        rel_segment.set('@');
+        rel_segment.set('&');
+        rel_segment.set('=');
+        rel_segment.set('+');
+        rel_segment.set('$');
+        rel_segment.set(',');
+    }
+
+    // Static initializer for rel_path
+    static {
+        rel_path.or(rel_segment);
+        rel_path.or(abs_path);
+    }
+
+    // Static initializer for net_path
+    static {
+        net_path.set('/');
+        net_path.or(authority);
+        net_path.or(abs_path);
+    }
+
+    // Static initializer for hier_part
+    static {
+        hier_part.or(net_path);
+        hier_part.or(abs_path);
+        // hier_part.set('?'); aleady included
+        hier_part.or(query);
+    }
+
+    // Static initializer for relativeURI
+    static {
+        relativeURI.or(net_path);
+        relativeURI.or(abs_path);
+        relativeURI.or(rel_path);
+        // relativeURI.set('?'); aleady included
+        relativeURI.or(query);
+    }
+
+    // Static initializer for absoluteURI
+    static {
+        absoluteURI.or(scheme);
+        absoluteURI.set(':');
+        absoluteURI.or(hier_part);
+        absoluteURI.or(opaque_part);
+    }
+
+    // Static initializer for URI_reference
+    static {
+        URI_reference.or(absoluteURI);
+        URI_reference.or(relativeURI);
+        URI_reference.set('#');
+        URI_reference.or(fragment);
+    }
+
+    // Static initializer for control
+    static {
+        for (int i = 0; i <= 0x1F; i++) {
+            control.set(i);
+        }
+        control.set(0x7F);
+    }
+
+    // Static initializer for space
+    static {
+        space.set(0x20);
+    }
+
+    // Static initializer for delims
+    static {
+        delims.set('<');
+        delims.set('>');
+        delims.set('#');
+        delims.set('%');
+        delims.set('"');
+    }
+
+    // Static initializer for unwise
+    static {
+        unwise.set('{');
+        unwise.set('}');
+        unwise.set('|');
+        unwise.set('\\');
+        unwise.set('^');
+        unwise.set('[');
+        unwise.set(']');
+        unwise.set('`');
+    }
+
+    // Static initializer for disallowed_rel_path
+    static {
+        disallowed_rel_path.or(uric);
+        disallowed_rel_path.andNot(rel_path);
+    }
+
+    // Static initializer for disallowed_opaque_part
+    static {
+        disallowed_opaque_part.or(uric);
+        disallowed_opaque_part.andNot(opaque_part);
+    }
+
+    // Static initializer for allowed_authority
+    static {
+        allowed_authority.or(authority);
+        allowed_authority.clear('%');
+    }
+
+    // Static initializer for allowed_opaque_part
+    static {
+        allowed_opaque_part.or(opaque_part);
+        allowed_opaque_part.clear('%');
+    }
+
+    // Static initializer for allowed_reg_name
+    static {
+        allowed_reg_name.or(reg_name);
+        // allowed_reg_name.andNot(percent);
+        allowed_reg_name.clear('%');
+    }
+
+    // ---------------------------- Characters disallowed within the URI syntax
+    // Excluded US-ASCII Characters are like control, space, delims and unwise
+
+    // Static initializer for allowed_userinfo
+    static {
+        allowed_userinfo.or(userinfo);
+        // allowed_userinfo.andNot(percent);
+        allowed_userinfo.clear('%');
+    }
+
+    // Static initializer for allowed_within_userinfo
+    static {
+        allowed_within_userinfo.or(within_userinfo);
+        allowed_within_userinfo.clear('%');
+    }
+
+    // Static initializer for allowed_IPv6reference
+    static {
+        allowed_IPv6reference.or(IPv6reference);
+        // allowed_IPv6reference.andNot(unwise);
+        allowed_IPv6reference.clear('[');
+        allowed_IPv6reference.clear(']');
+    }
+
+    // Static initializer for allowed_host
+    static {
+        allowed_host.or(hostname);
+        allowed_host.or(allowed_IPv6reference);
+    }
+
+    // Static initializer for allowed_within_authority
+    static {
+        allowed_within_authority.or(server);
+        allowed_within_authority.or(reg_name);
+        allowed_within_authority.clear(';');
+        allowed_within_authority.clear(':');
+        allowed_within_authority.clear('@');
+        allowed_within_authority.clear('?');
+        allowed_within_authority.clear('/');
+    }
+
+    // Static initializer for allowed_abs_path
+    static {
+        allowed_abs_path.or(abs_path);
+        // allowed_abs_path.set('/');  // aleady included
+        allowed_abs_path.andNot(percent);
+        allowed_abs_path.clear('+');
+    }
+
+    // Static initializer for allowed_rel_path
+    static {
+        allowed_rel_path.or(rel_path);
+        allowed_rel_path.clear('%');
+        allowed_rel_path.clear('+');
+    }
+
+    // Static initializer for allowed_within_path
+    static {
+        allowed_within_path.or(abs_path);
+        allowed_within_path.clear('/');
+        allowed_within_path.clear(';');
+        allowed_within_path.clear('=');
+        allowed_within_path.clear('?');
+    }
+
+    // Static initializer for allowed_query
+    static {
+        allowed_query.or(uric);
+        allowed_query.clear('%');
+    }
+
+    // Static initializer for allowed_within_query
+    static {
+        allowed_within_query.or(allowed_query);
+        allowed_within_query.andNot(reserved); // excluded 'reserved'
+    }
+
+    // Static initializer for allowed_fragment
+    static {
+        allowed_fragment.or(uric);
+        allowed_fragment.clear('%');
+    }
+
+    /**
+     * Cache the hash code for this URI.
+     */
+    protected int hash = 0;
+
+    // ----------------------- Characters allowed within and for each component
+    /**
+     * This Uniform Resource Identifier (URI).
+     * The URI is always in an "escaped" form, since escaping or unescaping
+     * a completed URI might change its semantics.
+     */
+    protected char[] _uri = null;
+    /**
+     * The charset of the protocol used by this URI instance.
+     */
+    protected String protocolCharset = null;
+    /**
+     * The scheme.
+     */
+    protected char[] _scheme = null;
+    /**
+     * The opaque.
+     */
+    protected char[] _opaque = null;
+    /**
+     * The authority.
+     */
+    protected char[] _authority = null;
+    /**
+     * The userinfo.
+     */
+    protected char[] _userinfo = null;
+    /**
+     * The host.
+     */
+    protected char[] _host = null;
+    /**
+     * The port.
+     */
+    protected int _port = -1;
+    /**
+     * The path.
+     */
+    protected char[] _path = null;
+    /**
+     * The query.
+     */
+    protected char[] _query = null;
+    /**
+     * The fragment.
+     */
+    protected char[] _fragment = null;
+    // URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
+    // absoluteURI   = scheme ":" ( hier_part | opaque_part )
+    protected boolean _is_hier_part;
+    protected boolean _is_opaque_part;
+    // relativeURI   = ( net_path | abs_path | rel_path ) [ "?" query ]
+    // hier_part     = ( net_path | abs_path ) [ "?" query ]
+    protected boolean _is_net_path;
+    protected boolean _is_abs_path;
+    protected boolean _is_rel_path;
+    // net_path      = "//" authority [ abs_path ]
+    // authority     = server | reg_name
+    protected boolean _is_reg_name;
+    protected boolean _is_server;  // = _has_server
+    // server        = [ [ userinfo "@" ] hostport ]
+    // host          = hostname | IPv4address | IPv6reference
+    protected boolean _is_hostname;
+    protected boolean _is_IPv4address;
+    protected boolean _is_IPv6reference;
+
+    /**
+     * Get the default charset of the protocol.
+     * <p/>
+     * An individual URI scheme may require a single charset, define a default
+     * charset, or provide a way to indicate the charset used.
+     * <p/>
+     * To work globally either requires support of a number of character sets
+     * and to be able to convert between them, or the use of a single preferred
+     * character set.
+     * For support of global compatibility it is STRONGLY RECOMMENDED that
+     * clients and servers use UTF-8 encoding when exchanging URIs.
+     *
+     * @return the default charset string
+     */
+    public static String getDefaultProtocolCharset() {
+        return defaultProtocolCharset;
+    }
+
+    /**
+     * Set the default charset of the protocol.
+     * <p/>
+     * The character set used to store files SHALL remain a local decision and
+     * MAY depend on the capability of local operating systems. Prior to the
+     * exchange of URIs they SHOULD be converted into a ISO/IEC 10646 format
+     * and UTF-8 encoded. This approach, while allowing international exchange
+     * of URIs, will still allow backward compatibility with older systems
+     * because the code set positions for ASCII characters are identical to the
+     * one byte sequence in UTF-8.
+     * <p/>
+     * An individual URI scheme may require a single charset, define a default
+     * charset, or provide a way to indicate the charset used.
+     * <p/>
+     * <p/>
+     * Always all the time, the setter method is always succeeded and throws
+     * <code>DefaultCharsetChanged</code> exception.
+     * <p/>
+     * So API programmer must follow the following way:
+     * <code><pre>
+     *  import org.apache.util.URI$DefaultCharsetChanged;
+     *      .
+     *      .
+     *      .
+     *  try {
+     *      URI.setDefaultProtocolCharset("UTF-8");
+     *  } catch (DefaultCharsetChanged cc) {
+     *      // CASE 1: the exception could be ignored, when it is set by user
+     *      if (cc.getReasonCode() == DefaultCharsetChanged.PROTOCOL_CHARSET) {
+     *      // CASE 2: let user know the default protocol charset changed
+     *      } else {
+     *      // CASE 2: let user know the default document charset changed
+     *      }
+     *  }
+     *  </pre></code>
+     * <p/>
+     * The API programmer is responsible to set the correct charset.
+     * And each application should remember its own charset to support.
+     *
+     * @param charset the default charset for each protocol
+     * @throws DefaultCharsetChanged default charset changed
+     */
+    public static void setDefaultProtocolCharset(String charset) throws DefaultCharsetChanged {
+
+        defaultProtocolCharset = charset;
+        throw new DefaultCharsetChanged(DefaultCharsetChanged.PROTOCOL_CHARSET, "the default protocol charset changed");
+    }
+
+    /**
+     * Get the recommended default charset of the document.
+     *
+     * @return the default charset string
+     */
+    public static String getDefaultDocumentCharset() {
+        return defaultDocumentCharset;
+    }
+
+    /**
+     * Set the default charset of the document.
+     * <p/>
+     * Notice that it will be possible to contain mixed characters (e.g.
+     * ftp://host/KoreanNamespace/ChineseResource). To handle the Bi-directional
+     * display of these character sets, the protocol charset could be simply
+     * used again. Because it's not yet implemented that the insertion of BIDI
+     * control characters at different points during composition is extracted.
+     * <p/>
+     * <p/>
+     * Always all the time, the setter method is always succeeded and throws
+     * <code>DefaultCharsetChanged</code> exception.
+     * <p/>
+     * So API programmer must follow the following way:
+     * <code><pre>
+     *  import org.apache.util.URI$DefaultCharsetChanged;
+     *      .
+     *      .
+     *      .
+     *  try {
+     *      URI.setDefaultDocumentCharset("EUC-KR");
+     *  } catch (DefaultCharsetChanged cc) {
+     *      // CASE 1: the exception could be ignored, when it is set by user
+     *      if (cc.getReasonCode() == DefaultCharsetChanged.DOCUMENT_CHARSET) {
+     *      // CASE 2: let user know the default document charset changed
+     *      } else {
+     *      // CASE 2: let user know the default protocol charset changed
+     *      }
+     *  }
+     *  </pre></code>
+     * <p/>
+     * The API programmer is responsible to set the correct charset.
+     * And each application should remember its own charset to support.
+     *
+     * @param charset the default charset for the document
+     * @throws DefaultCharsetChanged default charset changed
+     */
+    public static void setDefaultDocumentCharset(String charset) throws DefaultCharsetChanged {
+
+        defaultDocumentCharset = charset;
+        throw new DefaultCharsetChanged(DefaultCharsetChanged.DOCUMENT_CHARSET, "the default document charset changed");
+    }
+
+    /**
+     * Get the default charset of the document by locale.
+     *
+     * @return the default charset string by locale
+     */
+    public static String getDefaultDocumentCharsetByLocale() {
+        return defaultDocumentCharsetByLocale;
+    }
+
+    /**
+     * Get the default charset of the document by platform.
+     *
+     * @return the default charset string by platform
+     */
+    public static String getDefaultDocumentCharsetByPlatform() {
+        return defaultDocumentCharsetByPlatform;
+    }
 
     /**
      * Create an instance as an internal use
      */
     protected URI() {
     }
+
+    // ------------------------------------------- Flags for this URI-reference
+
+    // TODO: Figure out what all these variables are for and provide javadoc
 
     /**
      * Construct a URI from a string with the given charset. The input string can
@@ -154,12 +1246,10 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @see #getProtocolCharset
      * @since 3.0
      */
-    public URI(String s, boolean escaped, String charset)
-            throws URIException, NullPointerException {
+    public URI(String s, boolean escaped, String charset) throws URIException, NullPointerException {
         protocolCharset = charset;
         parseUriReference(s, escaped);
     }
-
     /**
      * Construct a URI from a string with the given charset. The input string can
      * be either in escaped or unescaped form.
@@ -172,11 +1262,9 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @see #getProtocolCharset
      * @since 3.0
      */
-    public URI(String s, boolean escaped)
-            throws URIException, NullPointerException {
+    public URI(String s, boolean escaped) throws URIException, NullPointerException {
         parseUriReference(s, escaped);
     }
-
     /**
      * Construct a URI as an escaped form of a character array with the given
      * charset.
@@ -188,13 +1276,10 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @see #getProtocolCharset
      * @deprecated Use #URI(String, boolean, String)
      */
-    public URI(char[] escaped, String charset)
-            throws URIException, NullPointerException {
+    public URI(char[] escaped, String charset) throws URIException, NullPointerException {
         protocolCharset = charset;
         parseUriReference(new String(escaped), true);
     }
-
-
     /**
      * Construct a URI as an escaped form of a character array.
      * An URI can be placed within double-quotes or angle brackets like
@@ -206,12 +1291,9 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @see #getDefaultProtocolCharset
      * @deprecated Use #URI(String, boolean)
      */
-    public URI(char[] escaped)
-            throws URIException, NullPointerException {
+    public URI(char[] escaped) throws URIException, NullPointerException {
         parseUriReference(new String(escaped), true);
     }
-
-
     /**
      * Construct a URI from the given string with the given charset.
      *
@@ -226,8 +1308,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         protocolCharset = charset;
         parseUriReference(original, false);
     }
-
-
     /**
      * Construct a URI from the given string.
      * <p><blockquote><pre>
@@ -245,8 +1325,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public URI(String original) throws URIException {
         parseUriReference(original, false);
     }
-
-
     /**
      * Construct a general URI from the given components.
      * <p><blockquote><pre>
@@ -263,8 +1341,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException If the URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String schemeSpecificPart, String fragment)
-            throws URIException {
+    public URI(String scheme, String schemeSpecificPart, String fragment) throws URIException {
 
         // validate and contruct the URI character sequence
         if (scheme == null) {
@@ -273,18 +1350,16 @@ public class URI implements Cloneable, Comparable, Serializable {
         char[] s = scheme.toLowerCase().toCharArray();
         if (validate(s, URI.scheme)) {
             _scheme = s; // is_absoluteURI
-        } else {
+        }
+        else {
             throw new URIException(URIException.PARSING, "incorrect scheme");
         }
-        _opaque = encode(schemeSpecificPart, allowed_opaque_part,
-                getProtocolCharset());
+        _opaque = encode(schemeSpecificPart, allowed_opaque_part, getProtocolCharset());
         // Set flag
         _is_opaque_part = true;
         _fragment = fragment == null ? null : fragment.toCharArray();
         setURI();
     }
-
-
     /**
      * Construct a general URI from the given components.
      * <p><blockquote><pre>
@@ -305,8 +1380,9 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String authority, String path, String query,
-               String fragment) throws URIException {
+    public URI(
+        String scheme, String authority, String path, String query, String fragment
+    ) throws URIException {
 
         // validate and contruct the URI character sequence
         StringBuffer buff = new StringBuffer();
@@ -319,10 +1395,8 @@ public class URI implements Cloneable, Comparable, Serializable {
             buff.append(authority);
         }
         if (path != null) {  // accept empty path
-            if ((scheme != null || authority != null)
-                    && !path.startsWith("/")) {
-                throw new URIException(URIException.PARSING,
-                        "abs_path requested");
+            if ((scheme != null || authority != null) && !path.startsWith("/")) {
+                throw new URIException(URIException.PARSING, "abs_path requested");
             }
             buff.append(path);
         }
@@ -336,8 +1410,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         }
         parseUriReference(buff.toString(), false);
     }
-
-
     /**
      * Construct a general URI from the given components.
      *
@@ -348,13 +1420,10 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String userinfo, String host, int port)
-            throws URIException {
+    public URI(String scheme, String userinfo, String host, int port) throws URIException {
 
         this(scheme, userinfo, host, port, null, null, null);
     }
-
-
     /**
      * Construct a general URI from the given components.
      *
@@ -366,12 +1435,14 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String userinfo, String host, int port,
-               String path) throws URIException {
+    public URI(
+        String scheme, String userinfo, String host, int port, String path
+    ) throws URIException {
 
         this(scheme, userinfo, host, port, path, null, null);
     }
 
+    // ------------------------------------------ Character and escape encoding
 
     /**
      * Construct a general URI from the given components.
@@ -385,13 +1456,13 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String userinfo, String host, int port,
-               String path, String query) throws URIException {
+    public URI(
+        String scheme, String userinfo, String host, int port, String path, String query
+    ) throws URIException {
 
         this(scheme, userinfo, host, port, path, query, null);
     }
 
-
     /**
      * Construct a general URI from the given components.
      *
@@ -405,14 +1476,12 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String userinfo, String host, int port,
-               String path, String query, String fragment) throws URIException {
+    public URI(
+        String scheme, String userinfo, String host, int port, String path, String query, String fragment
+    ) throws URIException {
 
-        this(scheme, (host == null) ? null
-                : ((userinfo != null) ? userinfo + '@' : "") + host
-                + ((port != -1) ? ":" + port : ""), path, query, fragment);
+        this(scheme, (host == null) ? null : ((userinfo != null) ? userinfo + '@' : "") + host + ((port != -1) ? ":" + port : ""), path, query, fragment);
     }
-
 
     /**
      * Construct a general URI from the given components.
@@ -424,12 +1493,10 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException If the new URI cannot be created.
      * @see #getDefaultProtocolCharset
      */
-    public URI(String scheme, String host, String path, String fragment)
-            throws URIException {
+    public URI(String scheme, String host, String path, String fragment) throws URIException {
 
         this(scheme, host, path, null, fragment);
     }
-
 
     /**
      * Construct a general URI with the given relative URI string.
@@ -442,7 +1509,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public URI(URI base, String relative) throws URIException {
         this(base, new URI(relative));
     }
-
 
     /**
      * Construct a general URI with the given relative URI string.
@@ -457,7 +1523,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public URI(URI base, String relative, boolean escaped) throws URIException {
         this(base, new URI(relative, escaped));
     }
-
 
     /**
      * Construct a general URI with the given relative URI.
@@ -515,1198 +1580,90 @@ public class URI implements Cloneable, Comparable, Serializable {
             throw new URIException(URIException.PARSING, "base URI required");
         }
         if (base._scheme != null) {
-            this._scheme = base._scheme;
-            this._authority = base._authority;
-            this._is_net_path = base._is_net_path;
+            _scheme = base._scheme;
+            _authority = base._authority;
+            _is_net_path = base._is_net_path;
         }
         if (base._is_opaque_part || relative._is_opaque_part) {
-            this._scheme = base._scheme;
-            this._is_opaque_part = base._is_opaque_part
-                    || relative._is_opaque_part;
-            this._opaque = relative._opaque;
-            this._fragment = relative._fragment;
-            this.setURI();
+            _scheme = base._scheme;
+            _is_opaque_part = base._is_opaque_part || relative._is_opaque_part;
+            _opaque = relative._opaque;
+            _fragment = relative._fragment;
+            setURI();
             return;
         }
         boolean schemesEqual = Arrays.equals(base._scheme, relative._scheme);
-        if (relative._scheme != null
-                && (!schemesEqual || relative._authority != null)) {
-            this._scheme = relative._scheme;
-            this._is_net_path = relative._is_net_path;
-            this._authority = relative._authority;
+        if (relative._scheme != null && (!schemesEqual || relative._authority != null)) {
+            _scheme = relative._scheme;
+            _is_net_path = relative._is_net_path;
+            _authority = relative._authority;
             if (relative._is_server) {
-                this._is_server = relative._is_server;
-                this._userinfo = relative._userinfo;
-                this._host = relative._host;
-                this._port = relative._port;
-            } else if (relative._is_reg_name) {
-                this._is_reg_name = relative._is_reg_name;
+                _is_server = relative._is_server;
+                _userinfo = relative._userinfo;
+                _host = relative._host;
+                _port = relative._port;
             }
-            this._is_abs_path = relative._is_abs_path;
-            this._is_rel_path = relative._is_rel_path;
-            this._path = relative._path;
-        } else if (base._authority != null && relative._scheme == null) {
-            this._is_net_path = base._is_net_path;
-            this._authority = base._authority;
+            else if (relative._is_reg_name) {
+                _is_reg_name = relative._is_reg_name;
+            }
+            _is_abs_path = relative._is_abs_path;
+            _is_rel_path = relative._is_rel_path;
+            _path = relative._path;
+        }
+        else if (base._authority != null && relative._scheme == null) {
+            _is_net_path = base._is_net_path;
+            _authority = base._authority;
             if (base._is_server) {
-                this._is_server = base._is_server;
-                this._userinfo = base._userinfo;
-                this._host = base._host;
-                this._port = base._port;
-            } else if (base._is_reg_name) {
-                this._is_reg_name = base._is_reg_name;
+                _is_server = base._is_server;
+                _userinfo = base._userinfo;
+                _host = base._host;
+                _port = base._port;
+            }
+            else if (base._is_reg_name) {
+                _is_reg_name = base._is_reg_name;
             }
         }
         if (relative._authority != null) {
-            this._is_net_path = relative._is_net_path;
-            this._authority = relative._authority;
+            _is_net_path = relative._is_net_path;
+            _authority = relative._authority;
             if (relative._is_server) {
-                this._is_server = relative._is_server;
-                this._userinfo = relative._userinfo;
-                this._host = relative._host;
-                this._port = relative._port;
-            } else if (relative._is_reg_name) {
-                this._is_reg_name = relative._is_reg_name;
+                _is_server = relative._is_server;
+                _userinfo = relative._userinfo;
+                _host = relative._host;
+                _port = relative._port;
             }
-            this._is_abs_path = relative._is_abs_path;
-            this._is_rel_path = relative._is_rel_path;
-            this._path = relative._path;
+            else if (relative._is_reg_name) {
+                _is_reg_name = relative._is_reg_name;
+            }
+            _is_abs_path = relative._is_abs_path;
+            _is_rel_path = relative._is_rel_path;
+            _path = relative._path;
         }
         // resolve the path and query if necessary
-        if (relative._authority == null
-                && (relative._scheme == null || schemesEqual)) {
-            if ((relative._path == null || relative._path.length == 0)
-                    && relative._query == null) {
-                // handle a reference to the current document, see RFC 2396 
+        if (relative._authority == null && (relative._scheme == null || schemesEqual)) {
+            if ((relative._path == null || relative._path.length == 0) && relative._query == null) {
+                // handle a reference to the current document, see RFC 2396
                 // section 5.2 step 2
-                this._path = base._path;
-                this._query = base._query;
-            } else {
-                this._path = resolvePath(base._path, relative._path);
+                _path = base._path;
+                _query = base._query;
+            }
+            else {
+                _path = resolvePath(base._path, relative._path);
             }
         }
         // base._query removed
         if (relative._query != null) {
-            this._query = relative._query;
+            _query = relative._query;
         }
         // base._fragment removed
         if (relative._fragment != null) {
-            this._fragment = relative._fragment;
+            _fragment = relative._fragment;
         }
-        this.setURI();
+        setURI();
         // reparse the newly built URI, this will ensure that all flags are set correctly.
         // TODO there must be a better way to do this
         parseUriReference(new String(_uri), true);
     }
-
-    // --------------------------------------------------- Instance Variables
-
-    /**
-     * Version ID for serialization
-     */
-    static final long serialVersionUID = 604752400577948726L;
-
-
-    /**
-     * Cache the hash code for this URI.
-     */
-    protected int hash = 0;
-
-
-    /**
-     * This Uniform Resource Identifier (URI).
-     * The URI is always in an "escaped" form, since escaping or unescaping
-     * a completed URI might change its semantics.
-     */
-    protected char[] _uri = null;
-
-
-    /**
-     * The charset of the protocol used by this URI instance.
-     */
-    protected String protocolCharset = null;
-
-
-    /**
-     * The default charset of the protocol.  RFC 2277, 2396
-     */
-    protected static String defaultProtocolCharset = "UTF-8";
-
-
-    /**
-     * The default charset of the document.  RFC 2277, 2396
-     * The platform's charset is used for the document by default.
-     */
-    protected static String defaultDocumentCharset = null;
-    protected static String defaultDocumentCharsetByLocale = null;
-    protected static String defaultDocumentCharsetByPlatform = null;
-
-    // Static initializer for defaultDocumentCharset
-    static {
-        Locale locale = Locale.getDefault();
-        // in order to support backward compatiblity
-        if (locale != null) {
-            defaultDocumentCharsetByLocale =
-                    LocaleToCharsetMap.getCharset(locale);
-            // set the default document charset
-            defaultDocumentCharset = defaultDocumentCharsetByLocale;
-        }
-        // in order to support platform encoding
-        try {
-            defaultDocumentCharsetByPlatform = System.getProperty("file.encoding");
-        } catch (SecurityException ignore) {
-        }
-        if (defaultDocumentCharset == null) {
-            // set the default document charset
-            defaultDocumentCharset = defaultDocumentCharsetByPlatform;
-        }
-    }
-
-
-    /**
-     * The scheme.
-     */
-    protected char[] _scheme = null;
-
-
-    /**
-     * The opaque.
-     */
-    protected char[] _opaque = null;
-
-
-    /**
-     * The authority.
-     */
-    protected char[] _authority = null;
-
-
-    /**
-     * The userinfo.
-     */
-    protected char[] _userinfo = null;
-
-
-    /**
-     * The host.
-     */
-    protected char[] _host = null;
-
-
-    /**
-     * The port.
-     */
-    protected int _port = -1;
-
-
-    /**
-     * The path.
-     */
-    protected char[] _path = null;
-
-
-    /**
-     * The query.
-     */
-    protected char[] _query = null;
-
-
-    /**
-     * The fragment.
-     */
-    protected char[] _fragment = null;
-
-
-    /**
-     * The root path.
-     */
-    protected static final char[] rootPath = {'/'};
-
-    // ---------------------- Generous characters for each component validation
-
-    /**
-     * The percent "%" character always has the reserved purpose of being the
-     * escape indicator, it must be escaped as "%25" in order to be used as
-     * data within a URI.
-     */
-    protected static final BitSet percent = new BitSet(256);
-
-    // Static initializer for percent
-    static {
-        percent.set('%');
-    }
-
-
-    /**
-     * BitSet for digit.
-     * <p><blockquote><pre>
-     * digit    = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" |
-     *            "8" | "9"
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet digit = new BitSet(256);
-
-    // Static initializer for digit
-    static {
-        for (int i = '0'; i <= '9'; i++) {
-            digit.set(i);
-        }
-    }
-
-
-    /**
-     * BitSet for alpha.
-     * <p><blockquote><pre>
-     * alpha         = lowalpha | upalpha
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet alpha = new BitSet(256);
-
-    // Static initializer for alpha
-    static {
-        for (int i = 'a'; i <= 'z'; i++) {
-            alpha.set(i);
-        }
-        for (int i = 'A'; i <= 'Z'; i++) {
-            alpha.set(i);
-        }
-    }
-
-
-    /**
-     * BitSet for alphanum (join of alpha &amp; digit).
-     * <p><blockquote><pre>
-     *  alphanum      = alpha | digit
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet alphanum = new BitSet(256);
-
-    // Static initializer for alphanum
-    static {
-        alphanum.or(alpha);
-        alphanum.or(digit);
-    }
-
-
-    /**
-     * BitSet for hex.
-     * <p><blockquote><pre>
-     * hex           = digit | "A" | "B" | "C" | "D" | "E" | "F" |
-     *                         "a" | "b" | "c" | "d" | "e" | "f"
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet hex = new BitSet(256);
-
-    // Static initializer for hex
-    static {
-        hex.or(digit);
-        for (int i = 'a'; i <= 'f'; i++) {
-            hex.set(i);
-        }
-        for (int i = 'A'; i <= 'F'; i++) {
-            hex.set(i);
-        }
-    }
-
-
-    /**
-     * BitSet for escaped.
-     * <p><blockquote><pre>
-     * escaped       = "%" hex hex
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet escaped = new BitSet(256);
-
-    // Static initializer for escaped
-    static {
-        escaped.or(percent);
-        escaped.or(hex);
-    }
-
-
-    /**
-     * BitSet for mark.
-     * <p><blockquote><pre>
-     * mark          = "-" | "_" | "." | "!" | "~" | "*" | "'" |
-     *                 "(" | ")"
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet mark = new BitSet(256);
-
-    // Static initializer for mark
-    static {
-        mark.set('-');
-        mark.set('_');
-        mark.set('.');
-        mark.set('!');
-        mark.set('~');
-        mark.set('*');
-        mark.set('\'');
-        mark.set('(');
-        mark.set(')');
-    }
-
-
-    /**
-     * Data characters that are allowed in a URI but do not have a reserved
-     * purpose are called unreserved.
-     * <p><blockquote><pre>
-     * unreserved    = alphanum | mark
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet unreserved = new BitSet(256);
-
-    // Static initializer for unreserved
-    static {
-        unreserved.or(alphanum);
-        unreserved.or(mark);
-    }
-
-
-    /**
-     * BitSet for reserved.
-     * <p><blockquote><pre>
-     * reserved      = ";" | "/" | "?" | ":" | "@" | "&amp;" | "=" | "+" |
-     *                 "$" | ","
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet reserved = new BitSet(256);
-
-    // Static initializer for reserved
-    static {
-        reserved.set(';');
-        reserved.set('/');
-        reserved.set('?');
-        reserved.set(':');
-        reserved.set('@');
-        reserved.set('&');
-        reserved.set('=');
-        reserved.set('+');
-        reserved.set('$');
-        reserved.set(',');
-    }
-
-
-    /**
-     * BitSet for uric.
-     * <p><blockquote><pre>
-     * uric          = reserved | unreserved | escaped
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet uric = new BitSet(256);
-
-    // Static initializer for uric
-    static {
-        uric.or(reserved);
-        uric.or(unreserved);
-        uric.or(escaped);
-    }
-
-
-    /**
-     * BitSet for fragment (alias for uric).
-     * <p><blockquote><pre>
-     * fragment      = *uric
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet fragment = uric;
-
-
-    /**
-     * BitSet for query (alias for uric).
-     * <p><blockquote><pre>
-     * query         = *uric
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet query = uric;
-
-
-    /**
-     * BitSet for pchar.
-     * <p><blockquote><pre>
-     * pchar         = unreserved | escaped |
-     *                 ":" | "@" | "&amp;" | "=" | "+" | "$" | ","
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet pchar = new BitSet(256);
-
-    // Static initializer for pchar
-    static {
-        pchar.or(unreserved);
-        pchar.or(escaped);
-        pchar.set(':');
-        pchar.set('@');
-        pchar.set('&');
-        pchar.set('=');
-        pchar.set('+');
-        pchar.set('$');
-        pchar.set(',');
-    }
-
-
-    /**
-     * BitSet for param (alias for pchar).
-     * <p><blockquote><pre>
-     * param         = *pchar
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet param = pchar;
-
-
-    /**
-     * BitSet for segment.
-     * <p><blockquote><pre>
-     * segment       = *pchar *( ";" param )
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet segment = new BitSet(256);
-
-    // Static initializer for segment
-    static {
-        segment.or(pchar);
-        segment.set(';');
-        segment.or(param);
-    }
-
-
-    /**
-     * BitSet for path segments.
-     * <p><blockquote><pre>
-     * path_segments = segment *( "/" segment )
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet path_segments = new BitSet(256);
-
-    // Static initializer for path_segments
-    static {
-        path_segments.set('/');
-        path_segments.or(segment);
-    }
-
-
-    /**
-     * URI absolute path.
-     * <p><blockquote><pre>
-     * abs_path      = "/"  path_segments
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet abs_path = new BitSet(256);
-
-    // Static initializer for abs_path
-    static {
-        abs_path.set('/');
-        abs_path.or(path_segments);
-    }
-
-
-    /**
-     * URI bitset for encoding typical non-slash characters.
-     * <p><blockquote><pre>
-     * uric_no_slash = unreserved | escaped | ";" | "?" | ":" | "@" |
-     *                 "&amp;" | "=" | "+" | "$" | ","
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet uric_no_slash = new BitSet(256);
-
-    // Static initializer for uric_no_slash
-    static {
-        uric_no_slash.or(unreserved);
-        uric_no_slash.or(escaped);
-        uric_no_slash.set(';');
-        uric_no_slash.set('?');
-        uric_no_slash.set(';');
-        uric_no_slash.set('@');
-        uric_no_slash.set('&');
-        uric_no_slash.set('=');
-        uric_no_slash.set('+');
-        uric_no_slash.set('$');
-        uric_no_slash.set(',');
-    }
-
-
-    /**
-     * URI bitset that combines uric_no_slash and uric.
-     * <p><blockquote><pre>
-     * opaque_part   = uric_no_slash *uric
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet opaque_part = new BitSet(256);
-
-    // Static initializer for opaque_part
-    static {
-        // it's generous. because first character must not include a slash
-        opaque_part.or(uric_no_slash);
-        opaque_part.or(uric);
-    }
-
-
-    /**
-     * URI bitset that combines absolute path and opaque part.
-     * <p><blockquote><pre>
-     * path          = [ abs_path | opaque_part ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet path = new BitSet(256);
-
-    // Static initializer for path
-    static {
-        path.or(abs_path);
-        path.or(opaque_part);
-    }
-
-
-    /**
-     * Port, a logical alias for digit.
-     */
-    protected static final BitSet port = digit;
-
-
-    /**
-     * Bitset that combines digit and dot fo IPv$address.
-     * <p><blockquote><pre>
-     * IPv4address   = 1*digit "." 1*digit "." 1*digit "." 1*digit
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet IPv4address = new BitSet(256);
-
-    // Static initializer for IPv4address
-    static {
-        IPv4address.or(digit);
-        IPv4address.set('.');
-    }
-
-
-    /**
-     * RFC 2373.
-     * <p><blockquote><pre>
-     * IPv6address = hexpart [ ":" IPv4address ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet IPv6address = new BitSet(256);
-
-    // Static initializer for IPv6address reference
-    static {
-        IPv6address.or(hex); // hexpart
-        IPv6address.set(':');
-        IPv6address.or(IPv4address);
-    }
-
-
-    /**
-     * RFC 2732, 2373.
-     * <p><blockquote><pre>
-     * IPv6reference   = "[" IPv6address "]"
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet IPv6reference = new BitSet(256);
-
-    // Static initializer for IPv6reference
-    static {
-        IPv6reference.set('[');
-        IPv6reference.or(IPv6address);
-        IPv6reference.set(']');
-    }
-
-
-    /**
-     * BitSet for toplabel.
-     * <p><blockquote><pre>
-     * toplabel      = alpha | alpha *( alphanum | "-" ) alphanum
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet toplabel = new BitSet(256);
-
-    // Static initializer for toplabel
-    static {
-        toplabel.or(alphanum);
-        toplabel.set('-');
-    }
-
-
-    /**
-     * BitSet for domainlabel.
-     * <p><blockquote><pre>
-     * domainlabel   = alphanum | alphanum *( alphanum | "-" ) alphanum
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet domainlabel = toplabel;
-
-
-    /**
-     * BitSet for hostname.
-     * <p><blockquote><pre>
-     * hostname      = *( domainlabel "." ) toplabel [ "." ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet hostname = new BitSet(256);
-
-    // Static initializer for hostname
-    static {
-        hostname.or(toplabel);
-        // hostname.or(domainlabel);
-        hostname.set('.');
-    }
-
-
-    /**
-     * BitSet for host.
-     * <p><blockquote><pre>
-     * host          = hostname | IPv4address | IPv6reference
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet host = new BitSet(256);
-
-    // Static initializer for host
-    static {
-        host.or(hostname);
-        // host.or(IPv4address);
-        host.or(IPv6reference); // IPv4address
-    }
-
-
-    /**
-     * BitSet for hostport.
-     * <p><blockquote><pre>
-     * hostport      = host [ ":" port ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet hostport = new BitSet(256);
-
-    // Static initializer for hostport
-    static {
-        hostport.or(host);
-        hostport.set(':');
-        hostport.or(port);
-    }
-
-
-    /**
-     * Bitset for userinfo.
-     * <p><blockquote><pre>
-     * userinfo      = *( unreserved | escaped |
-     *                    ";" | ":" | "&amp;" | "=" | "+" | "$" | "," )
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet userinfo = new BitSet(256);
-
-    // Static initializer for userinfo
-    static {
-        userinfo.or(unreserved);
-        userinfo.or(escaped);
-        userinfo.set(';');
-        userinfo.set(':');
-        userinfo.set('&');
-        userinfo.set('=');
-        userinfo.set('+');
-        userinfo.set('$');
-        userinfo.set(',');
-    }
-
-
-    /**
-     * BitSet for within the userinfo component like user and password.
-     */
-    public static final BitSet within_userinfo = new BitSet(256);
-
-    // Static initializer for within_userinfo
-    static {
-        within_userinfo.or(userinfo);
-        within_userinfo.clear(';'); // reserved within authority
-        within_userinfo.clear(':');
-        within_userinfo.clear('@');
-        within_userinfo.clear('?');
-        within_userinfo.clear('/');
-    }
-
-
-    /**
-     * Bitset for server.
-     * <p><blockquote><pre>
-     * server        = [ [ userinfo "@" ] hostport ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet server = new BitSet(256);
-
-    // Static initializer for server
-    static {
-        server.or(userinfo);
-        server.set('@');
-        server.or(hostport);
-    }
-
-
-    /**
-     * BitSet for reg_name.
-     * <p><blockquote><pre>
-     * reg_name      = 1*( unreserved | escaped | "$" | "," |
-     *                     ";" | ":" | "@" | "&amp;" | "=" | "+" )
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet reg_name = new BitSet(256);
-
-    // Static initializer for reg_name
-    static {
-        reg_name.or(unreserved);
-        reg_name.or(escaped);
-        reg_name.set('$');
-        reg_name.set(',');
-        reg_name.set(';');
-        reg_name.set(':');
-        reg_name.set('@');
-        reg_name.set('&');
-        reg_name.set('=');
-        reg_name.set('+');
-    }
-
-
-    /**
-     * BitSet for authority.
-     * <p><blockquote><pre>
-     * authority     = server | reg_name
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet authority = new BitSet(256);
-
-    // Static initializer for authority
-    static {
-        authority.or(server);
-        authority.or(reg_name);
-    }
-
-
-    /**
-     * BitSet for scheme.
-     * <p><blockquote><pre>
-     * scheme        = alpha *( alpha | digit | "+" | "-" | "." )
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet scheme = new BitSet(256);
-
-    // Static initializer for scheme
-    static {
-        scheme.or(alpha);
-        scheme.or(digit);
-        scheme.set('+');
-        scheme.set('-');
-        scheme.set('.');
-    }
-
-
-    /**
-     * BitSet for rel_segment.
-     * <p><blockquote><pre>
-     * rel_segment   = 1*( unreserved | escaped |
-     *                     ";" | "@" | "&amp;" | "=" | "+" | "$" | "," )
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet rel_segment = new BitSet(256);
-
-    // Static initializer for rel_segment
-    static {
-        rel_segment.or(unreserved);
-        rel_segment.or(escaped);
-        rel_segment.set(';');
-        rel_segment.set('@');
-        rel_segment.set('&');
-        rel_segment.set('=');
-        rel_segment.set('+');
-        rel_segment.set('$');
-        rel_segment.set(',');
-    }
-
-
-    /**
-     * BitSet for rel_path.
-     * <p><blockquote><pre>
-     * rel_path      = rel_segment [ abs_path ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet rel_path = new BitSet(256);
-
-    // Static initializer for rel_path
-    static {
-        rel_path.or(rel_segment);
-        rel_path.or(abs_path);
-    }
-
-
-    /**
-     * BitSet for net_path.
-     * <p><blockquote><pre>
-     * net_path      = "//" authority [ abs_path ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet net_path = new BitSet(256);
-
-    // Static initializer for net_path
-    static {
-        net_path.set('/');
-        net_path.or(authority);
-        net_path.or(abs_path);
-    }
-
-
-    /**
-     * BitSet for hier_part.
-     * <p><blockquote><pre>
-     * hier_part     = ( net_path | abs_path ) [ "?" query ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet hier_part = new BitSet(256);
-
-    // Static initializer for hier_part
-    static {
-        hier_part.or(net_path);
-        hier_part.or(abs_path);
-        // hier_part.set('?'); aleady included
-        hier_part.or(query);
-    }
-
-
-    /**
-     * BitSet for relativeURI.
-     * <p><blockquote><pre>
-     * relativeURI   = ( net_path | abs_path | rel_path ) [ "?" query ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet relativeURI = new BitSet(256);
-
-    // Static initializer for relativeURI
-    static {
-        relativeURI.or(net_path);
-        relativeURI.or(abs_path);
-        relativeURI.or(rel_path);
-        // relativeURI.set('?'); aleady included
-        relativeURI.or(query);
-    }
-
-
-    /**
-     * BitSet for absoluteURI.
-     * <p><blockquote><pre>
-     * absoluteURI   = scheme ":" ( hier_part | opaque_part )
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet absoluteURI = new BitSet(256);
-
-    // Static initializer for absoluteURI
-    static {
-        absoluteURI.or(scheme);
-        absoluteURI.set(':');
-        absoluteURI.or(hier_part);
-        absoluteURI.or(opaque_part);
-    }
-
-
-    /**
-     * BitSet for URI-reference.
-     * <p><blockquote><pre>
-     * URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
-     * </pre></blockquote><p>
-     */
-    protected static final BitSet URI_reference = new BitSet(256);
-
-    // Static initializer for URI_reference
-    static {
-        URI_reference.or(absoluteURI);
-        URI_reference.or(relativeURI);
-        URI_reference.set('#');
-        URI_reference.or(fragment);
-    }
-
-    // ---------------------------- Characters disallowed within the URI syntax
-    // Excluded US-ASCII Characters are like control, space, delims and unwise
-
-    /**
-     * BitSet for control.
-     */
-    public static final BitSet control = new BitSet(256);
-
-    // Static initializer for control
-    static {
-        for (int i = 0; i <= 0x1F; i++) {
-            control.set(i);
-        }
-        control.set(0x7F);
-    }
-
-    /**
-     * BitSet for space.
-     */
-    public static final BitSet space = new BitSet(256);
-
-    // Static initializer for space
-    static {
-        space.set(0x20);
-    }
-
-
-    /**
-     * BitSet for delims.
-     */
-    public static final BitSet delims = new BitSet(256);
-
-    // Static initializer for delims
-    static {
-        delims.set('<');
-        delims.set('>');
-        delims.set('#');
-        delims.set('%');
-        delims.set('"');
-    }
-
-
-    /**
-     * BitSet for unwise.
-     */
-    public static final BitSet unwise = new BitSet(256);
-
-    // Static initializer for unwise
-    static {
-        unwise.set('{');
-        unwise.set('}');
-        unwise.set('|');
-        unwise.set('\\');
-        unwise.set('^');
-        unwise.set('[');
-        unwise.set(']');
-        unwise.set('`');
-    }
-
-
-    /**
-     * Disallowed rel_path before escaping.
-     */
-    public static final BitSet disallowed_rel_path = new BitSet(256);
-
-    // Static initializer for disallowed_rel_path
-    static {
-        disallowed_rel_path.or(uric);
-        disallowed_rel_path.andNot(rel_path);
-    }
-
-
-    /**
-     * Disallowed opaque_part before escaping.
-     */
-    public static final BitSet disallowed_opaque_part = new BitSet(256);
-
-    // Static initializer for disallowed_opaque_part
-    static {
-        disallowed_opaque_part.or(uric);
-        disallowed_opaque_part.andNot(opaque_part);
-    }
-
-    // ----------------------- Characters allowed within and for each component
-
-    /**
-     * Those characters that are allowed for the authority component.
-     */
-    public static final BitSet allowed_authority = new BitSet(256);
-
-    // Static initializer for allowed_authority
-    static {
-        allowed_authority.or(authority);
-        allowed_authority.clear('%');
-    }
-
-
-    /**
-     * Those characters that are allowed for the opaque_part.
-     */
-    public static final BitSet allowed_opaque_part = new BitSet(256);
-
-    // Static initializer for allowed_opaque_part
-    static {
-        allowed_opaque_part.or(opaque_part);
-        allowed_opaque_part.clear('%');
-    }
-
-
-    /**
-     * Those characters that are allowed for the reg_name.
-     */
-    public static final BitSet allowed_reg_name = new BitSet(256);
-
-    // Static initializer for allowed_reg_name
-    static {
-        allowed_reg_name.or(reg_name);
-        // allowed_reg_name.andNot(percent);
-        allowed_reg_name.clear('%');
-    }
-
-
-    /**
-     * Those characters that are allowed for the userinfo component.
-     */
-    public static final BitSet allowed_userinfo = new BitSet(256);
-
-    // Static initializer for allowed_userinfo
-    static {
-        allowed_userinfo.or(userinfo);
-        // allowed_userinfo.andNot(percent);
-        allowed_userinfo.clear('%');
-    }
-
-
-    /**
-     * Those characters that are allowed for within the userinfo component.
-     */
-    public static final BitSet allowed_within_userinfo = new BitSet(256);
-
-    // Static initializer for allowed_within_userinfo
-    static {
-        allowed_within_userinfo.or(within_userinfo);
-        allowed_within_userinfo.clear('%');
-    }
-
-
-    /**
-     * Those characters that are allowed for the IPv6reference component.
-     * The characters '[', ']' in IPv6reference should be excluded.
-     */
-    public static final BitSet allowed_IPv6reference = new BitSet(256);
-
-    // Static initializer for allowed_IPv6reference
-    static {
-        allowed_IPv6reference.or(IPv6reference);
-        // allowed_IPv6reference.andNot(unwise);
-        allowed_IPv6reference.clear('[');
-        allowed_IPv6reference.clear(']');
-    }
-
-
-    /**
-     * Those characters that are allowed for the host component.
-     * The characters '[', ']' in IPv6reference should be excluded.
-     */
-    public static final BitSet allowed_host = new BitSet(256);
-
-    // Static initializer for allowed_host
-    static {
-        allowed_host.or(hostname);
-        allowed_host.or(allowed_IPv6reference);
-    }
-
-
-    /**
-     * Those characters that are allowed for the authority component.
-     */
-    public static final BitSet allowed_within_authority = new BitSet(256);
-
-    // Static initializer for allowed_within_authority
-    static {
-        allowed_within_authority.or(server);
-        allowed_within_authority.or(reg_name);
-        allowed_within_authority.clear(';');
-        allowed_within_authority.clear(':');
-        allowed_within_authority.clear('@');
-        allowed_within_authority.clear('?');
-        allowed_within_authority.clear('/');
-    }
-
-
-    /**
-     * Those characters that are allowed for the abs_path.
-     */
-    public static final BitSet allowed_abs_path = new BitSet(256);
-
-    // Static initializer for allowed_abs_path
-    static {
-        allowed_abs_path.or(abs_path);
-        // allowed_abs_path.set('/');  // aleady included
-        allowed_abs_path.andNot(percent);
-        allowed_abs_path.clear('+');
-    }
-
-
-    /**
-     * Those characters that are allowed for the rel_path.
-     */
-    public static final BitSet allowed_rel_path = new BitSet(256);
-
-    // Static initializer for allowed_rel_path
-    static {
-        allowed_rel_path.or(rel_path);
-        allowed_rel_path.clear('%');
-        allowed_rel_path.clear('+');
-    }
-
-
-    /**
-     * Those characters that are allowed within the path.
-     */
-    public static final BitSet allowed_within_path = new BitSet(256);
-
-    // Static initializer for allowed_within_path
-    static {
-        allowed_within_path.or(abs_path);
-        allowed_within_path.clear('/');
-        allowed_within_path.clear(';');
-        allowed_within_path.clear('=');
-        allowed_within_path.clear('?');
-    }
-
-
-    /**
-     * Those characters that are allowed for the query component.
-     */
-    public static final BitSet allowed_query = new BitSet(256);
-
-    // Static initializer for allowed_query
-    static {
-        allowed_query.or(uric);
-        allowed_query.clear('%');
-    }
-
-
-    /**
-     * Those characters that are allowed within the query component.
-     */
-    public static final BitSet allowed_within_query = new BitSet(256);
-
-    // Static initializer for allowed_within_query
-    static {
-        allowed_within_query.or(allowed_query);
-        allowed_within_query.andNot(reserved); // excluded 'reserved'
-    }
-
-
-    /**
-     * Those characters that are allowed for the fragment component.
-     */
-    public static final BitSet allowed_fragment = new BitSet(256);
-
-    // Static initializer for allowed_fragment
-    static {
-        allowed_fragment.or(uric);
-        allowed_fragment.clear('%');
-    }
-
-    // ------------------------------------------- Flags for this URI-reference
-
-    // TODO: Figure out what all these variables are for and provide javadoc
-
-    // URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
-    // absoluteURI   = scheme ":" ( hier_part | opaque_part )
-    protected boolean _is_hier_part;
-    protected boolean _is_opaque_part;
-    // relativeURI   = ( net_path | abs_path | rel_path ) [ "?" query ] 
-    // hier_part     = ( net_path | abs_path ) [ "?" query ]
-    protected boolean _is_net_path;
-    protected boolean _is_abs_path;
-    protected boolean _is_rel_path;
-    // net_path      = "//" authority [ abs_path ] 
-    // authority     = server | reg_name
-    protected boolean _is_reg_name;
-    protected boolean _is_server;  // = _has_server
-    // server        = [ [ userinfo "@" ] hostport ]
-    // host          = hostname | IPv4address | IPv6reference
-    protected boolean _is_hostname;
-    protected boolean _is_IPv4address;
-    protected boolean _is_IPv6reference;
-
-    // ------------------------------------------ Character and escape encoding
 
     /**
      * Encodes URI string.
@@ -1744,8 +1701,9 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException null component or unsupported character encoding
      */
 
-    protected static char[] encode(String original, BitSet allowed,
-                                   String charset) throws URIException {
+    protected static char[] encode(
+        String original, BitSet allowed, String charset
+    ) throws URIException {
         if (original == null) {
             throw new IllegalArgumentException("Original string may not be null");
         }
@@ -1786,8 +1744,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException incomplete trailing escape pattern or unsupported
      *                      character encoding
      */
-    protected static String decode(char[] component, String charset)
-            throws URIException {
+    protected static String decode(char[] component, String charset) throws URIException {
         if (component == null) {
             throw new IllegalArgumentException("Component array of chars may not be null");
         }
@@ -1825,15 +1782,15 @@ public class URI implements Cloneable, Comparable, Serializable {
      *                      character encoding
      * @since 3.0
      */
-    protected static String decode(String component, String charset)
-            throws URIException {
+    protected static String decode(String component, String charset) throws URIException {
         if (component == null) {
             throw new IllegalArgumentException("Component array of chars may not be null");
         }
         byte[] rawdata = null;
         try {
             rawdata = URLCodec.decodeUrl(EncodingUtil.getAsciiBytes(component));
-        } catch (DecoderException e) {
+        }
+        catch (DecoderException e) {
             throw new URIException(e.getMessage());
         }
         return EncodingUtil.getString(rawdata, charset);
@@ -1845,7 +1802,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @param component  the component string within the component
      * @param disallowed those characters disallowed within the component
      * @return if true, it doesn't have the disallowed characters
-     *         if false, the component is undefined or an incorrect one
+     * if false, the component is undefined or an incorrect one
      */
     protected boolean prevalidate(String component, BitSet disallowed) {
         // prevalidate the given component by disallowed characters
@@ -1861,7 +1818,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return true;
     }
 
-
     /**
      * Validate the URI characters within a specific component.
      * The component must be performed after escape encoding. Or it doesn't
@@ -1875,7 +1831,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         // validate each component by generous characters
         return validate(component, 0, -1, generous);
     }
-
 
     /**
      * Validate the URI characters within a specific component.
@@ -1892,8 +1847,9 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @param generous  those characters that are allowed within a component
      * @return if true, it's the correct URI character sequence
      */
-    protected boolean validate(char[] component, int soffset, int eoffset,
-                               BitSet generous) {
+    protected boolean validate(
+        char[] component, int soffset, int eoffset, BitSet generous
+    ) {
         // validate each component by generous characters
         if (eoffset == -1) {
             eoffset = component.length - 1;
@@ -1905,7 +1861,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         }
         return true;
     }
-
 
     /**
      * In order to avoid any possilbity of conflict with non-ASCII characters,
@@ -1937,8 +1892,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @param escaped  <code>true</code> if <code>original</code> is escaped
      * @throws URIException If an error occurs.
      */
-    protected void parseUriReference(String original, boolean escaped)
-            throws URIException {
+    protected void parseUriReference(String original, boolean escaped) throws URIException {
 
         // validate and contruct the URI character sequence
         if (original == null) {
@@ -1949,7 +1903,7 @@ public class URI implements Cloneable, Comparable, Serializable {
          *  ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
          */
         String tmp = original.trim();
-        
+
         /*
          * The length of the string sequence of characters.
          * It may not be equal to the length of the byte array.
@@ -1983,8 +1937,7 @@ public class URI implements Cloneable, Comparable, Serializable {
         boolean isStartedFromPath = false;
         int atColon = tmp.indexOf(':');
         int atSlash = tmp.indexOf('/');
-        if ((atColon <= 0 && !tmp.startsWith("//"))
-                || (atSlash >= 0 && atSlash < atColon)) {
+        if ((atColon <= 0 && !tmp.startsWith("//")) || (atSlash >= 0 && atSlash < atColon)) {
             isStartedFromPath = true;
         }
 
@@ -2011,7 +1964,8 @@ public class URI implements Cloneable, Comparable, Serializable {
             char[] target = tmp.substring(0, at).toLowerCase().toCharArray();
             if (validate(target, scheme)) {
                 _scheme = target;
-            } else {
+            }
+            else {
                 throw new URIException("incorrect scheme");
             }
             from = ++at;
@@ -2030,13 +1984,11 @@ public class URI implements Cloneable, Comparable, Serializable {
         if (0 <= at && at < length && tmp.charAt(at) == '/') {
             // Set flag
             _is_hier_part = true;
-            if (at + 2 < length && tmp.charAt(at + 1) == '/'
-                    && !isStartedFromPath) {
+            if (at + 2 < length && tmp.charAt(at + 1) == '/' && !isStartedFromPath) {
                 // the temporary index to start the search from
                 int next = indexFirstOf(tmp, "/?#", at + 2);
                 if (next == -1) {
-                    next = (tmp.substring(at + 2).length() == 0) ? at + 2
-                            : tmp.length();
+                    next = (tmp.substring(at + 2).length() == 0) ? at + 2 : tmp.length();
                 }
                 parseAuthority(tmp.substring(at + 2, next), escaped);
                 from = at = next;
@@ -2064,19 +2016,15 @@ public class URI implements Cloneable, Comparable, Serializable {
                 next = tmp.length();
             }
             if (!_is_abs_path) {
-                if (!escaped
-                        && prevalidate(tmp.substring(from, next), disallowed_rel_path)
-                        || escaped
-                        && validate(tmp.substring(from, next).toCharArray(), rel_path)) {
+                if (!escaped && prevalidate(tmp.substring(from, next), disallowed_rel_path) || escaped && validate(tmp.substring(from, next).toCharArray(), rel_path)) {
                     // Set flag
                     _is_rel_path = true;
-                } else if (!escaped
-                        && prevalidate(tmp.substring(from, next), disallowed_opaque_part)
-                        || escaped
-                        && validate(tmp.substring(from, next).toCharArray(), opaque_part)) {
+                }
+                else if (!escaped && prevalidate(tmp.substring(from, next), disallowed_opaque_part) || escaped && validate(tmp.substring(from, next).toCharArray(), opaque_part)) {
                     // Set flag
                     _is_opaque_part = true;
-                } else {
+                }
+                else {
                     // the path component may be empty
                     _path = null;
                 }
@@ -2084,7 +2032,8 @@ public class URI implements Cloneable, Comparable, Serializable {
             String s = tmp.substring(from, next);
             if (escaped) {
                 setRawPath(s.toCharArray());
-            } else {
+            }
+            else {
                 setPath(s);
             }
             at = next;
@@ -2111,7 +2060,8 @@ public class URI implements Cloneable, Comparable, Serializable {
                 if (!validate(_query, uric)) {
                     throw new URIException("Invalid query");
                 }
-            } else {
+            }
+            else {
                 _query = encode(tmp.substring(at + 1, next), allowed_query, charset);
             }
             at = next;
@@ -2128,9 +2078,9 @@ public class URI implements Cloneable, Comparable, Serializable {
         if (0 <= at && at + 1 <= length && tmp.charAt(at) == '#') {
             if (at + 1 == length) { // empty fragment
                 _fragment = "".toCharArray();
-            } else {
-                _fragment = (escaped) ? tmp.substring(at + 1).toCharArray()
-                        : encode(tmp.substring(at + 1), allowed_fragment, charset);
+            }
+            else {
+                _fragment = (escaped) ? tmp.substring(at + 1).toCharArray() : encode(tmp.substring(at + 1), allowed_fragment, charset);
             }
         }
 
@@ -2138,6 +2088,7 @@ public class URI implements Cloneable, Comparable, Serializable {
         setURI();
     }
 
+    // ----------------------------------------------------------- Test methods
 
     /**
      * Get the earlier index that to be searched for the first occurrance in
@@ -2150,7 +2101,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     protected int indexFirstOf(String s, String delims) {
         return indexFirstOf(s, delims, -1);
     }
-
 
     /**
      * Get the earlier index that to be searched for the first occurrance in
@@ -2171,7 +2121,8 @@ public class URI implements Cloneable, Comparable, Serializable {
         // check boundaries
         if (offset < 0) {
             offset = 0;
-        } else if (offset > s.length()) {
+        }
+        else if (offset > s.length()) {
             return -1;
         }
         // s is never null
@@ -2186,7 +2137,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (min == s.length()) ? -1 : min;
     }
 
-
     /**
      * Get the earlier index that to be searched for the first occurrance in
      * one of any of the given array.
@@ -2198,7 +2148,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     protected int indexFirstOf(char[] s, char delim) {
         return indexFirstOf(s, delim, 0);
     }
-
 
     /**
      * Get the earlier index that to be searched for the first occurrance in
@@ -2216,7 +2165,8 @@ public class URI implements Cloneable, Comparable, Serializable {
         // check boundaries
         if (offset < 0) {
             offset = 0;
-        } else if (offset > s.length) {
+        }
+        else if (offset > s.length) {
             return -1;
         }
         for (int i = offset; i < s.length; i++) {
@@ -2227,7 +2177,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return -1;
     }
 
-
     /**
      * Parse the authority component.
      *
@@ -2235,12 +2184,10 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @param escaped  <code>true</code> if <code>original</code> is escaped
      * @throws URIException If an error occurs.
      */
-    protected void parseAuthority(String original, boolean escaped)
-            throws URIException {
+    protected void parseAuthority(String original, boolean escaped) throws URIException {
 
         // Reset flags
-        _is_reg_name = _is_server =
-                _is_hostname = _is_IPv4address = _is_IPv6reference = false;
+        _is_reg_name = _is_server = _is_hostname = _is_IPv4address = _is_IPv6reference = false;
 
         // set the charset to do escape encoding
         String charset = getProtocolCharset();
@@ -2250,9 +2197,7 @@ public class URI implements Cloneable, Comparable, Serializable {
         int next = original.indexOf('@');
         if (next != -1) { // neither -1 and 0
             // each protocol extented from URI supports the specific userinfo
-            _userinfo = (escaped) ? original.substring(0, next).toCharArray()
-                    : encode(original.substring(0, next), allowed_userinfo,
-                    charset);
+            _userinfo = (escaped) ? original.substring(0, next).toCharArray() : encode(original.substring(0, next), allowed_userinfo, charset);
             from = next + 1;
         }
         next = original.indexOf('[', from);
@@ -2260,16 +2205,16 @@ public class URI implements Cloneable, Comparable, Serializable {
             next = original.indexOf(']', from);
             if (next == -1) {
                 throw new URIException(URIException.PARSING, "IPv6reference");
-            } else {
+            }
+            else {
                 next++;
             }
             // In IPv6reference, '[', ']' should be excluded
-            _host = (escaped) ? original.substring(from, next).toCharArray()
-                    : encode(original.substring(from, next), allowed_IPv6reference,
-                    charset);
+            _host = (escaped) ? original.substring(from, next).toCharArray() : encode(original.substring(from, next), allowed_IPv6reference, charset);
             // Set flag
             _is_IPv6reference = true;
-        } else { // only for !_is_IPv6reference
+        }
+        else { // only for !_is_IPv6reference
             next = original.indexOf(':', from);
             if (next == -1) {
                 next = original.length();
@@ -2280,36 +2225,38 @@ public class URI implements Cloneable, Comparable, Serializable {
             if (validate(_host, IPv4address)) {
                 // Set flag
                 _is_IPv4address = true;
-            } else if (validate(_host, hostname)) {
+            }
+            else if (validate(_host, hostname)) {
                 // Set flag
                 _is_hostname = true;
-            } else {
+            }
+            else {
                 // Set flag
                 _is_reg_name = true;
             }
         }
         if (_is_reg_name) {
             // Reset flags for a server-based naming authority
-            _is_server = _is_hostname = _is_IPv4address =
-                    _is_IPv6reference = false;
+            _is_server = _is_hostname = _is_IPv4address = _is_IPv6reference = false;
             // set a registry-based naming authority
             if (escaped) {
                 _authority = original.toCharArray();
                 if (!validate(_authority, reg_name)) {
                     throw new URIException("Invalid authority");
                 }
-            } else {
+            }
+            else {
                 _authority = encode(original, allowed_reg_name, charset);
             }
-        } else {
-            if (original.length() - 1 > next && hasPort
-                    && original.charAt(next) == ':') { // not empty
+        }
+        else {
+            if (original.length() - 1 > next && hasPort && original.charAt(next) == ':') { // not empty
                 from = next + 1;
                 try {
                     _port = Integer.parseInt(original.substring(from));
-                } catch (NumberFormatException error) {
-                    throw new URIException(URIException.PARSING,
-                            "invalid port number");
+                }
+                catch (NumberFormatException error) {
+                    throw new URIException(URIException.PARSING, "invalid port number");
                 }
             }
             // set a server-based naming authority
@@ -2330,7 +2277,6 @@ public class URI implements Cloneable, Comparable, Serializable {
             _is_server = true;
         }
     }
-
 
     /**
      * Once it's parsed successfully, set this URI.
@@ -2353,7 +2299,8 @@ public class URI implements Cloneable, Comparable, Serializable {
         }
         if (_opaque != null && _is_opaque_part) {
             buf.append(_opaque);
-        } else if (_path != null) {
+        }
+        else if (_path != null) {
             // _is_hier_part or _is_relativeURI
             if (_path.length != 0) {
                 buf.append(_path);
@@ -2368,9 +2315,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         hash = 0;
     }
 
-    // ----------------------------------------------------------- Test methods
-
-
     /**
      * Tell whether or not this URI is absolute.
      *
@@ -2379,7 +2323,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public boolean isAbsoluteURI() {
         return (_scheme != null);
     }
-
 
     /**
      * Tell whether or not this URI is relative.
@@ -2390,7 +2333,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (_scheme == null);
     }
 
-
     /**
      * Tell whether or not the absoluteURI of this URI is hier_part.
      *
@@ -2400,7 +2342,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _is_hier_part;
     }
 
-
     /**
      * Tell whether or not the absoluteURI of this URI is opaque_part.
      *
@@ -2409,7 +2350,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public boolean isOpaquePart() {
         return _is_opaque_part;
     }
-
 
     /**
      * Tell whether or not the relativeURI or heir_part of this URI is net_path.
@@ -2422,7 +2362,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _is_net_path || (_authority != null);
     }
 
-
     /**
      * Tell whether or not the relativeURI or hier_part of this URI is abs_path.
      *
@@ -2432,7 +2371,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _is_abs_path;
     }
 
-
     /**
      * Tell whether or not the relativeURI of this URI is rel_path.
      *
@@ -2441,7 +2379,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public boolean isRelPath() {
         return _is_rel_path;
     }
-
 
     /**
      * Tell whether or not this URI has authority.
@@ -2463,7 +2400,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _is_reg_name;
     }
 
-
     /**
      * Tell whether or not the authority component of this URI is server.
      *
@@ -2473,6 +2409,7 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _is_server;
     }
 
+    // ---------------------------------------------------------------- Charset
 
     /**
      * Tell whether or not this URI has userinfo.
@@ -2483,7 +2420,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (_userinfo != null);
     }
 
-
     /**
      * Tell whether or not the host part of this URI is hostname.
      *
@@ -2492,7 +2428,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public boolean isHostname() {
         return _is_hostname;
     }
-
 
     /**
      * Tell whether or not the host part of this URI is IPv4address.
@@ -2503,7 +2438,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _is_IPv4address;
     }
 
-
     /**
      * Tell whether or not the host part of this URI is IPv6reference.
      *
@@ -2512,7 +2446,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public boolean isIPv6reference() {
         return _is_IPv6reference;
     }
-
 
     /**
      * Tell whether or not this URI has query.
@@ -2523,7 +2456,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (_query != null);
     }
 
-
     /**
      * Tell whether or not this URI has fragment.
      *
@@ -2532,80 +2464,6 @@ public class URI implements Cloneable, Comparable, Serializable {
     public boolean hasFragment() {
         return (_fragment != null);
     }
-
-
-    // ---------------------------------------------------------------- Charset
-
-
-    /**
-     * Set the default charset of the protocol.
-     * <p/>
-     * The character set used to store files SHALL remain a local decision and
-     * MAY depend on the capability of local operating systems. Prior to the
-     * exchange of URIs they SHOULD be converted into a ISO/IEC 10646 format
-     * and UTF-8 encoded. This approach, while allowing international exchange
-     * of URIs, will still allow backward compatibility with older systems
-     * because the code set positions for ASCII characters are identical to the
-     * one byte sequence in UTF-8.
-     * <p/>
-     * An individual URI scheme may require a single charset, define a default
-     * charset, or provide a way to indicate the charset used.
-     * <p/>
-     * <p/>
-     * Always all the time, the setter method is always succeeded and throws
-     * <code>DefaultCharsetChanged</code> exception.
-     * <p/>
-     * So API programmer must follow the following way:
-     * <code><pre>
-     *  import org.apache.util.URI$DefaultCharsetChanged;
-     *      .
-     *      .
-     *      .
-     *  try {
-     *      URI.setDefaultProtocolCharset("UTF-8");
-     *  } catch (DefaultCharsetChanged cc) {
-     *      // CASE 1: the exception could be ignored, when it is set by user
-     *      if (cc.getReasonCode() == DefaultCharsetChanged.PROTOCOL_CHARSET) {
-     *      // CASE 2: let user know the default protocol charset changed
-     *      } else {
-     *      // CASE 2: let user know the default document charset changed
-     *      }
-     *  }
-     *  </pre></code>
-     * <p/>
-     * The API programmer is responsible to set the correct charset.
-     * And each application should remember its own charset to support.
-     *
-     * @param charset the default charset for each protocol
-     * @throws DefaultCharsetChanged default charset changed
-     */
-    public static void setDefaultProtocolCharset(String charset)
-            throws DefaultCharsetChanged {
-
-        defaultProtocolCharset = charset;
-        throw new DefaultCharsetChanged(DefaultCharsetChanged.PROTOCOL_CHARSET,
-                "the default protocol charset changed");
-    }
-
-
-    /**
-     * Get the default charset of the protocol.
-     * <p/>
-     * An individual URI scheme may require a single charset, define a default
-     * charset, or provide a way to indicate the charset used.
-     * <p/>
-     * To work globally either requires support of a number of character sets
-     * and to be able to convert between them, or the use of a single preferred
-     * character set.
-     * For support of global compatibility it is STRONGLY RECOMMENDED that
-     * clients and servers use UTF-8 encoding when exchanging URIs.
-     *
-     * @return the default charset string
-     */
-    public static String getDefaultProtocolCharset() {
-        return defaultProtocolCharset;
-    }
-
 
     /**
      * Get the protocol charset used by this current URI instance.
@@ -2616,85 +2474,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @see #getDefaultProtocolCharset
      */
     public String getProtocolCharset() {
-        return (protocolCharset != null)
-                ? protocolCharset
-                : defaultProtocolCharset;
-    }
-
-
-    /**
-     * Set the default charset of the document.
-     * <p/>
-     * Notice that it will be possible to contain mixed characters (e.g.
-     * ftp://host/KoreanNamespace/ChineseResource). To handle the Bi-directional
-     * display of these character sets, the protocol charset could be simply
-     * used again. Because it's not yet implemented that the insertion of BIDI
-     * control characters at different points during composition is extracted.
-     * <p/>
-     * <p/>
-     * Always all the time, the setter method is always succeeded and throws
-     * <code>DefaultCharsetChanged</code> exception.
-     * <p/>
-     * So API programmer must follow the following way:
-     * <code><pre>
-     *  import org.apache.util.URI$DefaultCharsetChanged;
-     *      .
-     *      .
-     *      .
-     *  try {
-     *      URI.setDefaultDocumentCharset("EUC-KR");
-     *  } catch (DefaultCharsetChanged cc) {
-     *      // CASE 1: the exception could be ignored, when it is set by user
-     *      if (cc.getReasonCode() == DefaultCharsetChanged.DOCUMENT_CHARSET) {
-     *      // CASE 2: let user know the default document charset changed
-     *      } else {
-     *      // CASE 2: let user know the default protocol charset changed
-     *      }
-     *  }
-     *  </pre></code>
-     * <p/>
-     * The API programmer is responsible to set the correct charset.
-     * And each application should remember its own charset to support.
-     *
-     * @param charset the default charset for the document
-     * @throws DefaultCharsetChanged default charset changed
-     */
-    public static void setDefaultDocumentCharset(String charset)
-            throws DefaultCharsetChanged {
-
-        defaultDocumentCharset = charset;
-        throw new DefaultCharsetChanged(DefaultCharsetChanged.DOCUMENT_CHARSET,
-                "the default document charset changed");
-    }
-
-
-    /**
-     * Get the recommended default charset of the document.
-     *
-     * @return the default charset string
-     */
-    public static String getDefaultDocumentCharset() {
-        return defaultDocumentCharset;
-    }
-
-
-    /**
-     * Get the default charset of the document by locale.
-     *
-     * @return the default charset string by locale
-     */
-    public static String getDefaultDocumentCharsetByLocale() {
-        return defaultDocumentCharsetByLocale;
-    }
-
-
-    /**
-     * Get the default charset of the document by platform.
-     *
-     * @return the default charset string by platform
-     */
-    public static String getDefaultDocumentCharsetByPlatform() {
-        return defaultDocumentCharsetByPlatform;
+        return (protocolCharset != null) ? protocolCharset : defaultProtocolCharset;
     }
 
     // ------------------------------------------------------------- The scheme
@@ -2708,55 +2488,17 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _scheme;
     }
 
-
     /**
      * Get the scheme.
      *
      * @return the scheme
-     *         null if undefined scheme
+     * null if undefined scheme
      */
     public String getScheme() {
         return (_scheme == null) ? null : new String(_scheme);
     }
 
     // ---------------------------------------------------------- The authority
-
-    /**
-     * Set the authority.  It can be one type of server, hostport, hostname,
-     * IPv4address, IPv6reference and reg_name.
-     * <p><blockquote><pre>
-     *   authority     = server | reg_name
-     * </pre></blockquote><p>
-     *
-     * @param escapedAuthority the raw escaped authority
-     * @throws URIException         If {@link
-     *                              #parseAuthority(java.lang.String, boolean)} fails
-     * @throws NullPointerException null authority
-     */
-    public void setRawAuthority(char[] escapedAuthority)
-            throws URIException, NullPointerException {
-
-        parseAuthority(new String(escapedAuthority), true);
-        setURI();
-    }
-
-
-    /**
-     * Set the authority.  It can be one type of server, hostport, hostname,
-     * IPv4address, IPv6reference and reg_name.
-     * Note that there is no setAuthority method by the escape encoding reason.
-     *
-     * @param escapedAuthority the escaped authority string
-     * @throws URIException If {@link
-     *                      #parseAuthority(java.lang.String, boolean)} fails
-     */
-    public void setEscapedAuthority(String escapedAuthority)
-            throws URIException {
-
-        parseAuthority(escapedAuthority, true);
-        setURI();
-    }
-
 
     /**
      * Get the raw-escaped authority.
@@ -2767,6 +2509,23 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _authority;
     }
 
+    /**
+     * Set the authority.  It can be one type of server, hostport, hostname,
+     * IPv4address, IPv6reference and reg_name.
+     * <p><blockquote><pre>
+     *   authority     = server | reg_name
+     * </pre></blockquote><p>
+     *
+     * @param escapedAuthority the raw escaped authority
+     * @throws URIException         If {@link
+     *                              #parseAuthority(String, boolean)} fails
+     * @throws NullPointerException null authority
+     */
+    public void setRawAuthority(char[] escapedAuthority) throws URIException, NullPointerException {
+
+        parseAuthority(new String(escapedAuthority), true);
+        setURI();
+    }
 
     /**
      * Get the escaped authority.
@@ -2777,6 +2536,20 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (_authority == null) ? null : new String(_authority);
     }
 
+    /**
+     * Set the authority.  It can be one type of server, hostport, hostname,
+     * IPv4address, IPv6reference and reg_name.
+     * Note that there is no setAuthority method by the escape encoding reason.
+     *
+     * @param escapedAuthority the escaped authority string
+     * @throws URIException If {@link
+     *                      #parseAuthority(String, boolean)} fails
+     */
+    public void setEscapedAuthority(String escapedAuthority) throws URIException {
+
+        parseAuthority(escapedAuthority, true);
+        setURI();
+    }
 
     /**
      * Get the authority.
@@ -2785,8 +2558,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @throws URIException If {@link #decode} fails
      */
     public String getAuthority() throws URIException {
-        return (_authority == null) ? null : decode(_authority,
-                getProtocolCharset());
+        return (_authority == null) ? null : decode(_authority, getProtocolCharset());
     }
 
     // ----------------------------------------------------------- The userinfo
@@ -2801,7 +2573,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _userinfo;
     }
 
-
     /**
      * Get the escaped userinfo.
      *
@@ -2812,7 +2583,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (_userinfo == null) ? null : new String(_userinfo);
     }
 
-
     /**
      * Get the userinfo.
      *
@@ -2821,8 +2591,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @see #getAuthority
      */
     public String getUserinfo() throws URIException {
-        return (_userinfo == null) ? null : decode(_userinfo,
-                getProtocolCharset());
+        return (_userinfo == null) ? null : decode(_userinfo, getProtocolCharset());
     }
 
     // --------------------------------------------------------------- The host
@@ -2840,7 +2609,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _host;
     }
 
-
     /**
      * Get the host.
      * <p><blockquote><pre>
@@ -2854,7 +2622,8 @@ public class URI implements Cloneable, Comparable, Serializable {
     public String getHost() throws URIException {
         if (_host != null) {
             return decode(_host, getProtocolCharset());
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -2867,130 +2636,14 @@ public class URI implements Cloneable, Comparable, Serializable {
      * It has the server-based naming authority.
      *
      * @return the port
-     *         if -1, it has the default port for the scheme or the server-based
-     *         naming authority is not supported in the specific URI.
+     * if -1, it has the default port for the scheme or the server-based
+     * naming authority is not supported in the specific URI.
      */
     public int getPort() {
         return _port;
     }
 
     // --------------------------------------------------------------- The path
-
-    /**
-     * Set the raw-escaped path.
-     *
-     * @param escapedPath the path character sequence
-     * @throws URIException encoding error or not proper for initial instance
-     * @see #encode
-     */
-    public void setRawPath(char[] escapedPath) throws URIException {
-        if (escapedPath == null || escapedPath.length == 0) {
-            _path = _opaque = escapedPath;
-            setURI();
-            return;
-        }
-        // remove the fragment identifier
-        escapedPath = removeFragmentIdentifier(escapedPath);
-        if (_is_net_path || _is_abs_path) {
-            if (escapedPath[0] != '/') {
-                throw new URIException(URIException.PARSING,
-                        "not absolute path");
-            }
-            if (!validate(escapedPath, abs_path)) {
-                throw new URIException(URIException.ESCAPING,
-                        "escaped absolute path not valid");
-            }
-            _path = escapedPath;
-        } else if (_is_rel_path) {
-            int at = indexFirstOf(escapedPath, '/');
-            if (at == 0) {
-                throw new URIException(URIException.PARSING, "incorrect path");
-            }
-            if (at > 0 && !validate(escapedPath, 0, at - 1, rel_segment)
-                    && !validate(escapedPath, at, -1, abs_path)
-                    || at < 0 && !validate(escapedPath, 0, -1, rel_segment)) {
-
-                throw new URIException(URIException.ESCAPING,
-                        "escaped relative path not valid");
-            }
-            _path = escapedPath;
-        } else if (_is_opaque_part) {
-            if (!uric_no_slash.get(escapedPath[0])
-                    && !validate(escapedPath, 1, -1, uric)) {
-                throw new URIException(URIException.ESCAPING,
-                        "escaped opaque part not valid");
-            }
-            _opaque = escapedPath;
-        } else {
-            throw new URIException(URIException.PARSING, "incorrect path");
-        }
-        setURI();
-    }
-
-
-    /**
-     * Set the escaped path.
-     *
-     * @param escapedPath the escaped path string
-     * @throws URIException encoding error or not proper for initial instance
-     * @see #encode
-     */
-    public void setEscapedPath(String escapedPath) throws URIException {
-        if (escapedPath == null) {
-            _path = _opaque = null;
-            setURI();
-            return;
-        }
-        setRawPath(escapedPath.toCharArray());
-    }
-
-
-    /**
-     * Set the path.
-     *
-     * @param path the path string
-     * @throws URIException set incorrectly or fragment only
-     * @see #encode
-     */
-    public void setPath(String path) throws URIException {
-
-        if (path == null || path.length() == 0) {
-            _path = _opaque = (path == null) ? null : path.toCharArray();
-            setURI();
-            return;
-        }
-        // set the charset to do escape encoding
-        String charset = getProtocolCharset();
-
-        if (_is_net_path || _is_abs_path) {
-            _path = encode(path, allowed_abs_path, charset);
-        } else if (_is_rel_path) {
-            StringBuffer buff = new StringBuffer(path.length());
-            int at = path.indexOf('/');
-            if (at == 0) { // never 0
-                throw new URIException(URIException.PARSING,
-                        "incorrect relative path");
-            }
-            if (at > 0) {
-                buff.append(encode(path.substring(0, at), allowed_rel_path,
-                        charset));
-                buff.append(encode(path.substring(at), allowed_abs_path,
-                        charset));
-            } else {
-                buff.append(encode(path, allowed_rel_path, charset));
-            }
-            _path = buff.toString().toCharArray();
-        } else if (_is_opaque_part) {
-            StringBuffer buf = new StringBuffer();
-            buf.insert(0, encode(path.substring(0, 1), uric_no_slash, charset));
-            buf.insert(1, encode(path.substring(1), uric, charset));
-            _opaque = buf.toString().toCharArray();
-        } else {
-            throw new URIException(URIException.PARSING, "incorrect path");
-        }
-        setURI();
-    }
-
 
     /**
      * Resolve the base and relative path.
@@ -3000,8 +2653,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @return the resolved path
      * @throws URIException no more higher path level to be resolved
      */
-    protected char[] resolvePath(char[] basePath, char[] relPath)
-            throws URIException {
+    protected char[] resolvePath(char[] basePath, char[] relPath) throws URIException {
 
         // REMINDME: paths are never null
         String base = (basePath == null) ? "" : new String(basePath);
@@ -3009,21 +2661,19 @@ public class URI implements Cloneable, Comparable, Serializable {
         // _path could be empty
         if (relPath == null || relPath.length == 0) {
             return normalize(basePath);
-        } else if (relPath[0] == '/') {
+        }
+        else if (relPath[0] == '/') {
             return normalize(relPath);
-        } else {
+        }
+        else {
             int at = base.lastIndexOf('/');
             if (at != -1) {
                 basePath = base.substring(0, at + 1).toCharArray();
             }
-            StringBuffer buff = new StringBuffer(base.length()
-                    + relPath.length);
-            buff.append((at != -1) ? base.substring(0, at + 1) : "/");
-            buff.append(relPath);
-            return normalize(buff.toString().toCharArray());
+            String buff = ((at != -1) ? base.substring(0, at + 1) : "/") + String.valueOf(relPath);
+            return normalize(buff.toCharArray());
         }
     }
-
 
     /**
      * Get the raw-escaped current hierarchy level in the given path.
@@ -3047,13 +2697,13 @@ public class URI implements Cloneable, Comparable, Serializable {
         int last = buff.lastIndexOf('/');
         if (last == 0) {
             return rootPath;
-        } else if (first != last && last != -1) {
+        }
+        else if (first != last && last != -1) {
             return buff.substring(0, last).toCharArray();
         }
         // FIXME: it could be a document on the server side
         return path;
     }
-
 
     /**
      * Get the raw-escaped current hierarchy level.
@@ -3065,7 +2715,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (_path == null) ? null : getRawCurrentHierPath(_path);
     }
 
-
     /**
      * Get the escaped current hierarchy level.
      *
@@ -3076,7 +2725,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         char[] path = getRawCurrentHierPath();
         return (path == null) ? null : new String(path);
     }
-
 
     /**
      * Get the current hierarchy level.
@@ -3090,7 +2738,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (path == null) ? null : decode(path, getProtocolCharset());
     }
 
-
     /**
      * Get the level above the this hierarchy level.
      *
@@ -3102,7 +2749,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (path == null) ? null : getRawCurrentHierPath(path);
     }
 
-
     /**
      * Get the level above the this hierarchy level.
      *
@@ -3113,7 +2759,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         char[] path = getRawAboveHierPath();
         return (path == null) ? null : new String(path);
     }
-
 
     /**
      * Get the level above the this hierarchy level.
@@ -3127,7 +2772,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (path == null) ? null : decode(path, getProtocolCharset());
     }
 
-
     /**
      * Get the raw-escaped path.
      * <p><blockquote><pre>
@@ -3140,6 +2784,52 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _is_opaque_part ? _opaque : _path;
     }
 
+    /**
+     * Set the raw-escaped path.
+     *
+     * @param escapedPath the path character sequence
+     * @throws URIException encoding error or not proper for initial instance
+     * @see #encode
+     */
+    public void setRawPath(char[] escapedPath) throws URIException {
+        if (escapedPath == null || escapedPath.length == 0) {
+            _path = _opaque = escapedPath;
+            setURI();
+            return;
+        }
+        // remove the fragment identifier
+        escapedPath = removeFragmentIdentifier(escapedPath);
+        if (_is_net_path || _is_abs_path) {
+            if (escapedPath[0] != '/') {
+                throw new URIException(URIException.PARSING, "not absolute path");
+            }
+            if (!validate(escapedPath, abs_path)) {
+                throw new URIException(URIException.ESCAPING, "escaped absolute path not valid");
+            }
+            _path = escapedPath;
+        }
+        else if (_is_rel_path) {
+            int at = indexFirstOf(escapedPath, '/');
+            if (at == 0) {
+                throw new URIException(URIException.PARSING, "incorrect path");
+            }
+            if (at > 0 && !validate(escapedPath, 0, at - 1, rel_segment) && !validate(escapedPath, at, -1, abs_path) || at < 0 && !validate(escapedPath, 0, -1, rel_segment)) {
+
+                throw new URIException(URIException.ESCAPING, "escaped relative path not valid");
+            }
+            _path = escapedPath;
+        }
+        else if (_is_opaque_part) {
+            if (!uric_no_slash.get(escapedPath[0]) && !validate(escapedPath, 1, -1, uric)) {
+                throw new URIException(URIException.ESCAPING, "escaped opaque part not valid");
+            }
+            _opaque = escapedPath;
+        }
+        else {
+            throw new URIException(URIException.PARSING, "incorrect path");
+        }
+        setURI();
+    }
 
     /**
      * Get the escaped path.
@@ -3156,6 +2846,21 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (path == null) ? null : new String(path);
     }
 
+    /**
+     * Set the escaped path.
+     *
+     * @param escapedPath the escaped path string
+     * @throws URIException encoding error or not proper for initial instance
+     * @see #encode
+     */
+    public void setEscapedPath(String escapedPath) throws URIException {
+        if (escapedPath == null) {
+            _path = _opaque = null;
+            setURI();
+            return;
+        }
+        setRawPath(escapedPath.toCharArray());
+    }
 
     /**
      * Get the path.
@@ -3172,6 +2877,52 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (path == null) ? null : decode(path, getProtocolCharset());
     }
 
+    /**
+     * Set the path.
+     *
+     * @param path the path string
+     * @throws URIException set incorrectly or fragment only
+     * @see #encode
+     */
+    public void setPath(String path) throws URIException {
+
+        if (path == null || path.length() == 0) {
+            _path = _opaque = (path == null) ? null : path.toCharArray();
+            setURI();
+            return;
+        }
+        // set the charset to do escape encoding
+        String charset = getProtocolCharset();
+
+        if (_is_net_path || _is_abs_path) {
+            _path = encode(path, allowed_abs_path, charset);
+        }
+        else if (_is_rel_path) {
+            StringBuffer buff = new StringBuffer(path.length());
+            int at = path.indexOf('/');
+            if (at == 0) { // never 0
+                throw new URIException(URIException.PARSING, "incorrect relative path");
+            }
+            if (at > 0) {
+                buff.append(encode(path.substring(0, at), allowed_rel_path, charset));
+                buff.append(encode(path.substring(at), allowed_abs_path, charset));
+            }
+            else {
+                buff.append(encode(path, allowed_rel_path, charset));
+            }
+            _path = buff.toString().toCharArray();
+        }
+        else if (_is_opaque_part) {
+            StringBuffer buf = new StringBuffer();
+            buf.insert(0, encode(path.substring(0, 1), uric_no_slash, charset));
+            buf.insert(1, encode(path.substring(1), uric, charset));
+            _opaque = buf.toString().toCharArray();
+        }
+        else {
+            throw new URIException(URIException.PARSING, "incorrect path");
+        }
+        setURI();
+    }
 
     /**
      * Get the raw-escaped basename of the path.
@@ -3196,7 +2947,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return basename;
     }
 
-
     /**
      * Get the escaped basename of the path.
      *
@@ -3206,7 +2956,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         char[] basename = getRawName();
         return (basename == null) ? null : new String(basename);
     }
-
 
     /**
      * Get the basename of the path.
@@ -3218,8 +2967,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      */
     public String getName() throws URIException {
         char[] basename = getRawName();
-        return (basename == null) ? null : decode(getRawName(),
-                getProtocolCharset());
+        return (basename == null) ? null : decode(getRawName(), getProtocolCharset());
     }
 
     // ----------------------------------------------------- The path and query 
@@ -3245,7 +2993,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         return buff.toString().toCharArray();
     }
 
-
     /**
      * Get the escaped query.
      *
@@ -3255,7 +3002,6 @@ public class URI implements Cloneable, Comparable, Serializable {
         char[] rawPathQuery = getRawPathQuery();
         return (rawPathQuery == null) ? null : new String(rawPathQuery);
     }
-
 
     /**
      * Get the path and query.
@@ -3267,11 +3013,19 @@ public class URI implements Cloneable, Comparable, Serializable {
      */
     public String getPathQuery() throws URIException {
         char[] rawPathQuery = getRawPathQuery();
-        return (rawPathQuery == null) ? null : decode(rawPathQuery,
-                getProtocolCharset());
+        return (rawPathQuery == null) ? null : decode(rawPathQuery, getProtocolCharset());
     }
 
     // -------------------------------------------------------------- The query 
+
+    /**
+     * Get the raw-escaped query.
+     *
+     * @return the raw-escaped query
+     */
+    public char[] getRawQuery() {
+        return _query;
+    }
 
     /**
      * Set the raw-escaped query.
@@ -3288,13 +3042,20 @@ public class URI implements Cloneable, Comparable, Serializable {
         // remove the fragment identifier
         escapedQuery = removeFragmentIdentifier(escapedQuery);
         if (!validate(escapedQuery, query)) {
-            throw new URIException(URIException.ESCAPING,
-                    "escaped query not valid");
+            throw new URIException(URIException.ESCAPING, "escaped query not valid");
         }
         _query = escapedQuery;
         setURI();
     }
 
+    /**
+     * Get the escaped query.
+     *
+     * @return the escaped query string
+     */
+    public String getEscapedQuery() {
+        return (_query == null) ? null : new String(_query);
+    }
 
     /**
      * Set the escaped query string.
@@ -3311,6 +3072,17 @@ public class URI implements Cloneable, Comparable, Serializable {
         setRawQuery(escapedQuery.toCharArray());
     }
 
+    /**
+     * Get the query.
+     *
+     * @return the query string.
+     * @throws URIException incomplete trailing escape pattern or unsupported
+     *                      character encoding
+     * @see #decode
+     */
+    public String getQuery() throws URIException {
+        return (_query == null) ? null : decode(_query, getProtocolCharset());
+    }
 
     /**
      * Set the query.
@@ -3338,94 +3110,7 @@ public class URI implements Cloneable, Comparable, Serializable {
         setRawQuery(encode(query, allowed_query, getProtocolCharset()));
     }
 
-
-    /**
-     * Get the raw-escaped query.
-     *
-     * @return the raw-escaped query
-     */
-    public char[] getRawQuery() {
-        return _query;
-    }
-
-
-    /**
-     * Get the escaped query.
-     *
-     * @return the escaped query string
-     */
-    public String getEscapedQuery() {
-        return (_query == null) ? null : new String(_query);
-    }
-
-
-    /**
-     * Get the query.
-     *
-     * @return the query string.
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *                      character encoding
-     * @see #decode
-     */
-    public String getQuery() throws URIException {
-        return (_query == null) ? null : decode(_query, getProtocolCharset());
-    }
-
     // ----------------------------------------------------------- The fragment 
-
-    /**
-     * Set the raw-escaped fragment.
-     *
-     * @param escapedFragment the raw-escaped fragment
-     * @throws URIException escaped fragment not valid
-     */
-    public void setRawFragment(char[] escapedFragment) throws URIException {
-        if (escapedFragment == null || escapedFragment.length == 0) {
-            _fragment = escapedFragment;
-            hash = 0;
-            return;
-        }
-        if (!validate(escapedFragment, fragment)) {
-            throw new URIException(URIException.ESCAPING,
-                    "escaped fragment not valid");
-        }
-        _fragment = escapedFragment;
-        hash = 0;
-    }
-
-
-    /**
-     * Set the escaped fragment string.
-     *
-     * @param escapedFragment the escaped fragment string
-     * @throws URIException escaped fragment not valid
-     */
-    public void setEscapedFragment(String escapedFragment) throws URIException {
-        if (escapedFragment == null) {
-            _fragment = null;
-            hash = 0;
-            return;
-        }
-        setRawFragment(escapedFragment.toCharArray());
-    }
-
-
-    /**
-     * Set the fragment.
-     *
-     * @param fragment the fragment string.
-     * @throws URIException If an error occurs.
-     */
-    public void setFragment(String fragment) throws URIException {
-        if (fragment == null || fragment.length() == 0) {
-            _fragment = (fragment == null) ? null : fragment.toCharArray();
-            hash = 0;
-            return;
-        }
-        _fragment = encode(fragment, allowed_fragment, getProtocolCharset());
-        hash = 0;
-    }
-
 
     /**
      * Get the raw-escaped fragment.
@@ -3446,6 +3131,24 @@ public class URI implements Cloneable, Comparable, Serializable {
         return _fragment;
     }
 
+    /**
+     * Set the raw-escaped fragment.
+     *
+     * @param escapedFragment the raw-escaped fragment
+     * @throws URIException escaped fragment not valid
+     */
+    public void setRawFragment(char[] escapedFragment) throws URIException {
+        if (escapedFragment == null || escapedFragment.length == 0) {
+            _fragment = escapedFragment;
+            hash = 0;
+            return;
+        }
+        if (!validate(escapedFragment, fragment)) {
+            throw new URIException(URIException.ESCAPING, "escaped fragment not valid");
+        }
+        _fragment = escapedFragment;
+        hash = 0;
+    }
 
     /**
      * Get the escaped fragment.
@@ -3456,6 +3159,20 @@ public class URI implements Cloneable, Comparable, Serializable {
         return (_fragment == null) ? null : new String(_fragment);
     }
 
+    /**
+     * Set the escaped fragment string.
+     *
+     * @param escapedFragment the escaped fragment string
+     * @throws URIException escaped fragment not valid
+     */
+    public void setEscapedFragment(String escapedFragment) throws URIException {
+        if (escapedFragment == null) {
+            _fragment = null;
+            hash = 0;
+            return;
+        }
+        setRawFragment(escapedFragment.toCharArray());
+    }
 
     /**
      * Get the fragment.
@@ -3466,8 +3183,23 @@ public class URI implements Cloneable, Comparable, Serializable {
      * @see #decode
      */
     public String getFragment() throws URIException {
-        return (_fragment == null) ? null : decode(_fragment,
-                getProtocolCharset());
+        return (_fragment == null) ? null : decode(_fragment, getProtocolCharset());
+    }
+
+    /**
+     * Set the fragment.
+     *
+     * @param fragment the fragment string.
+     * @throws URIException If an error occurs.
+     */
+    public void setFragment(String fragment) throws URIException {
+        if (fragment == null || fragment.length() == 0) {
+            _fragment = (fragment == null) ? null : fragment.toCharArray();
+            hash = 0;
+            return;
+        }
+        _fragment = encode(fragment, allowed_fragment, getProtocolCharset());
+        hash = 0;
     }
 
     // ------------------------------------------------------------- Utilities 
@@ -3484,12 +3216,10 @@ public class URI implements Cloneable, Comparable, Serializable {
         }
         int lastIndex = new String(component).indexOf('#');
         if (lastIndex != -1) {
-            component = new String(component).substring(0,
-                    lastIndex).toCharArray();
+            component = new String(component).substring(0, lastIndex).toCharArray();
         }
         return component;
     }
-
 
     /**
      * Normalize the given hier path part.
@@ -3512,9 +3242,11 @@ public class URI implements Cloneable, Comparable, Serializable {
         // If the buffer begins with "./" or "../", the "." or ".." is removed.
         if (normalized.startsWith("./")) {
             normalized = normalized.substring(1);
-        } else if (normalized.startsWith("../")) {
+        }
+        else if (normalized.startsWith("../")) {
             normalized = normalized.substring(2);
-        } else if (normalized.startsWith("..")) {
+        }
+        else if (normalized.startsWith("..")) {
             normalized = normalized.substring(2);
         }
 
@@ -3540,7 +3272,8 @@ public class URI implements Cloneable, Comparable, Serializable {
             int slashIndex = normalized.lastIndexOf('/', index - 1);
             if (slashIndex >= 0) {
                 normalized = normalized.substring(0, slashIndex) + normalized.substring(index + 3);
-            } else {
+            }
+            else {
                 startIndex = index + 3;
             }
         }
@@ -3560,7 +3293,8 @@ public class URI implements Cloneable, Comparable, Serializable {
             int slashIndex = normalized.lastIndexOf('/', index - 1);
             if (slashIndex >= 0) {
                 break;
-            } else {
+            }
+            else {
                 normalized = normalized.substring(index + 3);
             }
         }
@@ -3573,7 +3307,6 @@ public class URI implements Cloneable, Comparable, Serializable {
 
         return normalized.toCharArray();
     }
-
 
     /**
      * Normalizes the path part of this URI.  Normalization is only meant to be performed on
@@ -3589,7 +3322,6 @@ public class URI implements Cloneable, Comparable, Serializable {
             setURI();
         }
     }
-
 
     /**
      * Test if the first array is equal to the second array.
@@ -3617,65 +3349,18 @@ public class URI implements Cloneable, Comparable, Serializable {
         return true;
     }
 
-
-    /**
-     * Test an object if this URI is equal to another.
-     *
-     * @param obj an object to compare
-     * @return true if two URI objects are equal
-     */
-    public boolean equals(Object obj) {
-
-        // normalize and test each components
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof URI)) {
-            return false;
-        }
-        URI another = (URI) obj;
-        // scheme
-        if (!equals(_scheme, another._scheme)) {
-            return false;
-        }
-        // is_opaque_part or is_hier_part?  and opaque
-        if (!equals(_opaque, another._opaque)) {
-            return false;
-        }
-        // is_hier_part
-        // has_authority
-        if (!equals(_authority, another._authority)) {
-            return false;
-        }
-        // path
-        if (!equals(_path, another._path)) {
-            return false;
-        }
-        // has_query
-        if (!equals(_query, another._query)) {
-            return false;
-        }
-        // has_fragment?  should be careful of the only fragment case.
-        if (!equals(_fragment, another._fragment)) {
-            return false;
-        }
-        return true;
-    }
-
-    // ---------------------------------------------------------- Serialization
-
     /**
      * Write the content of this URI.
      *
      * @param oos the object-output stream
      * @throws IOException If an IO problem occurs.
      */
-    private void writeObject(ObjectOutputStream oos)
-            throws IOException {
+    private void writeObject(ObjectOutputStream oos) throws IOException {
 
         oos.defaultWriteObject();
     }
 
+    // ---------------------------------------------------------- Serialization
 
     /**
      * Read a URI.
@@ -3685,13 +3370,10 @@ public class URI implements Cloneable, Comparable, Serializable {
      *                                input stream cannot be found.
      * @throws IOException            If an IO problem occurs.
      */
-    private void readObject(ObjectInputStream ois)
-            throws ClassNotFoundException, IOException {
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
 
         ois.defaultReadObject();
     }
-
-    // -------------------------------------------------------------- Hash code
 
     /**
      * Return a hash code for this URI.
@@ -3716,26 +3398,50 @@ public class URI implements Cloneable, Comparable, Serializable {
         return hash;
     }
 
-    // ------------------------------------------------------------- Comparison 
+    // -------------------------------------------------------------- Hash code
 
     /**
-     * Compare this URI to another object.
+     * Test an object if this URI is equal to another.
      *
-     * @param obj the object to be compared.
-     * @return 0, if it's same,
-     *         -1, if failed, first being compared with in the authority component
-     * @throws ClassCastException not URI argument
+     * @param obj an object to compare
+     * @return true if two URI objects are equal
      */
-    public int compareTo(Object obj) throws ClassCastException {
+    public boolean equals(Object obj) {
 
-        URI another = (URI) obj;
-        if (!equals(_authority, another.getRawAuthority())) {
-            return -1;
+        // normalize and test each components
+        if (obj == this) {
+            return true;
         }
-        return toString().compareTo(another.toString());
+        if (!(obj instanceof URI)) {
+            return false;
+        }
+        URI another = (URI)obj;
+        // scheme
+        if (!equals(_scheme, another._scheme)) {
+            return false;
+        }
+        // is_opaque_part or is_hier_part?  and opaque
+        if (!equals(_opaque, another._opaque)) {
+            return false;
+        }
+        // is_hier_part
+        // has_authority
+        if (!equals(_authority, another._authority)) {
+            return false;
+        }
+        // path
+        if (!equals(_path, another._path)) {
+            return false;
+        }
+        // has_query
+        if (!equals(_query, another._query)) {
+            return false;
+        }
+        // has_fragment?  should be careful of the only fragment case.
+        return equals(_fragment, another._fragment);
     }
 
-    // ------------------------------------------------------------------ Clone
+    // ------------------------------------------------------------- Comparison 
 
     /**
      * Create and return a copy of this object, the URI-reference containing
@@ -3749,7 +3455,7 @@ public class URI implements Cloneable, Comparable, Serializable {
      */
     public synchronized Object clone() throws CloneNotSupportedException {
 
-        URI instance = (URI) super.clone();
+        URI instance = (URI)super.clone();
 
         instance._uri = _uri;
         instance._scheme = _scheme;
@@ -3778,93 +3484,7 @@ public class URI implements Cloneable, Comparable, Serializable {
         return instance;
     }
 
-    // ------------------------------------------------------------ Get the URI
-
-    /**
-     * It can be gotten the URI character sequence. It's raw-escaped.
-     * For the purpose of the protocol to be transported, it will be useful.
-     * <p/>
-     * It is clearly unwise to use a URL that contains a password which is
-     * intended to be secret. In particular, the use of a password within
-     * the 'userinfo' component of a URL is strongly disrecommended except
-     * in those rare cases where the 'password' parameter is intended to be
-     * public.
-     * <p/>
-     * When you want to get each part of the userinfo, you need to use the
-     * specific methods in the specific URL. It depends on the specific URL.
-     *
-     * @return the URI character sequence
-     */
-    public char[] getRawURI() {
-        return _uri;
-    }
-
-
-    /**
-     * It can be gotten the URI character sequence. It's escaped.
-     * For the purpose of the protocol to be transported, it will be useful.
-     *
-     * @return the escaped URI string
-     */
-    public String getEscapedURI() {
-        return (_uri == null) ? null : new String(_uri);
-    }
-
-
-    /**
-     * It can be gotten the URI character sequence.
-     *
-     * @return the original URI string
-     * @throws URIException incomplete trailing escape pattern or unsupported
-     *                      character encoding
-     * @see #decode
-     */
-    public String getURI() throws URIException {
-        return (_uri == null) ? null : decode(_uri, getProtocolCharset());
-    }
-
-
-    /**
-     * Get the URI reference character sequence.
-     *
-     * @return the URI reference character sequence
-     */
-    public char[] getRawURIReference() {
-        if (_fragment == null) {
-            return _uri;
-        }
-        if (_uri == null) {
-            return _fragment;
-        }
-        // if _uri != null &&  _fragment != null
-        String uriReference = new String(_uri) + "#" + new String(_fragment);
-        return uriReference.toCharArray();
-    }
-
-
-    /**
-     * Get the escaped URI reference string.
-     *
-     * @return the escaped URI reference string
-     */
-    public String getEscapedURIReference() {
-        char[] uriReference = getRawURIReference();
-        return (uriReference == null) ? null : new String(uriReference);
-    }
-
-
-    /**
-     * Get the original URI reference string.
-     *
-     * @return the original URI reference string
-     * @throws URIException If {@link #decode} fails.
-     */
-    public String getURIReference() throws URIException {
-        char[] uriReference = getRawURIReference();
-        return (uriReference == null) ? null : decode(uriReference,
-                getProtocolCharset());
-    }
-
+    // ------------------------------------------------------------------ Clone
 
     /**
      * Get the escaped URI string.
@@ -3887,6 +3507,103 @@ public class URI implements Cloneable, Comparable, Serializable {
         return getEscapedURI();
     }
 
+    // ------------------------------------------------------------ Get the URI
+
+    /**
+     * Compare this URI to another object.
+     *
+     * @param obj the object to be compared.
+     * @return 0, if it's same,
+     * -1, if failed, first being compared with in the authority component
+     * @throws ClassCastException not URI argument
+     */
+    public int compareTo(Object obj) throws ClassCastException {
+
+        URI another = (URI)obj;
+        if (!equals(_authority, another.getRawAuthority())) {
+            return -1;
+        }
+        return toString().compareTo(another.toString());
+    }
+
+    /**
+     * It can be gotten the URI character sequence. It's raw-escaped.
+     * For the purpose of the protocol to be transported, it will be useful.
+     * <p/>
+     * It is clearly unwise to use a URL that contains a password which is
+     * intended to be secret. In particular, the use of a password within
+     * the 'userinfo' component of a URL is strongly disrecommended except
+     * in those rare cases where the 'password' parameter is intended to be
+     * public.
+     * <p/>
+     * When you want to get each part of the userinfo, you need to use the
+     * specific methods in the specific URL. It depends on the specific URL.
+     *
+     * @return the URI character sequence
+     */
+    public char[] getRawURI() {
+        return _uri;
+    }
+
+    /**
+     * It can be gotten the URI character sequence. It's escaped.
+     * For the purpose of the protocol to be transported, it will be useful.
+     *
+     * @return the escaped URI string
+     */
+    public String getEscapedURI() {
+        return (_uri == null) ? null : new String(_uri);
+    }
+
+    /**
+     * It can be gotten the URI character sequence.
+     *
+     * @return the original URI string
+     * @throws URIException incomplete trailing escape pattern or unsupported
+     *                      character encoding
+     * @see #decode
+     */
+    public String getURI() throws URIException {
+        return (_uri == null) ? null : decode(_uri, getProtocolCharset());
+    }
+
+    /**
+     * Get the URI reference character sequence.
+     *
+     * @return the URI reference character sequence
+     */
+    public char[] getRawURIReference() {
+        if (_fragment == null) {
+            return _uri;
+        }
+        if (_uri == null) {
+            return _fragment;
+        }
+        // if _uri != null &&  _fragment != null
+        String uriReference = new String(_uri) + "#" + new String(_fragment);
+        return uriReference.toCharArray();
+    }
+
+    /**
+     * Get the escaped URI reference string.
+     *
+     * @return the escaped URI reference string
+     */
+    public String getEscapedURIReference() {
+        char[] uriReference = getRawURIReference();
+        return (uriReference == null) ? null : new String(uriReference);
+    }
+
+    /**
+     * Get the original URI reference string.
+     *
+     * @return the original URI reference string
+     * @throws URIException If {@link #decode} fails.
+     */
+    public String getURIReference() throws URIException {
+        char[] uriReference = getRawURIReference();
+        return (uriReference == null) ? null : decode(uriReference, getProtocolCharset());
+    }
 
     // ------------------------------------------------------------ Inner class
 
@@ -3899,6 +3616,31 @@ public class URI implements Cloneable, Comparable, Serializable {
         // ------------------------------------------------------- constructors
 
         /**
+         * No specified reason code.
+         */
+        public static final int UNKNOWN = 0;
+
+        // ---------------------------------------------------------- constants
+        /**
+         * Protocol charset changed.
+         */
+        public static final int PROTOCOL_CHARSET = 1;
+        /**
+         * Document charset changed.
+         */
+        public static final int DOCUMENT_CHARSET = 2;
+        /**
+         * The reason code.
+         */
+        private final int reasonCode;
+
+        // ------------------------------------------------- instance variables
+        /**
+         * The reason message.
+         */
+        private final String reason;
+
+        /**
          * The constructor with a reason string and its code arguments.
          *
          * @param reasonCode the reason code
@@ -3909,35 +3651,6 @@ public class URI implements Cloneable, Comparable, Serializable {
             this.reason = reason;
             this.reasonCode = reasonCode;
         }
-
-        // ---------------------------------------------------------- constants
-
-        /**
-         * No specified reason code.
-         */
-        public static final int UNKNOWN = 0;
-
-        /**
-         * Protocol charset changed.
-         */
-        public static final int PROTOCOL_CHARSET = 1;
-
-        /**
-         * Document charset changed.
-         */
-        public static final int DOCUMENT_CHARSET = 2;
-
-        // ------------------------------------------------- instance variables
-
-        /**
-         * The reason code.
-         */
-        private int reasonCode;
-
-        /**
-         * The reason message.
-         */
-        private String reason;
 
         // ------------------------------------------------------------ methods
 
@@ -3958,9 +3671,7 @@ public class URI implements Cloneable, Comparable, Serializable {
         public String getReason() {
             return reason;
         }
-
     }
-
 
     /**
      * A mapping to determine the (somewhat arbitrarily) preferred charset for a
@@ -4024,22 +3735,19 @@ public class URI implements Cloneable, Comparable, Serializable {
          *
          * @param locale the locale
          * @return the preferred charset or null if the locale is not
-         *         recognized.
+         * recognized.
          */
         public static String getCharset(Locale locale) {
             // try for an full name match (may include country)
-            String charset =
-                    (String) LOCALE_TO_CHARSET_MAP.get(locale.toString());
+            String charset = (String)LOCALE_TO_CHARSET_MAP.get(locale.toString());
             if (charset != null) {
                 return charset;
             }
 
             // if a full name didn't match, try just the language
-            charset = (String) LOCALE_TO_CHARSET_MAP.get(locale.getLanguage());
+            charset = (String)LOCALE_TO_CHARSET_MAP.get(locale.getLanguage());
             return charset;  // may be null
         }
-
     }
-
 }
 

@@ -1,6 +1,5 @@
 package com.eviware.soapui.ui.navigator.state;
 
-import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.model.tree.SoapUITreeNode;
 
 import javax.swing.event.TreeExpansionEvent;
@@ -11,7 +10,7 @@ import javax.swing.tree.TreePath;
  * helper class to handle node state engine behaviour
  */
 class NavigatorTreeExpanedListener implements TreeExpansionListener {
-    private NavigatorNodesExpandStateEngine navigatorNodesExpandStateEngine;
+    private final NavigatorNodesExpandStateEngine navigatorNodesExpandStateEngine;
 
     NavigatorTreeExpanedListener(NavigatorNodesExpandStateEngine navigatorNodesExpandStateEngine) {
         this.navigatorNodesExpandStateEngine = navigatorNodesExpandStateEngine;
@@ -23,7 +22,7 @@ class NavigatorTreeExpanedListener implements TreeExpansionListener {
         if (!(currentNode instanceof SoapUITreeNode)) {
             return;
         }
-        SoapUITreeNode soapUITreeNode = (SoapUITreeNode) currentNode;
+        SoapUITreeNode soapUITreeNode = (SoapUITreeNode)currentNode;
         navigatorNodesExpandStateEngine.setExpandedState(soapUITreeNode, expand);
     }
 

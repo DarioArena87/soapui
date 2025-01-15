@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.support;
@@ -29,14 +29,10 @@ import com.eviware.soapui.security.result.SecurityScanResult;
 import com.eviware.soapui.security.result.SecurityTestStepResult;
 import com.eviware.soapui.security.scan.AbstractSecurityScanWithProperties;
 
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JTree;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.*;
 
 /**
  * Class that keeps a JProgressBars state in sync with a SecurityTest
@@ -56,38 +52,38 @@ import java.awt.Dimension;
  */
 
 public class ProgressBarSecurityTestStepAdapter {
-    private JProgressBar progressBar;
-    private TestStep testStep;
-    private SecurityTest securityTest;
-    private InternalTestRunListener internalTestRunListener;
-    private JTree tree;
-    private DefaultMutableTreeNode node;
-    private JLabel counterLabel;
     private static final Color OK_COLOR = new Color(0, 204, 102);
     private static final Color FAILED_COLOR = new Color(255, 102, 0);
     private static final Color MISSING_ASSERTION_COLOR = new Color(204, 153, 255);
     private static final Color UNKNOWN_COLOR = new Color(240, 240, 240);
-
     private static final String STATE_RUN = "In progress";
     private static final String STATE_DONE = "Done";
     private static final String STATE_CANCEL = "Canceled";
     private static final String STATE_MISSING_ASSERTIONS = "Missing Assertions";
     private static final String STATE_MISSING_PARAMETERS = "Missing Parameters";
+    private final JProgressBar progressBar;
+    private TestStep testStep;
+    private SecurityTest securityTest;
+    private final InternalTestRunListener internalTestRunListener;
+    private final JTree tree;
+    private final DefaultMutableTreeNode node;
+    private final JLabel counterLabel;
 
-    public ProgressBarSecurityTestStepAdapter(JTree tree, DefaultMutableTreeNode node, JProgressBar progressBar,
-                                              SecurityTest securityTest, WsdlTestStep testStep, JLabel cntLabel) {
+    public ProgressBarSecurityTestStepAdapter(
+        JTree tree, DefaultMutableTreeNode node, JProgressBar progressBar, SecurityTest securityTest, WsdlTestStep testStep, JLabel cntLabel
+    ) {
         this.tree = tree;
         this.node = node;
         this.progressBar = progressBar;
         this.testStep = testStep;
         this.securityTest = securityTest;
 
-        this.counterLabel = cntLabel;
+        counterLabel = cntLabel;
         internalTestRunListener = new InternalTestRunListener();
         if (progressBar != null && cntLabel != null) {
-            this.counterLabel.setPreferredSize(new Dimension(50, 18));
-            this.counterLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-            this.counterLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            counterLabel.setPreferredSize(new Dimension(50, 18));
+            counterLabel.setHorizontalTextPosition(SwingConstants.CENTER);
+            counterLabel.setHorizontalAlignment(SwingConstants.CENTER);
             this.securityTest.addSecurityTestRunListener(internalTestRunListener);
         }
     }
@@ -104,26 +100,6 @@ public class ProgressBarSecurityTestStepAdapter {
         private int totalAlertsCounter;
 
         @Override
-        public void beforeStep(TestCaseRunner testRunner, SecurityTestRunContext runContext, TestStepResult tsr) {
-            if (tsr.getTestStep().getId().equals(testStep.getId())) {
-                int count = securityTest.getStepSecurityApplicableScansCount(tsr);
-                progressBar.getModel().setMaximum(count);
-
-                if (securityTest.getSecurityScansMap().get(testStep.getId()) != null
-                        && securityTest.getSecurityScansMap().get(testStep.getId()).size() > 0) {
-                    progressBar.setString(STATE_RUN);
-                    progressBar.setForeground(OK_COLOR);
-                }
-                progressBar.setBackground(Color.white);
-                progressBar.setValue(0);
-                counterLabel.setText("");
-                counterLabel.setOpaque(false);
-
-                ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
-            }
-        }
-
-        @Override
         public void beforeRun(TestCaseRunner testRunner, SecurityTestRunContext runContext) {
 
             progressBar.setString("");
@@ -132,7 +108,7 @@ public class ProgressBarSecurityTestStepAdapter {
             counterLabel.setOpaque(false);
 
             totalAlertsCounter = 0;
-            ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
+            ((DefaultTreeModel)tree.getModel()).nodeChanged(node);
 
             if (progressBar != null) {
                 progressBar.setForeground(UNKNOWN_COLOR);
@@ -141,25 +117,44 @@ public class ProgressBarSecurityTestStepAdapter {
         }
 
         @Override
+        public void beforeStep(TestCaseRunner testRunner, SecurityTestRunContext runContext, TestStepResult tsr) {
+            if (tsr.getTestStep().getId().equals(testStep.getId())) {
+                int count = securityTest.getStepSecurityApplicableScansCount(tsr);
+                progressBar.getModel().setMaximum(count);
+
+                if (securityTest.getSecurityScansMap().get(testStep.getId()) != null && securityTest.getSecurityScansMap().get(testStep.getId()).size() > 0) {
+                    progressBar.setString(STATE_RUN);
+                    progressBar.setForeground(OK_COLOR);
+                }
+                progressBar.setBackground(Color.white);
+                progressBar.setValue(0);
+                counterLabel.setText("");
+                counterLabel.setOpaque(false);
+
+                ((DefaultTreeModel)tree.getModel()).nodeChanged(node);
+            }
+        }
+
+        @Override
         public void afterStep(TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityTestStepResult result) {
             if (runContext.getCurrentStep().getId().equals(testStep.getId())) {
-                if (!(progressBar.getString().equals(STATE_CANCEL)
-                        || progressBar.getString().equals(STATE_MISSING_ASSERTIONS) || progressBar.getString().equals(
-                        STATE_MISSING_PARAMETERS))
-                        && securityTest.getSecurityTestStepResultMap().get(testStep) != null) {
+                if (!(progressBar.getString().equals(STATE_CANCEL) ||
+                      progressBar.getString().equals(STATE_MISSING_ASSERTIONS) ||
+                      progressBar.getString().equals(STATE_MISSING_PARAMETERS)) && securityTest.getSecurityTestStepResultMap().get(testStep) != null) {
                     SecurityTestStepResult results = securityTest.getSecurityTestStepResultMap().get(testStep);
                     /*
-					 * This is hack since SecurityTestStepResult.getStatus() do not
-					 * returns real state of execution.
-					 * 
-					 * SKIPPED state overides all except FAILED , which is wrong.
-					 */
+                     * This is hack since SecurityTestStepResult.getStatus() do not
+                     * returns real state of execution.
+                     *
+                     * SKIPPED state overides all except FAILED , which is wrong.
+                     */
                     boolean skipped = results.getSecurityScanResultList().size() > 0;
 
                     for (SecurityScanResult res : results.getSecurityScanResultList()) {
                         if (res.getStatus() == ResultStatus.SKIPPED) {
                             continue;
-                        } else {
+                        }
+                        else {
                             skipped = false;
                             break;
                         }
@@ -167,27 +162,28 @@ public class ProgressBarSecurityTestStepAdapter {
                     if (skipped) {
                         progressBar.setString("SKIPPED");
                         progressBar.setForeground(UNKNOWN_COLOR);
-                    } else {
+                    }
+                    else {
                         progressBar.setString(STATE_DONE);
                     }
                 }
-            } else {
+            }
+            else {
                 progressBar.setBackground(UNKNOWN_COLOR);
             }
             progressBar.setValue(progressBar.getMaximum() == 0 ? 1 : progressBar.getMaximum());
-            ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
+            ((DefaultTreeModel)tree.getModel()).nodeChanged(node);
         }
 
         @Override
-        public void beforeSecurityScan(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                       SecurityScan securityScan) {
+        public void beforeSecurityScan(
+            TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScan securityScan
+        ) {
             if (securityScan.getTestStep().getId().equals(testStep.getId())) {
                 // set progress bar color/state based on/if there is result
-                if (securityScan.getSecurityScanResult() != null
-                        && securityScan.getSecurityScanResult().getStatus() != ResultStatus.CANCELED) {
+                if (securityScan.getSecurityScanResult() != null && securityScan.getSecurityScanResult().getStatus() != ResultStatus.CANCELED) {
                     if (progressBar.getString().equals("")) {
-                        if (securityTest.getSecurityScansMap().get(testStep.getId()) != null
-                                && securityTest.getSecurityScansMap().get(testStep.getId()).size() > 0) {
+                        if (securityTest.getSecurityScansMap().get(testStep.getId()) != null && securityTest.getSecurityScansMap().get(testStep.getId()).size() > 0) {
                             progressBar.setString(STATE_RUN);
                             progressBar.setForeground(OK_COLOR);
                         }
@@ -201,9 +197,8 @@ public class ProgressBarSecurityTestStepAdapter {
                     progressBar.setString(STATE_MISSING_ASSERTIONS);
                 }
                 // or if there is no parameters.
-                if (securityScan instanceof AbstractSecurityScanWithProperties
-                        && ((AbstractSecurityScanWithProperties) securityScan).getParameterHolder().getParameterList()
-                        .size() == 0) {
+                if (securityScan instanceof AbstractSecurityScanWithProperties &&
+                    ((AbstractSecurityScanWithProperties)securityScan).getParameterHolder().getParameterList().size() == 0) {
                     if (!progressBar.getForeground().equals(FAILED_COLOR)) {
                         progressBar.setForeground(MISSING_ASSERTION_COLOR);
                     }
@@ -214,20 +209,23 @@ public class ProgressBarSecurityTestStepAdapter {
             }
         }
 
-        public void afterSecurityScan(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                      SecurityScanResult securityCheckResult) {
+        public void afterSecurityScan(
+            TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScanResult securityCheckResult
+        ) {
 
             if (securityCheckResult.getSecurityScan().getTestStep().getId().equals(testStep.getId())) {
 
                 if (securityCheckResult.getStatus() == ResultStatus.CANCELED) {
                     progressBar.setString(STATE_CANCEL);
                     progressBar.setBackground(UNKNOWN_COLOR);
-                } else
+                }
+                else
                     // progressbar can change its color only if not missing
                     // assertions or parameters
                     if (securityCheckResult.getStatus() == ResultStatus.FAILED) {
                         progressBar.setForeground(FAILED_COLOR);
-                    } else if (securityCheckResult.getStatus() == ResultStatus.OK) {
+                    }
+                    else if (securityCheckResult.getStatus() == ResultStatus.OK) {
                         SecurityScan securityScan = securityCheckResult.getSecurityScan();
                         if (securityScan.getAssertionCount() == 0) {
                             if (!progressBar.getForeground().equals(FAILED_COLOR)) {
@@ -236,9 +234,8 @@ public class ProgressBarSecurityTestStepAdapter {
                             progressBar.setString(STATE_MISSING_ASSERTIONS);
                         }
                         // or if there is no parameters.
-                        if (securityScan instanceof AbstractSecurityScanWithProperties
-                                && ((AbstractSecurityScanWithProperties) securityScan).getParameterHolder().getParameterList()
-                                .size() == 0) {
+                        if (securityScan instanceof AbstractSecurityScanWithProperties &&
+                            ((AbstractSecurityScanWithProperties)securityScan).getParameterHolder().getParameterList().size() == 0) {
                             if (!progressBar.getForeground().equals(FAILED_COLOR)) {
                                 progressBar.setForeground(MISSING_ASSERTION_COLOR);
                             }
@@ -249,20 +246,20 @@ public class ProgressBarSecurityTestStepAdapter {
 
                         // can not change to OK color if any of previous scans
                         // failed or missing assertions/parameters
-                        if (!progressBar.getForeground().equals(FAILED_COLOR)
-                                && !progressBar.getForeground().equals(MISSING_ASSERTION_COLOR)) {
+                        if (!progressBar.getForeground().equals(FAILED_COLOR) && !progressBar.getForeground().equals(MISSING_ASSERTION_COLOR)) {
                             progressBar.setForeground(OK_COLOR);
                         }
                     }
 
-                progressBar.setValue(((SecurityTestRunContext) runContext).getCurrentScanIndex() + 1);
-                ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
+                progressBar.setValue(runContext.getCurrentScanIndex() + 1);
+                ((DefaultTreeModel)tree.getModel()).nodeChanged(node);
             }
         }
 
         @Override
-        public void afterSecurityScanRequest(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                             SecurityScanRequestResult securityCheckReqResult) {
+        public void afterSecurityScanRequest(
+            TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScanRequestResult securityCheckReqResult
+        ) {
 
             if (securityCheckReqResult.getSecurityScan().getTestStep().getId().equals(testStep.getId())) {
                 if (securityCheckReqResult.getStatus() == ResultStatus.FAILED) {
@@ -270,12 +267,10 @@ public class ProgressBarSecurityTestStepAdapter {
                     counterLabel.setBackground(FAILED_COLOR);
                     totalAlertsCounter++;
                     counterLabel.setText(" " + totalAlertsCounter + " ");
-                    ((DefaultTreeModel) tree.getModel()).nodeChanged(node);
+                    ((DefaultTreeModel)tree.getModel()).nodeChanged(node);
                     progressBar.setForeground(FAILED_COLOR);
                 }
             }
         }
-
     }
-
 }

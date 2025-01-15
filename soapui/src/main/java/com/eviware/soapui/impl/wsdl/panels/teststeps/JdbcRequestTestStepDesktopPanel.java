@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps;
@@ -75,28 +75,11 @@ import org.apache.logging.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.annotation.Nonnull;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -110,32 +93,27 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcRequestTestStep> implements
-        SubmitListener {
+public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcRequestTestStep> implements SubmitListener {
+    public static final String QUERY_FIELD = "SQL Query";
+    protected static final String DRIVER_FIELD = "Driver";
+    protected static final String CONNSTR_FIELD = "Connection String";
+    protected static final String PASS_FIELD = "Password";
+    protected static final String STOREDPROCEDURE_FIELD = "Stored Procedure";
+    protected static final String DATA_CONNECTION_FIELD = "Connection";
+    protected static final String QUERY_ELEMENT = "query";
+    protected static final String STOREDPROCEDURE_ELEMENT = "stored-procedure";
     private final static Logger log = LogManager.getLogger(AbstractHttpRequestDesktopPanel.class);
     private final static MessageSupport messages = MessageSupport.getMessages(JdbcRequestTestStepDesktopPanel.class);
+    protected static final String RESULT_COLUMNS_NAMES_TO_UPPER_CASE = messages.get("JdbcRequestTestStepDesktopPanel.ResultColumnsToUpperCase.Name");
     protected JPanel configPanel;
-    private JButton addAssertionButton;
     protected JInspectorPanel inspectorPanel;
     protected JdbcRequestTestStep jdbcRequestTestStep;
     protected JComponentInspector<?> assertionInspector;
     protected AssertionsPanel assertionsPanel;
-    private InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
-    private InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
     protected JComponent requestEditor;
     protected ModelItemXmlEditor<?, ?> responseEditor;
     protected JPanel panel;
     protected SimpleForm configForm;
-    protected static final String DRIVER_FIELD = "Driver";
-    protected static final String CONNSTR_FIELD = "Connection String";
-    protected static final String PASS_FIELD = "Password";
-    public static final String QUERY_FIELD = "SQL Query";
-    protected static final String STOREDPROCEDURE_FIELD = "Stored Procedure";
-    protected static final String RESULT_COLUMNS_NAMES_TO_UPPER_CASE = messages.get("JdbcRequestTestStepDesktopPanel.ResultColumnsToUpperCase.Name");
-    protected static final String DATA_CONNECTION_FIELD = "Connection";
-
-    protected static final String QUERY_ELEMENT = "query";
-    protected static final String STOREDPROCEDURE_ELEMENT = "stored-procedure";
     protected Connection connection;
     protected RSyntaxTextArea queryArea;
     protected JCheckBox isStoredProcedureCheckBox;
@@ -144,9 +122,17 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
     protected JTextField connStrTextField;
     protected JButton testConnectionButton;
     protected JPasswordField passField;
+    protected JButton submitButton;
+    protected JComponent propertiesTableComponent;
+    protected JLogList logArea;
+    protected JButton reconfigureConnPropertiesButton;
+    protected PropertyHolderTable propertyHolderTable;
+    protected JdbcRequestTestStepConfig jdbcRequestTestStepConfig;
+    private JButton addAssertionButton;
+    private final InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
+    private final InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
     private Submit submit;
     private SubmitAction submitAction;
-    protected JButton submitButton;
     private JToggleButton tabsButton;
     private JTabbedPane requestTabs;
     private JPanel requestTabPanel;
@@ -155,13 +141,8 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
     private JEditorStatusBarWithProgress statusBar;
     private JButton cancelButton;
     private JButton splitButton;
-    protected JComponent propertiesTableComponent;
     private JComponentInspector<?> logInspector;
-    protected JLogList logArea;
     private long startTime;
-    protected JButton reconfigureConnPropertiesButton;
-    protected PropertyHolderTable propertyHolderTable;
-    protected JdbcRequestTestStepConfig jdbcRequestTestStepConfig;
 
     public JdbcRequestTestStepDesktopPanel(JdbcRequestTestStep modelItem) {
         super(modelItem);
@@ -209,7 +190,8 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
                         int ix = requestTabs.getSelectedIndex();
                         if (ix == 0) {
                             requestEditor.requestFocus();
-                        } else if (ix == 1 && responseEditor != null) {
+                        }
+                        else if (ix == 1 && responseEditor != null) {
                             responseEditor.requestFocus();
                         }
                     }
@@ -223,7 +205,8 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
             public void focusGained(FocusEvent e) {
                 if (requestTabs.getSelectedIndex() == 1 || responseHasFocus) {
                     responseEditor.requestFocusInWindow();
-                } else {
+                }
+                else {
                     requestEditor.requestFocusInWindow();
                 }
             }
@@ -242,7 +225,8 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
             splitButton.setEnabled(false);
 
             content = requestTabPanel;
-        } else {
+        }
+        else {
             requestSplitPane.setTopComponent(requestEditor);
             requestSplitPane.setBottomComponent(responseEditor);
             requestSplitPane.setDividerLocation(0.5);
@@ -255,8 +239,7 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         add(inspectorPanel.getComponent(), BorderLayout.CENTER);
         assertionsPanel = buildAssertionsPanel();
 
-        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions ("
-                + getModelItem().getAssertionCount() + ")", "Assertions for this Request", true);
+        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions (" + getModelItem().getAssertionCount() + ")", "Assertions for this Request", true);
 
         inspectorPanel.addInspector(assertionInspector);
         logInspector = new JComponentInspector<JComponent>(buildLogPanel(), "Request Log (0)", "Log of requests", true);
@@ -287,7 +270,6 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         split.setPreferredSize(new Dimension(330, 500));
 
         return new JScrollPane(split);
-
     }
 
     protected void initContent() {
@@ -305,7 +287,8 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
             public void focusGained(FocusEvent e) {
                 if (requestTabs.getSelectedIndex() == 1 || responseHasFocus) {
                     responseEditor.requestFocusInWindow();
-                } else {
+                }
+                else {
                     requestEditor.requestFocusInWindow();
                 }
             }
@@ -355,18 +338,16 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
     public void setPropertyHolderTable(StringToStringMap preparedProperties) {
         // first remove the old content
         String[] names = propertyHolderTable.getHolder().getPropertyNames();
-        if (names.length > 0) {
-            for (String propertyName : names) {
-                ((MutableTestPropertyHolder) propertyHolderTable.getHolder()).removeProperty(propertyName);
-            }
+        for (String propertyName : names) {
+            ((MutableTestPropertyHolder)propertyHolderTable.getHolder()).removeProperty(propertyName);
         }
         propertyHolderTable.getPropertiesTable().removeAll();
         if (preparedProperties != null) {
             int i = 0;
             for (String key : preparedProperties.keySet()) {
                 String value = preparedProperties.get(key);
-                ((MutableTestPropertyHolder) propertyHolderTable.getHolder()).addProperty(key);
-                ((MutableTestPropertyHolder) propertyHolderTable.getHolder()).setPropertyValue(key, value);
+                ((MutableTestPropertyHolder)propertyHolderTable.getHolder()).addProperty(key);
+                propertyHolderTable.getHolder().setPropertyValue(key, value);
                 i++;
             }
         }
@@ -386,7 +367,6 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         toolbar.add(splitButton);
         toolbar.addFixed(UISupport.createToolbarButton(new ShowOnlineHelpAction(HelpUrls.JDBCSTEPEDITOR_HELP_URL)));
         return toolbar;
-
     }
 
     public JdbcRequestTestStep getJdbcRequestTestStep() {
@@ -397,7 +377,8 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         if (configForm != null) {
             configForm.setComponentValue(QUERY_FIELD, query);
             jdbcRequestTestStep.setQuery(query);
-        } else {
+        }
+        else {
             // this.query = query;
             jdbcRequestTestStep.setQuery(query);
         }
@@ -418,12 +399,6 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
     protected AssertionsPanel buildAssertionsPanel() {
         return new JdbcAssertionsPanel(jdbcRequestTestStep) {
         };
-    }
-
-    protected class JdbcAssertionsPanel extends AssertionsPanel {
-        public JdbcAssertionsPanel(Assertable assertable) {
-            super(assertable);
-        }
     }
 
     protected void createSimpleJdbcConfigForm() {
@@ -470,10 +445,11 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
             }
         });
 
-        isStoredProcedureCheckBox = configForm.appendCheckBox(STOREDPROCEDURE_FIELD,
-                "Select if this is a stored procedure", jdbcRequestTestStep.isStoredProcedure());
+        isStoredProcedureCheckBox = configForm.appendCheckBox(STOREDPROCEDURE_FIELD, "Select if this is a stored procedure", jdbcRequestTestStep.isStoredProcedure());
         resultColumnsNamesToUpperCaseCheckBox = configForm.appendCheckBox(RESULT_COLUMNS_NAMES_TO_UPPER_CASE,
-                messages.get("JdbcRequestTestStepDesktopPanel.ResultColumnsToUpperCase.Description"), jdbcRequestTestStep.isConvertColumnNamesToUpperCase());
+                                                                          messages.get("JdbcRequestTestStepDesktopPanel.ResultColumnsToUpperCase.Description"),
+                                                                          jdbcRequestTestStep.isConvertColumnNamesToUpperCase()
+        );
     }
 
     protected void addPasswordDocumentListener() {
@@ -513,14 +489,13 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
     protected void addStoreProcedureChangeListener() {
         isStoredProcedureCheckBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent arg0) {
-                jdbcRequestTestStep.setStoredProcedure(((JCheckBox) arg0.getSource()).isSelected());
+                jdbcRequestTestStep.setStoredProcedure(((JCheckBox)arg0.getSource()).isSelected());
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
-                        if (UISupport.confirm("Would you like to empty current sql and properties?",
-                                "Reset query and properties")) {
+                        if (UISupport.confirm("Would you like to empty current sql and properties?", "Reset query and properties")) {
                             queryArea.setText("");
-                            ((JdbcRequestTestStep) getPropertyHolderTable().getHolder()).removeAllProperties();
+                            ((JdbcRequestTestStep)getPropertyHolderTable().getHolder()).removeAllProperties();
                         }
                     }
                 });
@@ -531,21 +506,22 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
     protected void addResultColumnsNamesToUpperCaseChangeListener() {
         resultColumnsNamesToUpperCaseCheckBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent arg0) {
-                jdbcRequestTestStep.setConvertColumnNamesToUpperCase(((JCheckBox) arg0.getSource()).isSelected());
+                jdbcRequestTestStep.setConvertColumnNamesToUpperCase(((JCheckBox)arg0.getSource()).isSelected());
             }
         });
     }
 
     protected boolean enableTestConnection() {
-        if (StringUtils.isNullOrEmpty(jdbcRequestTestStep.getDriver())
-                || StringUtils.isNullOrEmpty(jdbcRequestTestStep.getConnectionString())
-                || (JdbcRequestTestStep.isNeededPassword(jdbcRequestTestStep.getConnectionString()) && StringUtils
-                .isNullOrEmpty(jdbcRequestTestStep.getPassword()))) {
+        if (StringUtils.isNullOrEmpty(jdbcRequestTestStep.getDriver()) ||
+            StringUtils.isNullOrEmpty(jdbcRequestTestStep.getConnectionString()) ||
+            (JdbcRequestTestStep.isNeededPassword(jdbcRequestTestStep.getConnectionString()) && StringUtils.isNullOrEmpty(jdbcRequestTestStep.getPassword()))) {
             return false;
-        } else {
+        }
+        else {
             if (jdbcRequestTestStep.getConnectionString().contains(JdbcRequestTestStep.PASS_TEMPLATE)) {
                 return !StringUtils.isNullOrEmpty(jdbcRequestTestStep.getPassword());
-            } else {
+            }
+            else {
                 return true;
             }
         }
@@ -557,18 +533,6 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
 
     protected ModelItemXmlEditor<?, ?> buildResponseEditor() {
         return new JdbcResponseMessageEditor();
-    }
-
-    public class JdbcResponseMessageEditor extends ResponseMessageXmlEditor<JdbcRequestTestStep, JdbcResponseDocument> {
-        public JdbcResponseMessageEditor() {
-            super(new JdbcResponseDocument(), jdbcRequestTestStep);
-        }
-    }
-
-    public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == getModelItem() || modelItem == getModelItem().getTestCase()
-                || modelItem == getModelItem().getTestCase().getTestSuite()
-                || modelItem == getModelItem().getTestCase().getTestSuite().getProject();
     }
 
     public boolean onClose(boolean canCancel) {
@@ -586,106 +550,18 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         return release();
     }
 
-    public class JdbcResponseDocument extends AbstractXmlDocument implements PropertyChangeListener {
-        public JdbcResponseDocument() {
-            jdbcRequestTestStep.addPropertyChangeListener(JdbcRequestTestStep.RESPONSE_PROPERTY, this);
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            fireContentChanged();
-        }
-
-        @Override
-        public void setDocumentContent(DocumentContent documentContent) {
-            if (jdbcRequestTestStep.getJdbcRequest().getResponse() != null) {
-                jdbcRequestTestStep.getJdbcRequest().getResponse().setContentAsString(documentContent.getContentAsString());
-            }
-        }
-
-        @Override
-        public String getContentType() {
-            return null;
-        }
-
-        public void release() {
-            super.release();
-            jdbcRequestTestStep.removePropertyChangeListener(JdbcRequestTestStep.RESPONSE_PROPERTY, this);
-        }
-
-        @Nonnull
-        @Override
-        public DocumentContent getDocumentContent(Format format) {
-            JdbcResponse response = jdbcRequestTestStep.getJdbcRequest().getResponse();
-            return new DocumentContent(response == null ? null : response.getContentType(), response == null ? null : response.getContentAsString());
-        }
+    public boolean dependsOn(ModelItem modelItem) {
+        return modelItem == getModelItem() ||
+               modelItem == getModelItem().getTestCase() ||
+               modelItem == getModelItem().getTestCase().getTestSuite() ||
+               modelItem == getModelItem().getTestCase().getTestSuite().getProject();
     }
 
-    protected class TestConnectionAction extends AbstractAction {
-        public TestConnectionAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Test the current Connection");
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
 
-            setEnabled(false);
-        }
-
-        public void actionPerformed(ActionEvent arg0) {
-            try {
-
-                PropertyExpansionContext context = new DefaultPropertyExpansionContext(getModelItem());
-                JdbcUtils.initConnection(context, jdbcRequestTestStep.getDriver(),
-                        jdbcRequestTestStep.getConnectionString(), jdbcRequestTestStep.getPassword());
-                UISupport.showInfoMessage("The Connection Successfully Tested");
-            } catch (SoapUIException e) {
-                SoapUI.logError(e);
-                UISupport.showErrorMessage(e.toString());
-            } catch (SQLException e) {
-                SoapUI.logError(e);
-                UISupport.showErrorMessage("Can't get the Connection for specified properties; " + e.toString());
-            }
-        }
-    }
-
-    private class InternalTestMonitorListener extends TestMonitorListenerAdapter {
-        public void loadTestFinished(LoadTestRunner runner) {
-            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
-        }
-
-        public void loadTestStarted(LoadTestRunner runner) {
-            if (runner.getLoadTest().getTestCase() == getModelItem().getTestCase()) {
-                setEnabled(false);
-            }
-        }
-
-        public void securityTestFinished(SecurityTestRunner runner) {
-            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
-        }
-
-        public void securityTestStarted(SecurityTestRunner runner) {
-            if (runner.getSecurityTest().getTestCase() == getModelItem().getTestCase()) {
-                setEnabled(false);
-            }
-        }
-
-        public void testCaseFinished(TestCaseRunner runner) {
-            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
-        }
-
-        public void testCaseStarted(TestCaseRunner runner) {
-            if (runner.getTestCase() == getModelItem().getTestCase()) {
-                setEnabled(false);
-            }
-        }
-    }
-
-    public class SubmitAction extends AbstractAction {
-        public SubmitAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/submit_request.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Submit request to specified database");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("alt ENTER"));
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            onSubmit();
+        if (evt.getPropertyName().equals(JdbcRequestTestStep.STATUS_PROPERTY)) {
+            updateStatusIcon();
         }
     }
 
@@ -693,14 +569,16 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         if (submit != null && submit.getStatus() == Submit.Status.RUNNING) {
             if (UISupport.confirm("Cancel current request?", "Submit Request")) {
                 submit.cancel();
-            } else {
+            }
+            else {
                 return;
             }
         }
 
         try {
             submit = doSubmit();
-        } catch (SubmitException e1) {
+        }
+        catch (SubmitException e1) {
             SoapUI.logError(e1);
         }
     }
@@ -709,71 +587,12 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         return jdbcRequestTestStep.getJdbcRequest().submit(new WsdlTestRunContext(getModelItem()), true);
     }
 
-    private final class ChangeToTabsAction extends AbstractAction {
-        public ChangeToTabsAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/toggle_tabs.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Toggles to tab-based layout");
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (splitButton.isEnabled()) {
-                splitButton.setEnabled(false);
-                removeContent(requestSplitPane);
-                setContent(requestTabPanel);
-                requestTabs.addTab("Request", requestEditor);
-
-                if (responseEditor != null) {
-                    requestTabs.addTab("Response", responseEditor);
-                }
-
-                if (responseHasFocus) {
-                    requestTabs.setSelectedIndex(1);
-                    requestEditor.requestFocus();
-                }
-                requestTabs.repaint();
-            } else {
-                int selectedIndex = requestTabs.getSelectedIndex();
-
-                splitButton.setEnabled(true);
-                removeContent(requestTabPanel);
-                setContent(requestSplitPane);
-                requestSplitPane.setTopComponent(requestEditor);
-                if (responseEditor != null) {
-                    requestSplitPane.setBottomComponent(responseEditor);
-                }
-                requestSplitPane.setDividerLocation(0.5);
-
-                if (selectedIndex == 0 || responseEditor == null) {
-                    requestEditor.requestFocus();
-                } else {
-                    responseEditor.requestFocus();
-                }
-                requestSplitPane.repaint();
-            }
-
-            revalidate();
-        }
-    }
-
     public void setContent(JComponent content) {
         inspectorPanel.setContentComponent(content);
     }
 
     public void removeContent(JComponent content) {
         inspectorPanel.setContentComponent(null);
-    }
-
-    private class CancelAction extends AbstractAction {
-        public CancelAction() {
-            super();
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/cancel_request.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Aborts ongoing request");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("alt X"));
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            onCancel();
-        }
     }
 
     protected void onCancel() {
@@ -806,13 +625,30 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         statusBar.setIndeterminate(!enabled);
     }
 
+    protected void logMessages(String message, String infoMessage) {
+        log.info(infoMessage);
+        statusBar.setInfo(message);
+        logArea.addLine(DateUtil.formatFull(new Date(startTime)) + " - " + message);
+    }
+
+    public boolean beforeSubmit(Submit submit, SubmitContext context) {
+        if (submit.getRequest() != jdbcRequestTestStep.getJdbcRequest()) {
+            return true;
+        }
+
+        setEnabled(false);
+        cancelButton.setEnabled(this.submit != null);
+        startTime = System.currentTimeMillis();
+        return true;
+    }
+
     public void afterSubmit(Submit submit, SubmitContext context) {
         if (submit.getRequest() != jdbcRequestTestStep.getJdbcRequest()) {
             return;
         }
 
         Status status = submit.getStatus();
-        JdbcResponse response = (JdbcResponse) submit.getResponse();
+        JdbcResponse response = (JdbcResponse)submit.getResponse();
         if (status == Status.FINISHED) {
             jdbcRequestTestStep.setResponse(response, context);
         }
@@ -828,15 +664,16 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
         if (status == Status.CANCELED) {
             message = "CANCELED";
             infoMessage = "[" + requestName + "] - CANCELED";
-        } else {
+        }
+        else {
             if (status == Status.ERROR || response == null) {
                 message = "Error getting response; " + submit.getError();
                 infoMessage = "Error getting response for [" + requestName + "]; " + submit.getError();
-            } else {
+            }
+            else {
                 message = "response time: " + response.getTimeTaken() + "ms (" + response.getContentLength() + " bytes)";
-                infoMessage = "Got response for [" + requestName + "] in " + response.getTimeTaken() + "ms ("
-                        + response.getContentLength() + " bytes)";
-                rawSql = ((JdbcSubmit) submit).getRawSql();
+                infoMessage = "Got response for [" + requestName + "] in " + response.getTimeTaken() + "ms (" + response.getContentLength() + " bytes)";
+                rawSql = ((JdbcSubmit)submit).getRawSql();
 
                 if (!splitButton.isEnabled()) {
                     requestTabs.setSelectedIndex(1);
@@ -854,48 +691,9 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
             responseEditor.getSourceEditor().validate();
         }
 
-        JdbcRequestTestStepDesktopPanel.this.submit = null;
+        this.submit = null;
 
         updateStatusIcon();
-    }
-
-    protected void logMessages(String message, String infoMessage) {
-        log.info(infoMessage);
-        statusBar.setInfo(message);
-        logArea.addLine(DateUtil.formatFull(new Date(startTime)) + " - " + message);
-    }
-
-    public boolean beforeSubmit(Submit submit, SubmitContext context) {
-        if (submit.getRequest() != jdbcRequestTestStep.getJdbcRequest()) {
-            return true;
-        }
-
-        setEnabled(false);
-        cancelButton.setEnabled(JdbcRequestTestStepDesktopPanel.this.submit != null);
-        startTime = System.currentTimeMillis();
-        return true;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        super.propertyChange(evt);
-
-        if (evt.getPropertyName().equals(JdbcRequestTestStep.STATUS_PROPERTY)) {
-            updateStatusIcon();
-        }
-    }
-
-    private final class InternalAssertionsListener implements AssertionsListener {
-        public void assertionAdded(TestAssertion assertion) {
-            assertionInspector.setTitle("Assertions (" + getModelItem().getAssertionCount() + ")");
-        }
-
-        public void assertionRemoved(TestAssertion assertion) {
-            assertionInspector.setTitle("Assertions (" + getModelItem().getAssertionCount() + ")");
-        }
-
-        public void assertionMoved(TestAssertion assertion, int ix, int offset) {
-            assertionInspector.setTitle("Assertions (" + getModelItem().getAssertionCount() + ")");
-        }
     }
 
     private void updateStatusIcon() {
@@ -915,6 +713,196 @@ public class JdbcRequestTestStepDesktopPanel extends ModelItemDesktopPanel<JdbcR
                 inspectorPanel.deactivate();
                 break;
             }
+        }
+    }
+
+    protected class JdbcAssertionsPanel extends AssertionsPanel {
+        public JdbcAssertionsPanel(Assertable assertable) {
+            super(assertable);
+        }
+    }
+
+    public class JdbcResponseMessageEditor extends ResponseMessageXmlEditor<JdbcRequestTestStep, JdbcResponseDocument> {
+        public JdbcResponseMessageEditor() {
+            super(new JdbcResponseDocument(), jdbcRequestTestStep);
+        }
+    }
+
+    public class JdbcResponseDocument extends AbstractXmlDocument implements PropertyChangeListener {
+        public JdbcResponseDocument() {
+            jdbcRequestTestStep.addPropertyChangeListener(JdbcRequestTestStep.RESPONSE_PROPERTY, this);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            fireContentChanged();
+        }
+
+        public void release() {
+            super.release();
+            jdbcRequestTestStep.removePropertyChangeListener(JdbcRequestTestStep.RESPONSE_PROPERTY, this);
+        }
+
+        @Override
+        public String getContentType() {
+            return null;
+        }
+
+        @Nonnull
+        @Override
+        public DocumentContent getDocumentContent(Format format) {
+            JdbcResponse response = jdbcRequestTestStep.getJdbcRequest().getResponse();
+            return new DocumentContent(response == null ? null : response.getContentType(), response == null ? null : response.getContentAsString());
+        }
+
+        @Override
+        public void setDocumentContent(DocumentContent documentContent) {
+            if (jdbcRequestTestStep.getJdbcRequest().getResponse() != null) {
+                jdbcRequestTestStep.getJdbcRequest().getResponse().setContentAsString(documentContent.getContentAsString());
+            }
+        }
+    }
+
+    protected class TestConnectionAction extends AbstractAction {
+        public TestConnectionAction() {
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Test the current Connection");
+
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent arg0) {
+            try {
+
+                PropertyExpansionContext context = new DefaultPropertyExpansionContext(getModelItem());
+                JdbcUtils.initConnection(context, jdbcRequestTestStep.getDriver(), jdbcRequestTestStep.getConnectionString(), jdbcRequestTestStep.getPassword());
+                UISupport.showInfoMessage("The Connection Successfully Tested");
+            }
+            catch (SoapUIException e) {
+                SoapUI.logError(e);
+                UISupport.showErrorMessage(e.toString());
+            }
+            catch (SQLException e) {
+                SoapUI.logError(e);
+                UISupport.showErrorMessage("Can't get the Connection for specified properties; " + e);
+            }
+        }
+    }
+
+    private class InternalTestMonitorListener extends TestMonitorListenerAdapter {
+        public void loadTestStarted(LoadTestRunner runner) {
+            if (runner.getLoadTest().getTestCase() == getModelItem().getTestCase()) {
+                setEnabled(false);
+            }
+        }
+
+        public void loadTestFinished(LoadTestRunner runner) {
+            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
+        }
+
+        public void securityTestStarted(SecurityTestRunner runner) {
+            if (runner.getSecurityTest().getTestCase() == getModelItem().getTestCase()) {
+                setEnabled(false);
+            }
+        }
+
+        public void securityTestFinished(SecurityTestRunner runner) {
+            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
+        }
+
+        public void testCaseStarted(TestCaseRunner runner) {
+            if (runner.getTestCase() == getModelItem().getTestCase()) {
+                setEnabled(false);
+            }
+        }
+
+        public void testCaseFinished(TestCaseRunner runner) {
+            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
+        }
+    }
+
+    public class SubmitAction extends AbstractAction {
+        public SubmitAction() {
+            putValue(SMALL_ICON, UISupport.createImageIcon("/submit_request.gif"));
+            putValue(SHORT_DESCRIPTION, "Submit request to specified database");
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("alt ENTER"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            onSubmit();
+        }
+    }
+
+    private final class ChangeToTabsAction extends AbstractAction {
+        public ChangeToTabsAction() {
+            putValue(SMALL_ICON, UISupport.createImageIcon("/toggle_tabs.gif"));
+            putValue(SHORT_DESCRIPTION, "Toggles to tab-based layout");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (splitButton.isEnabled()) {
+                splitButton.setEnabled(false);
+                removeContent(requestSplitPane);
+                setContent(requestTabPanel);
+                requestTabs.addTab("Request", requestEditor);
+
+                if (responseEditor != null) {
+                    requestTabs.addTab("Response", responseEditor);
+                }
+
+                if (responseHasFocus) {
+                    requestTabs.setSelectedIndex(1);
+                    requestEditor.requestFocus();
+                }
+                requestTabs.repaint();
+            }
+            else {
+                int selectedIndex = requestTabs.getSelectedIndex();
+
+                splitButton.setEnabled(true);
+                removeContent(requestTabPanel);
+                setContent(requestSplitPane);
+                requestSplitPane.setTopComponent(requestEditor);
+                if (responseEditor != null) {
+                    requestSplitPane.setBottomComponent(responseEditor);
+                }
+                requestSplitPane.setDividerLocation(0.5);
+
+                if (selectedIndex == 0 || responseEditor == null) {
+                    requestEditor.requestFocus();
+                }
+                else {
+                    responseEditor.requestFocus();
+                }
+                requestSplitPane.repaint();
+            }
+
+            revalidate();
+        }
+    }
+
+    private class CancelAction extends AbstractAction {
+        public CancelAction() {
+            putValue(SMALL_ICON, UISupport.createImageIcon("/cancel_request.png"));
+            putValue(SHORT_DESCRIPTION, "Aborts ongoing request");
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("alt X"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            onCancel();
+        }
+    }
+
+    private final class InternalAssertionsListener implements AssertionsListener {
+        public void assertionAdded(TestAssertion assertion) {
+            assertionInspector.setTitle("Assertions (" + getModelItem().getAssertionCount() + ")");
+        }
+
+        public void assertionRemoved(TestAssertion assertion) {
+            assertionInspector.setTitle("Assertions (" + getModelItem().getAssertionCount() + ")");
+        }
+
+        public void assertionMoved(TestAssertion assertion, int ix, int offset) {
+            assertionInspector.setTitle("Assertions (" + getModelItem().getAssertionCount() + ")");
         }
     }
 }

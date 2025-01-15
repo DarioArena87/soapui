@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.dnd.handlers;
@@ -23,8 +23,7 @@ import com.eviware.soapui.support.dnd.ModelItemDropHandler;
 
 import java.awt.dnd.DnDConstants;
 
-public abstract class AbstractModelItemDropHandler<T1 extends ModelItem, T2 extends ModelItem> implements
-        ModelItemDropHandler<ModelItem> {
+public abstract class AbstractModelItemDropHandler<T1 extends ModelItem, T2 extends ModelItem> implements ModelItemDropHandler<ModelItem> {
     private final Class<T1> sourceClass;
     private final Class<T2> targetClass;
 
@@ -37,8 +36,8 @@ public abstract class AbstractModelItemDropHandler<T1 extends ModelItem, T2 exte
     public boolean canDrop(ModelItem source, ModelItem target, int dropAction, int dropType) {
         try {
             if (sourceClass.isAssignableFrom(source.getClass()) && targetClass.isAssignableFrom(target.getClass())) {
-                T1 sourceItem = (T1) source;
-                T2 targetItem = (T2) target;
+                T1 sourceItem = (T1)source;
+                T2 targetItem = (T2)target;
 
                 // System.out.println( "in canDrop for " +
                 // sourceItem.getClass().getName() + " to "
@@ -52,11 +51,58 @@ public abstract class AbstractModelItemDropHandler<T1 extends ModelItem, T2 exte
                     return canMove(sourceItem, targetItem, dropType);
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public boolean drop(ModelItem source, ModelItem target, int dropAction, int dropType) {
+        try {
+            if (sourceClass.isAssignableFrom(source.getClass()) && targetClass.isAssignableFrom(target.getClass())) {
+                T1 sourceItem = (T1)source;
+                T2 targetItem = (T2)target;
+
+                if ((dropAction & DnDConstants.ACTION_COPY) != 0 && canCopy(sourceItem, targetItem, dropType)) {
+                    return copy(sourceItem, targetItem, dropType);
+                }
+
+                if ((dropAction & DnDConstants.ACTION_MOVE) != 0 && canMove(sourceItem, targetItem, dropType)) {
+                    return move(sourceItem, targetItem, dropType);
+                }
+            }
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    public String getDropInfo(ModelItem source, ModelItem target, int dropAction, int dropType) {
+        try {
+            if (sourceClass.isAssignableFrom(source.getClass()) && targetClass.isAssignableFrom(target.getClass())) {
+                T1 sourceItem = (T1)source;
+                T2 targetItem = (T2)target;
+
+                if ((dropAction & DnDConstants.ACTION_COPY) != 0) {
+                    return getCopyInfo(sourceItem, targetItem, dropType);
+                }
+
+                if ((dropAction & DnDConstants.ACTION_MOVE) != 0) {
+                    return getMoveInfo(sourceItem, targetItem, dropType);
+                }
+            }
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+
+        return null;
     }
 
     private boolean canMove(T1 sourceItem, T2 targetItem, int dropType) {
@@ -121,28 +167,6 @@ public abstract class AbstractModelItemDropHandler<T1 extends ModelItem, T2 exte
 
     abstract String getMoveAfterInfo(T1 source, T2 target);
 
-    @SuppressWarnings("unchecked")
-    public String getDropInfo(ModelItem source, ModelItem target, int dropAction, int dropType) {
-        try {
-            if (sourceClass.isAssignableFrom(source.getClass()) && targetClass.isAssignableFrom(target.getClass())) {
-                T1 sourceItem = (T1) source;
-                T2 targetItem = (T2) target;
-
-                if ((dropAction & DnDConstants.ACTION_COPY) != 0) {
-                    return getCopyInfo(sourceItem, targetItem, dropType);
-                }
-
-                if ((dropAction & DnDConstants.ACTION_MOVE) != 0) {
-                    return getMoveInfo(sourceItem, targetItem, dropType);
-                }
-            }
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
-
-        return null;
-    }
-
     private String getMoveInfo(T1 sourceItem, T2 targetItem, int dropType) {
         switch (dropType) {
             case DropType.BEFORE:
@@ -167,28 +191,6 @@ public abstract class AbstractModelItemDropHandler<T1 extends ModelItem, T2 exte
         }
 
         return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    public boolean drop(ModelItem source, ModelItem target, int dropAction, int dropType) {
-        try {
-            if (sourceClass.isAssignableFrom(source.getClass()) && targetClass.isAssignableFrom(target.getClass())) {
-                T1 sourceItem = (T1) source;
-                T2 targetItem = (T2) target;
-
-                if ((dropAction & DnDConstants.ACTION_COPY) != 0 && canCopy(sourceItem, targetItem, dropType)) {
-                    return copy(sourceItem, targetItem, dropType);
-                }
-
-                if ((dropAction & DnDConstants.ACTION_MOVE) != 0 && canMove(sourceItem, targetItem, dropType)) {
-                    return move(sourceItem, targetItem, dropType);
-                }
-            }
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
-
-        return false;
     }
 
     private boolean move(T1 sourceItem, T2 targetItem, int dropType) {
@@ -216,5 +218,4 @@ public abstract class AbstractModelItemDropHandler<T1 extends ModelItem, T2 exte
 
         return false;
     }
-
 }

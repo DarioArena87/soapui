@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.jms.property;
@@ -47,9 +47,7 @@ public class JMSHeaderAndPropertyInspectorFactory implements RequestInspectorFac
 
     public EditorInspector<?> createRequestInspector(Editor<?> editor, ModelItem modelItem) {
         if (modelItem instanceof MessageExchangeModelItem) {
-            JMSHeaderAndPropertyInspector inspector = new JMSHeaderAndPropertyInspector(
-                    (JMSHeaderAndPropertyInspectorModel) new MessageExchangeRequestJMSHeaderAndPropertiesModel(
-                            (MessageExchangeModelItem) modelItem));
+            JMSHeaderAndPropertyInspector inspector = new JMSHeaderAndPropertyInspector(new MessageExchangeRequestJMSHeaderAndPropertiesModel((MessageExchangeModelItem)modelItem));
             inspector.setEnabled(JMSUtils.checkIfJMS(modelItem));
             return inspector;
         }
@@ -59,41 +57,29 @@ public class JMSHeaderAndPropertyInspectorFactory implements RequestInspectorFac
     public EditorInspector<?> createResponseInspector(Editor<?> editor, ModelItem modelItem) {
 
         if (modelItem instanceof AbstractHttpRequest<?>) {
-            JMSHeaderAndPropertyInspector inspector = new JMSHeaderAndPropertyInspector(
-                    (JMSHeaderAndPropertyInspectorModel) new ResponseJMSHeaderAndPropertiesModel(
-                            (AbstractHttpRequest<?>) modelItem));
+            JMSHeaderAndPropertyInspector inspector = new JMSHeaderAndPropertyInspector(new ResponseJMSHeaderAndPropertiesModel((AbstractHttpRequest<?>)modelItem));
             inspector.setEnabled(JMSUtils.checkIfJMS(modelItem));
             return inspector;
-        } else if (modelItem instanceof MessageExchangeModelItem) {
+        }
+        else if (modelItem instanceof MessageExchangeModelItem) {
 
-            JMSHeaderAndPropertyInspector inspector = new JMSHeaderAndPropertyInspector(
-                    (JMSHeaderAndPropertyInspectorModel) new MessageExchangeResponseJMSHeaderAndPropertiesModel(
-                            (MessageExchangeModelItem) modelItem));
+            JMSHeaderAndPropertyInspector inspector = new JMSHeaderAndPropertyInspector(new MessageExchangeResponseJMSHeaderAndPropertiesModel((MessageExchangeModelItem)modelItem));
             inspector.setEnabled(JMSUtils.checkIfJMS(modelItem));
             return inspector;
-
         }
         return null;
     }
 
-    private class ResponseJMSHeaderAndPropertiesModel extends AbstractJMSHeaderAndPropertyModel<AbstractHttpRequest<?>>
-            implements SubmitListener {
+    private class ResponseJMSHeaderAndPropertiesModel extends AbstractJMSHeaderAndPropertyModel<AbstractHttpRequest<?>> implements SubmitListener {
         AbstractHttpRequest<?> request;
         JMSHeaderAndPropertyInspector inspector;
         StringToStringMap headersAndProperties;
 
         public ResponseJMSHeaderAndPropertiesModel(AbstractHttpRequest<?> wsdlRequest) {
             super(true, wsdlRequest, "jmsHeaderAndProperties");
-            this.request = wsdlRequest;
+            request = wsdlRequest;
             request.addSubmitListener(this);
             request.addPropertyChangeListener(this);
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (request.getEndpoint() != null && evt.getPropertyName().equals(AbstractHttpRequest.ENDPOINT_PROPERTY)) {
-                inspector.setEnabled(request.getEndpoint().startsWith(JMSEndpoint.JMS_ENDPOINT_PREFIX));
-            }
-            super.propertyChange(evt);
         }
 
         public void release() {
@@ -103,13 +89,28 @@ public class JMSHeaderAndPropertyInspectorFactory implements RequestInspectorFac
             request.removePropertyChangeListener(this);
         }
 
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (request.getEndpoint() != null && evt.getPropertyName().equals(AbstractHttpRequest.ENDPOINT_PROPERTY)) {
+                inspector.setEnabled(request.getEndpoint().startsWith(JMSEndpoint.JMS_ENDPOINT_PREFIX));
+            }
+            super.propertyChange(evt);
+        }
+
         public StringToStringMap getJMSHeadersAndProperties() {
             return headersAndProperties;
         }
 
+        public void setInspector(JMSHeaderAndPropertyInspector inspector) {
+            this.inspector = inspector;
+        }
+
+        public boolean beforeSubmit(Submit submit, SubmitContext context) {
+            return true;
+        }
+
         public void afterSubmit(Submit submit, SubmitContext context) {
             headersAndProperties = new StringToStringMap();
-            JMSResponse jmsResponse = (JMSResponse) context.getProperty(HermesJmsRequestTransport.JMS_RESPONSE);
+            JMSResponse jmsResponse = (JMSResponse)context.getProperty(HermesJmsRequestTransport.JMS_RESPONSE);
             if (jmsResponse instanceof JMSResponse) {
                 Message message = jmsResponse.getMessageReceive();
                 if (message != null) {
@@ -118,20 +119,9 @@ public class JMSHeaderAndPropertyInspectorFactory implements RequestInspectorFac
             }
             inspector.getHeadersTableModel().setData(headersAndProperties);
         }
-
-        public boolean beforeSubmit(Submit submit, SubmitContext context) {
-            return true;
-        }
-
-        public void setInspector(JMSHeaderAndPropertyInspector inspector) {
-            this.inspector = inspector;
-        }
     }
 
-    private class MessageExchangeResponseJMSHeaderAndPropertiesModel extends
-            AbstractJMSHeaderAndPropertyModel<MessageExchangeModelItem>
-
-    {
+    private class MessageExchangeResponseJMSHeaderAndPropertiesModel extends AbstractJMSHeaderAndPropertyModel<MessageExchangeModelItem> {
         @SuppressWarnings("unused")
         MessageExchangeModelItem messageExchangeModelItem;
         @SuppressWarnings("unused")
@@ -146,7 +136,8 @@ public class JMSHeaderAndPropertyInspectorFactory implements RequestInspectorFac
             MessageExchange messageExchange = getModelItem().getMessageExchange();
             if (messageExchange != null) {
                 return messageExchange.getResponseHeaders().toStringToStringMap();
-            } else {
+            }
+            else {
                 return new StringToStringMap();
             }
         }
@@ -154,13 +145,9 @@ public class JMSHeaderAndPropertyInspectorFactory implements RequestInspectorFac
         public void setInspector(JMSHeaderAndPropertyInspector inspector) {
             this.inspector = inspector;
         }
-
     }
 
-    private class MessageExchangeRequestJMSHeaderAndPropertiesModel extends
-            AbstractJMSHeaderAndPropertyModel<MessageExchangeModelItem>
-
-    {
+    private class MessageExchangeRequestJMSHeaderAndPropertiesModel extends AbstractJMSHeaderAndPropertyModel<MessageExchangeModelItem> {
         @SuppressWarnings("unused")
         MessageExchangeModelItem messageExchangeModelItem;
         @SuppressWarnings("unused")
@@ -175,7 +162,8 @@ public class JMSHeaderAndPropertyInspectorFactory implements RequestInspectorFac
             MessageExchange messageExchange = getModelItem().getMessageExchange();
             if (messageExchange != null && messageExchange.getRequestHeaders() != null) {
                 return messageExchange.getRequestHeaders().toStringToStringMap();
-            } else {
+            }
+            else {
                 return new StringToStringMap();
             }
         }
@@ -183,7 +171,5 @@ public class JMSHeaderAndPropertyInspectorFactory implements RequestInspectorFac
         public void setInspector(JMSHeaderAndPropertyInspector inspector) {
             this.inspector = inspector;
         }
-
     }
-
 }

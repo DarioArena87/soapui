@@ -56,10 +56,9 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
     public static final int NORMAL_TERMINATION = 0;
     public static final int ABNORMAL_TERMINATION = -1;
     public static final int PROJECT_NOT_FOUND_EXIT_CODE = 1;
-
+    protected final Logger log = LogManager.getLogger(getClass());
     private boolean groovyLogInitialized;
     private String projectFile;
-    protected final Logger log = LogManager.getLogger(getClass());
     private String settingsFile;
     private String soapUISettingsPassword;
     private String projectPassword;
@@ -68,7 +67,7 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
     private boolean enableUI;
     private String outputFolder;
     private String[] projectProperties;
-    private Map<String, String> runnerGlobalProperties = new HashMap<String, String>();
+    private final Map<String, String> runnerGlobalProperties = new HashMap<String, String>();
 
     public AbstractSoapUIRunner(String title) {
         if (title != null) {
@@ -92,7 +91,7 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
      */
     protected void ensureConsoleAppenderIsDefined(Logger logger) {
         if (logger != null) {
-            Map<String, Appender> appenderMap = ((org.apache.logging.log4j.core.Logger) logger).getAppenders();
+            Map<String, Appender> appenderMap = ((org.apache.logging.log4j.core.Logger)logger).getAppenders();
             for (Map.Entry<String, Appender> appenderEntry : appenderMap.entrySet()) {
                 if (appenderEntry.getValue() instanceof ConsoleAppender) {
                     return;
@@ -109,7 +108,7 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
      *
      * @param args the commandline arguments to the runner
      * @return status code to be used with System.exit()
-     * @see java.lang.System
+     * @see System
      */
     public int runFromCommandLine(String[] args) {
         if (validateCommandLineArgument(args)) {
@@ -118,7 +117,9 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
 
         if (exitCode == NORMAL_TERMINATION) {
             return exitCode;
-        } else if (exitCode != PROJECT_NOT_FOUND_EXIT_CODE) { // none of other errors are specially handled thus for backward compatibility we have to keep ABNORMAL_TERMINATION for all errors except "file not found"
+        }
+        else if (exitCode !=
+                 PROJECT_NOT_FOUND_EXIT_CODE) { // none of other errors are specially handled thus for backward compatibility we have to keep ABNORMAL_TERMINATION for all errors except "file not found"
             exitCode = ABNORMAL_TERMINATION;
         }
 
@@ -129,7 +130,8 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
         boolean commandLineArgumentsAreValid = false;
         try {
             commandLineArgumentsAreValid = initFromCommandLine(args, true);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error(e);
             SoapUI.logError(e);
         }
@@ -141,14 +143,15 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
      *
      * @param args the command line arguments to be passed to the testrunner
      * @return status code to be used with System.exit()
-     * @see java.lang.System
+     * @see System
      */
     public int run(String[] args) {
         try {
             if (run()) {
                 return NORMAL_TERMINATION;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error(e);
             SoapUI.logError(e);
         }
@@ -160,7 +163,6 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
 
         CommandLineParser parser = new PosixParser();
         CommandLine cmd = parser.parse(options, args);
-
 
         if (requiresProjectArgument(cmd)) {
             args = cmd.getArgs();
@@ -180,12 +182,12 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
             try {
                 // Works for local and network files like "\\Server\Projects\Project.xml"
                 projectFileExists = Files.exists(Paths.get(projectFile));
-            } catch (InvalidPathException e) {
+            }
+            catch (InvalidPathException e) {
                 //no action required
             }
-            if (projectFileExists == false) {
-                System.err.println(String.format("The specified project file '%s' doesn't exist.",
-                        projectFile));
+            if (!projectFileExists) {
+                System.err.printf("The specified project file '%s' doesn't exist.%n", projectFile);
                 exitCode = PROJECT_NOT_FOUND_EXIT_CODE;
                 return false;
             }
@@ -226,7 +228,8 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
 
         try {
             return runRunner();
-        } finally {
+        }
+        finally {
             state.restore();
         }
     }
@@ -238,7 +241,8 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
             core.prepareUI();
             UISupport.setMainFrame(null);
             return core;
-        } else {
+        }
+        else {
             return new DefaultSoapUICore(null, settingsFile, soapUISettingsPassword);
         }
     }
@@ -273,10 +277,6 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
         return settingsFile;
     }
 
-    public void setOutputFolder(String outputFolder) {
-        this.outputFolder = outputFolder;
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -284,7 +284,55 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
      */
     @Override
     public String getOutputFolder() {
-        return this.outputFolder;
+        return outputFolder;
+    }
+
+    public void setOutputFolder(String outputFolder) {
+        this.outputFolder = outputFolder;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.tools.CmdLineRunner#getLog()
+     */
+    @Override
+    public Logger getLog() {
+        return log;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.tools.CmdLineRunner#getProjectProperties()
+     */
+    @Override
+    public String[] getProjectProperties() {
+        return projectProperties;
+    }
+
+    public void setProjectProperties(String[] projectProperties) {
+        this.projectProperties = projectProperties;
+    }
+
+    /**
+     * Sets the SoapUI settings file containing the tests to run
+     *
+     * @param settingsFile the SoapUI settings file to use
+     */
+
+    public void setSettingsFile(String settingsFile) {
+        this.settingsFile = settingsFile;
+    }
+
+    /**
+     * Sets the SoapUI project file containing the tests to run
+     *
+     * @param projectFile the SoapUI project file containing the tests to run
+     */
+
+    public void setProjectFile(String projectFile) {
+        this.projectFile = projectFile;
     }
 
     public String getAbsoluteOutputFolder(ModelItem modelItem) {
@@ -292,7 +340,8 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
 
         if (StringUtils.isNullOrEmpty(folder)) {
             folder = PathUtils.getExpandedResourceRoot(modelItem);
-        } else if (PathUtils.isRelativePath(folder)) {
+        }
+        else if (PathUtils.isRelativePath(folder)) {
             folder = PathUtils.resolveResourcePath(folder, modelItem);
         }
 
@@ -331,42 +380,6 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
         File folder = new File(path);
         if (!folder.exists() || !folder.isDirectory()) {
             folder.mkdirs();
-        }
-    }
-
-    /**
-     * Sets the SoapUI project file containing the tests to run
-     *
-     * @param projectFile the SoapUI project file containing the tests to run
-     */
-
-    public void setProjectFile(String projectFile) {
-        this.projectFile = projectFile;
-    }
-
-    /**
-     * Sets the SoapUI settings file containing the tests to run
-     *
-     * @param settingsFile the SoapUI settings file to use
-     */
-
-    public void setSettingsFile(String settingsFile) {
-        this.settingsFile = settingsFile;
-    }
-
-    public void setEnableUI(boolean enableUI) {
-        this.enableUI = enableUI;
-    }
-
-    public static class SoapUIOptions extends Options {
-        private final String runnerName;
-
-        public SoapUIOptions(String runnerName) {
-            this.runnerName = runnerName;
-        }
-
-        public String getRunnerName() {
-            return runnerName;
         }
     }
 
@@ -415,30 +428,6 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
         }
     }
 
-    public void setProjectProperties(String[] projectProperties) {
-        this.projectProperties = projectProperties;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.eviware.soapui.tools.CmdLineRunner#getLog()
-     */
-    @Override
-    public Logger getLog() {
-        return log;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.eviware.soapui.tools.CmdLineRunner#getProjectProperties()
-     */
-    @Override
-    public String[] getProjectProperties() {
-        return projectProperties;
-    }
-
     protected void initProjectProperties(WsdlProject project) {
         if (projectProperties != null) {
             for (String option : projectProperties) {
@@ -457,11 +446,27 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
         return enableUI;
     }
 
+    public void setEnableUI(boolean enableUI) {
+        this.enableUI = enableUI;
+    }
+
     public String getProjectPassword() {
         return projectPassword;
     }
 
     public void setProjectPassword(String projectPassword) {
         this.projectPassword = projectPassword;
+    }
+
+    public static class SoapUIOptions extends Options {
+        private final String runnerName;
+
+        public SoapUIOptions(String runnerName) {
+            this.runnerName = runnerName;
+        }
+
+        public String getRunnerName() {
+            return runnerName;
+        }
     }
 }

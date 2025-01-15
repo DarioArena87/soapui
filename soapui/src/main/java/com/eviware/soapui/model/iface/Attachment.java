@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.iface;
@@ -25,39 +25,45 @@ import java.io.InputStream;
  */
 
 public interface Attachment {
-    public String getName();
+    String getName();
 
-    public String getContentType();
+    String getContentType();
 
-    public void setContentType(String contentType);
+    void setContentType(String contentType);
 
-    public long getSize();
+    long getSize();
 
-    public String getPart();
+    String getPart();
 
-    public void setPart(String part);
+    void setPart(String part);
 
-    public InputStream getInputStream() throws Exception;
+    InputStream getInputStream() throws Exception;
 
-    public String getUrl();
+    String getUrl();
 
-    public boolean isCached();
+    boolean isCached();
 
-    public AttachmentType getAttachmentType();
+    AttachmentType getAttachmentType();
 
-    public enum AttachmentType {
-        MIME, XOP, CONTENT, SWAREF, UNKNOWN
+    String getContentID();
+
+    AttachmentEncoding getEncoding();
+
+    String getContentEncoding();
+
+    String getId();
+
+    enum AttachmentType {
+        MIME,
+        XOP,
+        CONTENT,
+        SWAREF,
+        UNKNOWN
     }
 
-    public String getContentID();
-
-    public enum AttachmentEncoding {
-        BASE64, HEX, NONE
+    enum AttachmentEncoding {
+        BASE64,
+        HEX,
+        NONE
     }
-
-    public AttachmentEncoding getEncoding();
-
-    public String getContentEncoding();
-
-    public String getId();
 }

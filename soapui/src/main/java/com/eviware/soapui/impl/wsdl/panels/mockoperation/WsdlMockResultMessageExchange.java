@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.mockoperation;
@@ -50,17 +50,43 @@ public class WsdlMockResultMessageExchange extends AbstractWsdlMessageExchange<M
         return mockResponse == null ? mockResult.getMockOperation() : mockResponse;
     }
 
-    public String getEndpoint() {
-        return mockResult.getMockRequest().getHttpRequest().getRequestURI();
-    }
+    public WsdlOperation getOperation() {
+        if (mockResponse != null && mockResponse instanceof WsdlMockResponse) {
+            WsdlMockResponse wsdlMockResponse = (WsdlMockResponse)mockResponse;
+            if (mockResult.getMockOperation() != null) {
+                return (WsdlOperation)mockResult.getMockOperation().getOperation();
+            }
 
-    @Override
-    public Response getResponse() {
+            return wsdlMockResponse.getMockOperation().getOperation();
+        }
         return null;
     }
 
-    public Attachment[] getRequestAttachments() {
-        return mockResult.getMockRequest().getRequestAttachments();
+    @Override
+    public boolean hasRawData() {
+        return true;
+    }
+
+    @Override
+    public byte[] getRawRequestData() {
+        return mockResult.getMockRequest().getRawRequestData();
+    }
+
+    @Override
+    public byte[] getRawResponseData() {
+        return mockResult.getRawResponseData();
+    }
+
+    public long getTimestamp() {
+        return mockResult == null ? -1 : mockResult.getTimestamp();
+    }
+
+    public long getTimeTaken() {
+        return mockResult == null ? -1 : mockResult.getTimeTaken();
+    }
+
+    public String getEndpoint() {
+        return mockResult.getMockRequest().getHttpRequest().getRequestURI();
     }
 
     public String getRequestContent() {
@@ -71,45 +97,33 @@ public class WsdlMockResultMessageExchange extends AbstractWsdlMessageExchange<M
         return mockResult.getMockRequest().getRequestContent();
     }
 
-    public StringToStringsMap getRequestHeaders() {
-        return mockResult == null ? null : mockResult.getMockRequest().getRequestHeaders();
-    }
-
-    public Attachment[] getResponseAttachments() {
-        return mockResult == null || mockResponse == null ? new Attachment[0] : mockResult.getMockResponse()
-                .getAttachments();
-    }
-
     public String getResponseContent() {
         return mockResult == null ? null : mockResult.getResponseContent();
+    }
+
+    public StringToStringsMap getRequestHeaders() {
+        return mockResult == null ? null : mockResult.getMockRequest().getRequestHeaders();
     }
 
     public StringToStringsMap getResponseHeaders() {
         return mockResult == null ? new StringToStringsMap() : mockResult.getResponseHeaders();
     }
 
-    public WsdlOperation getOperation() {
-        if (mockResponse != null && mockResponse instanceof WsdlMockResponse) {
-            WsdlMockResponse wsdlMockResponse = (WsdlMockResponse) mockResponse;
-            if (mockResult.getMockOperation() != null) {
-                return (WsdlOperation) mockResult.getMockOperation().getOperation();
-            }
-
-            return wsdlMockResponse.getMockOperation().getOperation();
-        }
-        return null;
+    public Attachment[] getRequestAttachments() {
+        return mockResult.getMockRequest().getRequestAttachments();
     }
 
-    public long getTimeTaken() {
-        return mockResult == null ? -1 : mockResult.getTimeTaken();
-    }
-
-    public long getTimestamp() {
-        return mockResult == null ? -1 : mockResult.getTimestamp();
+    public Attachment[] getResponseAttachments() {
+        return mockResult == null || mockResponse == null ? new Attachment[0] : mockResult.getMockResponse().getAttachments();
     }
 
     public boolean isDiscarded() {
         return mockResponse == null;
+    }
+
+    @Override
+    public Response getResponse() {
+        return null;
     }
 
     public void discard() {
@@ -118,7 +132,7 @@ public class WsdlMockResultMessageExchange extends AbstractWsdlMessageExchange<M
 
     public Vector<?> getRequestWssResult() {
         if (mockResult != null && mockResult instanceof WsdlMockResult) {
-            return ((WsdlMockResult) mockResult).getRequestWssResult();
+            return ((WsdlMockResult)mockResult).getRequestWssResult();
         }
         return null;
     }
@@ -133,20 +147,5 @@ public class WsdlMockResultMessageExchange extends AbstractWsdlMessageExchange<M
 
     public String getResponseContentType() {
         return mockResult.getMockResponse().getContentType();
-    }
-
-    @Override
-    public byte[] getRawRequestData() {
-        return mockResult.getMockRequest().getRawRequestData();
-    }
-
-    @Override
-    public byte[] getRawResponseData() {
-        return mockResult.getRawResponseData();
-    }
-
-    @Override
-    public boolean hasRawData() {
-        return true;
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.tools;
@@ -43,16 +43,15 @@ import java.util.List;
  */
 
 public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
+    public static String TITLE = "SoapUI " + SoapUI.SOAPUI_VERSION + " MockService Runner";
     private String mockService;
     private String port;
     private String path;
-    private List<MockRunner> runners = new ArrayList<MockRunner>();
+    private final List<MockRunner> runners = new ArrayList<MockRunner>();
     private boolean block;
     private String projectPassword;
     private WsdlProject project;
     private boolean saveAfterRun;
-
-    public static String TITLE = "SoapUI " + SoapUI.SOAPUI_VERSION + " MockService Runner";
 
     /**
      * Runs the specified MockService in the specified SoapUI project file, see
@@ -64,6 +63,14 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
 
     public static void main(String[] args) throws Exception {
         System.exit(new SoapUIMockServiceRunner().runFromCommandLine(args));
+    }
+
+    public SoapUIMockServiceRunner() {
+        super(TITLE);
+    }
+
+    public SoapUIMockServiceRunner(String title) {
+        super(title);
     }
 
     public void setMockService(String mockService) {
@@ -78,12 +85,99 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
         this.port = port;
     }
 
-    public SoapUIMockServiceRunner() {
-        super(TITLE);
+    protected void initProject() throws Exception {
+        initProjectProperties(project);
     }
 
-    public SoapUIMockServiceRunner(String title) {
-        super(title);
+    protected void exportReports() throws Exception {
+    }
+
+    /**
+     * Runs the specified MockService
+     *
+     * @param mockService
+     */
+
+    public void runMockService(MockService mockService) {
+        try {
+            if (path != null) {
+                mockService.setPath(path);
+            }
+
+            if (port != null) {
+                mockService.setPort(Integer.parseInt(port));
+            }
+
+            mockService.addMockRunListener(new LogListener());
+            MockRunner runner = mockService.start();
+            runner.setLogEnabled(false);
+            runners.add(runner);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+    }
+
+    @Override
+    protected boolean processCommandLine(CommandLine cmd) {
+        if (cmd.hasOption("m")) {
+            setMockService(getCommandLineOptionSubstSpace(cmd, "m"));
+        }
+
+        if (cmd.hasOption("a")) {
+            setPath(getCommandLineOptionSubstSpace(cmd, "a"));
+        }
+
+        if (cmd.hasOption("p")) {
+            setPort(cmd.getOptionValue("p"));
+        }
+
+        if (cmd.hasOption("s")) {
+            setSettingsFile(getCommandLineOptionSubstSpace(cmd, "s"));
+        }
+
+        setBlock(!cmd.hasOption('b'));
+        setSaveAfterRun(cmd.hasOption('S'));
+
+        if (cmd.hasOption("x")) {
+            setProjectPassword(cmd.getOptionValue("x"));
+        }
+
+        if (cmd.hasOption("v")) {
+            setSoapUISettingsPassword(cmd.getOptionValue("v"));
+        }
+
+        if (cmd.hasOption("D")) {
+            setSystemProperties(cmd.getOptionValues("D"));
+        }
+
+        if (cmd.hasOption("G")) {
+            setGlobalProperties(cmd.getOptionValues("G"));
+        }
+
+        if (cmd.hasOption("P")) {
+            setProjectProperties(cmd.getOptionValues("P"));
+        }
+
+        return true;
+    }
+
+    @Override
+    protected SoapUIOptions initCommandLineOptions() {
+        SoapUIOptions options = new SoapUIOptions("mockservicerunner");
+        options.addOption("m", true, "Specified the name of the MockService to run");
+        options.addOption("p", true, "Sets the local port to listen on");
+        options.addOption("a", true, "Sets the url path to listen on");
+        options.addOption("s", true, "Sets the soapui-settings.xml file to use");
+        options.addOption("b", false, "Turns off blocking read for termination");
+        options.addOption("x", true, "Sets project password for decryption if project is encrypted");
+        options.addOption("v", true, "Sets password for soapui-settings.xml file");
+        options.addOption("D", true, "Sets system property with name=value");
+        options.addOption("G", true, "Sets global property with name=value");
+        options.addOption("P", true, "Sets or overrides project property with name=value");
+        options.addOption("S", false, "Saves the project after running the mockService(s)");
+
+        return options;
     }
 
     public boolean runRunner() throws Exception {
@@ -93,8 +187,7 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
 
         // WsdlProject project = new WsdlProject( projectFile,
         // getProjectPassword() );
-        project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(projectFile,
-                getProjectPassword());
+        project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(projectFile, getProjectPassword());
         if (project.isDisabled()) {
             throw new Exception("Failed to load SoapUI project file [" + projectFile + "]");
         }
@@ -103,7 +196,8 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
 
         if (mockService == null) {
             log.info("Running all MockServices in project [" + project.getName() + "]");
-        } else {
+        }
+        else {
             log.info("Running MockService [" + mockService + "] in project [" + project.getName() + "]");
         }
 
@@ -156,7 +250,8 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
             if (saveAfterRun && !project.isRemote()) {
                 try {
                     project.save();
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                     log.error("Failed to save project", t);
                 }
             }
@@ -170,133 +265,12 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
         return block;
     }
 
-    protected void initProject() throws Exception {
-        initProjectProperties(project);
-    }
-
-    protected void exportReports() throws Exception {
-    }
-
-    /**
-     * Runs the specified MockService
-     *
-     * @param mockService
-     */
-
-    public void runMockService(MockService mockService) {
-        try {
-            if (path != null) {
-                mockService.setPath(path);
-            }
-
-            if (port != null) {
-                mockService.setPort(Integer.parseInt(port));
-            }
-
-            mockService.addMockRunListener(new LogListener());
-            MockRunner runner = mockService.start();
-            runner.setLogEnabled(false);
-            runners.add(runner);
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
-    }
-
-    public class LogListener extends MockRunListenerAdapter {
-        private int responseCount;
-
-        public void onMockRunnerStart(MockRunner mockRunner) {
-            MockRunContext mockContext = mockRunner.getMockContext();
-            log.info("MockService started on port " + mockContext.getMockService().getPort() + " at path ["
-                    + mockContext.getMockService().getPath() + "]");
-        }
-
-        public void onMockRunnerStop(MockRunner mockRunner) {
-            log.info("MockService stopped, handled " + responseCount + " requests");
-        }
-
-        public void onMockResult(MockResult result) {
-            responseCount++;
-            if (result.getMockResponse() == null) {
-                log.info("Handled request " + responseCount + " - [missing mockResponse] in [" + result.getTimeTaken()
-                        + "ms] at [" + DateUtil.formatExtraFull(new Date(result.getTimestamp())) + "]");
-            } else {
-                log.info("Handled request " + responseCount + "; ["
-                        + result.getMockResponse().getMockOperation().getName() + "] with ["
-                        + result.getMockResponse().getName() + "] in [" + result.getTimeTaken() + "ms] at ["
-                        + DateUtil.formatExtraFull(new Date(result.getTimestamp())) + "]");
-            }
-        }
-    }
-
-    @Override
-    protected SoapUIOptions initCommandLineOptions() {
-        SoapUIOptions options = new SoapUIOptions("mockservicerunner");
-        options.addOption("m", true, "Specified the name of the MockService to run");
-        options.addOption("p", true, "Sets the local port to listen on");
-        options.addOption("a", true, "Sets the url path to listen on");
-        options.addOption("s", true, "Sets the soapui-settings.xml file to use");
-        options.addOption("b", false, "Turns off blocking read for termination");
-        options.addOption("x", true, "Sets project password for decryption if project is encrypted");
-        options.addOption("v", true, "Sets password for soapui-settings.xml file");
-        options.addOption("D", true, "Sets system property with name=value");
-        options.addOption("G", true, "Sets global property with name=value");
-        options.addOption("P", true, "Sets or overrides project property with name=value");
-        options.addOption("S", false, "Saves the project after running the mockService(s)");
-
-        return options;
-    }
-
-    @Override
-    protected boolean processCommandLine(CommandLine cmd) {
-        if (cmd.hasOption("m")) {
-            setMockService(getCommandLineOptionSubstSpace(cmd, "m"));
-        }
-
-        if (cmd.hasOption("a")) {
-            setPath(getCommandLineOptionSubstSpace(cmd, "a"));
-        }
-
-        if (cmd.hasOption("p")) {
-            setPort(cmd.getOptionValue("p"));
-        }
-
-        if (cmd.hasOption("s")) {
-            setSettingsFile(getCommandLineOptionSubstSpace(cmd, "s"));
-        }
-
-        setBlock(!cmd.hasOption('b'));
-        setSaveAfterRun(cmd.hasOption('S'));
-
-        if (cmd.hasOption("x")) {
-            setProjectPassword(cmd.getOptionValue("x"));
-        }
-
-        if (cmd.hasOption("v")) {
-            setSoapUISettingsPassword(cmd.getOptionValue("v"));
-        }
-
-        if (cmd.hasOption("D")) {
-            setSystemProperties(cmd.getOptionValues("D"));
-        }
-
-        if (cmd.hasOption("G")) {
-            setGlobalProperties(cmd.getOptionValues("G"));
-        }
-
-        if (cmd.hasOption("P")) {
-            setProjectProperties(cmd.getOptionValues("P"));
-        }
-
-        return true;
+    public String getProjectPassword() {
+        return projectPassword;
     }
 
     public void setProjectPassword(String projectPassword) {
         this.projectPassword = projectPassword;
-    }
-
-    public String getProjectPassword() {
-        return projectPassword;
     }
 
     public void setBlock(boolean block) {
@@ -314,6 +288,45 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
     public void stopAll() {
         for (MockRunner runner : runners) {
             runner.stop();
+        }
+    }
+
+    public class LogListener extends MockRunListenerAdapter {
+        private int responseCount;
+
+        public void onMockRunnerStart(MockRunner mockRunner) {
+            MockRunContext mockContext = mockRunner.getMockContext();
+            log.info("MockService started on port " + mockContext.getMockService().getPort() + " at path [" + mockContext.getMockService().getPath() + "]");
+        }
+
+        public void onMockResult(MockResult result) {
+            responseCount++;
+            if (result.getMockResponse() == null) {
+                log.info("Handled request " +
+                         responseCount +
+                         " - [missing mockResponse] in [" +
+                         result.getTimeTaken() +
+                         "ms] at [" +
+                         DateUtil.formatExtraFull(new Date(result.getTimestamp())) +
+                         "]");
+            }
+            else {
+                log.info("Handled request " +
+                         responseCount +
+                         "; [" +
+                         result.getMockResponse().getMockOperation().getName() +
+                         "] with [" +
+                         result.getMockResponse().getName() +
+                         "] in [" +
+                         result.getTimeTaken() +
+                         "ms] at [" +
+                         DateUtil.formatExtraFull(new Date(result.getTimestamp())) +
+                         "]");
+            }
+        }
+
+        public void onMockRunnerStop(MockRunner mockRunner) {
+            log.info("MockService stopped, handled " + responseCount + " requests");
         }
     }
 }

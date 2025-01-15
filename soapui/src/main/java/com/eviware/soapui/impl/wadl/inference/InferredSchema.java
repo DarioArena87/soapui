@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference;
@@ -37,7 +37,7 @@ public interface InferredSchema {
      *
      * @return The inferred schema.
      */
-    public SchemaTypeSystem getSchemaTypeSystem();
+    SchemaTypeSystem getSchemaTypeSystem();
 
     /**
      * Expands the inferred schema to accept the input XML as valid.
@@ -45,7 +45,7 @@ public interface InferredSchema {
      * @param xml An XmlObject that is assumed to be valid.
      * @throws XmlException
      */
-    public void processValidXml(XmlObject xml) throws XmlException;
+    void processValidXml(XmlObject xml) throws XmlException;
 
     /**
      * Attempts to validate the given XML against the inferred schema. Any errors
@@ -54,7 +54,7 @@ public interface InferredSchema {
      * @param xml
      * @return Returns true if the content validated successfully, false if not.
      */
-    public boolean validate(XmlObject xml);
+    boolean validate(XmlObject xml);
 
     /**
      * Attempts to validate the given XML against the inferred schema. Any errors
@@ -65,7 +65,7 @@ public interface InferredSchema {
      * @param handler
      * @throws XmlException for validation error.
      */
-    public void learningValidate(XmlObject xml, ConflictHandler handler) throws XmlException;
+    void learningValidate(XmlObject xml, ConflictHandler handler) throws XmlException;
 
     /**
      * Writes the XML represented by this InferredSchema.
@@ -73,7 +73,7 @@ public interface InferredSchema {
      * @param os
      * @throws IOException
      */
-    public void save(OutputStream os) throws IOException;
+    void save(OutputStream os) throws IOException;
 
     /**
      * Returns a string representation of the XML Schema for a particular
@@ -81,23 +81,27 @@ public interface InferredSchema {
      *
      * @param namespace
      * @return A String representation of the XML Schema describing the
-     *         namespace.
+     * namespace.
      */
-    public String getXsdForNamespace(String namespace);
+    String getXsdForNamespace(String namespace);
 
     /**
      * Returns a list of inferred namespaces.
      *
      * @return A Set containing all inferred namespaces.
      */
-    public String[] getNamespaces();
+    String[] getNamespaces();
+
+    void deleteNamespace(String ns);
+
+    SchemaTypeSystem getSchemaTypeSystem(SchemaTypeSystem schemaTypeSystem);
 
     /**
      * Static factory class for creating new instances.
      *
      * @author Dain Nilsson
      */
-    static class Factory {
+    class Factory {
 
         /**
          * Creates a new empty schema.
@@ -121,9 +125,4 @@ public interface InferredSchema {
             return new InferredSchemaImpl(is);
         }
     }
-
-    public void deleteNamespace(String ns);
-
-    public SchemaTypeSystem getSchemaTypeSystem(SchemaTypeSystem schemaTypeSystem);
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock;
@@ -37,6 +37,7 @@ import com.eviware.soapui.support.types.StringToStringMap;
 import com.eviware.soapui.support.xml.XmlUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.mortbay.jetty.Request;
 import org.xml.sax.InputSource;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,12 +57,10 @@ import java.util.Map;
 
 public class WsdlMockDispatcher extends AbstractMockDispatcher {
 
-    private WsdlMockService mockService;
-    private WsdlMockRunContext mockContext;
-
-    private final Map<String, StringToStringMap> wsdlCache = new HashMap<String, StringToStringMap>();
     private final static Logger log = LogManager.getLogger(WsdlMockDispatcher.class);
-
+    private final Map<String, StringToStringMap> wsdlCache = new HashMap<String, StringToStringMap>();
+    private final WsdlMockService mockService;
+    private final WsdlMockRunContext mockContext;
 
     public WsdlMockDispatcher(WsdlMockService mockService, WsdlMockRunContext mockContext) {
         this.mockService = mockService;
@@ -76,7 +75,7 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
             }
 
             try {
-                WsdlDefinitionExporter exporter = new WsdlDefinitionExporter((WsdlInterface) iface);
+                WsdlDefinitionExporter exporter = new WsdlDefinitionExporter((WsdlInterface)iface);
 
                 String wsdlPrefix = trimLastSlash(getInterfacePrefix(iface));
                 StringToStringMap parts = exporter.createFilesForExport(wsdlPrefix + "&part=");
@@ -84,8 +83,7 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
                 for (Map.Entry<String, String> partEntry : parts.entrySet()) {
                     if (partEntry.getKey().toLowerCase().endsWith(".wsdl")) {
                         InputSource inputSource = new InputSource(new StringReader(partEntry.getValue()));
-                        String content = WsdlUtils.replacePortEndpoint((WsdlInterface) iface, inputSource,
-                                mockService.getLocalMockServiceEndpoint());
+                        String content = WsdlUtils.replacePortEndpoint((WsdlInterface)iface, inputSource, mockService.getLocalMockServiceEndpoint());
 
                         if (content != null) {
                             parts.put(partEntry.getKey(), content);
@@ -96,48 +94,20 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
                 wsdlCache.put(iface.getName(), parts);
 
                 log.info("Mounted WSDL for interface [" + iface.getName() + "] at [" + getOverviewUrl() + "]");
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
     }
 
-    @Override
-    public MockResult dispatchRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
-        Object result = null;
-
-        try {
-            WsdlMockRequest mockRequest = new WsdlMockRequest(request, response, mockContext);
-            result = mockService.runOnRequestScript(mockContext, mockRequest);
-            if (!(result instanceof MockResult)) {
-                if (mockRequest.getMethod() == RestRequestInterface.HttpMethod.POST) {
-                    result = dispatchPostRequest(mockRequest);
-                } else {
-                    result = super.dispatchRequest(request, response);
-                }
-            }
-
-            mockService.runAfterRequestScript(mockContext, (MockResult) result);
-            return (MockResult) result;
-        } catch (Throwable e) {
-            if (e instanceof DispatchException) {
-                throw (DispatchException) e;
-            } else {
-                throw new DispatchException(e);
-            }
-        } finally {
-            mockService.fireOnMockResult(result);
-        }
-    }
-
-    public MockResult dispatchGetRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchGetRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         try {
             String qs = request.getQueryString();
             if (qs != null && qs.toUpperCase().startsWith("WSDL")) {
                 dispatchWsdlRequest(request, response);
-            } else {
+            }
+            else {
                 String docroot = PropertyExpander.expandProperties(mockContext, mockService.getDocroot());
                 if (StringUtils.hasContent(docroot)) {
                     try {
@@ -155,15 +125,54 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
                         if (file.exists()) {
                             returnFile(response, file);
                         }
-                    } catch (Throwable e) {
+                    }
+                    catch (Throwable e) {
                         throw new DispatchException(e);
                     }
                 }
             }
 
             return null;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new DispatchException(e);
+        }
+    }
+
+    public MockResult dispatchHeadRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
+        response.setStatus(HttpServletResponse.SC_OK);
+        return null;
+    }
+
+    @Override
+    public MockResult dispatchRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
+        Object result = null;
+
+        try {
+            WsdlMockRequest mockRequest = new WsdlMockRequest(request, response, mockContext);
+            result = mockService.runOnRequestScript(mockContext, mockRequest);
+            if (!(result instanceof MockResult)) {
+                if (mockRequest.getMethod() == RestRequestInterface.HttpMethod.POST) {
+                    result = dispatchPostRequest(mockRequest);
+                }
+                else {
+                    result = super.dispatchRequest(request, response);
+                }
+            }
+
+            mockService.runAfterRequestScript(mockContext, (MockResult)result);
+            return (MockResult)result;
+        }
+        catch (Throwable e) {
+            if (e instanceof DispatchException) {
+                throw (DispatchException)e;
+            }
+            else {
+                throw new DispatchException(e);
+            }
+        }
+        finally {
+            mockService.fireOnMockResult(result);
         }
     }
 
@@ -188,26 +197,38 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
                 if (faultMockOperation != null) {
                     operation = faultMockOperation.getOperation();
                 }
-            } else {
+            }
+            else {
                 try {
-                    operation = SoapUtils.findOperationForRequest(soapVersion, soapAction,
-                            mockRequest.getRequestXmlObject(), mockService.getMockedOperations(),
-                            mockService.isRequireSoapVersion(), mockService.isRequireSoapAction(),
-                            mockRequest.getRequestAttachments());
-                } catch (Exception e) {
+                    operation = SoapUtils.findOperationForRequest(soapVersion,
+                                                                  soapAction,
+                                                                  mockRequest.getRequestXmlObject(),
+                                                                  mockService.getMockedOperations(),
+                                                                  mockService.isRequireSoapVersion(),
+                                                                  mockService.isRequireSoapAction(),
+                                                                  mockRequest.getRequestAttachments()
+                    );
+                }
+                catch (Exception e) {
                     if (mockService.isDispatchResponseMessages()) {
                         try {
-                            operation = SoapUtils.findOperationForResponse(soapVersion, soapAction,
-                                    mockRequest.getRequestXmlObject(), mockService.getMockedOperations(),
-                                    mockService.isRequireSoapVersion(), mockService.isRequireSoapAction());
+                            operation = SoapUtils.findOperationForResponse(soapVersion,
+                                                                           soapAction,
+                                                                           mockRequest.getRequestXmlObject(),
+                                                                           mockService.getMockedOperations(),
+                                                                           mockService.isRequireSoapVersion(),
+                                                                           mockService.isRequireSoapAction()
+                            );
 
                             if (operation != null) {
                                 mockRequest.setResponseMessage(true);
                             }
-                        } catch (Exception e2) {
+                        }
+                        catch (Exception e2) {
                             throw e;
                         }
-                    } else {
+                    }
+                    else {
                         throw e;
                     }
                 }
@@ -219,35 +240,35 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
                     long startTime = System.nanoTime();
                     result = mockOperation.dispatchRequest(mockRequest);
 
-                    if (mockRequest.getHttpRequest() instanceof org.mortbay.jetty.Request) {
-                        ((org.mortbay.jetty.Request) mockRequest.getHttpRequest()).setHandled(true);
+                    if (mockRequest.getHttpRequest() instanceof Request) {
+                        ((Request)mockRequest.getHttpRequest()).setHandled(true);
                     }
 
                     result.setTimeTaken((System.nanoTime() - startTime) / 1000000);
                     result.setTimestamp(timestamp);
                     addMockResult(result);
                     return result;
-                } else {
+                }
+                else {
                     throw new DispatchException("Failed to find matching operation for request");
                 }
             }
 
-            throw new DispatchException("Missing operation for soapAction [" + soapAction + "] and body element ["
-                    + XmlUtils.getQName(mockRequest.getContentElement()) + "] with SOAP Version ["
-                    + mockRequest.getSoapVersion() + "]");
-        } catch (Exception e) {
+            throw new DispatchException("Missing operation for soapAction [" +
+                                        soapAction +
+                                        "] and body element [" +
+                                        XmlUtils.getQName(mockRequest.getContentElement()) +
+                                        "] with SOAP Version [" +
+                                        mockRequest.getSoapVersion() +
+                                        "]");
+        }
+        catch (Exception e) {
             if (e instanceof DispatchException) {
                 throw e;
             }
 
             throw new DispatchException(e);
         }
-    }
-
-    public MockResult dispatchHeadRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
-        response.setStatus(HttpServletResponse.SC_OK);
-        return null;
     }
 
     protected void dispatchWsdlRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -257,7 +278,7 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
         }
 
         String ifaceName = request.getParameter("interface");
-        WsdlInterface iface = (WsdlInterface) mockService.getProject().getInterfaceByName(ifaceName);
+        WsdlInterface iface = (WsdlInterface)mockService.getProject().getInterfaceByName(ifaceName);
         if (iface == null) {
             printInterfaceList(response);
             return;
@@ -277,7 +298,6 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
         }
     }
 
-
     public void release() {
         clearResults();
         mockContext.clear();
@@ -288,7 +308,8 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
         if (mockedInterfaces.length == 1) {
             StringToStringMap parts = wsdlCache.get(mockedInterfaces[0].getName());
             printOkXmlResult(response, parts.get(parts.get("#root#")));
-        } else {
+        }
+        else {
             try {
                 WSDLFactory wsdlFactory = WSDLFactory.newInstance();
                 Definition def = wsdlFactory.newDefinition();
@@ -307,7 +328,8 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
 
                 WSDLWriter writer = wsdlFactory.newWSDLWriter();
                 writer.writeWSDL(def, response.getWriter());
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
                 throw new IOException("Failed to create combined WSDL");
             }
@@ -321,9 +343,7 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
         response.getWriter().print(content);
     }
 
-
-    public void printPartList(WsdlInterface iface, StringToStringMap parts, HttpServletResponse response)
-            throws IOException {
+    public void printPartList(WsdlInterface iface, StringToStringMap parts, HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/html");
 
@@ -359,11 +379,11 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
         out.print("</ul></p></body></html>");
     }
 
-    public void returnFile(HttpServletResponse response, File file) throws FileNotFoundException, IOException {
+    public void returnFile(HttpServletResponse response, File file) throws IOException {
         FileInputStream in = new FileInputStream(file);
         response.setStatus(HttpServletResponse.SC_OK);
         long length = file.length();
-        response.setContentLength((int) length);
+        response.setContentLength((int)length);
         response.setContentType(ContentTypeHandler.getContentTypeFromFilename(file.getName()));
         Tools.readAndWrite(in, length, response.getOutputStream());
         in.close();
@@ -385,5 +405,4 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
         }
         return wsdlPrefix;
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.impl.swing;
@@ -28,24 +28,19 @@ import com.eviware.x.form.XForm;
 import com.eviware.x.form.XFormDialog;
 import com.eviware.x.form.XFormField;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.Dialog.ModalityType;
-import java.awt.Dimension;
 import java.util.concurrent.CountDownLatch;
 
 public class JFormDialog extends SwingXFormDialog {
-    private JDialog dialog;
-    private SwingXFormImpl form;
-    private JButtonBar buttons;
+    private final JDialog dialog;
+    private final SwingXFormImpl form;
+    private final JButtonBar buttons;
     private boolean resized;
-    private ActionList actions;
-    private JPanel panel;
+    private final ActionList actions;
+    private final JPanel panel;
+    private CountDownLatch startSignal;
 
     public JFormDialog(String name, SwingXFormImpl form, ActionList actions, String description, ImageIcon icon) {
         dialog = new JDialog(UISupport.getMainFrame(), name, true);
@@ -54,7 +49,7 @@ public class JFormDialog extends SwingXFormDialog {
         buttons = UISupport.initDialogActions(actions, dialog);
         buttons.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
         JPanel panel = new JPanel(new BorderLayout());
-        this.form = (SwingXFormImpl) form;
+        this.form = form;
         panel.add((this.form.getPanel()), BorderLayout.CENTER);
         panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -64,36 +59,21 @@ public class JFormDialog extends SwingXFormDialog {
 
         dialog.getContentPane().add(panel, BorderLayout.CENTER);
 
-        buttons
-                .setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, Color.GRAY),
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, Color.WHITE)), BorderFactory.createEmptyBorder(3, 5,
-                        3, 5)));
+        buttons.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.GRAY),
+                                                                                                BorderFactory.createMatteBorder(1, 0, 0, 0, Color.WHITE)
+        ), BorderFactory.createEmptyBorder(3, 5, 3, 5)));
 
         dialog.getContentPane().add(buttons, BorderLayout.SOUTH);
         this.panel = panel;
-    }
-
-    public void setValues(StringToStringMap values) {
-        form.setValues(values);
     }
 
     public JDialog getDialog() {
         return dialog;
     }
 
-    public void setSize(int i, int j) {
-        dialog.setSize(i, j);
-        resized = true;
-    }
-
     @Override
     public ActionList getActionsList() {
         return actions;
-    }
-
-    public XForm[] getForms() {
-        return new XForm[]{form};
     }
 
     public StringToStringMap getValues() {
@@ -103,8 +83,8 @@ public class JFormDialog extends SwingXFormDialog {
         return result;
     }
 
-    public void setOptions(String field, Object[] options) {
-        form.setOptions(field, options);
+    public void setValues(StringToStringMap values) {
+        form.setValues(values);
     }
 
     public void setVisible(boolean visible) {
@@ -129,10 +109,30 @@ public class JFormDialog extends SwingXFormDialog {
         }
     }
 
-    public void addAction(Action action) {
-        DefaultActionList actions = new DefaultActionList();
-        actions.addAction(action);
-        buttons.addActions(actions);
+    public void setValue(String field, String value) {
+        form.setComponentValue(field, value);
+    }
+
+    public String getValue(String field) {
+        return form.getComponentValue(field);
+    }
+
+    public boolean show() {
+        setReturnValue(CANCEL_OPTION);
+        show(new StringToStringMap());
+        if (dialog.getModalityType() == ModalityType.MODELESS) {
+            startSignal = new CountDownLatch(1);
+            try {
+                startSignal.await();
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            startSignal = null;
+        }
+
+        return getReturnValue() == OK_OPTION;
     }
 
     public boolean validate() {
@@ -140,7 +140,7 @@ public class JFormDialog extends SwingXFormDialog {
         for (int c = 0; c < formFields.length; c++) {
             ValidationMessage[] messages = formFields[c].validate();
             if (messages != null && messages.length > 0) {
-                ((AbstractSwingXFormField<?>) messages[0].getFormField()).getComponent().requestFocus();
+                ((AbstractSwingXFormField<?>)messages[0].getFormField()).getComponent().requestFocus();
                 UISupport.showErrorMessage(messages[0].getMessage());
                 return false;
             }
@@ -149,16 +149,16 @@ public class JFormDialog extends SwingXFormDialog {
         return true;
     }
 
+    public void setOptions(String field, Object[] options) {
+        form.setOptions(field, options);
+    }
+
+    public XFormField getFormField(String name) {
+        return form.getFormField(name);
+    }
+
     public void setFormFieldProperty(String name, Object value) {
         form.setFormFieldProperty(name, value);
-    }
-
-    public String getValue(String field) {
-        return form.getComponentValue(field);
-    }
-
-    public void setValue(String field, String value) {
-        form.setComponentValue(field, value);
     }
 
     public int getValueIndex(String name) {
@@ -170,35 +170,27 @@ public class JFormDialog extends SwingXFormDialog {
         return StringUtils.toStringList(options).indexOf(form.getComponentValue(name));
     }
 
-    private CountDownLatch startSignal;
-
-    public boolean show() {
-        setReturnValue(XFormDialog.CANCEL_OPTION);
-        show(new StringToStringMap());
-        if (dialog.getModalityType() == ModalityType.MODELESS) {
-            startSignal = new CountDownLatch(1);
-            try {
-                startSignal.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            startSignal = null;
-        }
-
-        return getReturnValue() == XFormDialog.OK_OPTION;
-    }
-
-    public XFormField getFormField(String name) {
-        return form.getFormField(name);
-    }
-
     public void setWidth(int i) {
-        dialog.setPreferredSize(new Dimension(i, (int) dialog.getPreferredSize().getHeight()));
+        dialog.setPreferredSize(new Dimension(i, (int)dialog.getPreferredSize().getHeight()));
     }
 
     public void release() {
         dialog.dispose();
+    }
+
+    public void addAction(Action action) {
+        DefaultActionList actions = new DefaultActionList();
+        actions.addAction(action);
+        buttons.addActions(actions);
+    }
+
+    public XForm[] getForms() {
+        return new XForm[]{form};
+    }
+
+    public void setSize(int i, int j) {
+        dialog.setSize(i, j);
+        resized = true;
     }
 
     /*
@@ -207,7 +199,7 @@ public class JFormDialog extends SwingXFormDialog {
     public void setHelpUrl(String helpUrl) {
         for (int cnt = 0; cnt < actions.getActionCount(); cnt++) {
             if (actions.getActionAt(cnt) instanceof HelpActionMarker) {
-                ((SwingXFormDialogBuilder.HelpAction) actions.getActionAt(cnt)).setUrl(helpUrl);
+                ((SwingXFormDialogBuilder.HelpAction)actions.getActionAt(cnt)).setUrl(helpUrl);
                 break;
             }
         }
@@ -216,5 +208,4 @@ public class JFormDialog extends SwingXFormDialog {
     public JPanel getPanel() {
         return panel;
     }
-
 }

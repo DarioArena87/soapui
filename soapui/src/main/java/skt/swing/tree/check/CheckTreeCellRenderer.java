@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//**
+ *//**
  * MySwing: Advanced Swing Utilites
  * Copyright (C) 2005  Santhosh Kumar T
  * <p/>
@@ -40,10 +40,10 @@ import java.awt.*;
  */
 
 public class CheckTreeCellRenderer extends JPanel implements TreeCellRenderer {
-    private CheckTreeSelectionModel selectionModel;
-    private TreePathSelectable selectable;
-    private TreeCellRenderer delegate;
-    private TristateCheckBox checkBox = new TristateCheckBox();
+    private final CheckTreeSelectionModel selectionModel;
+    private final TreePathSelectable selectable;
+    private final TreeCellRenderer delegate;
+    private final TristateCheckBox checkBox = new TristateCheckBox();
 
     public CheckTreeCellRenderer(TreeCellRenderer delegate, CheckTreeSelectionModel selectionModel, TreePathSelectable selectable) {
         this.delegate = delegate;
@@ -54,7 +54,6 @@ public class CheckTreeCellRenderer extends JPanel implements TreeCellRenderer {
         checkBox.setOpaque(false);
     }
 
-
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         Component renderer = delegate.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
@@ -62,7 +61,8 @@ public class CheckTreeCellRenderer extends JPanel implements TreeCellRenderer {
         if (path != null) {
             if (selectionModel.isPathSelected(path, selectionModel.isDigged())) {
                 checkBox.setState(Boolean.TRUE);
-            } else {
+            }
+            else {
                 checkBox.setState(selectionModel.isDigged() && selectionModel.isPartiallySelected(path) ? null : Boolean.FALSE);
             }
         }

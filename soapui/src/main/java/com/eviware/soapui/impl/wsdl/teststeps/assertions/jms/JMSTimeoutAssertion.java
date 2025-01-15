@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.jms;
@@ -52,26 +52,16 @@ import org.apache.xmlbeans.XmlObject;
 
 public class JMSTimeoutAssertion extends WsdlMessageAssertion implements ResponseAssertion, RequestAssertion {
     public static final String JMS_TIMEOUT_DURATION = "JMS timeout duration";
-    private static final String JMS_TIMEOUT_SETTING = "timeout";
     public static final String JMS_TIMEOUT_OK = "JMS Timeout OK";
-    private XFormDialog dialog;
     public static final String ID = "JMS Timeout";
     public static final String LABEL = "JMS Timeout";
     public static final String DESCRIPTION = "Validates that the JMS statement of the target TestStep did not take longer than the specified duration. Applicable to Request TestSteps with a JMS endpoint.";
+    private static final String JMS_TIMEOUT_SETTING = "timeout";
+    private static final int magicUnreachableNumber = -120184;
+    private static final long defaultJmsAssertionTimeout = 100;
+    private XFormDialog dialog;
     private long jmsTimeoutDuration;
-    private static int magicUnreachableNumber = -120184;
-    private static long defaultJmsAssertionTimeout = 100;
-    private LastJmsResponseResult lastJmsResponseResult;
-
-    private class LastJmsResponseResult {
-        public long timeTaken;
-        public boolean isRecieved;
-
-        public LastJmsResponseResult (){
-            timeTaken = magicUnreachableNumber;
-            isRecieved = false;
-        }
-    }
+    private final LastJmsResponseResult lastJmsResponseResult;
 
     public JMSTimeoutAssertion(TestAssertionConfig assertionConfig, Assertable assertable) {
         super(assertionConfig, assertable, false, true, false, true);
@@ -80,23 +70,21 @@ public class JMSTimeoutAssertion extends WsdlMessageAssertion implements Respons
 
         XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(getConfiguration());
         jmsTimeoutDuration = reader.readLong(JMS_TIMEOUT_SETTING, magicUnreachableNumber);
-        if (jmsTimeoutDuration == magicUnreachableNumber){
+        if (jmsTimeoutDuration == magicUnreachableNumber) {
             jmsTimeoutDuration = defaultJmsAssertionTimeout;
         }
     }
 
     @Override
-    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
-        PropertyExpansionContext propertyExpansionContext = (PropertyExpansionContext) context;
+    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+        PropertyExpansionContext propertyExpansionContext = context;
         boolean isRun = propertyExpansionContext.hasProperty(HermesJmsRequestTransport.IS_JMS_MESSAGE_RECEIVED);
-        Boolean temp = (Boolean) context.getProperty(HermesJmsRequestTransport.IS_JMS_MESSAGE_RECEIVED);
+        Boolean temp = (Boolean)context.getProperty(HermesJmsRequestTransport.IS_JMS_MESSAGE_RECEIVED);
         Boolean messageReceived = temp != null ? temp : false;
         if (isRun) {
             lastJmsResponseResult.timeTaken = messageExchange.getTimeTaken();
             lastJmsResponseResult.isRecieved = messageReceived;
         }
-
 
         Long timeout = jmsTimeoutDuration;
         String jmsTimeoutError = "JMS Message timeout error! Message is not received in " + timeout + " ms.";
@@ -104,7 +92,8 @@ public class JMSTimeoutAssertion extends WsdlMessageAssertion implements Respons
             if (!messageReceived || lastJmsResponseResult.timeTaken > timeout) {
                 throw new AssertionException(new AssertionError(jmsTimeoutError));
             }
-        } else { //design time
+        }
+        else { //design time
             if (lastJmsResponseResult.timeTaken > timeout || !lastJmsResponseResult.isRecieved) {
                 throw new AssertionException(new AssertionError(jmsTimeoutError));
             }
@@ -113,9 +102,14 @@ public class JMSTimeoutAssertion extends WsdlMessageAssertion implements Respons
     }
 
     @Override
-    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
+    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
         return JMS_TIMEOUT_OK;
+    }
+
+    protected String internalAssertProperty(
+        TestPropertyHolder source, String propertyName, MessageExchange messageExchange, SubmitContext context
+    ) throws AssertionException {
+        return null;
     }
 
     @Override
@@ -125,12 +119,12 @@ public class JMSTimeoutAssertion extends WsdlMessageAssertion implements Respons
         }
 
         StringToStringMap values = new StringToStringMap();
-        values.put(JMS_TIMEOUT_DURATION, new Long(jmsTimeoutDuration).toString());
+        values.put(JMS_TIMEOUT_DURATION, Long.valueOf(jmsTimeoutDuration).toString());
 
         values = dialog.show(values);
         if (dialog.getReturnValue() == XFormDialog.OK_OPTION) {
-            Long newJmsTimeoutDuration = new Long(values.get(JMS_TIMEOUT_DURATION));
-            if (jmsTimeoutDuration != newJmsTimeoutDuration){
+            Long newJmsTimeoutDuration = Long.valueOf(values.get(JMS_TIMEOUT_DURATION));
+            if (jmsTimeoutDuration != newJmsTimeoutDuration) {
                 jmsTimeoutDuration = newJmsTimeoutDuration;
                 setConfiguration(createConfiguration());
                 return true;
@@ -154,19 +148,9 @@ public class JMSTimeoutAssertion extends WsdlMessageAssertion implements Respons
         return dialog;
     }
 
-    protected String internalAssertProperty(TestPropertyHolder source, String propertyName,
-                                            MessageExchange messageExchange, SubmitContext context) throws AssertionException {
-        return null;
-    }
-
     public static class Factory extends AbstractTestAssertionFactory {
         public Factory() {
-            super(JMSTimeoutAssertion.ID, JMSTimeoutAssertion.LABEL, JMSTimeoutAssertion.class, WsdlRequest.class);
-        }
-
-        @Override
-        public String getCategory() {
-            return AssertionCategoryMapping.JMS_CATEGORY;
+            super(ID, LABEL, JMSTimeoutAssertion.class, WsdlRequest.class);
         }
 
         @Override
@@ -176,8 +160,22 @@ public class JMSTimeoutAssertion extends WsdlMessageAssertion implements Respons
 
         @Override
         public AssertionListEntry getAssertionListEntry() {
-            return new AssertionListEntry(JMSTimeoutAssertion.ID, JMSTimeoutAssertion.LABEL,
-                    JMSTimeoutAssertion.DESCRIPTION);
+            return new AssertionListEntry(ID, LABEL, DESCRIPTION);
+        }
+
+        @Override
+        public String getCategory() {
+            return AssertionCategoryMapping.JMS_CATEGORY;
+        }
+    }
+
+    private class LastJmsResponseResult {
+        public long timeTaken;
+        public boolean isRecieved;
+
+        public LastJmsResponseResult() {
+            timeTaken = magicUnreachableNumber;
+            isRecieved = false;
         }
     }
 }

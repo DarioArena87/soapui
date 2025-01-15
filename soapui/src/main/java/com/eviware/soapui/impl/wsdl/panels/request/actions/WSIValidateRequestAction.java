@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.request.actions;
@@ -51,8 +51,8 @@ import org.wsI.testing.x2003.x03.log.Monitor;
 import org.wsI.testing.x2003.x03.log.NameVersionPair;
 import org.wsI.testing.x2003.x03.log.TcpMessageType;
 
-import javax.swing.SwingUtilities;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -83,16 +83,15 @@ public class WSIValidateRequestAction extends AbstractToolsAction<WsdlRequest> {
             return;
         }
 
-        wsiDir = SoapUI.getSettings().getString(WSISettings.WSI_LOCATION,
-                System.getProperty(WSIAnalyzeAction.WSI_DIR_PROP_NAME, System.getenv(WSIAnalyzeAction.WSI_HOME_ENV_VAR_NAME)));
+        wsiDir = SoapUI.getSettings()
+                       .getString(WSISettings.WSI_LOCATION, System.getProperty(WSIAnalyzeAction.WSI_DIR_PROP_NAME, System.getenv(WSIAnalyzeAction.WSI_HOME_ENV_VAR_NAME)));
         if (wsiDir == null) {
             UISupport.showErrorMessage("WSI Test Tools directory must be set in global preferences");
             return;
         }
 
         if (modelItem.getAttachmentCount() > 0 || modelItem.getResponse().getAttachments().length > 0) {
-            if (!UISupport.confirm("Message contains attachments which is not supported by "
-                    + "validation tools, validate anyway?", "Validation Warning")) {
+            if (!UISupport.confirm("Message contains attachments which is not supported by " + "validation tools, validate anyway?", "Validation Warning")) {
                 return;
             }
         }
@@ -116,9 +115,10 @@ public class WSIValidateRequestAction extends AbstractToolsAction<WsdlRequest> {
         Settings settings = modelItem.getSettings();
 
         ArgumentBuilder builder = new ArgumentBuilder(new StringToStringMap());
-        builder.startScript(wsiDir + File.separator +
-                        (profile.equals(WSISettings.BASIC_PROFILE_10_TAD)?WSIAnalyzeAction.ANALYZER_V10_NAME:WSIAnalyzeAction.ANALYZER_V11_NAME),
-                WSIAnalyzeAction.WIN_BATCH_FILE_EXTENSION, WSIAnalyzeAction.UNIX_BATCH_FILE_EXTENSION);
+        builder.startScript(wsiDir + File.separator + (profile.equals(WSISettings.BASIC_PROFILE_10_TAD) ? WSIAnalyzeAction.ANALYZER_V10_NAME : WSIAnalyzeAction.ANALYZER_V11_NAME),
+                            WSIAnalyzeAction.WIN_BATCH_FILE_EXTENSION,
+                            WSIAnalyzeAction.UNIX_BATCH_FILE_EXTENSION
+        );
         builder.addArgs("-config", file.getAbsolutePath());
 
         return builder;
@@ -187,7 +187,8 @@ public class WSIValidateRequestAction extends AbstractToolsAction<WsdlRequest> {
 
         if (endpoint.getPort() > 0) {
             requestMessage.setReceiverHostAndPort(endpoint.getHost() + ":" + endpoint.getPort());
-        } else {
+        }
+        else {
             requestMessage.setReceiverHostAndPort(endpoint.getHost());
         }
 
@@ -225,17 +226,17 @@ public class WSIValidateRequestAction extends AbstractToolsAction<WsdlRequest> {
         logFileConf.setLocation("report.xml");
         logFileConf.setReplace(true);
 
-		/*
-		 * ArrayOfRedirectConfig mintConf = conf.addNewManInTheMiddle();
-		 * RedirectConfig redirect = mintConf.addNewRedirect();
-		 * redirect.setListenPort( 9999 ); redirect.setMaxConnections( 10 );
-		 * redirect.setReadTimeoutSeconds( 10 );
-		 * 
-		 * URL endpoint = new URL( modelItem.getEndpoint()); if(
-		 * endpoint.getPort() > 0 ) redirect.setSchemeAndHostPort(
-		 * endpoint.getHost() + ":" + endpoint.getPort()); else
-		 * redirect.setSchemeAndHostPort( endpoint.getHost() );
-		 */
+        /*
+         * ArrayOfRedirectConfig mintConf = conf.addNewManInTheMiddle();
+         * RedirectConfig redirect = mintConf.addNewRedirect();
+         * redirect.setListenPort( 9999 ); redirect.setMaxConnections( 10 );
+         * redirect.setReadTimeoutSeconds( 10 );
+         *
+         * URL endpoint = new URL( modelItem.getEndpoint()); if(
+         * endpoint.getPort() > 0 ) redirect.setSchemeAndHostPort(
+         * endpoint.getHost() + ":" + endpoint.getPort()); else
+         * redirect.setSchemeAndHostPort( endpoint.getHost() );
+         */
 
         Environment env = monitor.addNewEnvironment();
         NameVersionPair osConf = env.addNewOperatingSystem();
@@ -283,8 +284,19 @@ public class WSIValidateRequestAction extends AbstractToolsAction<WsdlRequest> {
             this.modelItem = modelItem;
         }
 
-        public String getDescription() {
-            return "Running WSI Analysis tools...";
+        private String getCommandDetails(List<String> command) {
+            String str = "";
+            for (String entity : command) {
+                str += entity + " ";
+            }
+
+            return str;
+        }
+
+        @Override
+        protected void beforeProcess(ProcessBuilder processBuilder, RunnerContext context) {
+            super.beforeProcess(processBuilder, context);
+            processBuilder.environment().put(WSIAnalyzeAction.WSI_HOME_ENV_VAR_NAME, wsiDir);
         }
 
         protected void afterRun(int exitCode, RunnerContext context) {
@@ -293,41 +305,33 @@ public class WSIValidateRequestAction extends AbstractToolsAction<WsdlRequest> {
 
                     public void run() {
                         try {
-                            WSIReportPanel panel = new WSIReportPanel(WSIAnalyzeAction.transformReport(reportFile),
-                                    configFile, logFile, true);
+                            WSIReportPanel panel = new WSIReportPanel(WSIAnalyzeAction.transformReport(reportFile), configFile, logFile, true);
                             panel.setPreferredSize(new Dimension(600, 400));
 
                             UISupport.showDesktopPanel(new DefaultDesktopPanel("WS-I Report",
-                                    "WS-I Report for validation of messages in request [" + modelItem.getName() + "]", panel));
-                        } catch (Exception e) {
+                                                                               "WS-I Report for validation of messages in request [" + modelItem.getName() + "]",
+                                                                               panel
+                            ));
+                        }
+                        catch (Exception e) {
                             UISupport.showErrorMessage(e);
                         }
                     }
                 });
-            } else {
+            }
+            else {
                 ProcessBuilder processBuilder = getBuilders()[0];
                 List<String> programAndArgs = processBuilder.command();
-                log.error("WSI checking failed. Exit code " + new Integer(exitCode).toString() + ". Command line: " + getCommandDetails(programAndArgs));
+                log.error("WSI checking failed. Exit code " + Integer.valueOf(exitCode) + ". Command line: " + getCommandDetails(programAndArgs));
             }
-        }
-
-        private String getCommandDetails (List<String> command){
-            String str = "";
-            for (String entity: command){
-                str += entity + " ";
-            }
-
-            return str;
         }
 
         public boolean showLog() {
             return modelItem.getSettings().getBoolean(WSISettings.SHOW_LOG);
         }
 
-        @Override
-        protected void beforeProcess(ProcessBuilder processBuilder, RunnerContext context) {
-            super.beforeProcess(processBuilder, context);
-            processBuilder.environment().put(WSIAnalyzeAction.WSI_HOME_ENV_VAR_NAME, wsiDir);
+        public String getDescription() {
+            return "Running WSI Analysis tools...";
         }
     }
 }

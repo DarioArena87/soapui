@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.scripting;
@@ -36,7 +36,12 @@ import java.util.Map;
 public class SoapUIScriptEngineRegistry {
     public static final String DEFAULT_SCRIPT_ENGINE_ID = GroovyScriptEngineFactory.ID;
 
-    private static Map<String, SoapUIScriptEngineFactory> factories = new HashMap<String, SoapUIScriptEngineFactory>();
+    private static final Map<String, SoapUIScriptEngineFactory> factories = new HashMap<String, SoapUIScriptEngineFactory>();
+
+    static {
+        registerScriptEngine(GroovyScriptEngineFactory.ID, new GroovyScriptEngineFactory());
+        registerScriptEngine(JsScriptEngineFactory.ID, new JsScriptEngineFactory());
+    }
 
     public static void registerScriptEngine(String id, SoapUIScriptEngineFactory factory) {
         factories.put(id, factory);
@@ -51,7 +56,7 @@ public class SoapUIScriptEngineRegistry {
     }
 
     public static String getScriptEngineId(ModelItem modelItem) {
-        WsdlProject project = (WsdlProject) ModelSupport.getModelItemProject(modelItem);
+        WsdlProject project = (WsdlProject)ModelSupport.getModelItemProject(modelItem);
 
         String scriptEngineId = null;
         if (project != null) {
@@ -66,7 +71,7 @@ public class SoapUIScriptEngineRegistry {
     }
 
     public static SoapUIScriptGenerator createScriptGenerator(ModelItem modelItem) {
-        WsdlProject project = (WsdlProject) ModelSupport.getModelItemProject(modelItem);
+        WsdlProject project = (WsdlProject)ModelSupport.getModelItemProject(modelItem);
 
         String scriptEngineId = project.getDefaultScriptLanguage();
         if (StringUtils.isNullOrEmpty(scriptEngineId)) {
@@ -74,11 +79,6 @@ public class SoapUIScriptEngineRegistry {
         }
 
         return factories.get(scriptEngineId).createCodeGenerator(modelItem);
-    }
-
-    static {
-        registerScriptEngine(GroovyScriptEngineFactory.ID, new GroovyScriptEngineFactory());
-        registerScriptEngine(JsScriptEngineFactory.ID, new JsScriptEngineFactory());
     }
 
     public static String[] getAvailableEngineIds() {

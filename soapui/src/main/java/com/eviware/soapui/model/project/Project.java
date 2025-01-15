@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.project;
@@ -40,84 +40,84 @@ public interface Project extends TestModelItem {
     /**
      * The id of the JBossWS project nature
      */
-    public static final String JBOSSWS_NATURE_ID = "com.eviware.soapui.jbosside.jbosswsNature";
+    String JBOSSWS_NATURE_ID = "com.eviware.soapui.jbosside.jbosswsNature";
 
     /**
      * The id of the SoapUI project nature
      */
-    public static final String SOAPUI_NATURE_ID = "com.eviware.soapui.soapuiNature";
+    String SOAPUI_NATURE_ID = "com.eviware.soapui.soapuiNature";
 
-    public Workspace getWorkspace();
+    Workspace getWorkspace();
 
-    public Interface getInterfaceAt(int index);
+    Interface getInterfaceAt(int index);
 
-    public Interface getInterfaceByName(String interfaceName);
+    Interface getInterfaceByName(String interfaceName);
 
-    public int getInterfaceCount();
+    int getInterfaceCount();
 
-    public void addProjectListener(ProjectListener listener);
+    void addProjectListener(ProjectListener listener);
 
-    public void removeProjectListener(ProjectListener listener);
+    void removeProjectListener(ProjectListener listener);
 
-    public int getTestSuiteCount();
+    int getTestSuiteCount();
 
-    public TestSuite getTestSuiteAt(int index);
+    TestSuite getTestSuiteAt(int index);
 
-    public TestSuite getTestSuiteByName(String testSuiteName);
+    TestSuite getTestSuiteByName(String testSuiteName);
 
-    public TestSuite getTestSuiteById(UUID testSuiteId);
+    TestSuite getTestSuiteById(UUID testSuiteId);
 
-    public TestSuite addNewTestSuite(String name);
+    TestSuite addNewTestSuite(String name);
 
-    public int getMockServiceCount();
+    int getMockServiceCount();
 
-    public int getRestMockServiceCount();
+    int getRestMockServiceCount();
 
-    public MockService getMockServiceAt(int index);
+    MockService getMockServiceAt(int index);
 
-    public MockService getRestMockServiceAt(int index);
+    MockService getRestMockServiceAt(int index);
 
-    public MockService getMockServiceByName(String mockServiceName);
+    MockService getMockServiceByName(String mockServiceName);
 
-    public RestMockService getRestMockServiceByName(String mockServiceName);
+    RestMockService getRestMockServiceByName(String mockServiceName);
 
-    public MockService addNewMockService(String name);
+    MockService addNewMockService(String name);
 
-    public RestMockService addNewRestMockService(String name);
+    RestMockService addNewRestMockService(String name);
 
-    public void removeMockService(MockService service);
+    void removeMockService(MockService service);
 
-    public SaveStatus save() throws IOException;
+    SaveStatus save() throws IOException;
 
-    public List<TestSuite> getTestSuiteList();
+    List<TestSuite> getTestSuiteList();
 
-    public List<WsdlMockService> getMockServiceList();
+    List<WsdlMockService> getMockServiceList();
 
-    public List<RestMockService> getRestMockServiceList();
+    List<RestMockService> getRestMockServiceList();
 
-    public List<Interface> getInterfaceList();
+    List<Interface> getInterfaceList();
 
-    public boolean hasNature(String natureId);
+    boolean hasNature(String natureId);
 
-    public EndpointStrategy getEndpointStrategy();
+    EndpointStrategy getEndpointStrategy();
 
-    public void release();
+    void release();
 
-    public boolean isOpen();
+    boolean isOpen();
 
-    public boolean isDisabled();
+    boolean isDisabled();
 
-    public String getPath();
+    String getPath();
 
-    public String getResourceRoot();
+    String getResourceRoot();
 
-    public String getShadowPassword();
+    String getShadowPassword();
 
-    public void setShadowPassword(String password);
+    void setShadowPassword(String password);
 
-    public void inspect();
+    void inspect();
 
-    public int getIndexOfTestSuite(TestSuite testSuite);
+    int getIndexOfTestSuite(TestSuite testSuite);
 
     OAuth2ProfileContainer getOAuth2ProfileContainer();
 

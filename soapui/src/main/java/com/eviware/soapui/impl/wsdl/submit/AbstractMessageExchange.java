@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit;
@@ -23,12 +23,11 @@ import com.eviware.soapui.support.xml.XmlUtils;
 
 public abstract class AbstractMessageExchange<T extends ModelItem> implements MessageExchange {
     protected StringToStringMap properties;
-    private String[] messages;
-    private T modelItem;
     protected boolean discardResponse;
+    private String[] messages;
+    private final T modelItem;
 
     public AbstractMessageExchange(T modelItem) {
-        super();
         this.modelItem = modelItem;
         discardResponse = modelItem.getSettings().getBoolean("discardResponse");
     }
@@ -37,10 +36,15 @@ public abstract class AbstractMessageExchange<T extends ModelItem> implements Me
         return modelItem;
     }
 
+    public StringToStringMap getProperties() {
+        return properties;
+    }
+
     public String getRequestContentAsXml() {
         if (hasRequest(true) && XmlUtils.seemsToBeXml(getRequestContent())) {
             return getRequestContent();
-        } else {
+        }
+        else {
             return "<not-xml/>";
         }
     }
@@ -48,9 +52,22 @@ public abstract class AbstractMessageExchange<T extends ModelItem> implements Me
     public String getResponseContentAsXml() {
         if (hasResponse() && XmlUtils.seemsToBeXml(getResponseContent())) {
             return getResponseContent();
-        } else {
+        }
+        else {
             return null;
         }
+    }
+
+    public String[] getMessages() {
+        return messages;
+    }
+
+    public String getProperty(String name) {
+        return properties.get(name);
+    }
+
+    public void setMessages(String[] messages) {
+        this.messages = messages;
     }
 
     public void addProperty(String name, String value) {
@@ -60,21 +77,4 @@ public abstract class AbstractMessageExchange<T extends ModelItem> implements Me
 
         properties.put(name, value);
     }
-
-    public String getProperty(String name) {
-        return properties.get(name);
-    }
-
-    public StringToStringMap getProperties() {
-        return properties;
-    }
-
-    public String[] getMessages() {
-        return messages;
-    }
-
-    public void setMessages(String[] messages) {
-        this.messages = messages;
-    }
-
 }

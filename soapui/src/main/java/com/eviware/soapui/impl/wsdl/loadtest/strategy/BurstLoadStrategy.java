@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.strategy;
@@ -27,10 +27,7 @@ import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 import org.apache.xmlbeans.XmlObject;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.Document;
 
 /**
@@ -40,11 +37,11 @@ import javax.swing.text.Document;
  */
 
 public class BurstLoadStrategy extends AbstractLoadStrategy {
+    public static final String STRATEGY_TYPE = "Burst";
     private static final String BURST_DURATION_ELEMENT = "burstDuration";
     private static final String BURST_DELAY_ELEMENT = "burstDelay";
     private static final int DEFAULT_BURST_DURATION = 10000;
     private static final int DEFAULT_BURST_DELAY = 60000;
-    public static final String STRATEGY_TYPE = "Burst";
     private JPanel configPanel;
 
     private int burstDelay = DEFAULT_BURST_DELAY;
@@ -70,49 +67,11 @@ public class BurstLoadStrategy extends AbstractLoadStrategy {
         burstDuration = reader.readInt(BURST_DURATION_ELEMENT, DEFAULT_BURST_DURATION);
     }
 
-    public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        super.beforeLoadTest(loadTestRunner, context);
-        startTime = System.currentTimeMillis();
-        if (infoLabel != null) {
-            infoLabel.setText("starting..");
-        }
-
-        WsdlLoadTest wsdlLoadTest = (WsdlLoadTest) loadTestRunner.getLoadTest();
-        threadCount = wsdlLoadTest.getThreadCount();
-        wsdlLoadTest.setThreadCount(0);
-    }
-
-    public void recalculate(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        // get time passed since start of test
-        long timePassed = System.currentTimeMillis() - startTime;
-
-        if (loadTestRunner.getStatus() == Status.RUNNING) {
-            WsdlLoadTest wsdlLoadTest = (WsdlLoadTest) loadTestRunner.getLoadTest();
-            String label = null;
-
-            long mod = timePassed % (burstDelay + burstDuration);
-            if (mod < burstDelay) {
-                wsdlLoadTest.setThreadCount(0);
-                label = (burstDelay - mod) / 1000 + "s delay left";
-            } else {
-                wsdlLoadTest.setThreadCount(threadCount);
-                label = ((burstDelay + burstDuration) - mod) / 1000 + "s burst left";
-            }
-
-            if (infoLabel != null && !infoLabel.getText().equals(label)) {
-                infoLabel.setText(label);
-            }
-        }
-    }
-
-    public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        if (infoLabel != null) {
-            infoLabel.setText("");
-        }
-
-        // restore threadcount to original
-        WsdlLoadTest wsdlLoadTest = (WsdlLoadTest) loadTestRunner.getLoadTest();
-        wsdlLoadTest.setThreadCount(threadCount);
+    public XmlObject getConfig() {
+        XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
+        builder.add(BURST_DELAY_ELEMENT, burstDelay);
+        builder.add(BURST_DURATION_ELEMENT, burstDuration);
+        return builder.finish();
     }
 
     public JComponent getConfigurationPanel() {
@@ -131,7 +90,8 @@ public class BurstLoadStrategy extends AbstractLoadStrategy {
                     try {
                         burstDelay = Integer.parseInt(delayField.getText()) * 1000;
                         notifyConfigurationChanged();
-                    } catch (NumberFormatException e) {
+                    }
+                    catch (NumberFormatException e) {
                     }
                 }
             });
@@ -153,7 +113,8 @@ public class BurstLoadStrategy extends AbstractLoadStrategy {
                     try {
                         burstDuration = Integer.parseInt(durationField.getText()) * 1000;
                         notifyConfigurationChanged();
-                    } catch (NumberFormatException e) {
+                    }
+                    catch (NumberFormatException e) {
                     }
                 }
             });
@@ -170,16 +131,55 @@ public class BurstLoadStrategy extends AbstractLoadStrategy {
         return configPanel;
     }
 
-    public XmlObject getConfig() {
-        XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
-        builder.add(BURST_DELAY_ELEMENT, burstDelay);
-        builder.add(BURST_DURATION_ELEMENT, burstDuration);
-        return builder.finish();
-    }
-
     @Override
     public boolean allowThreadCountChangeDuringRun() {
         return false;
+    }
+
+    public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        if (infoLabel != null) {
+            infoLabel.setText("");
+        }
+
+        // restore threadcount to original
+        WsdlLoadTest wsdlLoadTest = (WsdlLoadTest)loadTestRunner.getLoadTest();
+        wsdlLoadTest.setThreadCount(threadCount);
+    }
+
+    public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        super.beforeLoadTest(loadTestRunner, context);
+        startTime = System.currentTimeMillis();
+        if (infoLabel != null) {
+            infoLabel.setText("starting..");
+        }
+
+        WsdlLoadTest wsdlLoadTest = (WsdlLoadTest)loadTestRunner.getLoadTest();
+        threadCount = wsdlLoadTest.getThreadCount();
+        wsdlLoadTest.setThreadCount(0);
+    }
+
+    public void recalculate(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        // get time passed since start of test
+        long timePassed = System.currentTimeMillis() - startTime;
+
+        if (loadTestRunner.getStatus() == Status.RUNNING) {
+            WsdlLoadTest wsdlLoadTest = (WsdlLoadTest)loadTestRunner.getLoadTest();
+            String label = null;
+
+            long mod = timePassed % (burstDelay + burstDuration);
+            if (mod < burstDelay) {
+                wsdlLoadTest.setThreadCount(0);
+                label = (burstDelay - mod) / 1000 + "s delay left";
+            }
+            else {
+                wsdlLoadTest.setThreadCount(threadCount);
+                label = ((burstDelay + burstDuration) - mod) / 1000 + "s burst left";
+            }
+
+            if (infoLabel != null && !infoLabel.getText().equals(label)) {
+                infoLabel.setText(label);
+            }
+        }
     }
 
     /**

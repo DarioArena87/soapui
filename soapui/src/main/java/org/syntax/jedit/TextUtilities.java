@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit;
 
@@ -107,7 +107,8 @@ public class TextUtilities {
                     }
                 }
             }
-        } else {
+        }
+        else {
             // Count is 1 initially because we have already
             // `found' one opening bracket
             count = 1;

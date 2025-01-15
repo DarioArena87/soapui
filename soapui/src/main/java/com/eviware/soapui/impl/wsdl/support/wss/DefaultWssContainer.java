@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss;
@@ -37,16 +37,16 @@ import java.util.List;
 import java.util.Set;
 
 public class DefaultWssContainer implements WssContainer {
-    private final ModelItem modelItem;
-    private List<WssCrypto> cryptos = new ArrayList<WssCrypto>();
-    private List<IncomingWss> incomingWssConfigs = new ArrayList<IncomingWss>();
-    private List<OutgoingWss> outgoingWssConfigs = new ArrayList<OutgoingWss>();
-    private final WssContainerConfig config;
-    private Set<WssContainerListener> listeners = new HashSet<WssContainerListener>();
-
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
+
+    private final ModelItem modelItem;
+    private final WssContainerConfig config;
+    private final List<WssCrypto> cryptos = new ArrayList<WssCrypto>();
+    private final List<IncomingWss> incomingWssConfigs = new ArrayList<IncomingWss>();
+    private final List<OutgoingWss> outgoingWssConfigs = new ArrayList<OutgoingWss>();
+    private final Set<WssContainerListener> listeners = new HashSet<WssContainerListener>();
 
     public DefaultWssContainer(ModelItem modelItem, WssContainerConfig config) {
         this.modelItem = modelItem;
@@ -69,14 +69,12 @@ public class DefaultWssContainer implements WssContainer {
         return modelItem;
     }
 
-    public PropertyExpansion[] getPropertyExpansions() {
-        PropertyExpansionsResult result = new PropertyExpansionsResult(getModelItem(), this);
+    public void addWssContainerListener(WssContainerListener listener) {
+        listeners.add(listener);
+    }
 
-        for (OutgoingWss entry : outgoingWssConfigs) {
-            result.addAll(entry.getPropertyExpansions());
-        }
-
-        return result.toArray();
+    public void removeWssContainerListener(WssContainerListener listener) {
+        listeners.remove(listener);
     }
 
     public List<WssCrypto> getCryptoList() {
@@ -90,28 +88,6 @@ public class DefaultWssContainer implements WssContainer {
         fireCryptoAdded(result);
 
         return result;
-    }
-
-    protected void fireCryptoAdded(WssCrypto crypto) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.cryptoAdded(crypto);
-        }
-    }
-
-    protected void fireCryptoRemoved(WssCrypto crypto) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.cryptoRemoved(crypto);
-        }
-    }
-
-    public void fireWssEntryMoved(WssEntry entry, int offset) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.outgoingWssEntryMoved(entry, offset);
-        }
-    }
-
-    public WssContainerConfig getConfig() {
-        return config;
     }
 
     public int getCryptoCount() {
@@ -154,18 +130,6 @@ public class DefaultWssContainer implements WssContainer {
         getConfig().removeIncoming(row);
     }
 
-    protected void fireIncomingWssAdded(IncomingWss incomingWss) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.incomingWssAdded(incomingWss);
-        }
-    }
-
-    protected void fireIncomingWssRemoved(IncomingWss incomingWss) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.incomingWssRemoved(incomingWss);
-        }
-    }
-
     public List<OutgoingWss> getOutgoingWssList() {
         return new ArrayList<OutgoingWss>(outgoingWssConfigs);
     }
@@ -179,18 +143,6 @@ public class DefaultWssContainer implements WssContainer {
         fireOutgoingWssAdded(result);
 
         return result;
-    }
-
-    protected void fireOutgoingWssAdded(OutgoingWss result) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.outgoingWssAdded(result);
-        }
-    }
-
-    protected void fireOutgoingWssRemoved(OutgoingWss result) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.outgoingWssRemoved(result);
-        }
     }
 
     public int getOutgoingWssCount() {
@@ -208,6 +160,10 @@ public class DefaultWssContainer implements WssContainer {
         getConfig().removeOutgoing(row);
     }
 
+    public WssCrypto getCryptoByName(String cryptoName) {
+        return getCryptoByName(cryptoName, false);
+    }
+
     public WssCrypto getCryptoByName(String cryptoName, boolean outgoingWSSConfig) {
         for (WssCrypto crypto : cryptos) {
             if (crypto.getLabel().equals(cryptoName)) {
@@ -215,23 +171,10 @@ public class DefaultWssContainer implements WssContainer {
                     if (crypto.getType() == CryptoType.KEYSTORE) {
                         return crypto;
                     }
-                } else {
+                }
+                else {
                     return crypto;
                 }
-            }
-        }
-
-        return null;
-    }
-
-    public WssCrypto getCryptoByName(String cryptoName) {
-        return getCryptoByName(cryptoName, false);
-    }
-
-    public IncomingWss getIncomingWssByName(String incomingName) {
-        for (IncomingWss incomingWss : incomingWssConfigs) {
-            if (incomingWss.getName().equals(incomingName)) {
-                return incomingWss;
             }
         }
 
@@ -248,24 +191,14 @@ public class DefaultWssContainer implements WssContainer {
         return null;
     }
 
-    public void addWssContainerListener(WssContainerListener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeWssContainerListener(WssContainerListener listener) {
-        listeners.remove(listener);
-    }
-
-    public void fireWssEntryAdded(WssEntry newEntry) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.outgoingWssEntryAdded(newEntry);
+    public IncomingWss getIncomingWssByName(String incomingName) {
+        for (IncomingWss incomingWss : incomingWssConfigs) {
+            if (incomingWss.getName().equals(incomingName)) {
+                return incomingWss;
+            }
         }
-    }
 
-    public void fireWssEntryRemoved(WssEntry entry) {
-        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
-            listener.outgoingWssEntryRemoved(entry);
-        }
+        return null;
     }
 
     public String[] getCryptoNames() {
@@ -273,16 +206,6 @@ public class DefaultWssContainer implements WssContainer {
 
         for (WssCrypto crypto : getCryptoList()) {
             result.add(crypto.getLabel());
-        }
-
-        return result.toStringArray();
-    }
-
-    public String[] getIncomingWssNames() {
-        StringList result = new StringList();
-
-        for (IncomingWss crypto : getIncomingWssList()) {
-            result.add(crypto.getName());
         }
 
         return result.toStringArray();
@@ -298,8 +221,86 @@ public class DefaultWssContainer implements WssContainer {
         return result.toStringArray();
     }
 
+    public String[] getIncomingWssNames() {
+        StringList result = new StringList();
+
+        for (IncomingWss crypto : getIncomingWssList()) {
+            result.add(crypto.getName());
+        }
+
+        return result.toStringArray();
+    }
+
     // FIXME: Why is this method empty?
     public void importConfig(WssContainer wssContainer) {
+    }
+
+    public PropertyExpansion[] getPropertyExpansions() {
+        PropertyExpansionsResult result = new PropertyExpansionsResult(getModelItem(), this);
+
+        for (OutgoingWss entry : outgoingWssConfigs) {
+            result.addAll(entry.getPropertyExpansions());
+        }
+
+        return result.toArray();
+    }
+
+    protected void fireCryptoAdded(WssCrypto crypto) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.cryptoAdded(crypto);
+        }
+    }
+
+    protected void fireCryptoRemoved(WssCrypto crypto) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.cryptoRemoved(crypto);
+        }
+    }
+
+    public void fireWssEntryMoved(WssEntry entry, int offset) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.outgoingWssEntryMoved(entry, offset);
+        }
+    }
+
+    public WssContainerConfig getConfig() {
+        return config;
+    }
+
+    protected void fireIncomingWssAdded(IncomingWss incomingWss) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.incomingWssAdded(incomingWss);
+        }
+    }
+
+    protected void fireIncomingWssRemoved(IncomingWss incomingWss) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.incomingWssRemoved(incomingWss);
+        }
+    }
+
+    protected void fireOutgoingWssAdded(OutgoingWss result) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.outgoingWssAdded(result);
+        }
+    }
+
+    protected void fireOutgoingWssRemoved(OutgoingWss result) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.outgoingWssRemoved(result);
+        }
+    }
+
+    public void fireWssEntryAdded(WssEntry newEntry) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.outgoingWssEntryAdded(newEntry);
+        }
+    }
+
+    public void fireWssEntryRemoved(WssEntry entry) {
+        for (WssContainerListener listener : listeners.toArray(new WssContainerListener[listeners.size()])) {
+            listener.outgoingWssEntryRemoved(entry);
+        }
     }
 
     // FIXME: Not used?
@@ -307,7 +308,7 @@ public class DefaultWssContainer implements WssContainer {
         getConfig().set(config);
 
         for (int c = 0; c < cryptos.size(); c++) {
-            ((KeyMaterialWssCrypto) cryptos.get(c)).udpateConfig(getConfig().getCryptoArray(c));
+            ((KeyMaterialWssCrypto)cryptos.get(c)).udpateConfig(getConfig().getCryptoArray(c));
         }
 
         for (int c = 0; c < incomingWssConfigs.size(); c++) {
@@ -327,7 +328,7 @@ public class DefaultWssContainer implements WssContainer {
 
     public void resolve(ResolveContext<?> context) {
         for (int c = 0; c < cryptos.size(); c++) {
-            ((KeyMaterialWssCrypto) cryptos.get(c)).resolve(context);
+            ((KeyMaterialWssCrypto)cryptos.get(c)).resolve(context);
         }
 
         for (int c = 0; c < incomingWssConfigs.size(); c++) {
@@ -341,7 +342,7 @@ public class DefaultWssContainer implements WssContainer {
 
     public void addExternalDependency(List<ExternalDependency> dependencies) {
         for (int c = 0; c < cryptos.size(); c++) {
-            ((KeyMaterialWssCrypto) cryptos.get(c)).addExternalDependency(dependencies);
+            ((KeyMaterialWssCrypto)cryptos.get(c)).addExternalDependency(dependencies);
         }
     }
 

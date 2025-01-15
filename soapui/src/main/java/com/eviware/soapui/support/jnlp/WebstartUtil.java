@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.jnlp;
@@ -39,16 +39,21 @@ public class WebstartUtil {
         return dir;
     }
 
-    private static void extract(JarFile jar, String dir) throws IOException, FileNotFoundException {
+    protected static boolean isWebStart() {
+        String webstart = System.getProperty("com.eviware.soapui.webstart", "false");
+        return "true".equalsIgnoreCase(webstart);
+    }
+
+    private static void extract(JarFile jar, String dir) throws IOException {
         makeDirectories(jar, dir);
         extractFiles(jar, dir);
     }
 
     @SuppressWarnings("unchecked")
-    private static void extractFiles(JarFile jar, String eviwareDir) throws IOException, FileNotFoundException {
+    private static void extractFiles(JarFile jar, String eviwareDir) throws IOException {
         Enumeration entries = jar.entries();
         while (entries.hasMoreElements()) {
-            JarEntry file = (JarEntry) entries.nextElement();
+            JarEntry file = (JarEntry)entries.nextElement();
             File f = new File(eviwareDir + File.separator + file.getName());
 
             if (file.isDirectory()) { // if its a directory, skip it
@@ -71,7 +76,7 @@ public class WebstartUtil {
     private static void makeDirectories(JarFile jar, String eviwareDir) {
         Enumeration entries = jar.entries();
         while (entries.hasMoreElements()) {
-            JarEntry file = (JarEntry) entries.nextElement();
+            JarEntry file = (JarEntry)entries.nextElement();
             File f = new File(eviwareDir + File.separator + file.getName());
             if (file.isDirectory()) { // if its a directory, create it
                 f.mkdir();
@@ -80,10 +85,10 @@ public class WebstartUtil {
         }
     }
 
-    private static JarFile getJar(String jarUrl) throws MalformedURLException, IOException {
+    private static JarFile getJar(String jarUrl) throws IOException {
         // String reportsJarUrl = System.getProperty("reports.jar.url");
         URL url = new URL("jar:" + jarUrl + "!/");
-        JarURLConnection jarConnection = (JarURLConnection) url.openConnection();
+        JarURLConnection jarConnection = (JarURLConnection)url.openConnection();
         JarFile jar = jarConnection.getJarFile();
         return jar;
     }
@@ -94,15 +99,4 @@ public class WebstartUtil {
         // System.out.println(folder.getAbsolutePath());
         return folder.getAbsolutePath();
     }
-
-    protected static boolean isWebStart() {
-        String webstart = System.getProperty("com.eviware.soapui.webstart", "false");
-        if ("true".equalsIgnoreCase(webstart)) {
-            return true;
-        } else {
-            return false;
-        }
-
-    }
-
 }

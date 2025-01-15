@@ -16,10 +16,9 @@
 
 package com.eviware.soapui.support.components;
 
-import javax.swing.Icon;
+import javax.swing.*;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
-import java.awt.FontMetrics;
-import java.awt.Insets;
+import java.awt.*;
 
 public class VerticalWindowsTabbedPaneUI extends BasicTabbedPaneUI {
     protected void installDefaults() {

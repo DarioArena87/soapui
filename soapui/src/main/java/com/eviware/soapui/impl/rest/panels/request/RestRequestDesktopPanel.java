@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request;
@@ -25,16 +25,10 @@ import com.eviware.soapui.support.action.swing.SwingActionDelegate;
 import com.eviware.soapui.support.components.JXToolBar;
 import org.apache.commons.lang.mutable.MutableBoolean;
 
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 
-public class RestRequestDesktopPanel extends
-        AbstractRestRequestDesktopPanel<RestRequestInterface, RestRequestInterface> {
+public class RestRequestDesktopPanel extends AbstractRestRequestDesktopPanel<RestRequestInterface, RestRequestInterface> {
     public static final String REST_REQUEST_EDITOR = "rest-request-editor";
     protected TextPanelWithTopLabel resourcePanel;
     protected ParametersField queryPanel;
@@ -47,6 +41,16 @@ public class RestRequestDesktopPanel extends
     }
 
     @Override
+    protected void init(RestRequestInterface request) {
+        addToTestCaseButton = createActionButton(
+            SwingActionDelegate.createDelegate(AddRestRequestToTestCaseAction.SOAPUI_ACTION_ID, getRequest(), null, "/add_to_test_case.png"),
+            true
+        );
+
+        super.init(request);
+    }
+
+    @Override
     protected void initializeFields() {
         String path = getRequest().getResource().getFullPath();
         updating = new MutableBoolean();
@@ -55,20 +59,20 @@ public class RestRequestDesktopPanel extends
     }
 
     @Override
-    protected void init(RestRequestInterface request) {
-        addToTestCaseButton = createActionButton(SwingActionDelegate.createDelegate(
-                AddRestRequestToTestCaseAction.SOAPUI_ACTION_ID, getRequest(), null, "/add_to_test_case.png"), true);
+    protected void insertButtons(JXToolBar toolbar) {
+        toolbar.add(addToTestCaseButton);
 
-        super.init(request);
-    }
-
-    protected String getHelpUrl() {
-        return HelpUrls.RESTREQUESTEDITOR_HELP_URL;
+        JPanel methodPanel = addMethodCombo();
+        toolbar.addWithOnlyMinimumHeight(methodPanel);
     }
 
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         addToTestCaseButton.setEnabled(enabled);
+    }
+
+    protected String getHelpUrl() {
+        return HelpUrls.RESTREQUESTEDITOR_HELP_URL;
     }
 
     @Override
@@ -90,15 +94,6 @@ public class RestRequestDesktopPanel extends
         resourcePanel.setText(getRequest().getResource().getFullPath());
         queryPanel.updateTextField();
         updating.setValue(false);
-
-    }
-
-    @Override
-    protected void insertButtons(JXToolBar toolbar) {
-        toolbar.add(addToTestCaseButton);
-
-        JPanel methodPanel = addMethodCombo();
-        toolbar.addWithOnlyMinimumHeight(methodPanel);
     }
 
     private JPanel addMethodCombo() {
@@ -121,9 +116,7 @@ public class RestRequestDesktopPanel extends
 
             toolbar.add(Box.createHorizontalStrut(4));
 
-
             toolbar.addWithOnlyMinimumHeight(queryPanel);
         }
     }
-
 }

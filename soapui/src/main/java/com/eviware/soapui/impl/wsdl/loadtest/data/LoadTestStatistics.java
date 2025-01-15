@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.data;
@@ -35,7 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.table.AbstractTableModel;
-import java.awt.Color;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.EmptyStackException;
@@ -54,11 +54,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public final class LoadTestStatistics extends AbstractTableModel implements Runnable {
     public final static String NO_STATS_TESTCASE_CANCEL_REASON = "NO_STATS_TESTCASE_CANCEL_REASON";
+    public static final int TOTAL = -1;
+    public static final int DEFAULT_SAMPLE_INTERVAL = 250;
     private final static Logger log = LogManager.getLogger(LoadTestStatistics.class);
-
-    private final WsdlLoadTest loadTest;
-    private long[][] data;
-
     private final static int MIN_COLUMN = 0;
     private final static int MAX_COLUMN = 1;
     private final static int AVG_COLUMN = 2;
@@ -71,25 +69,22 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
     private final static int SUM_COLUMN = 9;
     private final static int CURRENT_CNT_COLUMN = 10;
     private final static int RATIO_COLUMN = 11;
-
-    public static final int TOTAL = -1;
-
-    public static final int DEFAULT_SAMPLE_INTERVAL = 250;
-
-    private InternalTestRunListener testRunListener;
-    private InternalTestSuiteListener testSuiteListener;
-    private InternalPropertyChangeListener propertyChangeListener;
-
-    private StatisticsHistory history;
-
+    private final static Map<Integer, Statistic> statisticIndexMap = new HashMap<Integer, Statistic>();
+    private final WsdlLoadTest loadTest;
+    private long[][] data;
+    private final InternalTestRunListener testRunListener;
+    private final InternalTestSuiteListener testSuiteListener;
+    private final InternalPropertyChangeListener propertyChangeListener;
+    private final StatisticsHistory history;
     private boolean changed;
     private long updateFrequency = DEFAULT_SAMPLE_INTERVAL;
-    private Queue<SamplesHolder> samplesStack = new ConcurrentLinkedQueue<SamplesHolder>();
+    private final Queue<SamplesHolder> samplesStack = new ConcurrentLinkedQueue<SamplesHolder>();
     private long currentThreadCountStartTime;
     private long totalAverageSum;
     private boolean resetStatistics;
     private boolean running;
     private boolean adding;
+    private final Updater updater = new Updater();
 
     public LoadTestStatistics(WsdlLoadTest loadTest) {
         this.loadTest = loadTest;
@@ -124,12 +119,39 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
         return loadTest.getTestCase().getTestStepCount() + 1;
     }
 
-    public WsdlLoadTest getLoadTest() {
-        return loadTest;
-    }
-
     public int getColumnCount() {
         return 12;
+    }
+
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        WsdlTestCase testCase = loadTest.getTestCase();
+
+        switch (columnIndex) {
+            case 0:
+                return rowIndex == testCase.getTestStepCount() ? null : ColorPalette.getColor(testCase.getTestStepAt(rowIndex));
+            case 1: {
+                if (rowIndex == testCase.getTestStepCount()) {
+                    return "TestCase:";
+                }
+                else {
+                    return testCase.getTestStepAt(rowIndex).getLabel();
+                }
+            }
+            case 4:
+            case 7:
+                return new Float((float)data[rowIndex][columnIndex - 2] / 100);
+            case 11:
+                return data[rowIndex][Statistic.COUNT.getIndex()] == 0
+                       ? 0
+                       : (long)(((float)data[rowIndex][Statistic.ERRORS.getIndex()] / (float)data[rowIndex][Statistic.COUNT.getIndex()]) * 100);
+            default: {
+                return data == null || rowIndex >= data.length ? Long.valueOf(0) : Long.valueOf(data[rowIndex][columnIndex - 2]);
+            }
+        }
+    }
+
+    public WsdlLoadTest getLoadTest() {
+        return loadTest;
     }
 
     public String getColumnName(int columnIndex) {
@@ -190,43 +212,17 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
             case AVERAGE:
                 return data[stepIndex][statistic.getIndex()] / 100;
             case ERRORRATIO:
-                return data[stepIndex][Statistic.COUNT.getIndex()] == 0 ? 0
-                        : (long) ((((float) data[stepIndex][Statistic.ERRORS.getIndex()] / (float) data[stepIndex][Statistic.COUNT
-                        .getIndex()]) + 0.5) * 100);
+                return data[stepIndex][Statistic.COUNT.getIndex()] == 0
+                       ? 0
+                       : (long)((((float)data[stepIndex][Statistic.ERRORS.getIndex()] / (float)data[stepIndex][Statistic.COUNT.getIndex()]) + 0.5) * 100);
             default:
                 return data[stepIndex][statistic.getIndex()];
         }
     }
 
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        WsdlTestCase testCase = loadTest.getTestCase();
-
-        switch (columnIndex) {
-            case 0:
-                return rowIndex == testCase.getTestStepCount() ? null : ColorPalette.getColor(testCase
-                        .getTestStepAt(rowIndex));
-            case 1: {
-                if (rowIndex == testCase.getTestStepCount()) {
-                    return "TestCase:";
-                } else {
-                    return testCase.getTestStepAt(rowIndex).getLabel();
-                }
-            }
-            case 4:
-            case 7:
-                return new Float((float) data[rowIndex][columnIndex - 2] / 100);
-            case 11:
-                return data[rowIndex][Statistic.COUNT.getIndex()] == 0 ? 0
-                        : (long) (((float) data[rowIndex][Statistic.ERRORS.getIndex()] / (float) data[rowIndex][Statistic.COUNT
-                        .getIndex()]) * 100);
-            default: {
-                return data == null || rowIndex >= data.length ? new Long(0) : new Long(data[rowIndex][columnIndex - 2]);
-            }
-        }
-    }
-
-    public void pushSamples(long[] samples, long[] sizes, long[] sampleCounts, long startTime, long timeTaken,
-                            boolean complete) {
+    public void pushSamples(
+        long[] samples, long[] sizes, long[] sampleCounts, long startTime, long timeTaken, boolean complete
+    ) {
         if (!running || samples.length == 0 || sizes.length == 0) {
             return;
         }
@@ -247,8 +243,10 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
                 }
 
                 Thread.sleep(200);
-            } catch (EmptyStackException e) {
-            } catch (Exception e) {
+            }
+            catch (EmptyStackException e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -264,8 +262,7 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
         int totalIndex = data.length - 1;
         if (holder.samples.length != totalIndex || holder.sizes.length != totalIndex) {
             adding = false;
-            throw new RuntimeException("Unexpected number of samples: " + holder.samples.length + ", exptected "
-                    + (totalIndex));
+            throw new RuntimeException("Unexpected number of samples: " + holder.samples.length + ", exptected " + (totalIndex));
         }
 
         // discard "old" results
@@ -318,17 +315,18 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
                         data[c][MAX_COLUMN] = sampleAvg;
                     }
 
-                    float average = (float) data[c][SUM_COLUMN] / (float) data[c][CURRENT_CNT_COLUMN];
+                    float average = (float)data[c][SUM_COLUMN] / (float)data[c][CURRENT_CNT_COLUMN];
 
-                    data[c][AVG_COLUMN] = (long) (average * 100);
+                    data[c][AVG_COLUMN] = (long)(average * 100);
                     data[c][BYTES_COLUMN] += holder.sizes[c];
 
                     if (timePassed > 0) {
                         if (loadTest.getCalculateTPSOnTimePassed()) {
                             data[c][TPS_COLUMN] = (data[c][CURRENT_CNT_COLUMN] * 100000) / timePassed;
                             data[c][BPS_COLUMN] = (data[c][BYTES_COLUMN] * 1000) / timePassed;
-                        } else {
-                            data[c][TPS_COLUMN] = (long) (data[c][AVG_COLUMN] > 0 ? (100000F / average) * threadCount : 0);
+                        }
+                        else {
+                            data[c][TPS_COLUMN] = (long)(data[c][AVG_COLUMN] > 0 ? (100000F / average) * threadCount : 0);
 
                             long avgBytes = data[c][CNT_COLUMN] == 0 ? 0 : data[c][BYTES_COLUMN] / data[c][CNT_COLUMN];
                             data[c][BPS_COLUMN] = (avgBytes * data[c][TPS_COLUMN]) / 100;
@@ -342,7 +340,8 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
                 totalAvg += data[c][AVG_COLUMN] * holder.sampleCounts[c];
                 totalSum += data[c][SUM_COLUMN] * holder.sampleCounts[c];
                 totalLast += data[c][LAST_COLUMN] * holder.sampleCounts[c];
-            } else {
+            }
+            else {
                 totalMin += data[c][MIN_COLUMN];
                 totalMax += data[c][MAX_COLUMN];
                 totalBytes += data[c][BYTES_COLUMN];
@@ -354,20 +353,18 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
             data[totalIndex][CURRENT_CNT_COLUMN]++;
 
             totalAverageSum += totalLast * 100;
-            data[totalIndex][AVG_COLUMN] = (long) ((float) totalAverageSum / (float) data[totalIndex][CURRENT_CNT_COLUMN]);
+            data[totalIndex][AVG_COLUMN] = (long)((float)totalAverageSum / (float)data[totalIndex][CURRENT_CNT_COLUMN]);
             data[totalIndex][BYTES_COLUMN] = totalBytes;
 
             if (timePassed > 0) {
                 if (loadTest.getCalculateTPSOnTimePassed()) {
                     data[totalIndex][TPS_COLUMN] = (data[totalIndex][CURRENT_CNT_COLUMN] * 100000) / timePassed;
                     data[totalIndex][BPS_COLUMN] = (data[totalIndex][BYTES_COLUMN] * 1000) / timePassed;
-                } else {
-                    data[totalIndex][TPS_COLUMN] = (long) (data[totalIndex][AVG_COLUMN] > 0 ? (10000000F / data[totalIndex][AVG_COLUMN])
-                            * threadCount
-                            : 0);
+                }
+                else {
+                    data[totalIndex][TPS_COLUMN] = (long)(data[totalIndex][AVG_COLUMN] > 0 ? (10000000F / data[totalIndex][AVG_COLUMN]) * threadCount : 0);
 
-                    long avgBytes = data[totalIndex][CNT_COLUMN] == 0 ? 0 : data[totalIndex][BYTES_COLUMN]
-                            / data[totalIndex][CNT_COLUMN];
+                    long avgBytes = data[totalIndex][CNT_COLUMN] == 0 ? 0 : data[totalIndex][BYTES_COLUMN] / data[totalIndex][CNT_COLUMN];
 
                     data[totalIndex][BPS_COLUMN] = (avgBytes * data[totalIndex][TPS_COLUMN]) / 100;
                 }
@@ -381,11 +378,167 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
 
         if (updateFrequency == 0) {
             fireTableDataChanged();
-        } else {
+        }
+        else {
             changed = true;
         }
 
         adding = false;
+    }
+
+    private void stop() {
+        running = false;
+    }
+
+    public int getStepCount() {
+        return loadTest.getTestCase().getTestStepCount();
+    }
+
+    public void reset() {
+        init();
+        fireTableDataChanged();
+    }
+
+    public void release() {
+        reset();
+
+        loadTest.removeLoadTestRunListener(testRunListener);
+        loadTest.getTestCase().getTestSuite().removeTestSuiteListener(testSuiteListener);
+
+        for (TestStep testStep : loadTest.getTestCase().getTestStepList()) {
+            testStep.removePropertyChangeListener(propertyChangeListener);
+        }
+    }
+
+    public TestStep getTestStepAtRow(int selectedRow) {
+        if (selectedRow < getRowCount() - 1) {
+            return loadTest.getTestCase().getTestStepAt(selectedRow);
+        }
+        else {
+            return null;
+        }
+    }
+
+    public long getUpdateFrequency() {
+        return updateFrequency;
+    }
+
+    public void setUpdateFrequency(long updateFrequency) {
+        this.updateFrequency = updateFrequency;
+    }
+
+    public void addError(int stepIndex) {
+        if (stepIndex != -1) {
+            data[stepIndex][ERR_COLUMN]++;
+        }
+
+        data[data.length - 1][ERR_COLUMN]++;
+        changed = true;
+    }
+
+    public synchronized StringList[] getSnapshot() {
+        long[][] clone = data.clone();
+
+        StringList[] result = new StringList[getRowCount()];
+
+        for (int c = 0; c < clone.length; c++) {
+            StringList values = new StringList();
+
+            for (int columnIndex = 2; columnIndex < getColumnCount(); columnIndex++) {
+                switch (columnIndex) {
+                    case 4:
+                    case 7:
+                        values.add(String.valueOf((float)data[c][columnIndex - 2] / 100));
+                        break;
+                    default:
+                        values.add(String.valueOf(data[c][columnIndex - 2]));
+                }
+            }
+
+            result[c] = values;
+        }
+
+        return result;
+    }
+
+    public synchronized void finish() {
+        // push leftover samples
+        while (!samplesStack.isEmpty()) {
+            SamplesHolder holder = samplesStack.poll();
+            if (holder != null) {
+                addSamples(holder);
+            }
+        }
+    }
+
+    public enum Statistic {
+        MININMUM(MIN_COLUMN, "min", "the minimum measured teststep time"),
+        MAXIMUM(MAX_COLUMN, "max", "the maximum measured testste time"),
+        AVERAGE(AVG_COLUMN, "avg", "the average measured teststep time"),
+        LAST(LAST_COLUMN, "last", "the last measured teststep time"),
+        COUNT(CNT_COLUMN, "cnt", "the number of teststep samples measured"),
+        TPS(TPS_COLUMN, "tps", "the number of transactions per second for this teststep"),
+        BYTES(BYTES_COLUMN, "bytes", "the total number of bytes returned by this teststep"),
+        BPS(BPS_COLUMN, "bps", "the number of bytes per second returned by this teststep"),
+        ERRORS(ERR_COLUMN, "err", "the total number of assertion errors for this teststep"),
+        SUM(SUM_COLUMN, "sum", "internal sum"),
+        CURRENT_CNT(CURRENT_CNT_COLUMN, "ccnt", "internal cnt"),
+        ERRORRATIO(RATIO_COLUMN, "rat", "the ratio between exections and failures");
+
+        private final String description;
+        private final String name;
+        private final int index;
+
+        public static Statistic forIndex(int column) {
+            return statisticIndexMap.get(column);
+        }
+
+        Statistic(int index, String name, String description) {
+            this.index = index;
+            this.name = name;
+            this.description = description;
+
+            statisticIndexMap.put(index, this);
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+    /**
+     * Holds all sample values for a testcase run
+     *
+     * @author ole.matzura
+     */
+
+    private static final class SamplesHolder {
+        private final long[] samples;
+        private final long[] sizes;
+        private final long[] sampleCounts;
+
+        private final long startTime;
+        private final long timeTaken;
+        private final boolean complete;
+
+        public SamplesHolder(
+            long[] samples, long[] sizes, long[] sampleCounts, long startTime, long timeTaken, boolean complete
+        ) {
+            this.samples = samples;
+            this.sizes = sizes;
+            this.startTime = startTime;
+            this.timeTaken = timeTaken;
+            this.sampleCounts = sampleCounts;
+            this.complete = complete;
+        }
     }
 
     private final class Updater implements Runnable {
@@ -405,15 +558,12 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
 
                 try {
                     Thread.sleep(updateFrequency < 1 ? 1000 : updateFrequency);
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e) {
                     SoapUI.logError(e);
                 }
             }
         }
-    }
-
-    private void stop() {
-        running = false;
     }
 
     /**
@@ -435,8 +585,9 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
         }
 
         @Override
-        public void afterTestStep(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                                  TestCaseRunContext runContext, TestStepResult testStepResult) {
+        public void afterTestStep(
+            LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult testStepResult
+        ) {
             if (loadTest.getUpdateStatisticsPerTestStep()) {
                 TestCase testCase = testRunner.getTestCase();
 
@@ -459,10 +610,10 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
             }
         }
 
-        public void afterTestCase(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                                  TestCaseRunContext runContext) {
-            if (testRunner.getStatus() == TestRunner.Status.CANCELED
-                    && testRunner.getReason().equals(NO_STATS_TESTCASE_CANCEL_REASON)) {
+        public void afterTestCase(
+            LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+        ) {
+            if (testRunner.getStatus() == TestRunner.Status.CANCELED && testRunner.getReason().equals(NO_STATS_TESTCASE_CANCEL_REASON)) {
                 return;
             }
 
@@ -498,26 +649,6 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
         }
     }
 
-    public int getStepCount() {
-        return loadTest.getTestCase().getTestStepCount();
-    }
-
-    public void reset() {
-        init();
-        fireTableDataChanged();
-    }
-
-    public void release() {
-        reset();
-
-        loadTest.removeLoadTestRunListener(testRunListener);
-        loadTest.getTestCase().getTestSuite().removeTestSuiteListener(testSuiteListener);
-
-        for (TestStep testStep : loadTest.getTestCase().getTestStepList()) {
-            testStep.removePropertyChangeListener(propertyChangeListener);
-        }
-    }
-
     private class InternalTestSuiteListener extends TestSuiteListenerAdapter {
         public void testStepAdded(TestStep testStep, int index) {
             if (testStep.getTestCase() == loadTest.getTestCase()) {
@@ -547,146 +678,16 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
                     resetStatistics = true;
                     currentThreadCountStartTime = System.currentTimeMillis();
                 }
-            } else if (evt.getPropertyName().equals(TestStep.NAME_PROPERTY)
-                    || evt.getPropertyName().equals(TestStep.DISABLED_PROPERTY)) {
+            }
+            else if (evt.getPropertyName().equals(TestStep.NAME_PROPERTY) || evt.getPropertyName().equals(TestStep.DISABLED_PROPERTY)) {
                 if (evt.getSource() instanceof TestStep) {
-                    fireTableCellUpdated(loadTest.getTestCase().getIndexOfTestStep((TestStep) evt.getSource()), 1);
+                    fireTableCellUpdated(loadTest.getTestCase().getIndexOfTestStep((TestStep)evt.getSource()), 1);
                 }
-            } else if (evt.getPropertyName().equals(WsdlLoadTest.HISTORYLIMIT_PROPERTY)) {
+            }
+            else if (evt.getPropertyName().equals(WsdlLoadTest.HISTORYLIMIT_PROPERTY)) {
                 if (loadTest.getHistoryLimit() == 0) {
                     history.reset();
                 }
-            }
-        }
-    }
-
-    public TestStep getTestStepAtRow(int selectedRow) {
-        if (selectedRow < getRowCount() - 1) {
-            return loadTest.getTestCase().getTestStepAt(selectedRow);
-        } else {
-            return null;
-        }
-    }
-
-    public long getUpdateFrequency() {
-        return updateFrequency;
-    }
-
-    public void setUpdateFrequency(long updateFrequency) {
-        this.updateFrequency = updateFrequency;
-    }
-
-    public void addError(int stepIndex) {
-        if (stepIndex != -1) {
-            data[stepIndex][ERR_COLUMN]++;
-        }
-
-        data[data.length - 1][ERR_COLUMN]++;
-        changed = true;
-    }
-
-    public synchronized StringList[] getSnapshot() {
-        long[][] clone = data.clone();
-
-        StringList[] result = new StringList[getRowCount()];
-
-        for (int c = 0; c < clone.length; c++) {
-            StringList values = new StringList();
-
-            for (int columnIndex = 2; columnIndex < getColumnCount(); columnIndex++) {
-                switch (columnIndex) {
-                    case 4:
-                    case 7:
-                        values.add(String.valueOf((float) data[c][columnIndex - 2] / 100));
-                        break;
-                    default:
-                        values.add(String.valueOf(data[c][columnIndex - 2]));
-                }
-            }
-
-            result[c] = values;
-        }
-
-        return result;
-    }
-
-    private final static Map<Integer, Statistic> statisticIndexMap = new HashMap<Integer, Statistic>();
-
-    private Updater updater = new Updater();
-
-    public enum Statistic {
-        MININMUM(MIN_COLUMN, "min", "the minimum measured teststep time"), MAXIMUM(MAX_COLUMN, "max",
-                "the maximum measured testste time"), AVERAGE(AVG_COLUMN, "avg", "the average measured teststep time"), LAST(
-                LAST_COLUMN, "last", "the last measured teststep time"), COUNT(CNT_COLUMN, "cnt",
-                "the number of teststep samples measured"), TPS(TPS_COLUMN, "tps",
-                "the number of transactions per second for this teststep"), BYTES(BYTES_COLUMN, "bytes",
-                "the total number of bytes returned by this teststep"), BPS(BPS_COLUMN, "bps",
-                "the number of bytes per second returned by this teststep"), ERRORS(ERR_COLUMN, "err",
-                "the total number of assertion errors for this teststep"), SUM(SUM_COLUMN, "sum", "internal sum"), CURRENT_CNT(
-                CURRENT_CNT_COLUMN, "ccnt", "internal cnt"), ERRORRATIO(RATIO_COLUMN, "rat",
-                "the ratio between exections and failures");
-
-        private final String description;
-        private final String name;
-        private final int index;
-
-        Statistic(int index, String name, String description) {
-            this.index = index;
-            this.name = name;
-            this.description = description;
-
-            statisticIndexMap.put(index, this);
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public static Statistic forIndex(int column) {
-            return statisticIndexMap.get(column);
-        }
-    }
-
-    /**
-     * Holds all sample values for a testcase run
-     *
-     * @author ole.matzura
-     */
-
-    private static final class SamplesHolder {
-        private final long[] samples;
-        private final long[] sizes;
-        private final long[] sampleCounts;
-
-        private final long startTime;
-        private final long timeTaken;
-        private final boolean complete;
-
-        public SamplesHolder(long[] samples, long[] sizes, long[] sampleCounts, long startTime, long timeTaken,
-                             boolean complete) {
-            this.samples = samples;
-            this.sizes = sizes;
-            this.startTime = startTime;
-            this.timeTaken = timeTaken;
-            this.sampleCounts = sampleCounts;
-            this.complete = complete;
-        }
-    }
-
-    public synchronized void finish() {
-        // push leftover samples
-        while (!samplesStack.isEmpty()) {
-            SamplesHolder holder = samplesStack.poll();
-            if (holder != null) {
-                addSamples(holder);
             }
         }
     }

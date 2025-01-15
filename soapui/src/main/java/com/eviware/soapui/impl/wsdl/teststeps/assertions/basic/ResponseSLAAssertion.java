@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.basic;
@@ -42,8 +42,8 @@ import org.apache.xmlbeans.XmlObject;
  * time.
  *
  * @author Cory Lewis cory.lewis@genworth.com
- *         <p/>
- *         with help from
+ * <p/>
+ * with help from
  * @author Ole.Matzura
  */
 
@@ -53,12 +53,11 @@ public class ResponseSLAAssertion extends WsdlMessageAssertion implements Respon
     public static final String ID = "Response SLA Assertion";
     public static final String LABEL = "Response SLA";
     public static final String DESCRIPTION = "Validates that the last received response time was within the defined limit. Applicable to Script TestSteps and TestSteps that send requests and receive responses.";
-    private String SLA;
-
     private static final String SLA_VALUE_IS_NOT_NUMBER = messages.get("ResponseSLAAssertion.InfoNotNumber");
     private static final String SLA_VALUE_IS_EMPTY = messages.get("ResponseSLAAssertion.InfoEmptyValue");
     private static final String FORM_TITLE = messages.get("ResponseSLAAssertion.Form.Title");
     private static final String FORM_DESCRIPTION = messages.get("ResponseSLAAssertion.Form.Description");
+    private String SLA;
 
     /**
      * Constructor for our assertion.
@@ -72,13 +71,7 @@ public class ResponseSLAAssertion extends WsdlMessageAssertion implements Respon
         SLA = reader.readString("SLA", "200");
     }
 
-    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
-        return null;
-    }
-
-    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
+    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
         Response response = messageExchange.getResponse();
         long timeTaken = response == null ? messageExchange.getTimeTaken() : response.getTimeTaken();
 
@@ -88,14 +81,17 @@ public class ResponseSLAAssertion extends WsdlMessageAssertion implements Respon
         try {
             propertyValue = PropertyExpander.expandProperties(context, SLA.trim());
             timeExecuted = Long.parseLong(propertyValue);
-        } catch (NumberFormatException exp) {
+        }
+        catch (NumberFormatException exp) {
             if (!StringUtils.isNullOrEmpty(SLA)) {
                 if (!StringUtils.isNullOrEmpty(propertyValue)) {
                     throw new AssertionException(new AssertionError(String.format(SLA_VALUE_IS_NOT_NUMBER, propertyValue)));
-                } else {
+                }
+                else {
                     throw new AssertionException(new AssertionError(String.format(SLA_VALUE_IS_NOT_NUMBER, SLA)));
                 }
-            } else {
+            }
+            else {
                 throw new AssertionException(new AssertionError(SLA_VALUE_IS_EMPTY));
             }
         }
@@ -107,14 +103,19 @@ public class ResponseSLAAssertion extends WsdlMessageAssertion implements Respon
         return "Response meets SLA";
     }
 
+    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+        return null;
+    }
+
     @Override
-    protected String internalAssertProperty(TestPropertyHolder source, String propertyName,
-                                            MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+    protected String internalAssertProperty(
+        TestPropertyHolder source, String propertyName, MessageExchange messageExchange, SubmitContext context
+    ) throws AssertionException {
         return null;
     }
 
     /**
-     * @see com.eviware.soapui.impl.wsdl.teststeps.WsdlMessageAssertion#configure()
+     * @see WsdlMessageAssertion#configure()
      */
     public boolean configure() {
         String value = getSLA();
@@ -149,12 +150,7 @@ public class ResponseSLAAssertion extends WsdlMessageAssertion implements Respon
 
     public static class Factory extends AbstractTestAssertionFactory {
         public Factory() {
-            super(ResponseSLAAssertion.ID, ResponseSLAAssertion.LABEL, ResponseSLAAssertion.class);
-        }
-
-        @Override
-        public String getCategory() {
-            return AssertionCategoryMapping.SLA_CATEGORY;
+            super(ID, LABEL, ResponseSLAAssertion.class);
         }
 
         @Override
@@ -164,8 +160,12 @@ public class ResponseSLAAssertion extends WsdlMessageAssertion implements Respon
 
         @Override
         public AssertionListEntry getAssertionListEntry() {
-            return new AssertionListEntry(ResponseSLAAssertion.ID, ResponseSLAAssertion.LABEL,
-                    ResponseSLAAssertion.DESCRIPTION);
+            return new AssertionListEntry(ID, LABEL, DESCRIPTION);
+        }
+
+        @Override
+        public String getCategory() {
+            return AssertionCategoryMapping.SLA_CATEGORY;
         }
     }
 }

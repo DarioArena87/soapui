@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui;
@@ -43,10 +43,7 @@ import com.eviware.soapui.support.types.StringToStringMap;
 import com.eviware.soapui.ui.desktop.DesktopListener;
 import com.eviware.soapui.ui.desktop.DesktopPanel;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.event.ActionEvent;
@@ -65,9 +62,9 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
     private static final String RECENT_PROJECTS_SETTING = "RecentProjects";
     private static final String EMPTYMARKER = "- empty -";
     private static final String CLEAR_ITEMS = "Clear Items";
-    private JMenu recentProjectsMenu;
-    private JMenu recentWorkspacesMenu;
-    private JMenu recentEditorsMenu;
+    private final JMenu recentProjectsMenu;
+    private final JMenu recentWorkspacesMenu;
+    private final JMenu recentEditorsMenu;
     private boolean switchingWorkspace;
 
     public RecentItemsListener(JMenu recentWorkspacesMenu2, JMenu recentProjectsMenu2, JMenu recentEditorsMenu2) {
@@ -76,12 +73,6 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
         recentEditorsMenu = recentEditorsMenu2;
         recentEditorsMenu.add(EMPTYMARKER).setEnabled(false);
         recentEditorsMenu.getPopupMenu().addPopupMenuListener(new PopupMenuListener() {
-
-            public void popupMenuCanceled(PopupMenuEvent e) {
-            }
-
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            }
 
             public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                 int editorCount = 0;
@@ -96,10 +87,12 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
                     if (action.isReleased()) {
                         recentEditorsMenu.remove(c);
                         c--;
-                    } else {
+                    }
+                    else {
                         try {
                             action.update();
-                        } catch (Throwable e1) {
+                        }
+                        catch (Throwable e1) {
                             recentEditorsMenu.remove(c);
                             c--;
                         }
@@ -130,7 +123,12 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
                 if (editorCount == 0 && recentEditorsMenu.getItemCount() <= 2) {
                     recentEditorsMenu.add(new JMenuItem(EMPTYMARKER), 0).setEnabled(false);
                 }
+            }
 
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            }
+
+            public void popupMenuCanceled(PopupMenuEvent e) {
             }
         });
 
@@ -148,8 +146,7 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
         if (history.size() > 0) {
             for (Map.Entry<String, String> entry : history.entrySet()) {
                 String filePath = entry.getKey();
-                DefaultActionMapping<WorkspaceImpl> mapping = new DefaultActionMapping<WorkspaceImpl>(
-                        SwitchWorkspaceAction.SOAPUI_ACTION_ID, null, null, false, filePath);
+                DefaultActionMapping<WorkspaceImpl> mapping = new DefaultActionMapping<WorkspaceImpl>(SwitchWorkspaceAction.SOAPUI_ACTION_ID, null, null, false, filePath);
                 String wsName = entry.getValue();
 
                 if (SoapUI.getWorkspace().getPath().equals(filePath)) {
@@ -162,7 +159,8 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
                 AbstractAction delegate = new SwingActionDelegate(mapping, SoapUI.getWorkspace());
                 recentWorkspacesMenu.add(new JMenuItem(delegate));
             }
-        } else {
+        }
+        else {
             recentWorkspacesMenu.add(EMPTYMARKER).setEnabled(false);
         }
 
@@ -180,8 +178,7 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
         if (history.size() > 0) {
             for (Map.Entry<String, String> entry : history.entrySet()) {
                 String filePath = entry.getKey();
-                DefaultActionMapping<WorkspaceImpl> mapping = new DefaultActionMapping<WorkspaceImpl>(
-                        ImportWsdlProjectAction.SOAPUI_ACTION_ID, null, null, false, filePath);
+                DefaultActionMapping<WorkspaceImpl> mapping = new DefaultActionMapping<WorkspaceImpl>(ImportWsdlProjectAction.SOAPUI_ACTION_ID, null, null, false, filePath);
                 String wsName = entry.getValue();
                 mapping.setName(wsName);
                 mapping.setDescription("Switches to the [" + wsName + "] project");
@@ -189,7 +186,8 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
                 AbstractAction delegate = new SwingActionDelegate(mapping, SoapUI.getWorkspace());
                 recentProjectsMenu.add(new JMenuItem(delegate));
             }
-        } else {
+        }
+        else {
             recentProjectsMenu.add(EMPTYMARKER).setEnabled(false);
         }
 
@@ -203,7 +201,7 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
             return;
         }
 
-        String filePath = ((WsdlProject) project).getPath();
+        String filePath = project.getPath();
         if (filePath == null) {
             return;
         }
@@ -226,7 +224,7 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
                 continue;
             }
 
-            SwingActionDelegate actionDelegate = (SwingActionDelegate) action;
+            SwingActionDelegate actionDelegate = (SwingActionDelegate)action;
             if (actionDelegate == null) {
                 continue;
             }
@@ -244,24 +242,20 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
         }
     }
 
-    public void projectChanged(Project project) {
-    }
-
     @SuppressWarnings("unchecked")
     public void projectRemoved(Project project) {
         if (switchingWorkspace) {
             return;
         }
 
-        String filePath = ((WsdlProject) project).getPath();
+        String filePath = project.getPath();
 
         String recent = SoapUI.getSettings().getString(RECENT_PROJECTS_SETTING, null);
         StringToStringMap history = recent == null ? new StringToStringMap() : StringToStringMap.fromXml(recent);
         history.put(filePath, project.getName());
         SoapUI.getSettings().setString(RECENT_PROJECTS_SETTING, history.toXml());
 
-        DefaultActionMapping<WorkspaceImpl> mapping = new DefaultActionMapping<WorkspaceImpl>(
-                ImportWsdlProjectAction.SOAPUI_ACTION_ID, null, null, false, filePath);
+        DefaultActionMapping<WorkspaceImpl> mapping = new DefaultActionMapping<WorkspaceImpl>(ImportWsdlProjectAction.SOAPUI_ACTION_ID, null, null, false, filePath);
         mapping.setName(project.getName());
         mapping.setDescription("Switches to the [" + project.getName() + "] project");
 
@@ -276,58 +270,40 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
         }
 
         removeProjectEditors(project);
-
     }
 
-    private void removeProjectEditors(Project project) {
-        for (int c = 0; c < recentEditorsMenu.getItemCount(); c++) {
-            ShowEditorAction action = getShowEditorAction(recentEditorsMenu, c);
-            if (action == null) {
-                continue;
-            }
-
-            if (action.isReleased()) {
-                recentEditorsMenu.remove(c);
-                c--;
-            } else {
-                try {
-                    action.update();
-                    if (dependsOnProject(action.getModelItem(), project)) {
-                        recentEditorsMenu.remove(c);
-                        c--;
-                    }
-                } catch (Throwable e1) {
-                    recentEditorsMenu.remove(c);
-                    c--;
-                }
-            }
-        }
+    public void projectChanged(Project project) {
     }
 
-    private boolean dependsOnProject(ModelItem modelItem, Project project) {
-        if (modelItem instanceof Interface) {
-            return ((Interface) modelItem).getProject() == project;
-        } else if (modelItem instanceof Operation) {
-            return ((Operation) modelItem).getInterface().getProject() == project;
-        } else if (modelItem instanceof Request) {
-            return ((Request) modelItem).getOperation().getInterface().getProject() == project;
-        } else if (modelItem instanceof TestSuite) {
-            return ((TestSuite) modelItem).getProject() == project;
-        } else if (modelItem instanceof TestCase) {
-            return ((TestCase) modelItem).getTestSuite().getProject() == project;
-        } else if (modelItem instanceof TestStep) {
-            return ((TestStep) modelItem).getTestCase().getTestSuite().getProject() == project;
-        } else if (modelItem instanceof LoadTest) {
-            return ((LoadTest) modelItem).getTestCase().getTestSuite().getProject() == project;
-        } else if (modelItem instanceof MockService) {
-            return ((MockService) modelItem).getProject() == project;
-        } else if (modelItem instanceof MockOperation) {
-            return ((MockOperation) modelItem).getMockService().getProject() == project;
-        } else if (modelItem instanceof MockResponse) {
-            return ((MockResponse) modelItem).getMockOperation().getMockService().getProject() == project;
+    @SuppressWarnings("unchecked")
+    public void workspaceSwitching(Workspace workspace) {
+        switchingWorkspace = true;
+        recentEditorsMenu.removeAll();
+        if (recentEditorsMenu.getItemCount() == 0) {
+            recentEditorsMenu.add(EMPTYMARKER).setEnabled(false);
         }
 
-        return false;
+        String filePath = workspace.getPath();
+        DefaultActionMapping<WorkspaceImpl> mapping = new DefaultActionMapping<WorkspaceImpl>(SwitchWorkspaceAction.SOAPUI_ACTION_ID, null, null, false, filePath);
+        mapping.setName(workspace.getName());
+        mapping.setDescription("Switches to the [" + workspace.getName() + "] workspace");
+
+        AbstractAction delegate = new SwingActionDelegate(mapping, SoapUI.getWorkspace());
+        recentWorkspacesMenu.add(new JMenuItem(delegate), recentWorkspacesMenu.getItemCount() - 2);
+
+        recentWorkspacesMenu.getItem(recentWorkspacesMenu.getItemCount() - 1).setEnabled(true);
+        System.out.println(recentWorkspacesMenu.getItem(recentWorkspacesMenu.getItemCount() - 1).getText());
+
+        String recent = SoapUI.getSettings().getString(RECENT_WORKSPACES_SETTING, null);
+        StringToStringMap history = recent == null ? new StringToStringMap() : StringToStringMap.fromXml(recent);
+        history.put(filePath, workspace.getName());
+        SoapUI.getSettings().setString(RECENT_WORKSPACES_SETTING, history.toXml());
+
+        if (isEmptyMarker(recentWorkspacesMenu.getItem(0))) {
+            recentWorkspacesMenu.remove(0);
+        }
+
+        recentEditorsMenu.removeAll();
     }
 
     @SuppressWarnings("unchecked")
@@ -354,7 +330,7 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
                 continue;
             }
 
-            SwingActionDelegate actionDelegate = (SwingActionDelegate) action;
+            SwingActionDelegate actionDelegate = (SwingActionDelegate)action;
             if (actionDelegate == null) {
                 continue;
             }
@@ -371,36 +347,91 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public void workspaceSwitching(Workspace workspace) {
-        switchingWorkspace = true;
-        recentEditorsMenu.removeAll();
-        if (recentEditorsMenu.getItemCount() == 0) {
-            recentEditorsMenu.add(EMPTYMARKER).setEnabled(false);
+    private void removeProjectEditors(Project project) {
+        for (int c = 0; c < recentEditorsMenu.getItemCount(); c++) {
+            ShowEditorAction action = getShowEditorAction(recentEditorsMenu, c);
+            if (action == null) {
+                continue;
+            }
+
+            if (action.isReleased()) {
+                recentEditorsMenu.remove(c);
+                c--;
+            }
+            else {
+                try {
+                    action.update();
+                    if (dependsOnProject(action.getModelItem(), project)) {
+                        recentEditorsMenu.remove(c);
+                        c--;
+                    }
+                }
+                catch (Throwable e1) {
+                    recentEditorsMenu.remove(c);
+                    c--;
+                }
+            }
+        }
+    }
+
+    private boolean dependsOnProject(ModelItem modelItem, Project project) {
+        if (modelItem instanceof Interface) {
+            return modelItem.getProject() == project;
+        }
+        else if (modelItem instanceof Operation) {
+            return ((Operation)modelItem).getInterface().getProject() == project;
+        }
+        else if (modelItem instanceof Request) {
+            return ((Request)modelItem).getOperation().getInterface().getProject() == project;
+        }
+        else if (modelItem instanceof TestSuite) {
+            return modelItem.getProject() == project;
+        }
+        else if (modelItem instanceof TestCase) {
+            return ((TestCase)modelItem).getTestSuite().getProject() == project;
+        }
+        else if (modelItem instanceof TestStep) {
+            return ((TestStep)modelItem).getTestCase().getTestSuite().getProject() == project;
+        }
+        else if (modelItem instanceof LoadTest) {
+            return ((LoadTest)modelItem).getTestCase().getTestSuite().getProject() == project;
+        }
+        else if (modelItem instanceof MockService) {
+            return ((MockService)modelItem).getProject() == project;
+        }
+        else if (modelItem instanceof MockOperation) {
+            return ((MockOperation)modelItem).getMockService().getProject() == project;
+        }
+        else if (modelItem instanceof MockResponse) {
+            return ((MockResponse)modelItem).getMockOperation().getMockService().getProject() == project;
         }
 
-        String filePath = workspace.getPath();
-        DefaultActionMapping<WorkspaceImpl> mapping = new DefaultActionMapping<WorkspaceImpl>(
-                SwitchWorkspaceAction.SOAPUI_ACTION_ID, null, null, false, filePath);
-        mapping.setName(workspace.getName());
-        mapping.setDescription("Switches to the [" + workspace.getName() + "] workspace");
+        return false;
+    }
 
-        AbstractAction delegate = new SwingActionDelegate(mapping, SoapUI.getWorkspace());
-        recentWorkspacesMenu.add(new JMenuItem(delegate), recentWorkspacesMenu.getItemCount() - 2);
+    public void desktopPanelSelected(DesktopPanel desktopPanel) {
+    }
 
-        recentWorkspacesMenu.getItem(recentWorkspacesMenu.getItemCount() - 1).setEnabled(true);
-        System.out.println(recentWorkspacesMenu.getItem(recentWorkspacesMenu.getItemCount() - 1).getText());
+    public void desktopPanelCreated(DesktopPanel desktopPanel) {
+        for (int c = 0; c < recentEditorsMenu.getItemCount(); c++) {
+            ShowEditorAction action = getShowEditorAction(recentEditorsMenu, c);
+            if (action == null) {
+                continue;
+            }
 
-        String recent = SoapUI.getSettings().getString(RECENT_WORKSPACES_SETTING, null);
-        StringToStringMap history = recent == null ? new StringToStringMap() : StringToStringMap.fromXml(recent);
-        history.put(filePath, workspace.getName());
-        SoapUI.getSettings().setString(RECENT_WORKSPACES_SETTING, history.toXml());
-
-        if (isEmptyMarker(recentWorkspacesMenu.getItem(0))) {
-            recentWorkspacesMenu.remove(0);
+            if (action.isReleased()) {
+                recentEditorsMenu.remove(c);
+                c--;
+            }
+            else if (action.getModelItem().equals(desktopPanel.getModelItem())) {
+                recentEditorsMenu.remove(c);
+                break;
+            }
         }
 
-        recentEditorsMenu.removeAll();
+        if (recentEditorsMenu.getItemCount() == 2) {
+            recentEditorsMenu.add(new JMenuItem(EMPTYMARKER), 0).setEnabled(false);
+        }
     }
 
     public void desktopPanelClosed(DesktopPanel desktopPanel) {
@@ -415,70 +446,6 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
 
         recentEditorsMenu.add(new JMenuItem(new ShowEditorAction(modelItem)), 0);
     }
-
-    public void desktopPanelCreated(DesktopPanel desktopPanel) {
-        for (int c = 0; c < recentEditorsMenu.getItemCount(); c++) {
-            ShowEditorAction action = getShowEditorAction(recentEditorsMenu, c);
-            if (action == null) {
-                continue;
-            }
-
-            if (action.isReleased()) {
-                recentEditorsMenu.remove(c);
-                c--;
-            } else if (action.getModelItem().equals(desktopPanel.getModelItem())) {
-                recentEditorsMenu.remove(c);
-                break;
-            }
-        }
-
-        if (recentEditorsMenu.getItemCount() == 2) {
-            recentEditorsMenu.add(new JMenuItem(EMPTYMARKER), 0).setEnabled(false);
-        }
-    }
-
-    public void desktopPanelSelected(DesktopPanel desktopPanel) {
-    }
-
-    private static class ShowEditorAction extends AbstractAction {
-        private Reference<ModelItem> ref;
-
-        public ShowEditorAction(ModelItem modelItem) {
-            super(modelItem.getName());
-
-            putValue(Action.SHORT_DESCRIPTION, "Reopen editor for [" + modelItem.getName() + "]");
-            ref = new WeakReference<ModelItem>(modelItem);
-        }
-
-        public ModelItem getModelItem() {
-            return ref.get();
-        }
-
-        public void update() {
-            ModelItem modelItem = ref.get();
-            if (modelItem == null) {
-                return;
-            }
-
-            putValue(Action.NAME, modelItem.getName());
-            putValue(Action.SHORT_DESCRIPTION, "Reopen editor for [" + modelItem.getName() + "]");
-        }
-
-        public boolean isReleased() {
-            return ref.get() == null;
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            ModelItem modelItem = ref.get();
-            if (modelItem != null) {
-                UISupport.showDesktopPanel(modelItem);
-            } else {
-                UISupport.showErrorMessage("Item [" + getValue(Action.NAME) + "] is no longer available");
-            }
-        }
-    }
-
-	/* Helper methods */
 
     /**
      * Confirms that the item of index i in menu is a ShowEditorAction, and
@@ -500,36 +467,74 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
             return null;
         }
 
-        return (ShowEditorAction) unknownAction;
+        return (ShowEditorAction)unknownAction;
     }
+
+    /* Helper methods */
 
     /**
      * Checks whether a JMenuItem is an Empty marker (marking an empty list).
      *
      * @param item The item to check.
      * @return True if item is an Empty marker. False otherwise (including if
-     *         item is null).
+     * item is null).
      */
     private boolean isEmptyMarker(JMenuItem item) {
         if (item == null) {
             return false;
         }
-        if (item.getText().equals(EMPTYMARKER)) {
-            return true;
-        }
-        return false;
+        return item.getText().equals(EMPTYMARKER);
     }
 
-	/*
+    private static class ShowEditorAction extends AbstractAction {
+        private final Reference<ModelItem> ref;
+
+        public ShowEditorAction(ModelItem modelItem) {
+            super(modelItem.getName());
+
+            putValue(SHORT_DESCRIPTION, "Reopen editor for [" + modelItem.getName() + "]");
+            ref = new WeakReference<ModelItem>(modelItem);
+        }
+
+        public ModelItem getModelItem() {
+            return ref.get();
+        }
+
+        public void update() {
+            ModelItem modelItem = ref.get();
+            if (modelItem == null) {
+                return;
+            }
+
+            putValue(NAME, modelItem.getName());
+            putValue(SHORT_DESCRIPTION, "Reopen editor for [" + modelItem.getName() + "]");
+        }
+
+        public boolean isReleased() {
+            return ref.get() == null;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            ModelItem modelItem = ref.get();
+            if (modelItem != null) {
+                UISupport.showDesktopPanel(modelItem);
+            }
+            else {
+                UISupport.showErrorMessage("Item [" + getValue(NAME) + "] is no longer available");
+            }
+        }
+    }
+
+    /*
      * Action classes for clearing all items in the Recent
-	 * Editors/Projects/Workspaces submenu
-	 */
+     * Editors/Projects/Workspaces submenu
+     */
 
     @SuppressWarnings("serial")
     private class ClearProjectsAction extends AbstractAction {
         public ClearProjectsAction() {
             super(CLEAR_ITEMS);
-            putValue(Action.SHORT_DESCRIPTION, "Clear all recent projects");
+            putValue(SHORT_DESCRIPTION, "Clear all recent projects");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -541,7 +546,6 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
 
             SoapUI.getSettings().setString(RECENT_PROJECTS_SETTING, emptyMap.toXml());
             updateRecentProjectsMenu();
-
         }
     }
 
@@ -549,7 +553,7 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
     private class ClearWorkspacesAction extends AbstractAction {
         public ClearWorkspacesAction() {
             super(CLEAR_ITEMS);
-            putValue(Action.SHORT_DESCRIPTION, "Clear all recent workspaces");
+            putValue(SHORT_DESCRIPTION, "Clear all recent workspaces");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -561,7 +565,6 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
 
             SoapUI.getSettings().setString(RECENT_WORKSPACES_SETTING, emptyMap.toXml());
             updateRecentWorkspacesMenu();
-
         }
     }
 
@@ -569,7 +572,7 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
     private class ClearEditorsAction extends AbstractAction {
         public ClearEditorsAction() {
             super(CLEAR_ITEMS);
-            putValue(Action.SHORT_DESCRIPTION, "Clear all recent Editors");
+            putValue(SHORT_DESCRIPTION, "Clear all recent Editors");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -583,5 +586,4 @@ public class RecentItemsListener extends WorkspaceListenerAdapter implements Wor
             recentEditorsMenu.add(new ClearEditorsAction());
         }
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.support;
@@ -22,28 +22,19 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.swing.JTableFactory;
 import com.eviware.soapui.support.types.StringToStringMap;
 
-import javax.swing.AbstractAction;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
 public class WSPartsTable extends JPanel {
     private final List<StringToStringMap> parts;
-    private WssEntryBase entry;
-    private PartsTableModel partsTableModel;
-    private JTable partsTable;
+    private final WssEntryBase entry;
+    private final PartsTableModel partsTableModel;
+    private final JTable partsTable;
     private JButton removePartButton;
 
     public WSPartsTable(List<StringToStringMap> parts, WssEntryBase entry) {
@@ -60,8 +51,7 @@ public class WSPartsTable extends JPanel {
             }
         });
 
-        partsTable.getColumnModel().getColumn(3)
-                .setCellEditor(new DefaultCellEditor(new JComboBox(new String[]{"Content", "Element"})));
+        partsTable.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(new JComboBox(new String[]{"Content", "Element"})));
 
         JScrollPane scrollPane = new JScrollPane(partsTable);
         scrollPane.setBackground(Color.WHITE);
@@ -83,17 +73,29 @@ public class WSPartsTable extends JPanel {
     }
 
     private class PartsTableModel extends AbstractTableModel {
-        public int getColumnCount() {
-            return 4;
-        }
-
         public int getRowCount() {
             return parts.size();
         }
 
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return true;
+        public int getColumnCount() {
+            return 4;
+        }
+
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            StringToStringMap part = parts.get(rowIndex);
+
+            switch (columnIndex) {
+                case 0:
+                    return part.get("id");
+                case 1:
+                    return part.get("name");
+                case 2:
+                    return part.get("namespace");
+                case 3:
+                    return part.get("enc");
+            }
+
+            return null;
         }
 
         @Override
@@ -110,6 +112,11 @@ public class WSPartsTable extends JPanel {
             }
 
             return null;
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return true;
         }
 
         @Override
@@ -141,23 +148,6 @@ public class WSPartsTable extends JPanel {
             }
 
             entry.saveConfig();
-        }
-
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            StringToStringMap part = parts.get(rowIndex);
-
-            switch (columnIndex) {
-                case 0:
-                    return part.get("id");
-                case 1:
-                    return part.get("name");
-                case 2:
-                    return part.get("namespace");
-                case 3:
-                    return part.get("enc");
-            }
-
-            return null;
         }
 
         public void remove(int row) {

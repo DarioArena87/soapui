@@ -14,22 +14,23 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SwaggerHubAPITableModel {
-    private StringProperty name;
-    private StringProperty descr;
-    private StringProperty oasVersion;
-    private ObjectProperty versions;
-    private ApiDescriptor descriptor;
-    private StringProperty visibility;
-    private StringProperty owner;
-    private ComboBox<String> versionCombo;
+    private final StringProperty name;
+    private final StringProperty descr;
+    private final StringProperty oasVersion;
+    private final ObjectProperty versions;
+    private final ApiDescriptor descriptor;
+    private final StringProperty visibility;
+    private final StringProperty owner;
+    private final ComboBox<String> versionCombo;
 
     public SwaggerHubAPITableModel(ApiDescriptor descriptor) {
-        this.name = new SimpleStringProperty(descriptor.name);
-        this.descr = new SimpleStringProperty(descriptor.description);
-        this.oasVersion = new SimpleStringProperty(descriptor.oasVersion);
+        name = new SimpleStringProperty(descriptor.name);
+        descr = new SimpleStringProperty(descriptor.description);
+        oasVersion = new SimpleStringProperty(descriptor.oasVersion);
         if (descriptor.isPrivate) {
             visibility = new SimpleStringProperty("Private");
-        } else {
+        }
+        else {
             visibility = new SimpleStringProperty("Public");
         }
 
@@ -41,14 +42,16 @@ public class SwaggerHubAPITableModel {
                     break;
                 }
             }
-        } else {
+        }
+        else {
             versionCombo.getSelectionModel().selectFirst();
         }
-        this.versions = new SimpleObjectProperty(versionCombo);
+        versions = new SimpleObjectProperty(versionCombo);
         if (StringUtils.hasContent(descriptor.owner)) {
-            this.owner = new SimpleStringProperty(descriptor.owner);
-        } else {
-            this.owner = new SimpleStringProperty("Unknown");
+            owner = new SimpleStringProperty(descriptor.owner);
+        }
+        else {
+            owner = new SimpleStringProperty("Unknown");
         }
         this.descriptor = descriptor;
     }
@@ -83,9 +86,11 @@ public class SwaggerHubAPITableModel {
         for (String version : temp) {
             if (version.startsWith("*-")) {
                 result.add(version.substring(2).trim());
-            } else if (version.startsWith("-") || version.startsWith("*")) {
+            }
+            else if (version.startsWith("-") || version.startsWith("*")) {
                 result.add(version.substring(1).trim());
-            } else {
+            }
+            else {
                 result.add(version);
             }
         }

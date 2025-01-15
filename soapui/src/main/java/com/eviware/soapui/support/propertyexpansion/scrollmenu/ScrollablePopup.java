@@ -1,32 +1,25 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.propertyexpansion.scrollmenu;
 
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.Timer;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -41,15 +34,15 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
     /**
      * How fast the scrolling will happen.
      */
-    private int scrollSpeed = 20;
+    private final int scrollSpeed = 20;
     /**
      * Handles the scrolling upwards.
      */
-    private Timer timerUp;
+    private final Timer timerUp;
     /**
      * Handles the scrolling downwards.
      */
-    private Timer timerDown;
+    private final Timer timerDown;
     /**
      * How many items are visible.
      */
@@ -70,11 +63,11 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
     /**
      * Container to hold submenus.
      */
-    private Vector<JMenuItem> subMenus = new Vector<JMenuItem>();
+    private final Vector<JMenuItem> subMenus = new Vector<JMenuItem>();
     /**
      * Height of the screen.
      */
-    private double screenHeight;
+    private final double screenHeight;
     /**
      * Height of the menu.
      */
@@ -126,7 +119,8 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
         if (menuHeight > screenHeight) {
             menuItem.setVisible(false);
             downButton.setVisible(true);
-        } else {
+        }
+        else {
             visibleItems++;
         }
 
@@ -135,8 +129,9 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
 
     public Component add(Component comp) {
         if (comp instanceof JMenuItem) {
-            return add((JMenuItem) comp);
-        } else {
+            return add((JMenuItem)comp);
+        }
+        else {
             return super.add(comp);
         }
     }
@@ -166,12 +161,11 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
 
         if (indexVisible == 0) {
             upButton.setVisible(false);
-
-            return;
-        } else {
+        }
+        else {
             indexVisible--;
-            ((JComponent) subMenus.get(indexVisible + visibleItems)).setVisible(false);
-            ((JComponent) subMenus.get(indexVisible)).setVisible(true);
+            subMenus.get(indexVisible + visibleItems).setVisible(false);
+            subMenus.get(indexVisible).setVisible(true);
             downButton.setVisible(true);
             if (indexVisible == 0) {
                 upButton.setVisible(false);
@@ -189,20 +183,20 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
 
         if ((indexVisible + visibleItems) == subMenus.size()) {
             downButton.setVisible(false);
-
-            return;
-        } else if ((indexVisible + visibleItems) > subMenus.size()) {
-            return;
-        } else {
+        }
+        else if ((indexVisible + visibleItems) > subMenus.size()) {
+        }
+        else {
             try {
-                ((JComponent) subMenus.get(indexVisible)).setVisible(false);
-                ((JComponent) subMenus.get(indexVisible + visibleItems)).setVisible(true);
+                subMenus.get(indexVisible).setVisible(false);
+                subMenus.get(indexVisible + visibleItems).setVisible(true);
                 upButton.setVisible(true);
                 indexVisible++;
                 if ((indexVisible + visibleItems) == subMenus.size()) {
                     downButton.setVisible(false);
                 }
-            } catch (Exception eks) {
+            }
+            catch (Exception eks) {
                 eks.printStackTrace();
             }
         }
@@ -231,7 +225,8 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
             public void mouseEntered(MouseEvent e) {
                 try {
                     timerUp.start();
-                } catch (Exception ekas) {
+                }
+                catch (Exception ekas) {
                 }
             }
 
@@ -244,7 +239,8 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
             public void mouseExited(MouseEvent e) {
                 try {
                     timerUp.stop();
-                } catch (Exception ekas) {
+                }
+                catch (Exception ekas) {
                 }
             }
         }
@@ -269,7 +265,8 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
             public void mouseEntered(MouseEvent e) {
                 try {
                     timerDown.start();
-                } catch (Exception ekas) {
+                }
+                catch (Exception ekas) {
                 }
             }
 
@@ -282,7 +279,8 @@ public class ScrollablePopup extends JPopupMenu implements ScrollableMenuContain
             public void mouseExited(MouseEvent e) {
                 try {
                     timerDown.stop();
-                } catch (Exception ekas) {
+                }
+                catch (Exception ekas) {
                 }
             }
         }

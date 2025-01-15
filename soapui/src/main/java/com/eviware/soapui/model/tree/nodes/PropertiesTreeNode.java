@@ -38,18 +38,21 @@ import java.util.List;
 import java.util.Map;
 
 public class PropertiesTreeNode<T extends ModelItem> extends AbstractModelItemTreeNode<T> {
-    private List<PropertyTreeNode> propertyNodes = new ArrayList<PropertyTreeNode>();
-    private Map<String, PropertyTreeNode> propertyMap = new HashMap<String, PropertyTreeNode>();
-    private InternalTestPropertyListener testPropertyListener;
     private final TestPropertyHolder holder;
+    private final List<PropertyTreeNode> propertyNodes = new ArrayList<PropertyTreeNode>();
+    private final Map<String, PropertyTreeNode> propertyMap = new HashMap<String, PropertyTreeNode>();
+    private final InternalTestPropertyListener testPropertyListener;
+
+    public static PropertiesTreeNode<?> createDefaultPropertiesNode(TestModelItem modelItem, SoapUITreeModel treeModel) {
+        return new PropertiesTreeNode<PropertiesModelItem>(new PropertiesModelItem(modelItem), modelItem, modelItem, treeModel);
+    }
 
     public PropertiesTreeNode(T modelItem, ModelItem parentItem, TestPropertyHolder holder, SoapUITreeModel treeModel) {
         super(modelItem, parentItem, treeModel);
         this.holder = holder;
 
         for (String name : holder.getPropertyNames()) {
-            PropertyTreeNode propertyTreeNode = new PropertyTreeNode(holder.getProperty(name), getModelItem(), holder,
-                    treeModel);
+            PropertyTreeNode propertyTreeNode = new PropertyTreeNode(holder.getProperty(name), getModelItem(), holder, treeModel);
             propertyNodes.add(propertyTreeNode);
             propertyMap.put(name, propertyTreeNode);
             getTreeModel().mapModelItem(propertyTreeNode);
@@ -57,11 +60,6 @@ public class PropertiesTreeNode<T extends ModelItem> extends AbstractModelItemTr
 
         testPropertyListener = new InternalTestPropertyListener();
         holder.addTestPropertyListener(testPropertyListener);
-    }
-
-    public static PropertiesTreeNode<?> createDefaultPropertiesNode(TestModelItem modelItem, SoapUITreeModel treeModel) {
-        return new PropertiesTreeNode<PropertiesModelItem>(
-                new PropertiesModelItem(modelItem), modelItem, modelItem, treeModel);
     }
 
     public int getChildCount() {
@@ -74,6 +72,16 @@ public class PropertiesTreeNode<T extends ModelItem> extends AbstractModelItemTr
 
     public int getIndexOfChild(Object child) {
         return propertyNodes.indexOf(child);
+    }
+
+    public ActionList getActions() {
+        if (getModelItem() instanceof PropertiesModelItem && holder instanceof MutableTestPropertyHolder) {
+            DefaultActionList actions = new DefaultActionList();
+            actions.addAction(new AddPropertyAction());
+            return actions;
+        }
+
+        return super.getActions();
     }
 
     public void release() {
@@ -91,14 +99,13 @@ public class PropertiesTreeNode<T extends ModelItem> extends AbstractModelItemTr
 
     private class InternalTestPropertyListener implements TestPropertyListener {
         public void propertyAdded(String name) {
-            PropertyTreeNode propertyTreeNode = new PropertyTreeNode(holder.getProperty(name), getModelItem(), holder,
-                    getTreeModel());
+            PropertyTreeNode propertyTreeNode = new PropertyTreeNode(holder.getProperty(name), getModelItem(), holder, getTreeModel());
             propertyNodes.add(propertyTreeNode);
             propertyMap.put(name, propertyTreeNode);
             getTreeModel().notifyNodeInserted(propertyTreeNode);
 
             if (getModelItem() instanceof PropertiesModelItem) {
-                ((PropertiesModelItem) getModelItem()).updateName();
+                ((PropertiesModelItem)getModelItem()).updateName();
             }
         }
 
@@ -110,9 +117,10 @@ public class PropertiesTreeNode<T extends ModelItem> extends AbstractModelItemTr
                 propertyMap.remove(name);
 
                 if (getModelItem() instanceof PropertiesModelItem) {
-                    ((PropertiesModelItem) getModelItem()).updateName();
+                    ((PropertiesModelItem)getModelItem()).updateName();
                 }
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing unkown property");
             }
         }
@@ -137,7 +145,8 @@ public class PropertiesTreeNode<T extends ModelItem> extends AbstractModelItemTr
             propertyNodes.remove(oldIndex);
             if (newIndex >= propertyNodes.size()) {
                 propertyNodes.add(node);
-            } else {
+            }
+            else {
                 propertyNodes.add(newIndex, node);
             }
 
@@ -145,21 +154,11 @@ public class PropertiesTreeNode<T extends ModelItem> extends AbstractModelItemTr
         }
     }
 
-    public ActionList getActions() {
-        if (getModelItem() instanceof PropertiesModelItem && holder instanceof MutableTestPropertyHolder) {
-            DefaultActionList actions = new DefaultActionList();
-            actions.addAction(new AddPropertyAction());
-            return actions;
-        }
-
-        return super.getActions();
-    }
-
     private class AddPropertyAction extends AbstractAction {
         public AddPropertyAction() {
             super("Add Property");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/add.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Adds a property to the property list");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds a property to the property list");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -170,7 +169,7 @@ public class PropertiesTreeNode<T extends ModelItem> extends AbstractModelItemTr
                     return;
                 }
 
-                ((MutableTestPropertyHolder) holder).addProperty(name);
+                ((MutableTestPropertyHolder)holder).addProperty(name);
             }
         }
     }

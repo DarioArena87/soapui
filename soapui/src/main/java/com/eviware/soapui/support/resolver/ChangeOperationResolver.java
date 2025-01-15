@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.resolver;
@@ -25,30 +25,21 @@ import com.eviware.soapui.support.components.SimpleForm;
 import com.eviware.soapui.support.resolver.ResolveContext.Resolver;
 import com.eviware.soapui.support.swing.ModelItemListCellRenderer;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public abstract class ChangeOperationResolver implements Resolver {
     private boolean resolved = false;
-    private WsdlProject project;
+    private final WsdlProject project;
     private Operation selectedOperation;
-    private String operationType;
+    private final String operationType;
 
     public ChangeOperationResolver(WsdlTestStep testStep, String operationType) {
-        this.project = testStep.getTestCase().getTestSuite().getProject();
+        project = testStep.getTestCase().getTestSuite().getProject();
 
         this.operationType = operationType;
-    }
-
-    public String getResolvedPath() {
-        return "";
-    }
-
-    public boolean isResolved() {
-        return resolved;
     }
 
     public boolean resolve() {
@@ -58,17 +49,29 @@ public abstract class ChangeOperationResolver implements Resolver {
         return resolved;
     }
 
-    public abstract boolean update();
+    public boolean isResolved() {
+        return resolved;
+    }
 
-    protected abstract Interface[] getInterfaces(WsdlProject project);
+    public String getResolvedPath() {
+        return "";
+    }
 
     public String getDescription() {
         return "Resolve: Select another " + operationType;
     }
 
+    public abstract boolean update();
+
+    protected abstract Interface[] getInterfaces(WsdlProject project);
+
     @Override
     public String toString() {
         return getDescription();
+    }
+
+    public Operation getSelectedOperation() {
+        return selectedOperation;
     }
 
     @SuppressWarnings("serial")
@@ -92,21 +95,20 @@ public abstract class ChangeOperationResolver implements Resolver {
                 sourceStepComboModel.addElement(element);
             }
 
-            propertiesCombo = form.appendComboBox(operationType, ((Interface) sourceStepCombo.getSelectedItem())
-                    .getOperationList().toArray(), "Target " + operationType);
+            propertiesCombo = form.appendComboBox(operationType, ((Interface)sourceStepCombo.getSelectedItem()).getOperationList().toArray(), "Target " + operationType);
             propertiesCombo.setRenderer(new ModelItemListCellRenderer());
 
             sourceStepCombo.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    Interface iface = project.getInterfaceByName(((Interface) sourceStepCombo.getSelectedItem())
-                            .getName());
+                    Interface iface = project.getInterfaceByName(((Interface)sourceStepCombo.getSelectedItem()).getName());
                     propertiesCombo.removeAllItems();
                     if (iface != null) {
                         propertiesCombo.setEnabled(true);
                         for (Operation op : iface.getOperationList()) {
                             propertiesCombo.addItem(op);
                         }
-                    } else {
+                    }
+                    else {
                         propertiesCombo.setEnabled(false);
                     }
                 }
@@ -117,13 +119,8 @@ public abstract class ChangeOperationResolver implements Resolver {
         }
 
         protected boolean handleOk() {
-            selectedOperation = (Operation) propertiesCombo.getSelectedItem();
+            selectedOperation = (Operation)propertiesCombo.getSelectedItem();
             return true;
         }
     }
-
-    public Operation getSelectedOperation() {
-        return selectedOperation;
-    }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.jms;
@@ -37,21 +37,61 @@ import java.util.Vector;
 public class JMSResponse implements WsdlResponse {
 
     private String payload;
-    private Message messageReceive;
-    private Message messageSend;
+    private final Message messageReceive;
+    private final Message messageSend;
     private Attachment[] attachments = new Attachment[0];
-    private Request request;
-    private long requestStartedTime;
-    private String endpoint;
+    private final Request request;
+    private final long requestStartedTime;
+    private final String endpoint;
 
-    public JMSResponse(String payload, Message messageSend, Message messageReceive, Request request,
-                       long requestStartedTime) {
+    public JMSResponse(
+        String payload, Message messageSend, Message messageReceive, Request request, long requestStartedTime
+    ) {
         this.payload = payload;
         this.messageReceive = messageReceive;
         this.messageSend = messageSend;
         this.request = request;
         this.requestStartedTime = requestStartedTime;
-        this.endpoint = request.getEndpoint();
+        endpoint = request.getEndpoint();
+    }
+
+    public String getContentAsString() {
+        return payload;
+    }
+
+    public String getContentType() {
+        if (messageReceive != null) {
+            try {
+                return messageReceive.getJMSType();
+            }
+            catch (JMSException e) {
+                SoapUI.logError(e);
+            }
+        }
+        return null;
+    }
+
+    public long getContentLength() {
+        return payload.length();
+    }
+
+    public String getRequestContent() {
+        if (messageSend != null) {
+            try {
+                if (messageSend instanceof TextMessage) {
+                    return ((TextMessage)messageSend).getText();
+                }
+            }
+            catch (JMSException e) {
+                SoapUI.logError(e);
+            }
+            return messageSend.toString();
+        }
+        return "";
+    }
+
+    public long getTimeTaken() {
+        return Calendar.getInstance().getTimeInMillis() - requestStartedTime;
     }
 
     public Attachment[] getAttachments() {
@@ -66,34 +106,85 @@ public class JMSResponse implements WsdlResponse {
         return attachments;
     }
 
-    public String getContentAsString() {
-        return payload;
+    public StringToStringsMap getRequestHeaders() {
+        if (messageSend != null) {
+            return JMSHeader.getMessageHeadersAndProperties(messageSend);
+        }
+        else {
+            return new StringToStringsMap();
+        }
     }
 
-    public long getContentLength() {
-        return payload.length();
-    }
-
-    public String getContentType() {
+    public StringToStringsMap getResponseHeaders() {
         if (messageReceive != null) {
-            try {
-                return messageReceive.getJMSType();
-            } catch (JMSException e) {
-                SoapUI.logError(e);
+            return JMSHeader.getMessageHeadersAndProperties(messageReceive);
+        }
+        else {
+            return new StringToStringsMap();
+        }
+    }
+
+    public long getTimestamp() {
+        try {
+            if (messageReceive != null) {
+                return messageReceive.getJMSTimestamp();
+            }
+            else {
+                return 0;
             }
         }
-        return null;
+        catch (JMSException e) {
+            SoapUI.logError(e);
+        }
+        return 0;
+    }
+
+    public byte[] getRawRequestData() {
+        if (messageSend != null) {
+            return messageSend.toString().getBytes();
+        }
+        else {
+            return "".getBytes();
+        }
+    }
+
+    public byte[] getRawResponseData() {
+        if (messageReceive != null) {
+            return messageReceive.toString().getBytes();
+        }
+        else {
+            return "".getBytes();
+        }
+    }
+
+    public String getContentAsXml() {
+        if (payload != null && !"".equals(payload)) {
+            return payload;
+        }
+        else {
+            return "<xml/>";
+        }
     }
 
     public String getProperty(String name) {
         if (messageReceive != null) {
             try {
                 return messageReceive.getStringProperty(name);
-            } catch (JMSException e) {
+            }
+            catch (JMSException e) {
                 SoapUI.logError(e);
             }
         }
         return null;
+    }
+
+    public void setProperty(String name, String value) {
+        try {
+            messageReceive.setStringProperty(name, value);
+        }
+        catch (JMSException e) {
+            SoapUI.logError(e);
+        }
     }
 
     public String[] getPropertyNames() {
@@ -103,100 +194,29 @@ public class JMSResponse implements WsdlResponse {
             if (messageReceive != null) {
                 temp = messageReceive.getPropertyNames();
                 while (temp.hasMoreElements()) {
-                    propertyNames.add((String) temp.nextElement());
+                    propertyNames.add((String)temp.nextElement());
                 }
                 return propertyNames.toArray(new String[propertyNames.size()]);
-            } else {
+            }
+            else {
                 return new String[0];
             }
-        } catch (JMSException e) {
+        }
+        catch (JMSException e) {
             SoapUI.logError(e);
         }
         return null;
     }
 
-    public byte[] getRawRequestData() {
-        if (messageSend != null) {
-            return messageSend.toString().getBytes();
-        } else {
-            return "".getBytes();
-        }
+    public void setResponseContent(String responseContent) {
+        payload = responseContent;
     }
 
-    public byte[] getRawResponseData() {
-        if (messageReceive != null) {
-            return messageReceive.toString().getBytes();
-        } else {
-            return "".getBytes();
-        }
+    public SSLInfo getSSLInfo() {
+        return null;
     }
 
-    public String getRequestContent() {
-        if (messageSend != null) {
-            try {
-                if (messageSend instanceof TextMessage) {
-                    return ((TextMessage) messageSend).getText();
-                }
-            } catch (JMSException e) {
-                SoapUI.logError(e);
-            }
-            return messageSend.toString();
-        }
-        return "";
-    }
-
-    public StringToStringsMap getRequestHeaders() {
-        if (messageSend != null) {
-            return JMSHeader.getMessageHeadersAndProperties(messageSend);
-        } else {
-            return new StringToStringsMap();
-        }
-
-    }
-
-    public StringToStringsMap getResponseHeaders() {
-        if (messageReceive != null) {
-            return JMSHeader.getMessageHeadersAndProperties(messageReceive);
-        } else {
-            return new StringToStringsMap();
-        }
-    }
-
-    public long getTimeTaken() {
-        return Calendar.getInstance().getTimeInMillis() - requestStartedTime;
-    }
-
-    public long getTimestamp() {
-        try {
-            if (messageReceive != null) {
-                return messageReceive.getJMSTimestamp();
-            } else {
-                return 0;
-            }
-        } catch (JMSException e) {
-            SoapUI.logError(e);
-        }
-        return 0;
-    }
-
-    public void setProperty(String name, String value) {
-        try {
-            messageReceive.setStringProperty(name, value);
-        } catch (JMSException e) {
-            SoapUI.logError(e);
-        }
-
-    }
-
-    public String getContentAsXml() {
-        if (payload != null && !"".equals(payload)) {
-            return payload;
-        } else {
-            return "<xml/>";
-        }
-    }
-
-    public String getHttpVersion() {
+    public URL getURL() {
         return null;
     }
 
@@ -204,7 +224,7 @@ public class JMSResponse implements WsdlResponse {
         return null;
     }
 
-    public SSLInfo getSSLInfo() {
+    public String getHttpVersion() {
         return null;
     }
 
@@ -212,20 +232,12 @@ public class JMSResponse implements WsdlResponse {
         return 0;
     }
 
-    public URL getURL() {
-        return null;
-    }
-
-    public void setResponseContent(String responseContent) {
-        this.payload = responseContent;
-    }
-
     public Vector<?> getWssResult() {
         return null;
     }
 
     public WsdlRequest getRequest() {
-        return (WsdlRequest) request;
+        return (WsdlRequest)request;
     }
 
     public Message getMessageReceive() {
@@ -239,5 +251,4 @@ public class JMSResponse implements WsdlResponse {
     public String getEndpoint() {
         return endpoint;
     }
-
 }

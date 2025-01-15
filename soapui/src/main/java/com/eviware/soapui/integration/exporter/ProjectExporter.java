@@ -53,10 +53,48 @@ import java.util.zip.ZipOutputStream;
 public class ProjectExporter {
 
     private static final int BUFFER = 1024;
-    private WsdlProject project;
-    private WsdlProject projectCopy;
     private final int TEMP_DIR_ATTEMPTS = 10000;
+    private final WsdlProject project;
+    private WsdlProject projectCopy;
     private File tmpDir;
+
+    public static void unpackageAll(String archive, String path) throws IOException {
+        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(Files.newInputStream(Paths.get(archive))))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                validateZipEntry(path, entry.getName());
+                int count;
+                byte[] data = new byte[BUFFER];
+                // write the files to the disk
+                FileOutputStream fos = new FileOutputStream(path + File.separator + entry.getName());
+                try (BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER)) {
+                    while ((count = zis.read(data, 0, BUFFER)) != -1) {
+                        dest.write(data, 0, count);
+                    }
+                    dest.flush();
+                }
+            }
+        }
+    }
+
+    public static List<String> getZipContents(String archive) {
+        List<String> contents = new ArrayList<String>();
+
+        try {
+            ZipFile zipFile = new ZipFile(archive);
+            for (Enumeration<? extends ZipEntry> em1 = zipFile.entries(); em1.hasMoreElements(); ) {
+                contents.add(em1.nextElement().toString());
+            }
+        }
+        catch (ZipException ze) {
+            SoapUI.logError(ze);
+        }
+        catch (IOException e) {
+            SoapUI.logError(e);
+        }
+
+        return contents;
+    }
 
     public ProjectExporter(WsdlProject project) {
         this.project = project;
@@ -107,10 +145,10 @@ public class ProjectExporter {
         try {
             FileOutputStream dest = new FileOutputStream(exportPath);
             out = new ZipOutputStream(new BufferedOutputStream(dest));
-            byte data[] = new byte[BUFFER];
+            byte[] data = new byte[BUFFER];
             // get a list of files from current directory
 
-            String files[] = tmpDir.list();
+            String[] files = tmpDir.list();
 
             for (int i = 0; i < files.length; i++) {
                 //				System.out.println( "Adding: " + files[i] );
@@ -125,60 +163,13 @@ public class ProjectExporter {
                 origin.close();
             }
             out.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             // TODO: handle exception
             result = false;
             SoapUI.logError(e, "Error packaging export");
         }
         return result;
-    }
-
-    public static void unpackageAll(String archive, String path) throws IOException {
-        try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(Files.newInputStream(Paths.get(archive))))) {
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                validateZipEntry(path, entry.getName());
-                int count;
-                byte data[] = new byte[BUFFER];
-                // write the files to the disk
-                FileOutputStream fos = new FileOutputStream(path + File.separator + entry.getName());
-                try (BufferedOutputStream dest = new BufferedOutputStream(fos, BUFFER)) {
-                    while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                        dest.write(data, 0, count);
-                    }
-                    dest.flush();
-                }
-            }
-        }
-    }
-
-    private static void validateZipEntry(String targetDirectoryPath, String fileSubPath) throws IOException {
-        if (!targetDirectoryPath.endsWith(File.separator)) {
-            targetDirectoryPath += File.separatorChar;
-        }
-        File resultFile = new File(targetDirectoryPath + fileSubPath);
-        String canonicalDestinationPath = resultFile.getCanonicalPath();
-
-        if (!canonicalDestinationPath.startsWith(targetDirectoryPath)) {
-            throw new IOException("Entry [" + fileSubPath + "] is outside of the target dir: " + targetDirectoryPath);
-        }
-    }
-
-    public static List<String> getZipContents(String archive) {
-        List<String> contents = new ArrayList<String>();
-
-        try {
-            ZipFile zipFile = new ZipFile(archive);
-            for (Enumeration<? extends ZipEntry> em1 = zipFile.entries(); em1.hasMoreElements(); ) {
-                contents.add(em1.nextElement().toString());
-            }
-        } catch (ZipException ze) {
-            SoapUI.logError(ze);
-        } catch (IOException e) {
-            SoapUI.logError(e);
-        }
-
-        return contents;
     }
 
     /**
@@ -198,7 +189,8 @@ public class ProjectExporter {
                         File targetDependency = new File(tmpDir, originalDependency.getName());
                         FileUtils.copyFile(originalDependency, targetDependency);
                         dependency.updatePath(targetDependency.getPath());
-                    } else {
+                    }
+                    else {
                         SoapUI.log.warn("Do not exists on local file system [" + originalDependency.getPath() + "]");
                     }
                     break;
@@ -229,8 +221,11 @@ public class ProjectExporter {
     private boolean createProjectCopy() throws IOException, XmlException, SoapUIException {
         project.saveIn(new File(tmpDir, project.getName() + "-soapui-project.xml"));
 
-        projectCopy = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(
-                new File(tmpDir, project.getName() + "-soapui-project.xml").getAbsolutePath());//new WsdlProject( new File( tmpDir, project.getName() + ".xml" ).getAbsolutePath() );
+        projectCopy = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl")
+                                                         .createNew(new File(
+                                                             tmpDir,
+                                                             project.getName() + "-soapui-project.xml"
+                                                         ).getAbsolutePath());//new WsdlProject( new File( tmpDir, project.getName() + ".xml" ).getAbsolutePath() );
 
         return projectCopy != null;
     }
@@ -266,5 +261,17 @@ public class ProjectExporter {
 
         // The directory is now empty so delete it
         return dir.delete();
+    }
+
+    private static void validateZipEntry(String targetDirectoryPath, String fileSubPath) throws IOException {
+        if (!targetDirectoryPath.endsWith(File.separator)) {
+            targetDirectoryPath += File.separatorChar;
+        }
+        File resultFile = new File(targetDirectoryPath + fileSubPath);
+        String canonicalDestinationPath = resultFile.getCanonicalPath();
+
+        if (!canonicalDestinationPath.startsWith(targetDirectoryPath)) {
+            throw new IOException("Entry [" + fileSubPath + "] is outside of the target dir: " + targetDirectoryPath);
+        }
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -44,54 +44,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GroovyUtils {
-    protected final PropertyExpansionContext context;
-
-    public GroovyUtils(PropertyExpansionContext context) {
-        this.context = context;
-    }
-
-    public final String getProjectPath() {
-        Project project = ModelSupport.getModelItemProject(context.getModelItem());
-
-        String path = project.getPath();
-        int ix = path.lastIndexOf(File.separatorChar);
-        return ix == -1 ? "" : path.substring(0, ix);
-    }
-
-    public final XmlHolder getXmlHolder(String xmlPropertyOrString) throws Exception {
-        try {
-            // return new XmlHolder( XmlObject.Factory.parse( xmlPropertyOrString )
-            // );
-            return new XmlHolder(XmlUtils.createXmlObject(xmlPropertyOrString));
-        } catch (Exception e) {
-            return new XmlHolder(context, xmlPropertyOrString);
-        }
-    }
-
-    public final String expand(String property) {
-        return PropertyExpander.expandProperties(context, property);
-    }
-
-    public final void setPropertyValue(String testStep, String property, String value) throws Exception {
-        if (!(context instanceof TestCaseRunContext)) {
-            return;
-        }
-
-        TestStep step = ((TestCaseRunContext) context).getTestCase().getTestStepByName(testStep);
-        if (step != null) {
-            step.setPropertyValue(property, value);
-        } else {
-            throw new Exception("Missing TestStep [" + testStep + "] in TestCase");
-        }
-    }
-
-    public final String getXml(Node node) throws XmlException {
-        // return XmlObject.Factory.parse( node ).xmlText();
-        return XmlUtils.createXmlObject(node).xmlText();
-    }
-
     private static final ConcurrentHashMap<String, Boolean> registeredDrivers = new ConcurrentHashMap<String, Boolean>();
     private static final Object[] mutex = new Object[0];
+    protected final PropertyExpansionContext context;
 
     public static void registerJdbcDriver(String name) {
         if (registeredDrivers.containsKey(name)) {
@@ -101,11 +56,12 @@ public class GroovyUtils {
         try {
             synchronized (mutex) {
                 Class driverClass = Class.forName(name, true, SoapUI.getSoapUICore().getExtensionClassLoader());
-                Driver d = (Driver) driverClass.newInstance();
+                Driver d = (Driver)driverClass.newInstance();
                 DriverManager.registerDriver(new DriverProxy(d));
             }
             registeredDrivers.putIfAbsent(name, Boolean.TRUE);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -127,41 +83,88 @@ public class GroovyUtils {
             m.find();
             String b = m.group(1);
             return b;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e, "cannot get error line number!");
             return null;
         }
     }
 
-    static class DriverProxy implements Driver {
-        private Driver driver;
+    public GroovyUtils(PropertyExpansionContext context) {
+        this.context = context;
+    }
 
-        DriverProxy(Driver d) {
-            this.driver = d;
+    public final String getProjectPath() {
+        Project project = ModelSupport.getModelItemProject(context.getModelItem());
+
+        String path = project.getPath();
+        int ix = path.lastIndexOf(File.separatorChar);
+        return ix == -1 ? "" : path.substring(0, ix);
+    }
+
+    public final XmlHolder getXmlHolder(String xmlPropertyOrString) throws Exception {
+        try {
+            // return new XmlHolder( XmlObject.Factory.parse( xmlPropertyOrString )
+            // );
+            return new XmlHolder(XmlUtils.createXmlObject(xmlPropertyOrString));
+        }
+        catch (Exception e) {
+            return new XmlHolder(context, xmlPropertyOrString);
+        }
+    }
+
+    public final String expand(String property) {
+        return PropertyExpander.expandProperties(context, property);
+    }
+
+    public final void setPropertyValue(String testStep, String property, String value) throws Exception {
+        if (!(context instanceof TestCaseRunContext)) {
+            return;
         }
 
-        public boolean acceptsURL(String u) throws SQLException {
-            return this.driver.acceptsURL(u);
+        TestStep step = ((TestCaseRunContext)context).getTestCase().getTestStepByName(testStep);
+        if (step != null) {
+            step.setPropertyValue(property, value);
+        }
+        else {
+            throw new Exception("Missing TestStep [" + testStep + "] in TestCase");
+        }
+    }
+
+    public final String getXml(Node node) throws XmlException {
+        // return XmlObject.Factory.parse( node ).xmlText();
+        return XmlUtils.createXmlObject(node).xmlText();
+    }
+
+    static class DriverProxy implements Driver {
+        private final Driver driver;
+
+        DriverProxy(Driver d) {
+            driver = d;
         }
 
         public Connection connect(String u, Properties p) throws SQLException {
-            return this.driver.connect(u, p);
+            return driver.connect(u, p);
         }
 
-        public int getMajorVersion() {
-            return this.driver.getMajorVersion();
-        }
-
-        public int getMinorVersion() {
-            return this.driver.getMinorVersion();
+        public boolean acceptsURL(String u) throws SQLException {
+            return driver.acceptsURL(u);
         }
 
         public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
-            return this.driver.getPropertyInfo(u, p);
+            return driver.getPropertyInfo(u, p);
+        }
+
+        public int getMajorVersion() {
+            return driver.getMajorVersion();
+        }
+
+        public int getMinorVersion() {
+            return driver.getMinorVersion();
         }
 
         public boolean jdbcCompliant() {
-            return this.driver.jdbcCompliant();
+            return driver.jdbcCompliant();
         }
 
         /*

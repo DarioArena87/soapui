@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.support;
@@ -29,10 +29,10 @@ import org.apache.logging.log4j.Logger;
  */
 
 public abstract class AbstractMockTestRunner<T extends TestRunnable> implements TestRunner {
-    private long startTime;
-    private String reason;
     private final T modelItem;
     private final Logger logger;
+    private long startTime;
+    private String reason;
     private Status status = Status.RUNNING;
     private TestRunContext context;
 
@@ -42,24 +42,8 @@ public abstract class AbstractMockTestRunner<T extends TestRunnable> implements 
         startTime = System.currentTimeMillis();
     }
 
-    public boolean isRunning() {
-        return false;
-    }
-
-    public void setRunContext(TestRunContext context) {
-        this.context = context;
-    }
-
-    public TestRunContext getRunContext() {
-        return context;
-    }
-
     public Logger getLog() {
         return logger;
-    }
-
-    public T getTestRunnable() {
-        return modelItem;
     }
 
     public Status getStatus() {
@@ -73,6 +57,10 @@ public abstract class AbstractMockTestRunner<T extends TestRunnable> implements 
 
     public long getTimeTaken() {
         return System.currentTimeMillis() - startTime;
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 
     public Status waitUntilFinished() {
@@ -92,11 +80,23 @@ public abstract class AbstractMockTestRunner<T extends TestRunnable> implements 
         logger.error("Failed with reason [" + reason + "]");
     }
 
-    public long getStartTime() {
-        return startTime;
-    }
-
     public String getReason() {
         return reason;
+    }
+
+    public TestRunContext getRunContext() {
+        return context;
+    }
+
+    public void setRunContext(TestRunContext context) {
+        this.context = context;
+    }
+
+    public T getTestRunnable() {
+        return modelItem;
+    }
+
+    public boolean isRunning() {
+        return false;
     }
 }

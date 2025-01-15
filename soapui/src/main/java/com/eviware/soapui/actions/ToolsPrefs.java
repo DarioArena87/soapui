@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -50,25 +50,30 @@ public class ToolsPrefs implements Prefs {
     public static final String LIBRARIES = "Script libraries";
     public static final String HERMES_JMS = "Hermes JMS";
 
-    private static final String[][] TOOLS = {{WSTOOLS, ToolsSettings.JBOSSWS_WSTOOLS_LOCATION},
-            {AXIS_1_X, ToolsSettings.AXIS_1_X_LOCATION}, {AXIS_2, ToolsSettings.AXIS_2_LOCATION},
-            {WSCOMPILE, ToolsSettings.JWSDP_WSCOMPILE_LOCATION}, {WSIMPORT, ToolsSettings.JWSDP_WSIMPORT_LOCATION},
-            {JAVAC, ToolsSettings.JAVAC_LOCATION}, {DOTNET, ToolsSettings.DOTNET_WSDL_LOCATION},
-            {CXF, ToolsSettings.CXF_LOCATION}, {XFIRE, ToolsSettings.XFIRE_LOCATION},
-            {GSOAP, ToolsSettings.GSOAP_LOCATION}, {ANT, ToolsSettings.ANT_LOCATION},
-            {XMLBEANS, ToolsSettings.XMLBEANS_LOCATION}, {JAXB, ToolsSettings.JAXB_LOCATION},
-            {TCPMON, ToolsSettings.TCPMON_LOCATION}, {WSA, ToolsSettings.ORACLE_WSA_LOCATION},
-            {WADL, ToolsSettings.WADL2JAVA_LOCATION}, {HERMES_JMS, ToolsSettings.HERMES_JMS},};
-
-    private SimpleForm toolsForm;
+    private static final String[][] TOOLS = {
+        {WSTOOLS, ToolsSettings.JBOSSWS_WSTOOLS_LOCATION},
+        {AXIS_1_X, ToolsSettings.AXIS_1_X_LOCATION},
+        {AXIS_2, ToolsSettings.AXIS_2_LOCATION},
+        {WSCOMPILE, ToolsSettings.JWSDP_WSCOMPILE_LOCATION},
+        {WSIMPORT, ToolsSettings.JWSDP_WSIMPORT_LOCATION},
+        {JAVAC, ToolsSettings.JAVAC_LOCATION},
+        {DOTNET, ToolsSettings.DOTNET_WSDL_LOCATION},
+        {CXF, ToolsSettings.CXF_LOCATION},
+        {XFIRE, ToolsSettings.XFIRE_LOCATION},
+        {GSOAP, ToolsSettings.GSOAP_LOCATION},
+        {ANT, ToolsSettings.ANT_LOCATION},
+        {XMLBEANS, ToolsSettings.XMLBEANS_LOCATION},
+        {JAXB, ToolsSettings.JAXB_LOCATION},
+        {TCPMON, ToolsSettings.TCPMON_LOCATION},
+        {WSA, ToolsSettings.ORACLE_WSA_LOCATION},
+        {WADL, ToolsSettings.WADL2JAVA_LOCATION},
+        {HERMES_JMS, ToolsSettings.HERMES_JMS},
+        };
     private final String title;
+    private SimpleForm toolsForm;
 
     public ToolsPrefs(String title) {
         this.title = title;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     /**
@@ -84,10 +89,10 @@ public class ToolsPrefs implements Prefs {
             String tool = s[0];
 
             // Filter out .NET related tools.
-            if (tool != ToolsPrefs.DOTNET && tool != ToolsPrefs.GSOAP &&
+            if (tool != DOTNET && tool != GSOAP &&
 
-                    // Filter out tools that are part of Eclipse.
-                    tool != ToolsPrefs.JAVAC && tool != ToolsPrefs.ANT) {
+                // Filter out tools that are part of Eclipse.
+                tool != JAVAC && tool != ANT) {
                 list.add(s);
             }
         }
@@ -98,27 +103,31 @@ public class ToolsPrefs implements Prefs {
         if (toolsForm == null) {
             toolsForm = new SimpleForm();
             toolsForm.addSpace(5);
-            toolsForm.append(ToolsPrefs.WSTOOLS, new DirectoryFormComponent("Location of JBossWS wstools"));
-            toolsForm.append(ToolsPrefs.WSCOMPILE, new DirectoryFormComponent("Location of JWSDP wscompile"));
-            toolsForm.append(ToolsPrefs.WSIMPORT, new DirectoryFormComponent("Location of JAX-WS wsimport"));
-            toolsForm.append(ToolsPrefs.AXIS_1_X, new DirectoryFormComponent("Location of Axis 1.X"));
-            toolsForm.append(ToolsPrefs.AXIS_2, new DirectoryFormComponent("Location of Axis 2"));
-            toolsForm.append(ToolsPrefs.DOTNET, new DirectoryFormComponent("Location of .NET 2.0 wsdl.exe"));
-            toolsForm.append(ToolsPrefs.XFIRE, new DirectoryFormComponent("Location of XFire 1.X"));
-            toolsForm.append(ToolsPrefs.CXF, new DirectoryFormComponent("Location of Apache CXF 2.x"));
-            toolsForm.append(ToolsPrefs.ANT, new DirectoryFormComponent("Location of Apache ANT 1.6.5 or later"));
-            toolsForm.append(ToolsPrefs.GSOAP, new DirectoryFormComponent("Location of GSoap 2.X"));
-            toolsForm.append(ToolsPrefs.JAXB, new DirectoryFormComponent("Location of JAXB xjc"));
-            toolsForm.append(ToolsPrefs.XMLBEANS, new DirectoryFormComponent("Location of XMLBeans 2.X"));
-            toolsForm.append(ToolsPrefs.JAVAC, new DirectoryFormComponent("Location of JDK 1.5 javac"));
-            toolsForm.append(ToolsPrefs.TCPMON, new DirectoryFormComponent("Location of TcpMon directory"));
-            toolsForm.append(ToolsPrefs.WSA, new DirectoryFormComponent("Location of Orace wsa.jar"));
-            toolsForm.append(ToolsPrefs.WADL, new DirectoryFormComponent("Location of wadl2java script"));
-            toolsForm.append(ToolsPrefs.HERMES_JMS, new DirectoryFormComponent("Location of HermesJMS"));
+            toolsForm.append(WSTOOLS, new DirectoryFormComponent("Location of JBossWS wstools"));
+            toolsForm.append(WSCOMPILE, new DirectoryFormComponent("Location of JWSDP wscompile"));
+            toolsForm.append(WSIMPORT, new DirectoryFormComponent("Location of JAX-WS wsimport"));
+            toolsForm.append(AXIS_1_X, new DirectoryFormComponent("Location of Axis 1.X"));
+            toolsForm.append(AXIS_2, new DirectoryFormComponent("Location of Axis 2"));
+            toolsForm.append(DOTNET, new DirectoryFormComponent("Location of .NET 2.0 wsdl.exe"));
+            toolsForm.append(XFIRE, new DirectoryFormComponent("Location of XFire 1.X"));
+            toolsForm.append(CXF, new DirectoryFormComponent("Location of Apache CXF 2.x"));
+            toolsForm.append(ANT, new DirectoryFormComponent("Location of Apache ANT 1.6.5 or later"));
+            toolsForm.append(GSOAP, new DirectoryFormComponent("Location of GSoap 2.X"));
+            toolsForm.append(JAXB, new DirectoryFormComponent("Location of JAXB xjc"));
+            toolsForm.append(XMLBEANS, new DirectoryFormComponent("Location of XMLBeans 2.X"));
+            toolsForm.append(JAVAC, new DirectoryFormComponent("Location of JDK 1.5 javac"));
+            toolsForm.append(TCPMON, new DirectoryFormComponent("Location of TcpMon directory"));
+            toolsForm.append(WSA, new DirectoryFormComponent("Location of Orace wsa.jar"));
+            toolsForm.append(WADL, new DirectoryFormComponent("Location of wadl2java script"));
+            toolsForm.append(HERMES_JMS, new DirectoryFormComponent("Location of HermesJMS"));
             toolsForm.addSpace(5);
         }
 
         return toolsForm;
+    }
+
+    public void setFormValues(Settings settings) {
+        getForm().setValues(getValues(settings));
     }
 
     public void getFormValues(Settings settings) {
@@ -133,15 +142,15 @@ public class ToolsPrefs implements Prefs {
         }
     }
 
-    public void setFormValues(Settings settings) {
-        getForm().setValues(getValues(settings));
-    }
-
     public StringToStringMap getValues(Settings settings) {
         StringToStringMap toolsValues = new StringToStringMap();
         for (int i = 0; i < TOOLS.length; i++) {
             toolsValues.put(TOOLS[i][0], settings.getString(TOOLS[i][1], ""));
         }
         return toolsValues;
+    }
+
+    public String getTitle() {
+        return title;
     }
 }

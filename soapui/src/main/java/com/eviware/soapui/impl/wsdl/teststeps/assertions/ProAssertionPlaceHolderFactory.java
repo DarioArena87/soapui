@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions;
@@ -29,7 +29,7 @@ import com.eviware.soapui.model.testsuite.TestAssertion;
 
 public class ProAssertionPlaceHolderFactory implements TestAssertionFactory {
 
-    private String type;
+    private final String type;
 
     public ProAssertionPlaceHolderFactory(String type, String string2) {
         this.type = type;
@@ -83,8 +83,9 @@ public class ProAssertionPlaceHolderFactory implements TestAssertionFactory {
 
     private class ProAssertionPlaceHolder extends WsdlMessageAssertion {
 
-        protected ProAssertionPlaceHolder(TestAssertionConfig assertionConfig, Assertable modelItem, boolean cloneable,
-                                          boolean configurable, boolean multiple, boolean requiresResponseContent) {
+        protected ProAssertionPlaceHolder(
+            TestAssertionConfig assertionConfig, Assertable modelItem, boolean cloneable, boolean configurable, boolean multiple, boolean requiresResponseContent
+        ) {
             super(assertionConfig, modelItem, cloneable, configurable, multiple, requiresResponseContent);
         }
 
@@ -93,29 +94,28 @@ public class ProAssertionPlaceHolderFactory implements TestAssertionFactory {
         }
 
         @Override
-        protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context)
-                throws AssertionException {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context)
-                throws AssertionException {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
-        protected String internalAssertProperty(TestPropertyHolder source, String propertyName,
-                                                MessageExchange messageExchange, SubmitContext context) throws AssertionException {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
-        @Override
         public AssertionStatus getStatus() {
-            return assertionStatus.UNKNOWN;
+            return AssertionStatus.UNKNOWN;
+        }
+
+        @Override
+        protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        protected String internalAssertProperty(
+            TestPropertyHolder source, String propertyName, MessageExchange messageExchange, SubmitContext context
+        ) throws AssertionException {
+            // TODO Auto-generated method stub
+            return null;
         }
 
         @Override

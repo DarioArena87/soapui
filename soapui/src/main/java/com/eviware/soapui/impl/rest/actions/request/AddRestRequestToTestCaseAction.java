@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.request;
@@ -84,8 +84,7 @@ public class AddRestRequestToTestCaseAction extends AbstractAddRequestToTestCase
 
         String name = dialogValues.get(STEP_NAME);
 
-        RestTestRequestStep testStep = (RestTestRequestStep) testCase.insertTestStep(
-                RestRequestStepFactory.createConfig(request, name), position);
+        RestTestRequestStep testStep = (RestTestRequestStep)testCase.insertTestStep(RestRequestStepFactory.createConfig(request, name), position);
 
         if (testStep == null) {
             return false;
@@ -116,7 +115,6 @@ public class AddRestRequestToTestCaseAction extends AbstractAddRequestToTestCase
         mainForm.addCheckBox(SHOW_TESTCASE, "(opens the TestCase editor for the target TestCase)");
         mainForm.addCheckBox(SHOW_REQUEST, "(opens the Request editor for the created TestStep)");
 
-        dialog = builder.buildDialog(builder.buildOkCancelActions(),
-                "Specify options for adding the request to a TestCase", UISupport.OPTIONS_ICON);
+        dialog = builder.buildDialog(builder.buildOkCancelActions(), "Specify options for adding the request to a TestCase", UISupport.OPTIONS_ICON);
     }
 }

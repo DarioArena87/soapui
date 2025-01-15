@@ -11,9 +11,11 @@ public class VMOptionReader {
         if (StringUtils.hasContent(propertyValue)) {
             if (propertyValue.equals("true")) {
                 return true;
-            } else if (propertyValue.equals("false")) {
+            }
+            else if (propertyValue.equals("false")) {
                 return false;
-            } else {
+            }
+            else {
                 // TODO:
                 //Logging.logError(new InvalidVmOptionValueException(vmOptionName, "true or false", defaultValue.toString()));
             }

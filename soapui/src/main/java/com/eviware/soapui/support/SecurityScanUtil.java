@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -95,11 +95,13 @@ public class SecurityScanUtil {
                 if (matcher.matches()) {
                     if (grouped && matcher.groupCount() > 2) {
                         result = content.substring(matcher.start(3), matcher.end(3));
-                    } else {
+                    }
+                    else {
                         result = content.substring(matcher.start(), matcher.end());
                     }
                 }
-            } else {
+            }
+            else {
                 if (content.toUpperCase().indexOf(replToken.toUpperCase()) >= 0) {
                     result = replToken;
                 }
@@ -110,14 +112,12 @@ public class SecurityScanUtil {
     }
 
     public static RestParamsPropertyHolder getSoapRequestParams(AbstractHttpRequest<?> request) {
-        XmlBeansRestParamsTestPropertyHolder holder = new XmlBeansRestParamsTestPropertyHolder(request,
-                RestParametersConfig.Factory.newInstance());
+        XmlBeansRestParamsTestPropertyHolder holder = new XmlBeansRestParamsTestPropertyHolder(request, RestParametersConfig.Factory.newInstance());
         try {
             // XmlObject requestXml = XmlObject.Factory.parse(
             // request.getRequestContent(), new XmlOptions()
             // .setLoadStripWhitespace().setLoadStripComments() );
-            XmlObject requestXml = XmlUtils.createXmlObject(request.getRequestContent(), new XmlOptions()
-                    .setLoadStripWhitespace().setLoadStripComments());
+            XmlObject requestXml = XmlUtils.createXmlObject(request.getRequestContent(), new XmlOptions().setLoadStripWhitespace().setLoadStripComments());
             Node[] nodes = XmlUtils.selectDomNodes(requestXml, "//text()");
 
             for (Node node : nodes) {
@@ -126,7 +126,8 @@ public class SecurityScanUtil {
                 property.setValue(node.getNodeValue());
                 property.setPath(xpath);
             }
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             SoapUI.logError(e);
         }
         return holder;
@@ -135,10 +136,8 @@ public class SecurityScanUtil {
     @SuppressWarnings("unchecked")
     public static Map<String, String> projectEntriesList(SensitiveInfoExposureAssertion sensitiveInfoExposureAssertion) {
         Project project = ModelSupport.getModelItemProject(sensitiveInfoExposureAssertion);
-        AbstractWsdlModelItem<ModelItemConfig> modelItem = (AbstractWsdlModelItem<ModelItemConfig>) project
-                .getModelItem();
-        XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(((ProjectConfig) modelItem.getConfig())
-                .getSensitiveInformation());
+        AbstractWsdlModelItem<ModelItemConfig> modelItem = (AbstractWsdlModelItem<ModelItemConfig>)project.getModelItem();
+        XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(((ProjectConfig)modelItem.getConfig()).getSensitiveInformation());
         String[] strngArray = reader.readStrings(ProjectSensitiveInformationPanel.PROJECT_SPECIFIC_EXPOSURE_LIST);
         if (strngArray != null) {
             Map<String, String> map = new HashMap<String, String>();
@@ -147,12 +146,14 @@ public class SecurityScanUtil {
                 String[] tokens = str.split("###");
                 if (tokens.length == 2) {
                     map.put(tokens[0], tokens[1]);
-                } else {
+                }
+                else {
                     map.put(tokens[0], "");
                 }
             }
             return map;
-        } else {
+        }
+        else {
             return new HashMap<String, String>();
         }
     }
@@ -166,35 +167,11 @@ public class SecurityScanUtil {
                 // tp.getValue() ) );
                 return new XmlObjectTreeModel(tp.getSchemaType().getTypeSystem(), XmlUtils.createXmlObject(tp.getValue()));
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
         return null;
-    }
-
-    private synchronized static void initGlobalSecuritySettings() {
-        globalSensitiveInformationExposureTokens = new SettingsTestPropertyHolder(SoapUI.getSettings(), null,
-                GlobalPropertySettings.SECURITY_CHECKS_PROPERTIES);
-
-        String propFile = System.getProperty("soapui.security.exposure.tokens");
-        if (StringUtils.hasContent(propFile)) {
-            globalSensitiveInformationExposureTokens.addPropertiesFromFile(propFile);
-        }
-
-        try {
-            SearchPatternsDocumentConfig doc = SearchPatternsDocumentConfig.Factory.parse(SoapUI.class
-                    .getResourceAsStream("/com/eviware/soapui/resources/security/SensitiveInfo.xml"));
-
-            for (RegexConfig regex : doc.getSearchPatterns().getRegexList()) {
-                String description = regex.getDescription();
-                for (String pattern : regex.getPatternList()) {
-                    globalSensitiveInformationExposureTokens.setPropertyValue("~(?s).*" + pattern + ".*", "["
-                            + regex.getName() + "] " + description);
-                }
-            }
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
     }
 
     public static void saveGlobalSecuritySettings() {
@@ -219,8 +196,7 @@ public class SecurityScanUtil {
      * @return
      */
     public static boolean scanIsApplicableForTestStep(TestStep testStep, String scanName) {
-        List<String> list = Arrays.asList(SoapUI.getSoapUICore().getSecurityScanRegistry()
-                .getAvailableSecurityScansNames(testStep));
+        List<String> list = Arrays.asList(SoapUI.getSoapUICore().getSecurityScanRegistry().getAvailableSecurityScansNames(testStep));
         return list.contains(scanName);
     }
 
@@ -239,8 +215,33 @@ public class SecurityScanUtil {
                 newList.add(name);
             }
             return newList;
-        } else {
+        }
+        else {
             return Arrays.asList(SoapUI.getSoapUICore().getSecurityScanRegistry().getAvailableSecurityScansNames());
+        }
+    }
+
+    private synchronized static void initGlobalSecuritySettings() {
+        globalSensitiveInformationExposureTokens = new SettingsTestPropertyHolder(SoapUI.getSettings(), null, GlobalPropertySettings.SECURITY_CHECKS_PROPERTIES);
+
+        String propFile = System.getProperty("soapui.security.exposure.tokens");
+        if (StringUtils.hasContent(propFile)) {
+            globalSensitiveInformationExposureTokens.addPropertiesFromFile(propFile);
+        }
+
+        try {
+            SearchPatternsDocumentConfig doc = SearchPatternsDocumentConfig.Factory.parse(SoapUI.class.getResourceAsStream(
+                "/com/eviware/soapui/resources/security/SensitiveInfo.xml"));
+
+            for (RegexConfig regex : doc.getSearchPatterns().getRegexList()) {
+                String description = regex.getDescription();
+                for (String pattern : regex.getPatternList()) {
+                    globalSensitiveInformationExposureTokens.setPropertyValue("~(?s).*" + pattern + ".*", "[" + regex.getName() + "] " + description);
+                }
+            }
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
         }
     }
 }

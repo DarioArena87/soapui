@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.iface;
@@ -25,31 +25,31 @@ import com.eviware.soapui.support.types.StringToStringsMap;
  */
 
 public interface Response extends TypedContent {
-    public Request getRequest();
+    Request getRequest();
 
-    public String getRequestContent();
+    String getRequestContent();
 
-    public long getTimeTaken();
+    long getTimeTaken();
 
-    public Attachment[] getAttachments();
+    Attachment[] getAttachments();
 
-    public Attachment[] getAttachmentsForPart(String partName);
+    Attachment[] getAttachmentsForPart(String partName);
 
-    public StringToStringsMap getRequestHeaders();
+    StringToStringsMap getRequestHeaders();
 
-    public StringToStringsMap getResponseHeaders();
+    StringToStringsMap getResponseHeaders();
 
-    public long getTimestamp();
+    long getTimestamp();
 
-    public byte[] getRawRequestData();
+    byte[] getRawRequestData();
 
-    public byte[] getRawResponseData();
+    byte[] getRawResponseData();
 
-    public String getContentAsXml();
+    String getContentAsXml();
 
-    public String getProperty(String name);
+    String getProperty(String name);
 
-    public void setProperty(String name, String value);
+    void setProperty(String name, String value);
 
-    public String[] getPropertyNames();
+    String[] getPropertyNames();
 }

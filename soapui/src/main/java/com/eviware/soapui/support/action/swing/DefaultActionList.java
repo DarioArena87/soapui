@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.action.swing;
@@ -32,9 +32,9 @@ import java.util.List;
  */
 
 public class DefaultActionList implements ActionList {
-    private List<Action> actions = new ArrayList<Action>();
-    private Action defaultAction;
     private final String label;
+    private final List<Action> actions = new ArrayList<Action>();
+    private Action defaultAction;
 
     public DefaultActionList() {
         this(null);
@@ -42,10 +42,6 @@ public class DefaultActionList implements ActionList {
 
     public DefaultActionList(String label) {
         this.label = label;
-    }
-
-    public String getLabel() {
-        return label;
     }
 
     public int getActionCount() {
@@ -64,15 +60,18 @@ public class DefaultActionList implements ActionList {
         this.defaultAction = defaultAction;
     }
 
-    public void addAction(Action action) {
-        actions.add(action);
+    public boolean hasDefaultAction() {
+        return defaultAction != null;
     }
 
-    public void addAction(Action action, boolean isDefault) {
-        actions.add(action);
-        if (isDefault) {
-            setDefaultAction(action);
+    public void performDefaultAction(ActionEvent event) {
+        if (defaultAction != null) {
+            defaultAction.actionPerformed(event);
         }
+    }
+
+    public void addAction(Action action) {
+        actions.add(action);
     }
 
     public void addSeparator() {
@@ -87,14 +86,8 @@ public class DefaultActionList implements ActionList {
         actions.add(index, ActionSupport.SEPARATOR_ACTION);
     }
 
-    public boolean hasDefaultAction() {
-        return defaultAction != null;
-    }
-
-    public void performDefaultAction(ActionEvent event) {
-        if (defaultAction != null) {
-            defaultAction.actionPerformed(event);
-        }
+    public String getLabel() {
+        return label;
     }
 
     public void clear() {
@@ -106,10 +99,11 @@ public class DefaultActionList implements ActionList {
         if (e.getKeyChar() == KeyEvent.VK_ENTER && defaultAction != null) {
             performDefaultAction(new ActionEvent(e.getSource(), 0, null));
             e.consume();
-        } else {
+        }
+        else {
             for (int c = 0; c < actions.size(); c++) {
                 Action action = actions.get(c);
-                KeyStroke acc = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
+                KeyStroke acc = (KeyStroke)action.getValue(Action.ACCELERATOR_KEY);
                 if (acc == null) {
                     continue;
                 }
@@ -129,15 +123,22 @@ public class DefaultActionList implements ActionList {
         }
     }
 
+    public void removeAction(int index) {
+        actions.remove(index);
+    }
+
+    public void addAction(Action action, boolean isDefault) {
+        actions.add(action);
+        if (isDefault) {
+            setDefaultAction(action);
+        }
+    }
+
     public void setEnabled(boolean b) {
         for (int c = 0; c < actions.size(); c++) {
             Action action = actions.get(c);
             action.setEnabled(b);
         }
-    }
-
-    public void removeAction(int index) {
-        actions.remove(index);
     }
 
     /**
@@ -146,9 +147,8 @@ public class DefaultActionList implements ActionList {
     public void update() {
         for (Action a : actions) {
             if (a instanceof UpdateableAction) {
-                ((UpdateableAction) a).update();
+                ((UpdateableAction)a).update();
             }
         }
     }
-
 }

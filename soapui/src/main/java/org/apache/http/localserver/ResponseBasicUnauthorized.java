@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -41,8 +41,6 @@
 
 package org.apache.http.localserver;
 
-import java.io.IOException;
-
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
@@ -50,11 +48,12 @@ import org.apache.http.HttpStatus;
 import org.apache.http.auth.AUTH;
 import org.apache.http.protocol.HttpContext;
 
+import java.io.IOException;
+
 public class ResponseBasicUnauthorized implements HttpResponseInterceptor {
-    public void process(final HttpResponse response, final HttpContext context) throws HttpException, IOException {
+    public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
             response.addHeader(AUTH.WWW_AUTH, "Basic realm=\"test realm\"");
         }
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes;
@@ -37,16 +37,14 @@ import java.util.List;
  */
 
 public class RestResourceTreeNode extends AbstractModelItemTreeNode<RestResource> implements PropertyChangeListener {
-    private List<RestResourceTreeNode> resourceNodes = new ArrayList<RestResourceTreeNode>();
-    private List<RestMethodTreeNode> methodNodes = new ArrayList<RestMethodTreeNode>();
     private final RestResource restResource;
-
-    private ReorderPropertyChangeListener propertyChangeListener = new ReorderPropertyChangeListener();
+    private final List<RestResourceTreeNode> resourceNodes = new ArrayList<RestResourceTreeNode>();
+    private final List<RestMethodTreeNode> methodNodes = new ArrayList<RestMethodTreeNode>();
+    private final ReorderPropertyChangeListener propertyChangeListener = new ReorderPropertyChangeListener();
 
     public RestResourceTreeNode(RestResource restResource, SoapUITreeModel treeModel) {
         super(restResource, restResource.getParent(), treeModel);
         this.restResource = restResource;
-
 
         restResource.addPropertyChangeListener(RestResource.PATH_PROPERTY, this);
 
@@ -63,17 +61,6 @@ public class RestResourceTreeNode extends AbstractModelItemTreeNode<RestResource
     }
 
     @Override
-    public SoapUITreeNode getParentTreeNode() {
-        return restResource.getParentResource() == null ? super.getParentTreeNode() : getTreeModel().getTreeNode(
-                restResource.getParentResource());
-    }
-
-    @Override
-    public String toString() {
-        return restResource.getName() + " [" + restResource.getFullPath() + "]";
-    }
-
-    @Override
     public int getChildCount() {
         return restResource.getRestMethodCount() + restResource.getChildResourceCount();
     }
@@ -83,7 +70,8 @@ public class RestResourceTreeNode extends AbstractModelItemTreeNode<RestResource
         int childCount = methodNodes.size();
         if (index < childCount) {
             return methodNodes.get(index);
-        } else {
+        }
+        else {
             return resourceNodes.get(index - childCount);
         }
     }
@@ -101,6 +89,31 @@ public class RestResourceTreeNode extends AbstractModelItemTreeNode<RestResource
         return result;
     }
 
+    @Override
+    public String toString() {
+        return restResource.getName() + " [" + restResource.getFullPath() + "]";
+    }
+
+    @Override
+    public SoapUITreeNode getParentTreeNode() {
+        return restResource.getParentResource() == null ? super.getParentTreeNode() : getTreeModel().getTreeNode(restResource.getParentResource());
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+        if (evt.getPropertyName().equals("childMethods")) {
+            if (evt.getNewValue() != null) {
+                methodAdded((RestMethod)evt.getNewValue());
+            }
+            else {
+                methodRemoved((RestMethod)evt.getOldValue());
+            }
+        }
+        else if (evt.getPropertyName().equals(RestResource.PATH_PROPERTY)) {
+            getTreeModel().notifyNodeChanged(this);
+        }
+    }
+
     public void release() {
         super.release();
 
@@ -116,12 +129,25 @@ public class RestResourceTreeNode extends AbstractModelItemTreeNode<RestResource
     }
 
     public void addChildResource(RestResource restResource) {
-        RestResourceTreeNode operationTreeNode = (RestResourceTreeNode) TreeNodeFactory.createTreeNode(restResource,
-                getTreeModel());
+        RestResourceTreeNode operationTreeNode = (RestResourceTreeNode)TreeNodeFactory.createTreeNode(restResource, getTreeModel());
 
         resourceNodes.add(operationTreeNode);
         getTreeModel().notifyNodeInserted(operationTreeNode);
     }
+
+    /*
+     * public void requestAdded(Request request) { if (request instanceof
+     * RestRequest) { RestMethod method = ((RestRequest)
+     * request).getRestMethod(); RestMethodTreeNode node = (RestMethodTreeNode)
+     * getTreeModel() .getTreeNode(method); if (methodNodes.contains(node)) {
+     * node.requestAdded(request); } } }
+     *
+     * public void requestRemoved(Request request) { if (request instanceof
+     * RestRequest) { RestMethod method = ((RestRequest)
+     * request).getRestMethod(); RestMethodTreeNode node = (RestMethodTreeNode)
+     * getTreeModel() .getTreeNode(method); if (methodNodes.contains(node)) {
+     * node.requestRemoved(request); } } }
+     */
 
     public void removeChildResource(RestResourceTreeNode childResource) {
         if (resourceNodes.contains(childResource)) {
@@ -130,21 +156,7 @@ public class RestResourceTreeNode extends AbstractModelItemTreeNode<RestResource
         }
     }
 
-	/*
-     * public void requestAdded(Request request) { if (request instanceof
-	 * RestRequest) { RestMethod method = ((RestRequest)
-	 * request).getRestMethod(); RestMethodTreeNode node = (RestMethodTreeNode)
-	 * getTreeModel() .getTreeNode(method); if (methodNodes.contains(node)) {
-	 * node.requestAdded(request); } } }
-	 * 
-	 * public void requestRemoved(Request request) { if (request instanceof
-	 * RestRequest) { RestMethod method = ((RestRequest)
-	 * request).getRestMethod(); RestMethodTreeNode node = (RestMethodTreeNode)
-	 * getTreeModel() .getTreeNode(method); if (methodNodes.contains(node)) {
-	 * node.requestRemoved(request); } } }
-	 */
-
-    public void methodAdded(final RestMethod method) {
+    public void methodAdded(RestMethod method) {
         UISupport.invokeAndWaitIfNotInEDT(new Runnable() {
             @Override
             public void run() {
@@ -163,21 +175,9 @@ public class RestResourceTreeNode extends AbstractModelItemTreeNode<RestResource
             getTreeModel().notifyNodeRemoved(methodTreeNode);
             methodNodes.remove(methodTreeNode);
             method.removePropertyChangeListener(propertyChangeListener);
-        } else {
-            throw new RuntimeException("Removing unknown method");
         }
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        super.propertyChange(evt);
-        if (evt.getPropertyName().equals("childMethods")) {
-            if (evt.getNewValue() != null) {
-                methodAdded((RestMethod) evt.getNewValue());
-            } else {
-                methodRemoved((RestMethod) evt.getOldValue());
-            }
-        } else if (evt.getPropertyName().equals(RestResource.PATH_PROPERTY)) {
-            getTreeModel().notifyNodeChanged(this);
+        else {
+            throw new RuntimeException("Removing unknown method");
         }
     }
 }

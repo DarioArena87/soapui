@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.project;
@@ -33,9 +33,8 @@ public class AddRestUriAction extends AbstractSoapUIAction<WsdlProject> {
 
     private static final MessageSupport messages = MessageSupport.getMessages(AddRestUriAction.class);
 
-
-    private RestUriDialogHandler dialogBuilder = new RestUriDialogHandler();
-    private RestServiceBuilder serviceBuilder = new RestServiceBuilder();
+    private final RestUriDialogHandler dialogBuilder = new RestUriDialogHandler();
+    private final RestServiceBuilder serviceBuilder = new RestServiceBuilder();
 
     public AddRestUriAction() {
         super(messages.get("Title"), messages.get("Description"));
@@ -51,14 +50,12 @@ public class AddRestUriAction extends AbstractSoapUIAction<WsdlProject> {
                 }
                 // If there is no exception or error we break out
                 break;
-
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 UISupport.showErrorMessage(ex.getMessage());
 
                 dialogBuilder.resetUriField();
             }
         }
     }
-
-
 }

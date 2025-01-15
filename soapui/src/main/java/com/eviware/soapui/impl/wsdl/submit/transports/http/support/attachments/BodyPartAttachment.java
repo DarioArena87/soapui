@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.attachments;
@@ -44,14 +44,15 @@ import java.net.MalformedURLException;
 
 public class BodyPartAttachment implements Attachment {
     private final BodyPart bodyPart;
+    private final boolean isRequest;
     private File tempFile;
     private AbstractHttpOperation operation;
-    private final boolean isRequest;
     private byte[] data;
     private AttachmentType attachmentType;
 
-    public BodyPartAttachment(BodyPart bodyPart, AbstractHttpOperation operation, boolean isRequest,
-                              AttachmentType attachmentType) {
+    public BodyPartAttachment(
+        BodyPart bodyPart, AbstractHttpOperation operation, boolean isRequest, AttachmentType attachmentType
+    ) {
         this.bodyPart = bodyPart;
         this.operation = operation;
         this.isRequest = isRequest;
@@ -60,45 +61,6 @@ public class BodyPartAttachment implements Attachment {
 
     public BodyPart getBodyPart() {
         return bodyPart;
-    }
-
-    public String getContentType() {
-        try {
-            return bodyPart.getContentType();
-        } catch (MessagingException e) {
-            SoapUI.logError(e);
-            return null;
-        }
-    }
-
-    public AttachmentEncoding getEncoding() {
-        return operation == null ? AttachmentEncoding.NONE : operation.getAttachmentEncoding(getPart(), !isRequest);
-    }
-
-    public synchronized InputStream getInputStream() throws Exception {
-        if (data != null) {
-            return new ByteArrayInputStream(data);
-        }
-
-        AttachmentEncoding encoding = getEncoding();
-        if (encoding == AttachmentEncoding.NONE) {
-            return bodyPart.getInputStream();
-        }
-
-        data = Tools.readAll(bodyPart.getInputStream(), Tools.READ_ALL).toByteArray();
-
-        if (encoding == AttachmentEncoding.BASE64) {
-            if (Base64.isArrayByteBase64(data)) {
-                data = Tools.readAll(new ByteArrayInputStream(Base64.decodeBase64(data)), Tools.READ_ALL)
-                        .toByteArray();
-            } else {
-                throw new Exception("Attachment content for part [" + getPart() + "] is not base64 encoded");
-            }
-        } else if (encoding == AttachmentEncoding.HEX) {
-            data = Hex.decodeHex(new String(data).toCharArray());
-        }
-
-        return new ByteArrayInputStream(data);
     }
 
     public String getName() {
@@ -127,9 +89,34 @@ public class BodyPartAttachment implements Attachment {
             }
 
             return header[0];
-        } catch (MessagingException e) {
+        }
+        catch (MessagingException e) {
             SoapUI.logError(e);
             return null;
+        }
+    }
+
+    public String getContentType() {
+        try {
+            return bodyPart.getContentType();
+        }
+        catch (MessagingException e) {
+            SoapUI.logError(e);
+            return null;
+        }
+    }
+
+    public void setContentType(String contentType) {
+    }
+
+    public long getSize() {
+        try {
+            getInputStream();
+            return data == null ? bodyPart.getSize() : data.length;
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return -1;
         }
     }
 
@@ -143,14 +130,34 @@ public class BodyPartAttachment implements Attachment {
         return name;
     }
 
-    public long getSize() {
-        try {
-            getInputStream();
-            return data == null ? bodyPart.getSize() : data.length;
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return -1;
+    public void setPart(String part) {
+    }
+
+    public synchronized InputStream getInputStream() throws Exception {
+        if (data != null) {
+            return new ByteArrayInputStream(data);
         }
+
+        AttachmentEncoding encoding = getEncoding();
+        if (encoding == AttachmentEncoding.NONE) {
+            return bodyPart.getInputStream();
+        }
+
+        data = Tools.readAll(bodyPart.getInputStream(), Tools.READ_ALL).toByteArray();
+
+        if (encoding == AttachmentEncoding.BASE64) {
+            if (Base64.isArrayByteBase64(data)) {
+                data = Tools.readAll(new ByteArrayInputStream(Base64.decodeBase64(data)), Tools.READ_ALL).toByteArray();
+            }
+            else {
+                throw new Exception("Attachment content for part [" + getPart() + "] is not base64 encoded");
+            }
+        }
+        else if (encoding == AttachmentEncoding.HEX) {
+            data = Hex.decodeHex(new String(data).toCharArray());
+        }
+
+        return new ByteArrayInputStream(data);
     }
 
     public String getUrl() {
@@ -163,10 +170,7 @@ public class BodyPartAttachment implements Attachment {
             }
 
             try {
-                tempFile = File.createTempFile(
-                        "response-attachment",
-                        (ix == -1 ? ".dat" : "."
-                                + (iy == -1 ? contentType.substring(ix + 1) : contentType.substring(ix + 1, iy))));
+                tempFile = File.createTempFile("response-attachment", (ix == -1 ? ".dat" : "." + (iy == -1 ? contentType.substring(ix + 1) : contentType.substring(ix + 1, iy))));
 
                 OutputStream out = new BufferedOutputStream(new FileOutputStream(tempFile));
                 InputStream inputStream = getInputStream();
@@ -175,23 +179,19 @@ public class BodyPartAttachment implements Attachment {
                 out.close();
 
                 inputStream.reset();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
 
         try {
             return tempFile.toURI().toURL().toString();
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             SoapUI.logError(e);
             return null;
         }
-    }
-
-    public void setContentType(String contentType) {
-    }
-
-    public void setPart(String part) {
     }
 
     public boolean isCached() {
@@ -202,38 +202,33 @@ public class BodyPartAttachment implements Attachment {
         return attachmentType == null ? AttachmentType.UNKNOWN : attachmentType;
     }
 
-    public void release() {
-        operation = null;
-    }
-
     public String getContentID() {
         try {
             String[] header = bodyPart.getHeader("Content-ID");
             if (header != null && header.length > 0) {
                 return header[0];
             }
-        } catch (MessagingException e) {
+        }
+        catch (MessagingException e) {
             SoapUI.logError(e);
         }
 
         return null;
     }
 
-    public void setOperation(WsdlOperation operation) {
-        this.operation = operation;
-    }
-
-    public void setAttachmentType(AttachmentType attachmentType) {
-        this.attachmentType = attachmentType;
+    public AttachmentEncoding getEncoding() {
+        return operation == null ? AttachmentEncoding.NONE : operation.getAttachmentEncoding(getPart(), !isRequest);
     }
 
     public String getContentEncoding() {
         AttachmentEncoding encoding = getEncoding();
         if (encoding == AttachmentEncoding.BASE64) {
             return "base64";
-        } else if (encoding == AttachmentEncoding.HEX) {
+        }
+        else if (encoding == AttachmentEncoding.HEX) {
             return "hex";
-        } else {
+        }
+        else {
             return "binary";
         }
     }
@@ -241,5 +236,17 @@ public class BodyPartAttachment implements Attachment {
     @Override
     public String getId() {
         return null;
+    }
+
+    public void setAttachmentType(AttachmentType attachmentType) {
+        this.attachmentType = attachmentType;
+    }
+
+    public void release() {
+        operation = null;
+    }
+
+    public void setOperation(WsdlOperation operation) {
+        this.operation = operation;
     }
 }

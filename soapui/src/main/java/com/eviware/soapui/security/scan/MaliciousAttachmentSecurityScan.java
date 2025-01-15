@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.scan;
@@ -36,7 +36,7 @@ import com.eviware.soapui.security.ui.MaliciousAttachmentAdvancedSettingsPanel;
 import com.eviware.soapui.security.ui.MaliciousAttachmentMutationsPanel;
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -57,19 +57,21 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
     private int elementIndex = -1;
     private int valueIndex = -1;
 
-    private AbstractHttpRequest<?> request;
+    private final AbstractHttpRequest<?> request;
 
-    public MaliciousAttachmentSecurityScan(TestStep testStep, SecurityScanConfig newConfig, ModelItem parent,
-                                           String icon) {
+    public MaliciousAttachmentSecurityScan(
+        TestStep testStep, SecurityScanConfig newConfig, ModelItem parent, String icon
+    ) {
         super(testStep, newConfig, parent, icon);
 
         if (newConfig.getConfig() == null || !(newConfig.getConfig() instanceof MaliciousAttachmentSecurityScanConfig)) {
             initConfig();
-        } else {
-            config = ((MaliciousAttachmentSecurityScanConfig) newConfig.getConfig());
+        }
+        else {
+            config = ((MaliciousAttachmentSecurityScanConfig)newConfig.getConfig());
         }
 
-        request = ((AbstractHttpRequest<?>) getRequest(testStep));
+        request = ((AbstractHttpRequest<?>)getRequest(testStep));
         request.addAttachmentsChangeListener(this);
     }
 
@@ -78,7 +80,7 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
      */
     protected void initConfig() {
         getConfig().setConfig(MaliciousAttachmentSecurityScanConfig.Factory.newInstance());
-        config = (MaliciousAttachmentSecurityScanConfig) getConfig().getConfig();
+        config = (MaliciousAttachmentSecurityScanConfig)getConfig().getConfig();
     }
 
     private void generateFiles() {
@@ -91,7 +93,8 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
                         if (!file.exists() || file.length() == 0) {
                             file = new RandomFile(value.getSize(), value.getFilename(), value.getContentType()).next();
                         }
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         SoapUI.logError(e);
                     }
                 }
@@ -104,16 +107,113 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
         super.updateSecurityConfig(config);
 
         if (this.config != null) {
-            this.config = (MaliciousAttachmentSecurityScanConfig) getConfig().getConfig();
+            this.config = (MaliciousAttachmentSecurityScanConfig)getConfig().getConfig();
         }
 
         if (advancedSettingsPanel != null) {
-            advancedSettingsPanel.setConfig((MaliciousAttachmentSecurityScanConfig) getConfig().getConfig());
+            advancedSettingsPanel.setConfig((MaliciousAttachmentSecurityScanConfig)getConfig().getConfig());
         }
 
         if (mutationsPanel != null) {
-            mutationsPanel.updateConfig((MaliciousAttachmentSecurityScanConfig) getConfig().getConfig());
+            mutationsPanel.updateConfig((MaliciousAttachmentSecurityScanConfig)getConfig().getConfig());
         }
+    }
+
+    @Override
+    public JComponent getComponent() {
+        if (mutationsPanel == null) {
+            mutationsPanel = new MaliciousAttachmentMutationsPanel(config, (AbstractHttpRequest<?>)getRequest(getTestStep()));
+        }
+
+        return mutationsPanel.getPanel();
+    }
+
+    @Override
+    public String getType() {
+        return TYPE;
+    }
+
+    @Override
+    public String getConfigName() {
+        return "Malicious Attachment Security Scan";
+    }
+
+    @Override
+    public String getConfigDescription() {
+        return "Configures malicious attachment security scan";
+    }
+
+    @Override
+    public String getHelpURL() {
+        return "http://soapui.org/Security/malicious-attachment.html";
+    }
+
+    @Override
+    public JComponent getAdvancedSettingsPanel() {
+        if (advancedSettingsPanel == null) {
+            advancedSettingsPanel = new MaliciousAttachmentAdvancedSettingsPanel(config);
+        }
+
+        return advancedSettingsPanel.getPanel();
+    }
+
+    @Override
+    public void copyConfig(SecurityScanConfig config) {
+        super.copyConfig(config);
+
+        if (advancedSettingsPanel != null) {
+            advancedSettingsPanel.setConfig((MaliciousAttachmentSecurityScanConfig)getConfig().getConfig());
+        }
+
+        if (mutationsPanel != null) {
+            mutationsPanel.updateConfig((MaliciousAttachmentSecurityScanConfig)getConfig().getConfig());
+        }
+    }
+
+    @Override
+    protected void execute(SecurityTestRunner securityTestRunner, TestStep testStep, SecurityTestRunContext context) {
+        try {
+            request.removeAttachmentsChangeListener(this);
+            generateFiles();
+            updateRequestContent(testStep, context);
+            MessageExchange message = (MessageExchange)testStep.run((TestCaseRunner)securityTestRunner, context);
+            getSecurityScanRequestResult().setMessageExchange(message);
+            request.addAttachmentsChangeListener(this);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e, "[MaliciousAttachmentSecurityScan]Property value is not valid xml!");
+            reportSecurityScanException("Property value is not XML or XPath is wrong!");
+        }
+    }
+
+    @Override
+    protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
+        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>)getRequest(testStep);
+        boolean hasNext = request.getAttachmentCount() != 0 && elementIndex < config.getElementList().size();
+
+        if (!hasNext) {
+            elementIndex = -1;
+            valueIndex = -1;
+        }
+
+        return hasNext;
+    }
+
+    @Override
+    public void release() {
+        if (advancedSettingsPanel != null) {
+            advancedSettingsPanel.release();
+        }
+
+        if (mutationsPanel != null) {
+            mutationsPanel.release();
+        }
+
+        if (request != null) {
+            request.removeAttachmentsChangeListener(this);
+        }
+
+        super.release();
     }
 
     public MaliciousAttachmentSecurityScanConfig getMaliciousAttachmentSecurityScanConfig() {
@@ -146,13 +246,13 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
                     addAttachments(testStep, element, valueIndex);
                 }
 
-                if (valueIndex == element.getGenerateAttachmentList().size() + element.getReplaceAttachmentList().size()
-                        - 1) {
+                if (valueIndex == element.getGenerateAttachmentList().size() + element.getReplaceAttachmentList().size() - 1) {
                     valueIndex = -1;
                     elementIndex++;
                 }
             }
-        } else if (getExecutionStrategy().getStrategy() == StrategyTypeConfig.ALL_AT_ONCE) {
+        }
+        else if (getExecutionStrategy().getStrategy() == StrategyTypeConfig.ALL_AT_ONCE) {
             if (elementIndex == -1) {
                 elementIndex++;
             }
@@ -192,7 +292,8 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
         if (counter < element.getGenerateAttachmentList().size()) {
             generated = true;
             list = element.getGenerateAttachmentList();
-        } else {
+        }
+        else {
             list = element.getReplaceAttachmentList();
             counter = counter - element.getGenerateAttachmentList().size();
         }
@@ -208,35 +309,15 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
                 }
 
                 addAttachment(testStep, file, value.getContentType(), generated, value.getCached());
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 SoapUI.logError(e);
             }
         }
     }
 
-    @Override
-    protected void execute(SecurityTestRunner securityTestRunner, TestStep testStep, SecurityTestRunContext context) {
-        try {
-            request.removeAttachmentsChangeListener(this);
-            generateFiles();
-            updateRequestContent(testStep, context);
-            MessageExchange message = (MessageExchange) testStep.run((TestCaseRunner) securityTestRunner, context);
-            getSecurityScanRequestResult().setMessageExchange(message);
-            request.addAttachmentsChangeListener(this);
-        } catch (Exception e) {
-            SoapUI.logError(e, "[MaliciousAttachmentSecurityScan]Property value is not valid xml!");
-            reportSecurityScanException("Property value is not XML or XPath is wrong!");
-        }
-    }
-
-    @Override
-    public String getType() {
-        return TYPE;
-    }
-
-    private Attachment addAttachment(TestStep testStep, File file, String contentType, boolean generated, boolean cache)
-            throws IOException {
-        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>) getRequest(testStep);
+    private Attachment addAttachment(TestStep testStep, File file, String contentType, boolean generated, boolean cache) throws IOException {
+        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>)getRequest(testStep);
         Attachment attach = request.attachFile(file, cache);
         attach.setContentType(contentType);
 
@@ -245,14 +326,15 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
 
     private void removeAttachments(TestStep testStep, String key, boolean equals) {
         List<Attachment> toRemove = new ArrayList<Attachment>();
-        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>) getRequest(testStep);
+        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>)getRequest(testStep);
 
         for (Attachment attachment : request.getAttachments()) {
             if (equals) {
                 if (attachment.getId().equals(key)) {
                     toRemove.add(attachment);
                 }
-            } else {
+            }
+            else {
                 if (!attachment.getId().equals(key)) {
                     toRemove.add(attachment);
                 }
@@ -261,90 +343,11 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
         for (Attachment remove : toRemove) {
             request.removeAttachment(remove);
         }
-
     }
 
     private void setRequestTimeout(TestStep testStep, int timeout) {
-        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>) getRequest(testStep);
+        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>)getRequest(testStep);
         request.setTimeout(String.valueOf(timeout));
-
-    }
-
-    @Override
-    public JComponent getComponent() {
-        if (mutationsPanel == null) {
-            mutationsPanel = new MaliciousAttachmentMutationsPanel(config,
-                    (AbstractHttpRequest<?>) getRequest(getTestStep()));
-        }
-
-        return mutationsPanel.getPanel();
-    }
-
-    @Override
-    protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
-        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>) getRequest(testStep);
-        boolean hasNext = request.getAttachmentCount() == 0 ? false : elementIndex < config.getElementList().size();
-
-        if (!hasNext) {
-            elementIndex = -1;
-            valueIndex = -1;
-        }
-
-        return hasNext;
-    }
-
-    @Override
-    public String getConfigDescription() {
-        return "Configures malicious attachment security scan";
-    }
-
-    @Override
-    public String getConfigName() {
-        return "Malicious Attachment Security Scan";
-    }
-
-    @Override
-    public String getHelpURL() {
-        return "http://soapui.org/Security/malicious-attachment.html";
-    }
-
-    @Override
-    public JComponent getAdvancedSettingsPanel() {
-        if (advancedSettingsPanel == null) {
-            advancedSettingsPanel = new MaliciousAttachmentAdvancedSettingsPanel(config);
-        }
-
-        return advancedSettingsPanel.getPanel();
-    }
-
-    @Override
-    public void copyConfig(SecurityScanConfig config) {
-        super.copyConfig(config);
-
-        if (advancedSettingsPanel != null) {
-            advancedSettingsPanel.setConfig((MaliciousAttachmentSecurityScanConfig) getConfig().getConfig());
-        }
-
-        if (mutationsPanel != null) {
-            mutationsPanel.updateConfig((MaliciousAttachmentSecurityScanConfig) getConfig().getConfig());
-        }
-    }
-
-    @Override
-    public void release() {
-        if (advancedSettingsPanel != null) {
-            advancedSettingsPanel.release();
-        }
-
-        if (mutationsPanel != null) {
-            mutationsPanel.release();
-        }
-
-        if (request != null) {
-            request.removeAttachmentsChangeListener(this);
-        }
-
-        super.release();
     }
 
     private void addedAttachment(Attachment attachment) {
@@ -381,12 +384,13 @@ public class MaliciousAttachmentSecurityScan extends AbstractSecurityScan implem
         if (AttachmentContainer.ATTACHMENTS_PROPERTY.equals(evt.getPropertyName())) {
             if (evt.getOldValue() == null && evt.getNewValue() != null) {
                 if (evt.getNewValue() instanceof Attachment) {
-                    Attachment attachment = (Attachment) evt.getNewValue();
+                    Attachment attachment = (Attachment)evt.getNewValue();
                     addedAttachment(attachment);
                 }
-            } else if (evt.getOldValue() != null && evt.getNewValue() == null) {
+            }
+            else if (evt.getOldValue() != null && evt.getNewValue() == null) {
                 if (evt.getOldValue() instanceof Attachment) {
-                    Attachment attachment = (Attachment) evt.getOldValue();
+                    Attachment attachment = (Attachment)evt.getOldValue();
                     removedAttachment(attachment);
                 }
             }

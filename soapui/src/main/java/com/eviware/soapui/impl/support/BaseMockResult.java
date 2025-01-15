@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support;
@@ -25,6 +25,7 @@ import com.eviware.soapui.support.action.swing.ActionList;
 import com.eviware.soapui.support.action.swing.DefaultActionList;
 import com.eviware.soapui.support.types.StringToStringsMap;
 import org.mortbay.jetty.HttpFields;
+import org.mortbay.jetty.Response;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -38,8 +39,8 @@ public class BaseMockResult<MockRequestType extends MockRequest, MockOperationTy
     private long timeTaken;
     private long timestamp;
     private DefaultActionList actions;
-    private StringToStringsMap responseHeaders = new StringToStringsMap();
-    private MockRequestType mockRequest;
+    private final StringToStringsMap responseHeaders = new StringToStringsMap();
+    private final MockRequestType mockRequest;
     private byte[] rawResponseData;
     private MockOperationType mockOperation;
     private String responseContentType;
@@ -53,20 +54,37 @@ public class BaseMockResult<MockRequestType extends MockRequest, MockOperationTy
         return mockRequest;
     }
 
-    public ActionList getActions() {
-        if (actions == null) {
-            actions = new DefaultActionList("MockResult");
-        }
+    public StringToStringsMap getResponseHeaders() {
+        return responseHeaders;
+    }
 
-        return actions;
+    public String getResponseContent() {
+        return responseContent;
     }
 
     public MockResponse getMockResponse() {
         return mockResponse;
     }
 
-    public String getResponseContent() {
-        return responseContent;
+    public void setMockResponse(MockResponse mockResponse) {
+        this.mockResponse = mockResponse;
+        mockRequest.getRequestContext().setMockResponse(mockResponse);
+    }
+
+    public MockOperation getMockOperation() {
+        if (mockOperation != null) {
+            return mockOperation;
+        }
+
+        return mockResponse == null ? null : mockResponse.getMockOperation();
+    }
+
+    public ActionList getActions() {
+        if (actions == null) {
+            actions = new DefaultActionList("MockResult");
+        }
+
+        return actions;
     }
 
     public long getTimeTaken() {
@@ -81,27 +99,10 @@ public class BaseMockResult<MockRequestType extends MockRequest, MockOperationTy
         this.timestamp = timestamp;
     }
 
-    public void setTimeTaken(long timeTaken) {
-        this.timeTaken = timeTaken;
-    }
-
-    public StringToStringsMap getResponseHeaders() {
-        return responseHeaders;
-    }
-
-    public void setMockResponse(MockResponse mockResponse) {
-        this.mockResponse = mockResponse;
-        mockRequest.getRequestContext().setMockResponse(mockResponse);
-    }
-
-    public void setResponseContent(String responseContent) {
-        this.responseContent = responseContent;
-    }
-
     @SuppressWarnings("unchecked")
     public void finish() {
-        if (mockRequest.getHttpResponse() instanceof org.mortbay.jetty.Response) {
-            HttpFields httpFields = ((org.mortbay.jetty.Response) mockRequest.getHttpResponse()).getHttpFields();
+        if (mockRequest.getHttpResponse() instanceof Response) {
+            HttpFields httpFields = ((Response)mockRequest.getHttpResponse()).getHttpFields();
 
             Enumeration<String> e = httpFields.getFieldNames();
             while (e.hasMoreElements()) {
@@ -109,6 +110,10 @@ public class BaseMockResult<MockRequestType extends MockRequest, MockOperationTy
                 responseHeaders.add(nextElement, httpFields.getStringField(nextElement));
             }
         }
+    }
+
+    public byte[] getRawResponseData() {
+        return rawResponseData;
     }
 
     public void addHeader(String name, String value) {
@@ -124,9 +129,30 @@ public class BaseMockResult<MockRequestType extends MockRequest, MockOperationTy
         return mockRequest.getHttpResponse().isCommitted();
     }
 
+    public void setRawResponseData(byte[] rawResponseData) {
+        this.rawResponseData = rawResponseData;
+    }
+
+    public void setTimeTaken(long timeTaken) {
+        this.timeTaken = timeTaken;
+    }
+
+    public void setMockOperation(MockOperationType mockOperation) {
+        this.mockOperation = mockOperation;
+    }
+
+    public void setResponseContent(String responseContent) {
+        this.responseContent = responseContent;
+    }
+
     public void setContentType(String contentType) {
         mockRequest.getHttpResponse().setContentType(contentType);
         responseContentType = contentType;
+    }
+
+    public void writeRawResponseData(byte[] bs) throws IOException {
+        getOutputStream().write(bs);
+        setRawResponseData(bs);
     }
 
     public OutputStream getOutputStream() throws IOException {
@@ -135,31 +161,6 @@ public class BaseMockResult<MockRequestType extends MockRequest, MockOperationTy
 
     public boolean isDiscarded() {
         return false;
-    }
-
-    public byte[] getRawResponseData() {
-        return rawResponseData;
-    }
-
-    public void setRawResponseData(byte[] rawResponseData) {
-        this.rawResponseData = rawResponseData;
-    }
-
-    public void writeRawResponseData(byte[] bs) throws IOException {
-        getOutputStream().write(bs);
-        setRawResponseData(bs);
-    }
-
-    public void setMockOperation(MockOperationType mockOperation) {
-        this.mockOperation = mockOperation;
-    }
-
-    public MockOperation getMockOperation() {
-        if (mockOperation != null) {
-            return mockOperation;
-        }
-
-        return mockResponse == null ? null : mockResponse.getMockOperation();
     }
 
     public String getResponseContentType() {
@@ -173,10 +174,12 @@ public class BaseMockResult<MockRequestType extends MockRequest, MockOperationTy
 
         if (mockResponse == null) {
             msg.append(": [dispatch error; missing response]");
-        } else {
+        }
+        else {
             try {
                 msg.append(": [" + mockResponse.getMockOperation().getName());
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 msg.append(": [removed operation?]");
             }
 

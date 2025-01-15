@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.jms.property;
@@ -24,27 +24,27 @@ import com.eviware.soapui.support.editor.xml.XmlDocument;
 import com.eviware.soapui.support.swing.JTableFactory;
 import com.eviware.soapui.support.types.StringToStringMap;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 public class JMSHeaderAndPropertyInspector extends AbstractXmlInspector implements PropertyChangeListener {
-    private StringToStringMapTableModel headersTableModel;
     private final JMSHeaderAndPropertyInspectorModel model;
-    private JTable headersTable;
-
-    private JPanel panel;
     public boolean changing;
+    private StringToStringMapTableModel headersTableModel;
+    private JTable headersTable;
+    private JPanel panel;
 
     protected JMSHeaderAndPropertyInspector(JMSHeaderAndPropertyInspectorModel model) {
-        super("JMS (" + (model.getJMSHeadersAndProperties() == null ? "0" : model.getJMSHeadersAndProperties().size())
-                + ")", "JMS Header and Property for this message", true, JMSHeaderAndPropertyInspectorFactory.INSPECTOR_ID);
+        super(
+            "JMS (" + (model.getJMSHeadersAndProperties() == null ? "0" : model.getJMSHeadersAndProperties().size()) + ")",
+            "JMS Header and Property for this message",
+            true,
+            JMSHeaderAndPropertyInspectorFactory.INSPECTOR_ID
+        );
 
         this.model = model;
 
@@ -57,8 +57,7 @@ public class JMSHeaderAndPropertyInspector extends AbstractXmlInspector implemen
             return panel;
         }
 
-        headersTableModel = new StringToStringMapTableModel(model.getJMSHeadersAndProperties(), "Key", "Value",
-                !model.isReadOnly());
+        headersTableModel = new StringToStringMapTableModel(model.getJMSHeadersAndProperties(), "Key", "Value", !model.isReadOnly());
         headersTableModel.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent arg0) {
                 StringToStringMap map = model.getJMSHeadersAndProperties();
@@ -84,6 +83,11 @@ public class JMSHeaderAndPropertyInspector extends AbstractXmlInspector implemen
         model.removePropertyChangeListener(this);
     }
 
+    @Override
+    public boolean isEnabledFor(EditorView<XmlDocument> view) {
+        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (!changing) {
             headersTableModel.setData(model.getJMSHeadersAndProperties());
@@ -96,10 +100,5 @@ public class JMSHeaderAndPropertyInspector extends AbstractXmlInspector implemen
 
     public StringToStringMapTableModel getHeadersTableModel() {
         return headersTableModel;
-    }
-
-    @Override
-    public boolean isEnabledFor(EditorView<XmlDocument> view) {
-        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
     }
 }

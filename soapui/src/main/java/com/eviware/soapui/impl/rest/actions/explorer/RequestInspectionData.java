@@ -8,7 +8,8 @@ public class RequestInspectionData {
 
     /**
      * Main constructor
-     * @param headers request headers
+     *
+     * @param headers     request headers
      * @param requestBody request payload
      */
     public RequestInspectionData(Map<String, String> headers, String requestBody) {
@@ -18,6 +19,7 @@ public class RequestInspectionData {
 
     /**
      * Getter for request headers
+     *
      * @return headers
      */
     public Map<String, String> getHeaders() {
@@ -26,6 +28,7 @@ public class RequestInspectionData {
 
     /**
      * Getter for request payload
+     *
      * @return request body
      */
     public String getRequestBody() {

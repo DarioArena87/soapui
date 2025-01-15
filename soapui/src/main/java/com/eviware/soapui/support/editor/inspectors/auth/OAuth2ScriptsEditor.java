@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.auth;
@@ -31,24 +31,14 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.xml.SyntaxEditorUtil;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -66,16 +56,16 @@ public class OAuth2ScriptsEditor extends JPanel {
     static final String[] DEFAULT_SCRIPT_NAMES = {"Page 1 (e.g. login screen)", "Page 2 (e.g. consent screen)"};
     private static final String HELP_LINK_TEXT = "How to automate the process of getting an access token";
 
-    private List<InputPanel> inputPanels = new ArrayList<InputPanel>();
+    private final List<InputPanel> inputPanels = new ArrayList<InputPanel>();
     private InputPanel selectedInputField = null;
-    private List<RSyntaxTextArea> scriptFields = new ArrayList<RSyntaxTextArea>();
-    private JavaScriptValidator javaScriptValidator = new JavaScriptValidator();
+    private final List<RSyntaxTextArea> scriptFields = new ArrayList<RSyntaxTextArea>();
+    private final JavaScriptValidator javaScriptValidator = new JavaScriptValidator();
     private JPanel scriptsPanel;
     private JButton removeScriptButton;
-    private OAuth2Profile profile;
+    private final OAuth2Profile profile;
     private DocumentListener scriptUpdater;
 
-    public OAuth2ScriptsEditor(final OAuth2Profile profile) {
+    public OAuth2ScriptsEditor(OAuth2Profile profile) {
         super(new BorderLayout());
         this.profile = profile;
         add(buildToolbar(profile), BorderLayout.NORTH);
@@ -86,7 +76,7 @@ public class OAuth2ScriptsEditor extends JPanel {
         add(linkPanel, BorderLayout.SOUTH);
     }
 
-    private JXToolBar buildToolbar(final OAuth2Profile profile) {
+    private JXToolBar buildToolbar(OAuth2Profile profile) {
         JXToolBar toolbar = UISupport.createToolbar();
         JButton testScriptsButton = UISupport.createToolbarButton(new TestScriptsAction(profile));
         testScriptsButton.setName(TEST_SCRIPTS_BUTTON_NAME);
@@ -123,14 +113,15 @@ public class OAuth2ScriptsEditor extends JPanel {
         for (InputPanel inputPanel : inputPanels) {
             if (inputPanel == field) {
                 inputPanel.highlight();
-            } else {
+            }
+            else {
                 inputPanel.removeHighlight();
             }
         }
         removeScriptButton.setEnabled(selectedInputField != null);
     }
 
-    private JPanel makeScriptsPanel(final OAuth2Profile profile) {
+    private JPanel makeScriptsPanel(OAuth2Profile profile) {
         scriptUpdater = new ScriptUpdater(profile);
         List<String> currentScripts = profile.getAutomationJavaScripts();
         scriptsPanel = new JPanel();
@@ -160,7 +151,8 @@ public class OAuth2ScriptsEditor extends JPanel {
     private void showErrorMessage(String message) {
         if (message.length() > UISupport.EXTENDED_ERROR_MESSAGE_THRESHOLD) {
             UISupport.showErrorMessage(message.replaceAll("\r\n", "<br/>"));
-        } else {
+        }
+        else {
             UISupport.showErrorMessage(message);
         }
     }
@@ -202,8 +194,7 @@ public class OAuth2ScriptsEditor extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (UISupport.confirm("Do you really want to remove the script '" + selectedInputField.scriptField.getName() + "'",
-                    "Remove script", OAuth2ScriptsEditor.this)) {
+            if (UISupport.confirm("Do you really want to remove the script '" + selectedInputField.scriptField.getName() + "'", "Remove script", OAuth2ScriptsEditor.this)) {
                 scriptFields.remove(selectedInputField.scriptField);
                 inputPanels.remove(selectedInputField);
                 scriptsPanel.remove(selectedInputField);
@@ -222,7 +213,7 @@ public class OAuth2ScriptsEditor extends JPanel {
     }
 
     private class TestScriptsAction extends AbstractAction {
-        private OAuth2Profile profile;
+        private final OAuth2Profile profile;
 
         private TestScriptsAction(OAuth2Profile profile) {
             this.profile = profile;
@@ -237,8 +228,7 @@ public class OAuth2ScriptsEditor extends JPanel {
                 String script = scriptField.getText();
                 JavaScriptValidationError validate = javaScriptValidator.validate(script);
                 if (validate != null) {
-                    showErrorMessage("The following script is invalid:\r\n" + script +
-                            "\r\n\r\nError:<br/>" + validate.getErrorMessage());
+                    showErrorMessage("The following script is invalid:\r\n" + script + "\r\n\r\nError:<br/>" + validate.getErrorMessage());
                     errorsFound = true;
                 }
             }
@@ -248,20 +238,17 @@ public class OAuth2ScriptsEditor extends JPanel {
                 OAuth2Parameters parameters = new OAuth2Parameters(profile);
                 try {
                     extractor.extractAccessToken(parameters);
-                } catch (Exception ignore) {
+                }
+                catch (Exception ignore) {
 
                 }
-
-
             }
         }
     }
 
-
     class InputPanel extends JPanel {
-        private RSyntaxTextArea scriptField;
-
         private final Color originalBackground;
+        private final RSyntaxTextArea scriptField;
 
         public InputPanel(String scriptName, RSyntaxTextArea scriptField) {
             super(new BorderLayout(20, 20));
@@ -275,7 +262,8 @@ public class OAuth2ScriptsEditor extends JPanel {
                         if (e.getSource() == InputPanel.this) {
                             selectField(null);
                         }
-                    } else {
+                    }
+                    else {
                         selectField(InputPanel.this);
                     }
                 }
@@ -292,37 +280,34 @@ public class OAuth2ScriptsEditor extends JPanel {
             return size;
         }
 
+        @Override
+        public void setBorder(Border border) {
+            super.setBorder(new CompoundBorder(border, new EmptyBorder(20, 20, 20, 20)));
+        }
+
         public void highlight() {
             setBorder(BorderFactory.createLineBorder(Color.GRAY));
             setBackground(aDarkerShadeThan(originalBackground));
         }
 
         private Color aDarkerShadeThan(Color color) {
-            return new Color((int) (color.getRed() * .9),
-                    (int) (color.getBlue() * .9), (int) (color.getGreen() * .9));
+            return new Color((int)(color.getRed() * .9), (int)(color.getBlue() * .9), (int)(color.getGreen() * .9));
         }
 
         public void removeHighlight() {
             setBorder(BorderFactory.createLineBorder(Color.WHITE));
             setBackground(originalBackground);
         }
-
-        @Override
-        public void setBorder(Border border) {
-            super.setBorder(new CompoundBorder(border, new EmptyBorder(20, 20, 20, 20)));
-        }
-
     }
-
 
     private class JavaScriptErrorReporter extends BrowserListenerAdapter {
 
         private final List<String> expectedScripts;
         private boolean hasErrors = false;
-        private List<String> executedScripts = new ArrayList<String>();
+        private final List<String> executedScripts = new ArrayList<String>();
 
         public JavaScriptErrorReporter(List<String> automationJavaScripts) {
-            this.expectedScripts = nonEmptyScriptsIn(automationJavaScripts);
+            expectedScripts = nonEmptyScriptsIn(automationJavaScripts);
         }
 
         private List<String> nonEmptyScriptsIn(List<String> scriptList) {
@@ -336,15 +321,14 @@ public class OAuth2ScriptsEditor extends JPanel {
         }
 
         @Override
-        public void javaScriptExecuted(final String script, final String errorLocation, final Exception error) {
+        public void javaScriptExecuted(String script, String errorLocation, Exception error) {
             executedScripts.add(script);
             if (error != null) {
                 hasErrors = true;
                 // invokeLater() is necessary, because the call comes from the JavaFX invoker thread
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        showErrorMessage("The following script failed:\r\n" + script + "\r\nPage URL: " + errorLocation + "\r\nError:\r\n" +
-                                error.getMessage() + "]");
+                        showErrorMessage("The following script failed:\r\n" + script + "\r\nPage URL: " + errorLocation + "\r\nError:\r\n" + error.getMessage() + "]");
                     }
                 });
             }
@@ -360,13 +344,13 @@ public class OAuth2ScriptsEditor extends JPanel {
                             UISupport.showInfoMessage("All scripts executed correctly.");
                         }
                     });
-                } else {
+                }
+                else {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             UISupport.showInfoMessage("The scripts could only be partially validated, because all scripts " +
-                                    "weren't executed in the OAuth 2 flow.\n" +
-                                    "Maybe you already have an active session in the authorization server?",
-                                    "Scripts not fully validated");
+                                                      "weren't executed in the OAuth 2 flow.\n" +
+                                                      "Maybe you already have an active session in the authorization server?", "Scripts not fully validated");
                         }
                     });
                 }

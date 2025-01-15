@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.attachments;
@@ -43,8 +43,9 @@ public class MimeMessageResponse extends BaseHttpResponse {
     private MultipartMessageSupport mmSupport;
     private PostResponseDataSource postResponseDataSource;
 
-    public MimeMessageResponse(AbstractHttpRequestInterface<?> httpRequest, ExtendedHttpMethod httpMethod,
-                               String requestContent, PropertyExpansionContext context) {
+    public MimeMessageResponse(
+        AbstractHttpRequestInterface<?> httpRequest, ExtendedHttpMethod httpMethod, String requestContent, PropertyExpansionContext context
+    ) {
         super(httpMethod, httpRequest, context);
 
         if (getRequestContent() == null || !getRequestContent().equals(requestContent)) {
@@ -75,14 +76,14 @@ public class MimeMessageResponse extends BaseHttpResponse {
                     }
                 }
 
-                mmSupport = new MultipartMessageSupport(postResponseDataSource, rootPartId,
-                        (AbstractHttpOperation) httpRequest.getOperation(), false, httpRequest.isPrettyPrint());
+                mmSupport = new MultipartMessageSupport(postResponseDataSource, rootPartId, (AbstractHttpOperation)httpRequest.getOperation(), false, httpRequest.isPrettyPrint());
 
                 if (httpRequest.getSettings().getBoolean(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN)) {
-                    this.timeTaken += httpMethod.getResponseReadTime();
+                    timeTaken += httpMethod.getResponseReadTime();
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
@@ -91,24 +92,15 @@ public class MimeMessageResponse extends BaseHttpResponse {
         return mmSupport;
     }
 
-    public long getContentLength() {
-        return responseContentLength;
-    }
-
-    public String getRequestContent() {
-        return requestContent == null ? super.getRequestContent() : requestContent;
-    }
-
     public void setResponseContent(String responseContent) {
         String oldContent = getContentAsString();
         mmSupport.setResponseContent(responseContent);
 
-        ((AbstractHttpRequest<?>) getRequest()).notifyPropertyChanged(WsdlRequest.RESPONSE_CONTENT_PROPERTY,
-                oldContent, responseContent);
+        ((AbstractHttpRequest<?>)getRequest()).notifyPropertyChanged(WsdlRequest.RESPONSE_CONTENT_PROPERTY, oldContent, responseContent);
     }
 
     public Attachment[] getAttachments() {
-        if(mmSupport == null) {
+        if (mmSupport == null) {
             return new Attachment[0];
         }
         int lengthA = super.getAttachments().length;
@@ -118,18 +110,25 @@ public class MimeMessageResponse extends BaseHttpResponse {
             System.arraycopy(super.getAttachments(), 0, all, 0, lengthA);
             System.arraycopy(mmSupport.getAttachments(), 0, all, lengthA, lengthB);
             return all;
-        } else {
+        }
+        else {
             return mmSupport.getAttachments();
         }
-
     }
 
     public Attachment[] getAttachmentsForPart(String partName) {
         return mmSupport.getAttachmentsForPart(partName);
     }
 
+    public String getRequestContent() {
+        return requestContent == null ? super.getRequestContent() : requestContent;
+    }
+
     public String getContentAsString() {
         return mmSupport == null ? null : mmSupport.getContentAsString();
     }
 
+    public long getContentLength() {
+        return responseContentLength;
+    }
 }

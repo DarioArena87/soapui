@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.views.xml.source;
@@ -62,9 +62,7 @@ import com.eviware.soapui.support.editor.xml.support.ValidationError;
 import com.eviware.soapui.support.propertyexpansion.PropertyExpansionPopupListener;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.JMenu;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.util.List;
@@ -90,17 +88,18 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
     @SuppressWarnings("unchecked")
     public EditorView<?> createRequestEditorView(Editor<?> editor, ModelItem modelItem) {
         if (modelItem instanceof WsdlRequest) {
-            return new WsdlRequestXmlSourceEditor((XmlEditor) editor, (WsdlRequest) modelItem);
-        } else if (modelItem instanceof WsdlMockResponse) {
-            return new WsdlMockRequestXmlSourceEditor((XmlEditor) editor, (WsdlMockResponse) modelItem);
-        } else if (modelItem instanceof MessageExchangeModelItem) {
-            return new XmlSourceEditorView<MessageExchangeModelItem>((XmlEditor) editor,
-                    (MessageExchangeModelItem) modelItem, false);
-        } else if (modelItem instanceof RestMockResponse) {
-            boolean readOnly = false;
-            return new XmlSourceEditorView((XmlEditor) editor, modelItem, readOnly);
+            return new WsdlRequestXmlSourceEditor((XmlEditor)editor, (WsdlRequest)modelItem);
         }
-
+        else if (modelItem instanceof WsdlMockResponse) {
+            return new WsdlMockRequestXmlSourceEditor((XmlEditor)editor, (WsdlMockResponse)modelItem);
+        }
+        else if (modelItem instanceof MessageExchangeModelItem) {
+            return new XmlSourceEditorView<MessageExchangeModelItem>((XmlEditor)editor, (MessageExchangeModelItem)modelItem, false);
+        }
+        else if (modelItem instanceof RestMockResponse) {
+            boolean readOnly = false;
+            return new XmlSourceEditorView((XmlEditor)editor, modelItem, readOnly);
+        }
 
         return null;
     }
@@ -108,24 +107,29 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
     @SuppressWarnings("unchecked")
     public EditorView<?> createResponseEditorView(Editor<?> editor, ModelItem modelItem) {
         if (modelItem instanceof WsdlRequest) {
-            return new WsdlResponseXmlSourceEditor((XmlEditor) editor, (WsdlRequest) modelItem);
-        } else if (modelItem instanceof WsdlMockResponse) {
-            return new WsdlMockResponseXmlSourceEditor((XmlEditor) editor, (WsdlMockResponse) modelItem);
-        } else if (modelItem instanceof GraphQLTestRequest) {
+            return new WsdlResponseXmlSourceEditor((XmlEditor)editor, (WsdlRequest)modelItem);
+        }
+        else if (modelItem instanceof WsdlMockResponse) {
+            return new WsdlMockResponseXmlSourceEditor((XmlEditor)editor, (WsdlMockResponse)modelItem);
+        }
+        else if (modelItem instanceof GraphQLTestRequest) {
             return null;
-        } else if (modelItem instanceof HttpRequestInterface<?>) {
-            return new RestResponseXmlSourceEditor((XmlEditor) editor, (HttpRequestInterface<?>) modelItem);
-        } else if (modelItem instanceof MessageExchangeModelItem) {
-            return new XmlSourceEditorView<MessageExchangeModelItem>((XmlEditor) editor,
-                    (MessageExchangeModelItem) modelItem, true);
-        } else if (modelItem instanceof JdbcRequestTestStep) {
-            return new XmlSourceEditorView<JdbcRequestTestStep>((XmlEditor) editor, (JdbcRequestTestStep) modelItem,
-                    true);
-        } else if (modelItem instanceof AMFRequestTestStep) {
-            return new XmlSourceEditorView<AMFRequestTestStep>((XmlEditor) editor, (AMFRequestTestStep) modelItem, true);
-        } else if (modelItem instanceof RestMockResponse) {
+        }
+        else if (modelItem instanceof HttpRequestInterface<?>) {
+            return new RestResponseXmlSourceEditor((XmlEditor)editor, (HttpRequestInterface<?>)modelItem);
+        }
+        else if (modelItem instanceof MessageExchangeModelItem) {
+            return new XmlSourceEditorView<MessageExchangeModelItem>((XmlEditor)editor, (MessageExchangeModelItem)modelItem, true);
+        }
+        else if (modelItem instanceof JdbcRequestTestStep) {
+            return new XmlSourceEditorView<JdbcRequestTestStep>((XmlEditor)editor, (JdbcRequestTestStep)modelItem, true);
+        }
+        else if (modelItem instanceof AMFRequestTestStep) {
+            return new XmlSourceEditorView<AMFRequestTestStep>((XmlEditor)editor, (AMFRequestTestStep)modelItem, true);
+        }
+        else if (modelItem instanceof RestMockResponse) {
             boolean readOnly = false;
-            return new XmlSourceEditorView((XmlEditor) editor, modelItem, readOnly, "Editor");
+            return new XmlSourceEditorView((XmlEditor)editor, modelItem, readOnly, "Editor");
         }
 
         return null;
@@ -146,15 +150,6 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
             super(xmlEditor, request, false);
         }
 
-        protected ValidationError[] validateXml(String xml) {
-            WsdlOperation operation = getModelItem().getOperation();
-            WsdlValidator validator = new WsdlValidator((operation.getInterface()).getWsdlContext());
-
-            WsdlResponseMessageExchange wsdlResponseMessageExchange = new WsdlResponseMessageExchange(getModelItem());
-            wsdlResponseMessageExchange.setRequestContent(xml);
-            return validator.assertRequest(wsdlResponseMessageExchange, false);
-        }
-
         @Override
         protected void buildUI() {
             super.buildUI();
@@ -173,14 +168,6 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
 
             inputPopup.addPopupMenuListener(new PopupMenuListener() {
 
-                public void popupMenuCanceled(PopupMenuEvent e) {
-
-                }
-
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-
-                }
-
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                     applyMenu.removeAll();
                     DefaultWssContainer wss = getModelItem().getOperation().getInterface().getProject().getWssContainer();
@@ -197,7 +184,24 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
                     wsaApplyMenu.add(new RemoveWsaHeadersFromRequestAction(getModelItem()));
                     wsaApplyMenu.setEnabled(getModelItem().getWsaConfig().isWsaEnabled());
                 }
+
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+
+                }
+
+                public void popupMenuCanceled(PopupMenuEvent e) {
+
+                }
             });
+        }
+
+        protected ValidationError[] validateXml(String xml) {
+            WsdlOperation operation = getModelItem().getOperation();
+            WsdlValidator validator = new WsdlValidator((operation.getInterface()).getWsdlContext());
+
+            WsdlResponseMessageExchange wsdlResponseMessageExchange = new WsdlResponseMessageExchange(getModelItem());
+            wsdlResponseMessageExchange.setRequestContent(xml);
+            return validator.assertRequest(wsdlResponseMessageExchange, false);
         }
 
         public WsdlRequest getRequest() {
@@ -217,6 +221,11 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
             super(xmlEditor, mockResponse, false);
         }
 
+        protected void buildPopup(JPopupMenu inputPopup, RSyntaxTextArea editArea) {
+            super.buildPopup(inputPopup, editArea);
+            // inputPopup.insert( new JSeparator(), 2 );
+        }
+
         protected ValidationError[] validateXml(String xml) {
             WsdlOperation operation = getModelItem().getMockOperation().getOperation();
 
@@ -225,14 +234,8 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
             }
 
             WsdlValidator validator = new WsdlValidator((operation.getInterface()).getWsdlContext());
-            WsdlMockResultMessageExchange messageExchange =
-                    new WsdlMockResultMessageExchange((WsdlMockResult) getModelItem().getMockResult(), getModelItem());
+            WsdlMockResultMessageExchange messageExchange = new WsdlMockResultMessageExchange(getModelItem().getMockResult(), getModelItem());
             return validator.assertRequest(messageExchange, false);
-        }
-
-        protected void buildPopup(JPopupMenu inputPopup, RSyntaxTextArea editArea) {
-            super.buildPopup(inputPopup, editArea);
-            // inputPopup.insert( new JSeparator(), 2 );
         }
     }
 
@@ -250,7 +253,7 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
 
         protected ValidationError[] validateXml(String xml) {
             if (getModelItem() instanceof WsdlTestRequest) {
-                WsdlTestRequest testRequest = (WsdlTestRequest) getModelItem();
+                WsdlTestRequest testRequest = (WsdlTestRequest)getModelItem();
                 testRequest.assertResponse(new WsdlTestRunContext(testRequest.getTestStep()));
             }
 
@@ -283,20 +286,6 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
             getValidateXmlAction().setEnabled(getModelItem().getMockOperation().getOperation().isBidirectional());
         }
 
-        protected ValidationError[] validateXml(String xml) {
-            WsdlOperation operation = getModelItem().getMockOperation().getOperation();
-            if (operation == null) {
-                return new ValidationError[]{new AssertionError("Missing operation for MockResponse")};
-            }
-
-            WsdlValidator validator = new WsdlValidator((operation.getInterface()).getWsdlContext());
-            return validator.assertResponse(new WsdlMockResponseMessageExchange(getModelItem()), false);
-        }
-
-        public WsdlMockResponse getMockResponse() {
-            return getModelItem();
-        }
-
         protected void buildPopup(JPopupMenu inputPopup, RSyntaxTextArea editArea) {
             super.buildPopup(inputPopup, editArea);
 
@@ -304,14 +293,6 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
             inputPopup.insert(wsaApplyMenu = new JMenu("WS-A headers"), 3);
 
             inputPopup.addPopupMenuListener(new PopupMenuListener() {
-
-                public void popupMenuCanceled(PopupMenuEvent e) {
-
-                }
-
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-
-                }
 
                 public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
                     applyMenu.removeAll();
@@ -329,9 +310,30 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
                     wsaApplyMenu.add(new AddWsaHeadersToMockResponseAction(getModelItem()));
                     wsaApplyMenu.add(new RemoveWsaHeadersFromMockResponseAction(getModelItem()));
                     wsaApplyMenu.setEnabled(getModelItem().getWsaConfig().isWsaEnabled());
+                }
+
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+
+                }
+
+                public void popupMenuCanceled(PopupMenuEvent e) {
 
                 }
             });
+        }
+
+        protected ValidationError[] validateXml(String xml) {
+            WsdlOperation operation = getModelItem().getMockOperation().getOperation();
+            if (operation == null) {
+                return new ValidationError[]{new AssertionError("Missing operation for MockResponse")};
+            }
+
+            WsdlValidator validator = new WsdlValidator((operation.getInterface()).getWsdlContext());
+            return validator.assertResponse(new WsdlMockResponseMessageExchange(getModelItem()), false);
+        }
+
+        public WsdlMockResponse getMockResponse() {
+            return getModelItem();
         }
     }
 
@@ -342,14 +344,12 @@ public class XmlSourceEditorViewFactory implements ResponseEditorViewFactory, Re
 
         @SuppressWarnings("unchecked")
         protected ValidationError[] validateXml(String xml) {
-            if (getModelItem() instanceof HttpRequestInterface
-                    || ((RestRequestInterface) getModelItem()).getResource() == null) {
+            if (getModelItem() instanceof HttpRequestInterface || ((RestRequestInterface)getModelItem()).getResource() == null) {
                 return new ValidationError[0];
             }
 
-            WadlValidator validator = new WadlValidator(((RestRequestInterface) getModelItem()).getResource()
-                    .getService().getWadlContext());
-            return validator.assertResponse(new RestResponseMessageExchange((RestRequest) getModelItem()));
+            WadlValidator validator = new WadlValidator(((RestRequestInterface)getModelItem()).getResource().getService().getWadlContext());
+            return validator.assertResponse(new RestResponseMessageExchange((RestRequest)getModelItem()));
         }
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.settings;
@@ -60,15 +60,12 @@ public class XmlBeansSettingsImpl implements Settings {
         }
     }
 
-    public boolean isSet(String id) {
-        return values.containsKey(id);
-    }
-
     public String getString(String id, String defaultValue) {
         String cachedValue = valueCache.get(id);
         if (cachedValue != null) {
             return cachedValue;
-        } else {
+        }
+        else {
             SettingConfig setting = values.get(id);
             if (setting != null) {
                 String value = setting.getStringValue();
@@ -93,7 +90,8 @@ public class XmlBeansSettingsImpl implements Settings {
 
         if (value == null) {
             clearSetting(id);
-        } else {
+        }
+        else {
             if (!values.containsKey(id)) {
                 SettingConfig setting = config.addNewSetting();
                 setting.setId(id);
@@ -105,26 +103,6 @@ public class XmlBeansSettingsImpl implements Settings {
         }
 
         notifySettingChanged(id, value, oldValue);
-    }
-
-    private void notifySettingChanged(String id, String value, String oldValue) {
-        SettingsListener[] l = listeners.toArray(new SettingsListener[listeners.size()]);
-        for (SettingsListener listener : l) {
-            listener.settingChanged(id, value, oldValue);
-        }
-    }
-
-    @Override
-    public void reloadSettings() {
-        notifySettingsReloaded();
-
-    }
-
-    private void notifySettingsReloaded() {
-        SettingsListener[] l = listeners.toArray(new SettingsListener[listeners.size()]);
-        for (SettingsListener listener : l) {
-            listener.settingsReloaded();
-        }
     }
 
     public boolean getBoolean(String id) {
@@ -142,23 +120,11 @@ public class XmlBeansSettingsImpl implements Settings {
         return parent == null ? defaultValue : parent.getBoolean(id);
     }
 
-    public long getLong(String id, long defaultValue) {
-        String value = getString(id, null);
-
-        if (value != null) {
-            try {
-                return Long.parseLong(value);
-            } catch (NumberFormatException e) {
-            }
-        }
-
-        return parent == null ? defaultValue : parent.getLong(id, defaultValue);
-    }
-
     public void setBoolean(String id, boolean value) {
         if (!value) {
             setString(id, "false");
-        } else {
+        }
+        else {
             setString(id, "true");
         }
     }
@@ -180,6 +146,47 @@ public class XmlBeansSettingsImpl implements Settings {
         }
     }
 
+    public long getLong(String id, long defaultValue) {
+        String value = getString(id, null);
+
+        if (value != null) {
+            try {
+                return Long.parseLong(value);
+            }
+            catch (NumberFormatException e) {
+            }
+        }
+
+        return parent == null ? defaultValue : parent.getLong(id, defaultValue);
+    }
+
+    public boolean isSet(String id) {
+        return values.containsKey(id);
+    }
+
+    public void setLong(String id, long value) {
+        setString(id, Long.toString(value));
+    }
+
+    @Override
+    public void reloadSettings() {
+        notifySettingsReloaded();
+    }
+
+    private void notifySettingChanged(String id, String value, String oldValue) {
+        SettingsListener[] l = listeners.toArray(new SettingsListener[listeners.size()]);
+        for (SettingsListener listener : l) {
+            listener.settingChanged(id, value, oldValue);
+        }
+    }
+
+    private void notifySettingsReloaded() {
+        SettingsListener[] l = listeners.toArray(new SettingsListener[listeners.size()]);
+        for (SettingsListener listener : l) {
+            listener.settingsReloaded();
+        }
+    }
+
     public ModelItem getModelItem() {
         return item;
     }
@@ -192,23 +199,6 @@ public class XmlBeansSettingsImpl implements Settings {
         if (parent != null) {
             parent.removeSettingsListener(settingsListener);
         }
-    }
-
-    private final class InternalSettingsListener implements SettingsListener {
-        public void settingChanged(String name, String newValue, String oldValue) {
-            if (!values.containsKey(name)) {
-                notifySettingChanged(name, newValue, oldValue);
-            }
-        }
-
-        @Override
-        public void settingsReloaded() {
-            notifySettingsReloaded();
-        }
-    }
-
-    public void setLong(String id, long value) {
-        setString(id, Long.toString(value));
     }
 
     public void setConfig(SettingsConfig soapuiSettings) {
@@ -234,4 +224,16 @@ public class XmlBeansSettingsImpl implements Settings {
         notifySettingsReloaded();
     }
 
+    private final class InternalSettingsListener implements SettingsListener {
+        public void settingChanged(String name, String newValue, String oldValue) {
+            if (!values.containsKey(name)) {
+                notifySettingChanged(name, newValue, oldValue);
+            }
+        }
+
+        @Override
+        public void settingsReloaded() {
+            notifySettingsReloaded();
+        }
+    }
 }

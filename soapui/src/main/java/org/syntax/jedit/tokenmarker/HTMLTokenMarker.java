@@ -12,14 +12,14 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
-import javax.swing.text.Segment;
-
 import org.syntax.jedit.KeywordMap;
 import org.syntax.jedit.SyntaxUtilities;
+
+import javax.swing.text.Segment;
 
 /**
  * HTML token marker.
@@ -29,11 +29,14 @@ import org.syntax.jedit.SyntaxUtilities;
  */
 public class HTMLTokenMarker extends TokenMarker {
     public static final byte JAVASCRIPT = Token.INTERNAL_FIRST;
-
+    // private members
+    private final KeywordMap keywords;
+    private final boolean js;
+    private int lastOffset;
+    private int lastKeyword;
     public HTMLTokenMarker() {
         this(true);
     }
-
     public HTMLTokenMarker(boolean js) {
         this.js = js;
         keywords = JavaScriptTokenMarker.getKeywords();
@@ -67,11 +70,13 @@ public class HTMLTokenMarker extends TokenMarker {
                             if (SyntaxUtilities.regionMatches(false, line, i1, "!--")) {
                                 i += 3;
                                 token = Token.COMMENT1;
-                            } else if (js && SyntaxUtilities.regionMatches(true, line, i1, "script>")) {
+                            }
+                            else if (js && SyntaxUtilities.regionMatches(true, line, i1, "script>")) {
                                 addToken(8, Token.KEYWORD1);
                                 lastOffset = lastKeyword = (i += 8);
                                 token = JAVASCRIPT;
-                            } else {
+                            }
+                            else {
                                 token = Token.KEYWORD1;
                             }
                             break;
@@ -122,7 +127,8 @@ public class HTMLTokenMarker extends TokenMarker {
                         case '"':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 doKeyword(line, i, c);
                                 addToken(i - lastOffset, Token.NULL);
                                 lastOffset = lastKeyword = i;
@@ -132,7 +138,8 @@ public class HTMLTokenMarker extends TokenMarker {
                         case '\'':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 doKeyword(line, i, c);
                                 addToken(i - lastOffset, Token.NULL);
                                 lastOffset = lastKeyword = i;
@@ -149,7 +156,8 @@ public class HTMLTokenMarker extends TokenMarker {
                                     addToken(length - i, Token.COMMENT2);
                                     lastOffset = lastKeyword = length;
                                     break loop;
-                                } else if (array[i1] == '*') {
+                                }
+                                else if (array[i1] == '*') {
                                     token = Token.COMMENT2;
                                 }
                             }
@@ -165,7 +173,8 @@ public class HTMLTokenMarker extends TokenMarker {
                 case Token.LITERAL1: // JavaScript "..."
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '"') {
+                    }
+                    else if (c == '"') {
                         addToken(i1 - lastOffset, Token.LITERAL1);
                         lastOffset = lastKeyword = i1;
                         token = JAVASCRIPT;
@@ -174,7 +183,8 @@ public class HTMLTokenMarker extends TokenMarker {
                 case Token.LITERAL2: // JavaScript '...'
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '\'') {
+                    }
+                    else if (c == '\'') {
                         addToken(i1 - lastOffset, Token.LITERAL1);
                         lastOffset = lastKeyword = i1;
                         token = JAVASCRIPT;
@@ -214,12 +224,6 @@ public class HTMLTokenMarker extends TokenMarker {
 
         return token;
     }
-
-    // private members
-    private KeywordMap keywords;
-    private boolean js;
-    private int lastOffset;
-    private int lastKeyword;
 
     private boolean doKeyword(Segment line, int i, char c) {
         int i1 = i + 1;

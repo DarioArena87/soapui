@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.testcase;
@@ -33,19 +33,8 @@ import com.eviware.x.form.support.AField;
 import com.eviware.x.form.support.AField.AFieldType;
 import com.eviware.x.form.support.AForm;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -62,13 +51,13 @@ import java.util.Set;
  */
 
 public class JTestRunLog extends JPanel implements TestRunLog {
+    private final Settings settings;
+    protected int selectedIndex;
     private TestCaseLogModel logListModel;
     private JList testLogList;
     private boolean errorsOnly = false;
-    private final Settings settings;
-    private Set<String> boldTexts = new HashSet<String>();
+    private final Set<String> boldTexts = new HashSet<String>();
     private boolean follow = true;
-    protected int selectedIndex;
     private XFormDialog optionsDialog;
 
     public JTestRunLog(Settings settings) {
@@ -82,7 +71,7 @@ public class JTestRunLog extends JPanel implements TestRunLog {
 
     private void buildUI() {
         logListModel = new TestCaseLogModel();
-        logListModel.setMaxSize((int) settings.getLong(OptionsForm.class.getName() + "@max_rows", 1000));
+        logListModel.setMaxSize((int)settings.getLong(OptionsForm.class.getName() + "@max_rows", 1000));
 
         testLogList = new JList(logListModel);
         testLogList.setCellRenderer(new TestLogCellRenderer());
@@ -121,10 +110,109 @@ public class JTestRunLog extends JPanel implements TestRunLog {
         toolbar.addFixed(UISupport.createToolbarButton(new ExportLogAction()));
     }
 
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.impl.wsdl.panels.testcase.TestRunLog#clear()
+     */
+    public synchronized void clear() {
+        logListModel.clear();
+        boldTexts.clear();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * com.eviware.soapui.impl.wsdl.panels.testcase.TestRunLog#addText(java.lang
+     * .String)
+     */
+    public synchronized void addText(String string) {
+        logListModel.addText(string);
+        if (follow) {
+            testLogList.ensureIndexIsVisible(logListModel.getSize() - 1);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * com.eviware.soapui.impl.wsdl.panels.testcase.TestRunLog#addTestStepResult
+     * (com.eviware.soapui.model.testsuite.TestStepResult)
+     */
+    public synchronized void addTestStepResult(TestStepResult stepResult) {
+        if (errorsOnly && stepResult.getStatus() != TestStepResult.TestStepStatus.FAILED) {
+            return;
+        }
+
+        logListModel.addTestStepResult(stepResult);
+        if (follow) {
+            try {
+                testLogList.ensureIndexIsVisible(logListModel.getSize() - 1);
+            }
+            catch (RuntimeException e) {
+            }
+        }
+    }
+
+    public synchronized void addBoldText(String string) {
+        boldTexts.add(string);
+        addText(string);
+    }
+
+    public void release() {
+        if (optionsDialog != null) {
+            optionsDialog.release();
+            optionsDialog = null;
+        }
+    }
+
+    public void printLog(PrintWriter out) {
+        for (int c = 0; c < logListModel.getSize(); c++) {
+            Object value = logListModel.getElementAt(c);
+            if (value instanceof String) {
+                out.println(value);
+            }
+            else if (value instanceof TestCaseLogItem) {
+                TestCaseLogItem logItem = (TestCaseLogItem)value;
+                String msg = logItem.getMsg();
+                if (StringUtils.hasContent(msg)) {
+                    out.println(msg);
+                }
+            }
+        }
+    }
+
+    public TestCaseLogModel getLogListModel() {
+        return logListModel;
+    }
+
+    public void setLogListModel(TestCaseLogModel logListModel) {
+        this.logListModel = logListModel;
+        testLogList.setModel(logListModel);
+    }
+
+    public void setStepIndex(int i) {
+        logListModel.setStepIndex(i);
+    }
+
+    @AForm(name = "Log Options", description = "Set options for the run log below")
+    private interface OptionsForm {
+        @AField(name = "Max Rows", description = "Sets the maximum number of rows to keep in the log", type = AFieldType.INT)
+        String MAXROWS = "Max Rows";
+
+        @AField(name = "Errors Only", description = "Logs only TestStep errors in the log", type = AFieldType.BOOLEAN)
+        String ERRORSONLY = "Errors Only";
+
+        @AField(name = "Follow", description = "Follow log content", type = AFieldType.BOOLEAN)
+        String FOLLOW = "Follow";
+    }
+
     private final class TestLogCellRenderer extends JLabel implements ListCellRenderer {
-        private Font boldFont;
-        private Font normalFont;
-        private JHyperlinkLabel hyperlinkLabel = new JHyperlinkLabel("");
+        private final Font boldFont;
+        private final Font normalFont;
+        private final JHyperlinkLabel hyperlinkLabel = new JHyperlinkLabel("");
 
         public TestLogCellRenderer() {
             setOpaque(true);
@@ -139,20 +227,23 @@ public class JTestRunLog extends JPanel implements TestRunLog {
             hyperlinkLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 3, 3));
         }
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
-            } else {
+            }
+            else {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
 
             if (value instanceof String) {
                 setText(value.toString());
-            } else if (value instanceof TestCaseLogItem) {
-                TestCaseLogItem logItem = (TestCaseLogItem) value;
+            }
+            else if (value instanceof TestCaseLogItem) {
+                TestCaseLogItem logItem = (TestCaseLogItem)value;
                 String msg = logItem.getMsg();
                 setText(msg == null ? "" : msg);
             }
@@ -165,9 +256,11 @@ public class JTestRunLog extends JPanel implements TestRunLog {
 
                 if (result.getStatus() == TestStepStatus.OK) {
                     hyperlinkLabel.setIcon(UISupport.createImageIcon("/valid_assertion.gif"));
-                } else if (result.getStatus() == TestStepStatus.FAILED) {
+                }
+                else if (result.getStatus() == TestStepStatus.FAILED) {
                     hyperlinkLabel.setIcon(UISupport.createImageIcon("/failed_assertion.gif"));
-                } else {
+                }
+                else {
                     hyperlinkLabel.setIcon(UISupport.createImageIcon("/unknown_assertion.png"));
                 }
 
@@ -178,7 +271,8 @@ public class JTestRunLog extends JPanel implements TestRunLog {
 
             if (boldTexts.contains(getText())) {
                 setFont(boldFont);
-            } else {
+            }
+            else {
                 setFont(normalFont);
             }
 
@@ -244,64 +338,10 @@ public class JTestRunLog extends JPanel implements TestRunLog {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.eviware.soapui.impl.wsdl.panels.testcase.TestRunLog#clear()
-     */
-    public synchronized void clear() {
-        logListModel.clear();
-        boldTexts.clear();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.eviware.soapui.impl.wsdl.panels.testcase.TestRunLog#addText(java.lang
-     * .String)
-     */
-    public synchronized void addText(String string) {
-        logListModel.addText(string);
-        if (follow) {
-            testLogList.ensureIndexIsVisible(logListModel.getSize() - 1);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.eviware.soapui.impl.wsdl.panels.testcase.TestRunLog#addTestStepResult
-     * (com.eviware.soapui.model.testsuite.TestStepResult)
-     */
-    public synchronized void addTestStepResult(TestStepResult stepResult) {
-        if (errorsOnly && stepResult.getStatus() != TestStepResult.TestStepStatus.FAILED) {
-            return;
-        }
-
-        logListModel.addTestStepResult(stepResult);
-        if (follow) {
-            try {
-                testLogList.ensureIndexIsVisible(logListModel.getSize() - 1);
-            } catch (RuntimeException e) {
-            }
-        }
-    }
-
-    public TestCaseLogModel getLogListModel() {
-        return logListModel;
-    }
-
-    public void setLogListModel(TestCaseLogModel logListModel) {
-        this.logListModel = logListModel;
-        testLogList.setModel(logListModel);
-    }
-
     private class SetLogOptionsAction extends AbstractAction {
         public SetLogOptionsAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Sets TestCase Log Options");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
+            putValue(SHORT_DESCRIPTION, "Sets TestCase Log Options");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -309,10 +349,8 @@ public class JTestRunLog extends JPanel implements TestRunLog {
                 optionsDialog = ADialogBuilder.buildDialog(OptionsForm.class);
             }
 
-            optionsDialog.setIntValue(OptionsForm.MAXROWS,
-                    (int) settings.getLong(OptionsForm.class.getName() + "@max_rows", 1000));
-            optionsDialog.setBooleanValue(OptionsForm.ERRORSONLY,
-                    settings.getBoolean(OptionsForm.class.getName() + "@errors_only"));
+            optionsDialog.setIntValue(OptionsForm.MAXROWS, (int)settings.getLong(OptionsForm.class.getName() + "@max_rows", 1000));
+            optionsDialog.setBooleanValue(OptionsForm.ERRORSONLY, settings.getBoolean(OptionsForm.class.getName() + "@errors_only"));
             optionsDialog.setBooleanValue(OptionsForm.FOLLOW, follow);
 
             if (optionsDialog.show()) {
@@ -327,22 +365,10 @@ public class JTestRunLog extends JPanel implements TestRunLog {
         }
     }
 
-    @AForm(name = "Log Options", description = "Set options for the run log below")
-    private static interface OptionsForm {
-        @AField(name = "Max Rows", description = "Sets the maximum number of rows to keep in the log", type = AFieldType.INT)
-        public static final String MAXROWS = "Max Rows";
-
-        @AField(name = "Errors Only", description = "Logs only TestStep errors in the log", type = AFieldType.BOOLEAN)
-        public static final String ERRORSONLY = "Errors Only";
-
-        @AField(name = "Follow", description = "Follow log content", type = AFieldType.BOOLEAN)
-        public static final String FOLLOW = "Follow";
-    }
-
     private class ClearLogAction extends AbstractAction {
         public ClearLogAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/clear.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Clears the log");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/clear.png"));
+            putValue(SHORT_DESCRIPTION, "Clears the log");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -352,8 +378,8 @@ public class JTestRunLog extends JPanel implements TestRunLog {
 
     private class ExportLogAction extends AbstractAction {
         public ExportLogAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/export.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Exports this log to a file");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/export.png"));
+            putValue(SHORT_DESCRIPTION, "Exports this log to a file");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -364,39 +390,9 @@ public class JTestRunLog extends JPanel implements TestRunLog {
                     printLog(out);
 
                     out.close();
-                } catch (FileNotFoundException e1) {
-                    UISupport.showErrorMessage(e1);
                 }
-            }
-        }
-    }
-
-    public void setStepIndex(int i) {
-        logListModel.setStepIndex(i);
-    }
-
-    public synchronized void addBoldText(String string) {
-        boldTexts.add(string);
-        addText(string);
-    }
-
-    public void release() {
-        if (optionsDialog != null) {
-            optionsDialog.release();
-            optionsDialog = null;
-        }
-    }
-
-    public void printLog(PrintWriter out) {
-        for (int c = 0; c < logListModel.getSize(); c++) {
-            Object value = logListModel.getElementAt(c);
-            if (value instanceof String) {
-                out.println(value.toString());
-            } else if (value instanceof TestCaseLogItem) {
-                TestCaseLogItem logItem = (TestCaseLogItem) value;
-                String msg = logItem.getMsg();
-                if (StringUtils.hasContent(msg)) {
-                    out.println(msg);
+                catch (FileNotFoundException e1) {
+                    UISupport.showErrorMessage(e1);
                 }
             }
         }

@@ -21,23 +21,21 @@ public class FixedDigestScheme extends DigestScheme {
 
     @Override
     public Header authenticate(
-            final Credentials credentials,
-            final HttpRequest request,
-            final HttpContext context) throws AuthenticationException {
-        URI originalUri = ((HttpRequestWrapper) request).getURI();
-        HttpHost httphost = ((HttpRequestWrapper) request).getTarget();
+        Credentials credentials, HttpRequest request, HttpContext context
+    ) throws AuthenticationException {
+        URI originalUri = ((HttpRequestWrapper)request).getURI();
+        HttpHost httphost = ((HttpRequestWrapper)request).getTarget();
         try {
             String digestUri = originalUri.toString();
-            ((HttpRequestWrapper) request).setURI(URI.create(digestUri.replaceAll(httphost.toString(), "")));
+            ((HttpRequestWrapper)request).setURI(URI.create(digestUri.replaceAll(httphost.toString(), "")));
             return super.authenticate(credentials, request, context);
-
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.warn(messages.get("FixedDigestScheme.WarnMessage"));
             return super.authenticate(credentials, request, context);
-
-        } finally {
-            ((HttpRequestWrapper) request).setURI(originalUri);
-
+        }
+        finally {
+            ((HttpRequestWrapper)request).setURI(originalUri);
         }
     }
 }

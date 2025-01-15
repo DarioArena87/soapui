@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.actions;
@@ -20,21 +20,8 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.xml.ProxyFindAndReplacable;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.Window;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 /**
@@ -62,9 +49,10 @@ public class FindAndReplaceDialog extends AbstractAction {
     public FindAndReplaceDialog(FindAndReplaceable target) {
         super("Find / Replace");
         if (UISupport.isMac()) {
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("meta F"));
-        } else {
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("control F"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("meta F"));
+        }
+        else {
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("control F"));
         }
         this.target = new ProxyFindAndReplacable(target);
     }
@@ -195,9 +183,9 @@ public class FindAndReplaceDialog extends AbstractAction {
         }
 
         if (wholeWordCheck.isSelected()) {
-            while (ix != -1
-                    && ((ix > 0 && Character.isLetterOrDigit(txt.charAt(ix - 1))) || (ix < txt.length()
-                    - value.length() - 1 && Character.isLetterOrDigit(txt.charAt(ix + value.length()))))) {
+            while (ix != -1 &&
+                   ((ix > 0 && Character.isLetterOrDigit(txt.charAt(ix - 1))) ||
+                    (ix < txt.length() - value.length() - 1 && Character.isLetterOrDigit(txt.charAt(ix + value.length()))))) {
                 ix = forwardButton.isSelected() ? ++ix : --ix;
                 ix = forwardButton.isSelected() ? txt.indexOf(value, ix) : txt.lastIndexOf(value, ix);
             }
@@ -206,12 +194,42 @@ public class FindAndReplaceDialog extends AbstractAction {
         if (ix == -1 && wrapCheck.isSelected()) {
             if (forwardButton.isSelected() && pos > 0) {
                 return findNext(0, txt, value);
-            } else if (backwardButton.isSelected() && pos < txt.length() - 1) {
+            }
+            else if (backwardButton.isSelected() && pos < txt.length() - 1) {
                 return findNext(txt.length() - 1, txt, value);
             }
         }
 
         return ix;
+    }
+
+    private int tweakPosition() {
+        int pos = target.getCaretPosition();
+        if (selectedLinesButton.isSelected()) {
+            if (forwardButton.isSelected()) {
+                int selstart = target.getSelectionStart();
+                if (selstart < pos && selstart != -1) {
+                    pos = selstart;
+                }
+            }
+            else {
+                int selend = target.getSelectionEnd();
+                if (selend > pos && selend != -1) {
+                    pos = selend;
+                }
+            }
+        }
+        else {
+            int selstart = target.getSelectionStart();
+            if (selstart < pos && selstart != -1) {
+                pos = selstart;
+            }
+        }
+        return pos;
+    }
+
+    private int tweakLastPosition() {
+        return forwardButton.isSelected() ? target.getSelectionEnd() : target.getSelectionStart();
     }
 
     private class FindAction extends AbstractAction {
@@ -244,7 +262,8 @@ public class FindAndReplaceDialog extends AbstractAction {
             if (pos == lastPositionF && value.equals(lastSearchedItem)) {
                 if (forwardButton.isSelected()) {
                     pos += value.length() + 1;
-                } else {
+                }
+                else {
                     pos -= value.length() - 1;
                 }
             }
@@ -257,7 +276,8 @@ public class FindAndReplaceDialog extends AbstractAction {
             if (ix != -1) {
                 if (selectedLinesButton.isSelected()) {
                     target.select(ix, lastpos);
-                } else {
+                }
+                else {
                     target.select(ix, ix + value.length());
                 }
 
@@ -269,7 +289,8 @@ public class FindAndReplaceDialog extends AbstractAction {
                 }
 
                 findCombo.insertItemAt(value, 0);
-            } else {
+            }
+            else {
                 UISupport.showErrorMessage("String [" + value + "] not found");
             }
         }
@@ -305,14 +326,16 @@ public class FindAndReplaceDialog extends AbstractAction {
                 }
                 value = value.toLowerCase();
                 txt = txt.toLowerCase();
-            } else if (newValue.equals(value)) {
+            }
+            else if (newValue.equals(value)) {
                 return;
             }
 
             if (pos == lastPositionF && value.equals(lastSearchedItem)) {
                 if (forwardButton.isSelected()) {
                     pos += value.length() + 1;
-                } else {
+                }
+                else {
                     pos -= value.length() - 1;
                 }
             }
@@ -331,7 +354,8 @@ public class FindAndReplaceDialog extends AbstractAction {
                 target.setSelectedText(newValue);
                 if (selectedLinesButton.isSelected()) {
                     target.select(ix, lastpos);
-                } else {
+                }
+                else {
                     target.select(ix, ix + newValue.length());
                 }
 
@@ -347,10 +371,12 @@ public class FindAndReplaceDialog extends AbstractAction {
 
                 if (forwardButton.isSelected()) {
                     ix = findNext(ix + newValue.length(), txt, value);
-                } else {
+                }
+                else {
                     ix = findNext(ix - 1, txt, value);
                 }
-            } else {
+            }
+            else {
                 UISupport.showErrorMessage("String [" + value + "] not found");
             }
         }
@@ -381,7 +407,8 @@ public class FindAndReplaceDialog extends AbstractAction {
                 }
                 value = value.toLowerCase();
                 txt = txt.toLowerCase();
-            } else if (newValue.equals(value)) {
+            }
+            else if (newValue.equals(value)) {
                 return;
             }
 
@@ -389,8 +416,7 @@ public class FindAndReplaceDialog extends AbstractAction {
             if (ix >= 0) {
 
                 int firstIx = ix;
-                int valueInNewValueIx = !caseCheck.isSelected() ? newValue.toLowerCase().indexOf(value) : newValue
-                        .indexOf(value);
+                int valueInNewValueIx = !caseCheck.isSelected() ? newValue.toLowerCase().indexOf(value) : newValue.indexOf(value);
 
                 target.setReplaceAll(true);
                 target.setSBTarget();
@@ -412,7 +438,8 @@ public class FindAndReplaceDialog extends AbstractAction {
 
                     if (forwardButton.isSelected()) {
                         ix = findNext(ix + newValue.length(), txt, value);
-                    } else {
+                    }
+                    else {
                         ix = findNext(ix - 1, txt, value);
                     }
                     if (wrapCheck.isSelected() && valueInNewValueIx != -1 && ix == firstIx + valueInNewValueIx) {
@@ -422,11 +449,11 @@ public class FindAndReplaceDialog extends AbstractAction {
                 target.flushSBText();
                 target.setReplaceAll(false);
                 target.setCarretPosition(forwardButton.isSelected());
-            } else {
+            }
+            else {
                 UISupport.showErrorMessage("String [" + value + "] not found");
             }
         }
-
     }
 
     private class CloseAction extends AbstractAction {
@@ -438,32 +465,4 @@ public class FindAndReplaceDialog extends AbstractAction {
             dialog.setVisible(false);
         }
     }
-
-    private int tweakPosition() {
-        int pos = target.getCaretPosition();
-        if (selectedLinesButton.isSelected()) {
-            if (forwardButton.isSelected()) {
-                int selstart = target.getSelectionStart();
-                if (selstart < pos && selstart != -1) {
-                    pos = selstart;
-                }
-            } else {
-                int selend = target.getSelectionEnd();
-                if (selend > pos && selend != -1) {
-                    pos = selend;
-                }
-            }
-        } else {
-            int selstart = target.getSelectionStart();
-            if (selstart < pos && selstart != -1) {
-                pos = selstart;
-            }
-        }
-        return pos;
-    }
-
-    private int tweakLastPosition() {
-        return forwardButton.isSelected() ? target.getSelectionEnd() : target.getSelectionStart();
-    }
-
 }

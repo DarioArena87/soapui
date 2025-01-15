@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.xml.actions;
@@ -35,18 +35,18 @@ import java.io.IOException;
 
 public class LoadXmlTextAreaAction extends AbstractAction {
     private final RSyntaxTextArea textArea;
-    private String dialogTitle;
+    private final String dialogTitle;
 
     public LoadXmlTextAreaAction(RSyntaxTextArea textArea, String dialogTitle) {
         super("Load from..");
         this.textArea = textArea;
         this.dialogTitle = dialogTitle;
         if (UISupport.isMac()) {
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("meta L"));
-        } else {
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("ctrl L"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("meta L"));
         }
-
+        else {
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("ctrl L"));
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -57,7 +57,8 @@ public class LoadXmlTextAreaAction extends AbstractAction {
 
         try {
             textArea.setText(Tools.readAll(new FileInputStream(file), 0).toString());
-        } catch (IOException e1) {
+        }
+        catch (IOException e1) {
             UISupport.showErrorMessage("Error loading xml from file: " + e1.getMessage());
         }
     }

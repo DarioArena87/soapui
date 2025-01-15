@@ -11,15 +11,9 @@ import com.eviware.soapui.support.propertyexpansion.PropertyExpansionPopupListen
 import com.eviware.soapui.support.xml.SyntaxEditorUtil;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.*;
 import java.beans.PropertyChangeListener;
 
 public class GraphQLRequestContentView extends AbstractXmlEditorView<XmlDocument> implements PropertyChangeListener {
@@ -27,12 +21,13 @@ public class GraphQLRequestContentView extends AbstractXmlEditorView<XmlDocument
     private static final String TITLE = "Request";
     protected final GraphQLTestRequestInterface graphQLRequest;
     protected RSyntaxTextArea contentEditor;
+    protected JComponent mainPanel;
     private boolean updatingRequest;
     private JSplitPane splitter;
-    protected JComponent mainPanel;
 
-    public GraphQLRequestContentView(GraphQLRequestTestStepDesktopPanel.GraphQLRequestMessageEditor editor,
-                                     GraphQLTestRequestInterface graphQLRequest) {
+    public GraphQLRequestContentView(
+        GraphQLRequestTestStepDesktopPanel.GraphQLRequestMessageEditor editor, GraphQLTestRequestInterface graphQLRequest
+    ) {
         super(TITLE, editor, VIEW_ID);
         this.graphQLRequest = graphQLRequest;
         this.graphQLRequest.addPropertyChangeListener(this);
@@ -43,6 +38,15 @@ public class GraphQLRequestContentView extends AbstractXmlEditorView<XmlDocument
             buildComponent();
         }
         return mainPanel;
+    }
+
+    @Override
+    public void setEditable(boolean enabled) {
+    }
+
+    @Override
+    public int getSupportScoreForContentType(String contentType) {
+        return JsonUtil.seemsToBeJsonContentType(contentType) ? 2 : 0;
     }
 
     protected void buildComponent() {
@@ -125,17 +129,8 @@ public class GraphQLRequestContentView extends AbstractXmlEditorView<XmlDocument
     }
 
     @Override
-    public void setEditable(boolean enabled) {
-    }
-
-    @Override
     public void release() {
         removeCodeCompletion();
         super.release();
-    }
-
-    @Override
-    public int getSupportScoreForContentType(String contentType) {
-        return JsonUtil.seemsToBeJsonContentType(contentType)? 2 : 0;
     }
 }

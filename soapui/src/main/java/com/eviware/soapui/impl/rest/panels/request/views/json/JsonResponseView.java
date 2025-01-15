@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.views.json;
@@ -85,10 +85,12 @@ public class JsonResponseView extends AbstractXmlEditorView<HttpResponseDocument
         return panel;
     }
 
+    public void setEditable(boolean enabled) {
+    }
+
     @Override
-    public void release() {
-        super.release();
-        httpRequest.removePropertyChangeListener(this);
+    public int getSupportScoreForContentType(String contentType) {
+        return JsonUtil.seemsToBeJsonContentType(contentType) ? 2 : 0;
     }
 
     private Component buildStatus() {
@@ -138,7 +140,8 @@ public class JsonResponseView extends AbstractXmlEditorView<HttpResponseDocument
     protected void setEditorContent(HttpResponse httpResponse) {
         if (httpResponse == null || httpResponse.getContentAsString() == null) {
             contentEditor.setText("");
-        } else {
+        }
+        else {
             String content;
 
             if (JsonUtil.seemsToBeJsonContentType(httpResponse.getContentType())) {
@@ -146,14 +149,17 @@ public class JsonResponseView extends AbstractXmlEditorView<HttpResponseDocument
                     JSON json = new JsonUtil().parseTrimmedText(httpResponse.getContentAsString());
                     if (json.isEmpty()) {
                         content = "<Empty JSON content>";
-                    } else {
+                    }
+                    else {
                         content = json.toString(3);
                     }
-                } catch (JSONException e) {
+                }
+                catch (JSONException e) {
                     content = httpResponse.getContentAsString();
                 }
                 contentEditor.setText(content);
-            } else {
+            }
+            else {
                 contentEditor.setText("The content you are trying to view cannot be viewed as JSON");
             }
         }
@@ -162,21 +168,19 @@ public class JsonResponseView extends AbstractXmlEditorView<HttpResponseDocument
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(AbstractHttpRequestInterface.RESPONSE_PROPERTY) && !updatingRequest) {
             updatingRequest = true;
-            setEditorContent(((HttpResponse) evt.getNewValue()));
+            setEditorContent(((HttpResponse)evt.getNewValue()));
             updatingRequest = false;
         }
     }
 
+    @Override
+    public void release() {
+        super.release();
+        httpRequest.removePropertyChangeListener(this);
+    }
+
     public boolean saveDocument(boolean validate) {
         return false;
-    }
-
-    public void setEditable(boolean enabled) {
-    }
-
-    @Override
-    public int getSupportScoreForContentType(String contentType ) {
-        return JsonUtil.seemsToBeJsonContentType(contentType)? 2 : 0;
     }
 
     private static class FindAndReplaceableTextArea extends RSyntaxTextArea implements FindAndReplaceable {
@@ -194,17 +198,18 @@ public class JsonResponseView extends AbstractXmlEditorView<HttpResponseDocument
 
     private final class SaveJsonTextAreaAction extends AbstractAction {
         private final RSyntaxTextArea textArea;
-        private String dialogTitle;
         private final Logger log = LogManager.getLogger(SaveJsonTextAreaAction.class);
+        private final String dialogTitle;
 
         public SaveJsonTextAreaAction(RSyntaxTextArea editArea, String dialogTitle) {
             super("Save as...");
-            this.textArea = editArea;
+            textArea = editArea;
             this.dialogTitle = dialogTitle;
             if (UISupport.isMac()) {
-                putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu S"));
-            } else {
-                putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("ctrl S"));
+                putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu S"));
+            }
+            else {
+                putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("ctrl S"));
             }
         }
 
@@ -222,13 +227,16 @@ public class JsonResponseView extends AbstractXmlEditorView<HttpResponseDocument
                 writer.close();
 
                 log.info("JSON written to [" + file.getAbsolutePath() + "]");
-            } catch (IOException e1) {
+            }
+            catch (IOException e1) {
                 UISupport.showErrorMessage("Error saving json to file: " + e1.getMessage());
-            } finally {
+            }
+            finally {
                 if (writer != null) {
                     try {
                         writer.close();
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         SoapUI.logError(e);
                     }
                 }

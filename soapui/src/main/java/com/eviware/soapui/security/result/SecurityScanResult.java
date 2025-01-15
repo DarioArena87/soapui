@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.result;
@@ -22,7 +22,7 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.swing.ActionList;
 import com.eviware.soapui.support.action.swing.DefaultActionList;
 
-import javax.swing.AbstractAction;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -37,6 +37,10 @@ import java.util.List;
 
 public class SecurityScanResult implements SecurityResult {
     public final static String TYPE = "SecurityScanResult";
+    public final static int MAX_REQ_LOG_ENTRY_LENGTH = 100;
+    public final static int MAX_SECURITY_CHANGED_PARAMETERS_LENGTH = 100;
+    public SecurityScan securityCheck;
+    public StringBuffer testLog = new StringBuffer();
     /**
      * status is set to SecurityStatus.INITIALIZED but goes to
      * SecurityStatus.UNKNOWN first time any scanRequestResult is added.
@@ -46,13 +50,11 @@ public class SecurityScanResult implements SecurityResult {
      * if no assertion is added, when status icon should be added to log
      */
     private ResultStatus status;
-    public SecurityScan securityCheck;
     private long size;
     private boolean discarded;
-    private List<SecurityScanRequestResult> securityRequestResultList;
+    private final List<SecurityScanRequestResult> securityRequestResultList;
     private long timeTaken = 0;
-    private long timeStamp;
-    public StringBuffer testLog = new StringBuffer();
+    private final long timeStamp;
     private DefaultActionList actionList;
     private boolean hasAddedRequests;
     // along with the status determines if canceled with or without warnings
@@ -60,8 +62,6 @@ public class SecurityScanResult implements SecurityResult {
     private ResultStatus executionProgressStatus;
     private ResultStatus logIconStatus;
     private int requestCount = 0;
-    public final static int MAX_REQ_LOG_ENTRY_LENGTH = 100;
-    public final static int MAX_SECURITY_CHANGED_PARAMETERS_LENGTH = 100;
 
     public SecurityScanResult(SecurityScan securityCheck) {
         this.securityCheck = securityCheck;
@@ -77,35 +77,8 @@ public class SecurityScanResult implements SecurityResult {
         return securityRequestResultList;
     }
 
-    public ResultStatus getStatus() {
-        return this.status;
-    }
-
-    public void setStatus(ResultStatus status) {
-        this.status = status;
-    }
-
     public SecurityScan getSecurityScan() {
         return securityCheck;
-    }
-
-    /**
-     * Returns a list of actions that can be applied to this result
-     */
-
-    public ActionList getActions() {
-        if (actionList == null) {
-            actionList = new DefaultActionList(getSecurityScan().getName());
-            actionList.setDefaultAction(new AbstractAction() {
-
-                public void actionPerformed(ActionEvent e) {
-                    UISupport.showInfoMessage("Scan [" + getSecurityScan().getName() + "] ran with status ["
-                            + getExecutionProgressStatus() + "]", "SecurityScan Result");
-                }
-            });
-        }
-
-        return actionList;
     }
 
     public void addSecurityRequestResult(SecurityScanRequestResult secReqResult) {
@@ -120,20 +93,23 @@ public class SecurityScanResult implements SecurityResult {
             status = ResultStatus.UNKNOWN;
             if (secReqResult.getStatus() == ResultStatus.OK) {
                 status = ResultStatus.OK;
-            } else if (secReqResult.getStatus() == ResultStatus.FAILED) {
+            }
+            else if (secReqResult.getStatus() == ResultStatus.FAILED) {
                 hasRequestsWithWarnings = true;
                 status = ResultStatus.FAILED;
             }
-        } else if (secReqResult.getStatus() == ResultStatus.FAILED) {
+        }
+        else if (secReqResult.getStatus() == ResultStatus.FAILED) {
             hasRequestsWithWarnings = true;
             status = ResultStatus.FAILED;
-        } else if (secReqResult.getStatus() == ResultStatus.OK && status != ResultStatus.FAILED) {
+        }
+        else if (secReqResult.getStatus() == ResultStatus.OK && status != ResultStatus.FAILED) {
             status = ResultStatus.OK;
         }
         logIconStatus = status;
         executionProgressStatus = status;
 
-        this.testLog.append("\n").append(secReqResult.getChangedParamsInfo(requestCount));
+        testLog.append("\n").append(secReqResult.getChangedParamsInfo(requestCount));
         for (String s : secReqResult.getMessages()) {
             if (s.length() > MAX_REQ_LOG_ENTRY_LENGTH) {
                 s = s.substring(0, MAX_REQ_LOG_ENTRY_LENGTH);
@@ -191,9 +167,14 @@ public class SecurityScanResult implements SecurityResult {
      * Raturns Security Test Log
      */
     public String getSecurityTestLog() {
-        StringBuffer tl = new StringBuffer().append("\nSecurityScan ").append(" [").append(securityCheck.getName())
-                .append("] ").append(executionProgressStatus.toString()).append(": took ").append(timeTaken)
-                .append(" ms");
+        StringBuffer tl = new StringBuffer().append("\nSecurityScan ")
+                                            .append(" [")
+                                            .append(securityCheck.getName())
+                                            .append("] ")
+                                            .append(executionProgressStatus.toString())
+                                            .append(": took ")
+                                            .append(timeTaken)
+                                            .append(" ms");
         tl.append(testLog);
         return tl.toString();
     }
@@ -201,14 +182,6 @@ public class SecurityScanResult implements SecurityResult {
     @Override
     public String getResultType() {
         return TYPE;
-    }
-
-    public boolean isCanceled() {
-        return status == ResultStatus.CANCELED;
-    }
-
-    public boolean isHasRequestsWithWarnings() {
-        return hasRequestsWithWarnings;
     }
 
     @Override
@@ -220,13 +193,52 @@ public class SecurityScanResult implements SecurityResult {
         executionProgressStatus = status;
     }
 
+    @Override
+    public ResultStatus getLogIconStatus() {
+        return logIconStatus;
+    }
+
+    public ResultStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ResultStatus status) {
+        this.status = status;
+    }
+
+    /**
+     * Returns a list of actions that can be applied to this result
+     */
+
+    public ActionList getActions() {
+        if (actionList == null) {
+            actionList = new DefaultActionList(getSecurityScan().getName());
+            actionList.setDefaultAction(new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    UISupport.showInfoMessage("Scan [" + getSecurityScan().getName() + "] ran with status [" + getExecutionProgressStatus() + "]", "SecurityScan Result");
+                }
+            });
+        }
+
+        return actionList;
+    }
+
+    public boolean isCanceled() {
+        return status == ResultStatus.CANCELED;
+    }
+
+    public boolean isHasRequestsWithWarnings() {
+        return hasRequestsWithWarnings;
+    }
+
     public void detectMissingItems() {
         SecurityScan securityCheck = getSecurityScan();
         if (getStatus().equals(ResultStatus.SKIPPED)) {
             executionProgressStatus = ResultStatus.SKIPPED;
         }
-        if (securityCheck instanceof AbstractSecurityScanWithProperties
-                && ((AbstractSecurityScanWithProperties) securityCheck).getParameterHolder().getParameterList().size() == 0) {
+        if (securityCheck instanceof AbstractSecurityScanWithProperties &&
+            ((AbstractSecurityScanWithProperties)securityCheck).getParameterHolder().getParameterList().size() == 0) {
             logIconStatus = ResultStatus.MISSING_PARAMETERS;
             executionProgressStatus = ResultStatus.MISSING_PARAMETERS;
         }
@@ -237,12 +249,6 @@ public class SecurityScanResult implements SecurityResult {
         if (getStatus().equals(ResultStatus.CANCELED)) {
             executionProgressStatus = ResultStatus.CANCELED;
         }
-
-    }
-
-    @Override
-    public ResultStatus getLogIconStatus() {
-        return logIconStatus;
     }
 
     public String getSecurityScanName() {
@@ -264,5 +270,4 @@ public class SecurityScanResult implements SecurityResult {
 
         securityCheck = null;
     }
-
 }

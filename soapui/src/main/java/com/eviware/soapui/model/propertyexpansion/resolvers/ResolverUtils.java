@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.propertyexpansion.resolvers;
@@ -29,23 +29,26 @@ import org.apache.xmlbeans.XmlObject;
 import org.w3c.dom.Node;
 
 public class ResolverUtils {
-    public static String checkForExplicitReference(String propertyName, String prefix, TestPropertyHolder holder,
-                                                   PropertyExpansionContext context, boolean globalOverride) {
+    public static String checkForExplicitReference(
+        String propertyName, String prefix, TestPropertyHolder holder, PropertyExpansionContext context, boolean globalOverride
+    ) {
         if (holder == null) {
             return null;
         }
 
         if (propertyName.startsWith(prefix)) {
             propertyName = propertyName.substring(prefix.length());
-        } else {
+        }
+        else {
             return null;
         }
 
-        return ResolverUtils.parseProperty(propertyName, holder, context, globalOverride);
+        return parseProperty(propertyName, holder, context, globalOverride);
     }
 
-    public static String parseProperty(String name, TestPropertyHolder holder, PropertyExpansionContext context,
-                                       boolean globalOverride) {
+    public static String parseProperty(
+        String name, TestPropertyHolder holder, PropertyExpansionContext context, boolean globalOverride
+    ) {
         int sepIx = name.indexOf(PropertyExpansion.PROPERTY_SEPARATOR);
         if (sepIx != -1) {
             String xpath = name.substring(sepIx + 1);
@@ -61,10 +64,12 @@ public class ResolverUtils {
             TestProperty property = holder.getProperty(name);
 
             if (property != null) {
-                return context == null ? ResolverUtils.extractXPathPropertyValue(property, xpath) : ResolverUtils
-                        .extractXPathPropertyValue(property, PropertyExpander.expandProperties(context, xpath));
+                return context == null
+                       ? extractXPathPropertyValue(property, xpath)
+                       : extractXPathPropertyValue(property, PropertyExpander.expandProperties(context, xpath));
             }
-        } else {
+        }
+        else {
             if (globalOverride) {
                 String value = PropertyExpansionUtils.getGlobalProperty(name);
                 if (value != null) {
@@ -83,21 +88,21 @@ public class ResolverUtils {
 
     public static String extractXPathPropertyValue(Object property, String pathExpression) {
         try {
-            String value = property instanceof TestProperty ? ((TestProperty) property).getValue() : property
-                    .toString();
+            String value = property instanceof TestProperty ? ((TestProperty)property).getValue() : property.toString();
             if (pathExpression.startsWith("$")) {
                 return new JsonPathFacade(value).readStringValue(pathExpression);
-            } else {
+            }
+            else {
                 XmlObject xmlObject = XmlUtils.createXmlObject(value);
                 String ns = pathExpression.trim().startsWith("declare namespace") ? "" : XmlUtils.declareXPathNamespaces(xmlObject);
                 Node domNode = XmlUtils.selectFirstDomNode(xmlObject, ns + pathExpression);
                 return domNode == null ? null : XmlUtils.getValueForMatch(domNode, false);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
         return null;
     }
-
 }

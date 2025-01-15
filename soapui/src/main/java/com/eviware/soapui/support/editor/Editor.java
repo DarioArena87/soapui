@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor;
@@ -24,13 +24,10 @@ import com.eviware.soapui.support.components.VTextIcon;
 import com.eviware.soapui.support.components.VerticalMetalTabbedPaneUI;
 import com.eviware.soapui.support.components.VerticalWindowsTabbedPaneUI;
 
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.BorderLayout;
-import java.awt.Color;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -43,15 +40,14 @@ import java.util.List;
  */
 
 @SuppressWarnings("serial")
-public class Editor<T extends EditorDocument> extends JPanel implements PropertyChangeListener,
-        EditorLocationListener<T> {
+public class Editor<T extends EditorDocument> extends JPanel implements PropertyChangeListener, EditorLocationListener<T> {
     public final static String OUTLINE_TABLE_PROPERTY = Editor.class.getSimpleName() + "@outlineTable";
-    private JTabbedPane inputTabs;
-    private List<EditorView<T>> views = new ArrayList<EditorView<T>>();
+    private final JTabbedPane inputTabs;
+    private final List<EditorView<T>> views = new ArrayList<EditorView<T>>();
     private EditorView<T> currentView;
     private T document;
-    private JInspectorPanel inspectorPanel;
-    private InputTabsChangeListener inputTabsChangeListener;
+    private final JInspectorPanel inspectorPanel;
+    private final InputTabsChangeListener inputTabsChangeListener;
 
     public Editor(T document) {
         super(new BorderLayout());
@@ -76,7 +72,8 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
             // For some reason the tabs get very wide in some L&Fs. Workaround is to replace the UI.
             if (inputTabs.getUI().getClass().getSimpleName().equals("WindowsTabbedPaneUI")) {
                 inputTabs.setUI(new VerticalWindowsTabbedPaneUI());
-            } else {
+            }
+            else {
                 inputTabs.setUI(new VerticalMetalTabbedPaneUI());
             }
         }
@@ -87,9 +84,9 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
 
         if (UISupport.isMac()) {
             inputTabs.addTab(editorView.getTitle(), editorView.getComponent());
-        } else {
-            inputTabs.addTab(null, new VTextIcon(inputTabs, editorView.getTitle(), VTextIcon.ROTATE_LEFT),
-                    editorView.getComponent());
+        }
+        else {
+            inputTabs.addTab(null, new VTextIcon(inputTabs, editorView.getTitle(), VTextIcon.ROTATE_LEFT), editorView.getComponent());
         }
         editorView.addPropertyChangeListener(this);
         editorView.addLocationListener(this);
@@ -103,7 +100,7 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
                 return;
             }
 
-            inputTabs.setTitleAt(ix, (String) evt.getNewValue());
+            inputTabs.setTitleAt(ix, (String)evt.getNewValue());
         }
         if (evt.getPropertyName().equals(EditorDocument.DOCUMENT_PROPERTY)) {
             inputTabsChangeListener.refreshVisibleInspectors();
@@ -115,7 +112,7 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
      */
     protected void selectDefaultView() {
         String contentType = document.getContentType();
-        if( contentType != null ) {
+        if (contentType != null) {
             int maxScore = getCurrentView().getSupportScoreForContentType(contentType);
             EditorView defaultView = null;
             for (EditorView view : views) {
@@ -148,7 +145,7 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
     public void locationChanged(EditorLocation<T> location) {
         if (location != null) {
             for (Inspector inspector : inspectorPanel.getInspectors()) {
-                ((EditorInspector<T>) inspector).locationChanged(location);
+                ((EditorInspector<T>)inspector).locationChanged(location);
             }
         }
     }
@@ -161,10 +158,6 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
 
     public T getDocument() {
         return document;
-    }
-
-    public boolean hasFocus() {
-        return currentView == null ? false : currentView.getComponent().hasFocus();
     }
 
     public final void setDocument(T document) {
@@ -180,6 +173,10 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
             view.setDocument(document);
         }
         inputTabsChangeListener.refreshVisibleInspectors();
+    }
+
+    public boolean hasFocus() {
+        return currentView != null && currentView.getComponent().hasFocus();
     }
 
     public final EditorView<T> getCurrentView() {
@@ -217,8 +214,22 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
     public void addInspector(EditorInspector<T> inspector) {
         inspectorPanel.addInspector(inspector);
         inspector.init(this);
-        inspectorPanel
-                .setInspectorVisible(inspector, currentView == null ? true : inspector.isEnabledFor(currentView));
+        inspectorPanel.setInspectorVisible(inspector, currentView == null || inspector.isEnabledFor(currentView));
+    }
+
+    public void release() {
+        for (EditorView<T> view : views) {
+            view.release();
+            view.removePropertyChangeListener(this);
+        }
+
+        views.clear();
+
+        inputTabs.removeChangeListener(inputTabsChangeListener);
+        inputTabs.removeAll();
+
+        inspectorPanel.release();
+        document.release();
     }
 
     private final class InputTabsChangeListener implements ChangeListener {
@@ -248,8 +259,7 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
 
             currentView = views.get(selectedIndex);
 
-            if (currentView != null
-                    && !currentView.activate(previousView == null ? null : previousView.getEditorLocation())) {
+            if (currentView != null && !currentView.activate(previousView == null ? null : previousView.getEditorLocation())) {
                 inputTabs.setSelectedIndex(currentViewIndex);
                 if (currentViewIndex == -1) {
                     return;
@@ -269,41 +279,27 @@ public class Editor<T extends EditorDocument> extends JPanel implements Property
         }
 
         private void refreshVisibleInspectors() {
-            EditorInspector<T> currentInspector = (EditorInspector<T>) inspectorPanel.getCurrentInspector();
+            EditorInspector<T> currentInspector = (EditorInspector<T>)inspectorPanel.getCurrentInspector();
 
             if (currentInspector != null) {
                 lastDividerLocation = inspectorPanel.getDividerLocation();
             }
 
             for (Inspector inspector : inspectorPanel.getInspectors()) {
-                inspectorPanel.setInspectorVisible(inspector,
-                        ((EditorInspector<T>) inspector).isEnabledFor(currentView));
+                inspectorPanel.setInspectorVisible(inspector, ((EditorInspector<T>)inspector).isEnabledFor(currentView));
             }
 
-            if (currentInspector != null && ((EditorInspector<T>) currentInspector).isEnabledFor(currentView)) {
+            if (currentInspector != null && currentInspector.isEnabledFor(currentView)) {
                 if (lastDividerLocation == 0) {
                     inspectorPanel.setResetDividerLocation();
-                } else {
+                }
+                else {
                     inspectorPanel.setDividerLocation(lastDividerLocation);
                 }
-            } else {
+            }
+            else {
                 currentInspector = null;
             }
         }
-    }
-
-    public void release() {
-        for (EditorView<T> view : views) {
-            view.release();
-            view.removePropertyChangeListener(this);
-        }
-
-        views.clear();
-
-        inputTabs.removeChangeListener(inputTabsChangeListener);
-        inputTabs.removeAll();
-
-        inspectorPanel.release();
-        document.release();
     }
 }

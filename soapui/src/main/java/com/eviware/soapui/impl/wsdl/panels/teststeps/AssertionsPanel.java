@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps;
@@ -32,25 +32,12 @@ import com.eviware.soapui.support.action.swing.ActionListBuilder;
 import com.eviware.soapui.support.action.swing.ActionSupport;
 import com.eviware.soapui.support.components.JXToolBar;
 
-import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -59,6 +46,7 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,9 +60,9 @@ import java.util.Set;
 public class AssertionsPanel extends JPanel {
     protected AssertionListModel assertionListModel;
     protected JList assertionList;
-    private JPopupMenu assertionListPopup;
+    private final JPopupMenu assertionListPopup;
     private Assertable assertable;
-    private AddAssertionAction addAssertionAction;
+    private final AddAssertionAction addAssertionAction;
     private ConfigureAssertionAction configureAssertionAction;
     private RemoveAssertionAction removeAssertionAction;
     private MoveAssertionUpAction moveAssertionUpAction;
@@ -109,8 +97,8 @@ public class AssertionsPanel extends JPanel {
                 if (indices.length == 1) {
                     TestAssertion assertion = assertionListModel.getAssertionAt(ix);
                     ActionSupport.addActions(ActionListBuilder.buildActions(assertion), assertionListPopup);
-
-                } else {
+                }
+                else {
                     TestAssertion[] testAssertion = new TestAssertion[indices.length];
                     for (int c = 0; c < indices.length; c++) {
                         testAssertion[c] = assertionListModel.getAssertionAt(indices[c]);
@@ -143,7 +131,7 @@ public class AssertionsPanel extends JPanel {
 
                 Object obj = assertionList.getModel().getElementAt(ix);
                 if (obj instanceof TestAssertion) {
-                    TestAssertion assertion = (TestAssertion) obj;
+                    TestAssertion assertion = (TestAssertion)obj;
                     if (assertion.isConfigurable()) {
                         assertion.configure();
                     }
@@ -152,13 +140,15 @@ public class AssertionsPanel extends JPanel {
                 }
 
                 if (obj instanceof AssertionError) {
-                    AssertionError error = (AssertionError) obj;
+                    AssertionError error = (AssertionError)obj;
                     if (error.getLineNumber() >= 0) {
                         selectError(error);
-                    } else {
+                    }
+                    else {
                         Toolkit.getDefaultToolkit().beep();
                     }
-                } else {
+                }
+                else {
                     Toolkit.getDefaultToolkit().beep();
                 }
             }
@@ -178,13 +168,15 @@ public class AssertionsPanel extends JPanel {
                         if (assertion.isConfigurable()) {
                             assertion.configure();
                         }
-                    } else {
+                    }
+                    else {
                         ActionList actions = ActionListBuilder.buildActions(assertion);
                         if (actions != null) {
                             actions.dispatchKeyEvent(e);
                         }
                     }
-                } else {
+                }
+                else {
                     TestAssertion[] testAssertion = new TestAssertion[indices.length];
                     for (int c = 0; c < indices.length; c++) {
                         testAssertion[c] = assertionListModel.getAssertionAt(indices[c]);
@@ -262,31 +254,49 @@ public class AssertionsPanel extends JPanel {
     protected void selectError(AssertionError error) {
     }
 
+    public void release() {
+        assertionListModel.release();
+        addAssertionAction.release();
+        assertable = null;
+    }
+
+    public JList getAssertionsList() {
+        return assertionList;
+    }
+
+    public String getHelpUrl() {
+        return HelpUrls.RESPONSE_ASSERTIONS_HELP_URL;
+    }
+
     private static class AssertionCellRenderer extends JLabel implements ListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
             setEnabled(list.isEnabled());
 
             if (value instanceof TestAssertion) {
-                TestAssertion assertion = (TestAssertion) value;
+                TestAssertion assertion = (TestAssertion)value;
                 setText(assertion.getLabel() + " - " + assertion.getStatus().toString());
                 setIcon(assertion.getIcon());
 
                 if (assertion.isDisabled() && isEnabled()) {
                     setEnabled(false);
                 }
-            } else if (value instanceof AssertionError) {
-                AssertionError assertion = (AssertionError) value;
-                setText(" -> " + assertion.toString());
+            }
+            else if (value instanceof AssertionError) {
+                AssertionError assertion = (AssertionError)value;
+                setText(" -> " + assertion);
                 setIcon(null);
-            } else if (value instanceof String) {
+            }
+            else if (value instanceof String) {
                 setText(value.toString());
             }
 
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
-            } else {
+            }
+            else {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
@@ -319,7 +329,7 @@ public class AssertionsPanel extends JPanel {
                 object = items.get(--index);
             }
 
-            return (TestAssertion) ((object instanceof TestAssertion) ? object : null);
+            return (TestAssertion)((object instanceof TestAssertion) ? object : null);
         }
 
         public void refresh() {
@@ -353,7 +363,8 @@ public class AssertionsPanel extends JPanel {
         public synchronized void propertyChange(PropertyChangeEvent evt) {
             if (SwingUtilities.isEventDispatchThread()) {
                 refresh();
-            } else {
+            }
+            else {
                 SwingUtilities.invokeLater(new Runnable() {
 
                     public void run() {
@@ -369,18 +380,6 @@ public class AssertionsPanel extends JPanel {
                 addAssertion(assertion);
 
                 fireIntervalAdded(this, sz, items.size() - 1);
-            }
-        }
-
-        protected void addAssertion(TestAssertion assertion) {
-            assertion.addPropertyChangeListener(this);
-            items.add(assertion);
-
-            AssertionError[] errors = assertion.getErrors();
-            if (errors != null) {
-                for (int i = 0; i < errors.length; i++) {
-                    items.add(errors[i]);
-                }
             }
         }
 
@@ -406,7 +405,7 @@ public class AssertionsPanel extends JPanel {
         public void assertionMoved(TestAssertion newAssertion, int ix, int offset) {
             synchronized (this) {
                 // int ix = items.indexOf( assertion );
-                TestAssertion assertion = (TestAssertion) items.get(ix);
+                TestAssertion assertion = (TestAssertion)items.get(ix);
                 // if first selected can't move up and if last selected can't move
                 // down
                 if ((ix == 0 && offset == -1) || (ix == items.size() - 1 && offset == 1)) {
@@ -433,19 +432,22 @@ public class AssertionsPanel extends JPanel {
             }
         }
 
-    }
+        protected void addAssertion(TestAssertion assertion) {
+            assertion.addPropertyChangeListener(this);
+            items.add(assertion);
 
-    public void release() {
-        assertionListModel.release();
-        addAssertionAction.release();
-        assertable = null;
+            AssertionError[] errors = assertion.getErrors();
+            if (errors != null) {
+                Collections.addAll(items, errors);
+            }
+        }
     }
 
     public class ConfigureAssertionAction extends AbstractAction {
         ConfigureAssertionAction() {
             super("Configure");
-            putValue(Action.SHORT_DESCRIPTION, "Configures the selection assertion");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
+            putValue(SHORT_DESCRIPTION, "Configures the selection assertion");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
             setEnabled(false);
         }
 
@@ -458,7 +460,8 @@ public class AssertionsPanel extends JPanel {
             TestAssertion assertion = assertionListModel.getAssertionAt(ix);
             if (assertion.isConfigurable()) {
                 assertion.configure();
-            } else {
+            }
+            else {
                 Toolkit.getDefaultToolkit().beep();
             }
         }
@@ -467,15 +470,15 @@ public class AssertionsPanel extends JPanel {
     public class RemoveAssertionAction extends AbstractAction {
         public RemoveAssertionAction() {
             super("Remove Assertion");
-            putValue(Action.SHORT_DESCRIPTION, "Removes the selected assertion");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/remove_assertion.gif"));
+            putValue(SHORT_DESCRIPTION, "Removes the selected assertion");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/remove_assertion.gif"));
             setEnabled(false);
         }
 
         public void actionPerformed(ActionEvent e) {
 
             List<TestAssertion> removeAssertionList = new ArrayList<TestAssertion>();
-            int indices[] = assertionList.getSelectedIndices();
+            int[] indices = assertionList.getSelectedIndices();
 
             if (indices.length == 0) {
                 return;
@@ -495,23 +498,21 @@ public class AssertionsPanel extends JPanel {
                 if (assertionList.getLastVisibleIndex() >= selectedIndex) {
                     assertionList.setSelectedIndex(selectedIndex);
                 }
-            } else {
+            }
+            else {
                 removeMultipleAssertions(removeAssertionList);
             }
-
         }
 
         private boolean hasRunningTestCase(int assertionIndex) {
             if (assertionListModel.getAssertionAt(assertionIndex).getParent().getParent() instanceof TestCase) {
-                if (SoapUI.getTestMonitor().hasRunningTestCase(
-                        (TestCase) assertionListModel.getAssertionAt(assertionIndex).getParent().getParent())) {
+                if (SoapUI.getTestMonitor().hasRunningTestCase((TestCase)assertionListModel.getAssertionAt(assertionIndex).getParent().getParent())) {
                     UISupport.showInfoMessage("Can not remove assertion(s) while test case is running");
                     return true;
                 }
             }
             if (assertionListModel.getAssertionAt(assertionIndex).getParent().getParent().getParent() instanceof TestCase) {
-                if (SoapUI.getTestMonitor().hasRunningSecurityTest(
-                        (TestCase) assertionListModel.getAssertionAt(assertionIndex).getParent().getParent().getParent())) {
+                if (SoapUI.getTestMonitor().hasRunningSecurityTest((TestCase)assertionListModel.getAssertionAt(assertionIndex).getParent().getParent().getParent())) {
                     UISupport.showInfoMessage("Can not remove assertion(s) while test case is running");
                     return true;
                 }
@@ -525,11 +526,11 @@ public class AssertionsPanel extends JPanel {
                 Set<TestAssertion> assertions = new HashSet<TestAssertion>();
 
                 for (ModelItem target : removeAssertionList) {
-                    assertions.add((TestAssertion) target);
+                    assertions.add((TestAssertion)target);
                 }
 
                 for (TestAssertion assertion : assertions) {
-                    ((Assertable) assertion.getParent()).removeAssertion(assertion);
+                    ((Assertable)assertion.getParent()).removeAssertion(assertion);
                 }
             }
         }
@@ -544,10 +545,9 @@ public class AssertionsPanel extends JPanel {
     private class MoveAssertionUpAction extends AbstractAction {
         public MoveAssertionUpAction() {
             super("Move Assertion Up");
-            putValue(Action.SHORT_DESCRIPTION, "Moves selected asertion up one row");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/up_arrow.gif"));
+            putValue(SHORT_DESCRIPTION, "Moves selected asertion up one row");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/up_arrow.gif"));
             setEnabled(false);
-
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -563,10 +563,9 @@ public class AssertionsPanel extends JPanel {
     private class MoveAssertionDownAction extends AbstractAction {
         public MoveAssertionDownAction() {
             super("Move Assertion Down");
-            putValue(Action.SHORT_DESCRIPTION, "Moves selected asertion down one row");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/down_arrow.gif"));
+            putValue(SHORT_DESCRIPTION, "Moves selected asertion down one row");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/down_arrow.gif"));
             setEnabled(false);
-
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -577,13 +576,5 @@ public class AssertionsPanel extends JPanel {
             }
             assertionList.setSelectedValue(assertion, true);
         }
-    }
-
-    public JList getAssertionsList() {
-        return assertionList;
-    }
-
-    public String getHelpUrl() {
-        return HelpUrls.RESPONSE_ASSERTIONS_HELP_URL;
     }
 }

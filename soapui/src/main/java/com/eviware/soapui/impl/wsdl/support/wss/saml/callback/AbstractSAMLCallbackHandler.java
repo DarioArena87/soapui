@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.saml.callback;
@@ -41,20 +41,15 @@ import java.util.List;
 
 /*
  * @author Erik R. Yverling
- * 
+ *
  * A base implementation of a Callback Handler for a SAML assertion. By
  * default it creates an authentication assertion.
- * 
+ *
  */
 public abstract class AbstractSAMLCallbackHandler implements SAMLCallbackHandler {
 
-    public enum Statement {
-        AUTHN, ATTR, AUTHZ
-    }
-
-    ;
-
     protected String subjectName = null;
+
     protected String subjectQualifier = null;
     protected String confirmationMethod = null;
     protected X509Certificate[] certs;
@@ -70,12 +65,12 @@ public abstract class AbstractSAMLCallbackHandler implements SAMLCallbackHandler
     private Crypto crypto;
     private String alias;
     private String customAttributeName;
-
     /**
      * Use this for signed assertion
      */
-    public AbstractSAMLCallbackHandler(Crypto crypto, String alias, String assertionTypeFriendlyName,
-                                       String confirmationMethodFriendlyName) {
+    public AbstractSAMLCallbackHandler(
+        Crypto crypto, String alias, String assertionTypeFriendlyName, String confirmationMethodFriendlyName
+    ) {
         this.crypto = crypto;
         this.alias = alias;
         setStatement(assertionTypeFriendlyName);
@@ -91,18 +86,44 @@ public abstract class AbstractSAMLCallbackHandler implements SAMLCallbackHandler
     }
 
     @Override
-    public void setCertIdentifier(CERT_IDENTIFIER certIdentifier) {
-        this.certIdentifier = certIdentifier;
+    public String getAlias() {
+        return alias;
     }
 
     @Override
-    public void setCerts(X509Certificate[] certs) {
-        this.certs = certs;
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     @Override
-    public byte[] getEphemeralKey() {
-        return ephemeralKey;
+    public Crypto getCrypto() {
+        return crypto;
+    }
+
+    @Override
+    public void setCrypto(Crypto crypto) {
+        this.crypto = crypto;
+    }
+
+    @Override
+    public void setCustomAttributeValues(List<?> customAttributeValues) {
+        this.customAttributeValues = customAttributeValues;
+    }
+
+    @Override
+    public void setResource(String resource) {
+        this.resource = resource;
+    }
+
+    @Override
+    public void setSubjectLocality(String ipAddress, String dnsAddress) {
+        subjectLocalityIpAddress = ipAddress;
+        subjectLocalityDnsAddress = dnsAddress;
+    }
+
+    @Override
+    public void setSubjectNameIDFormat(String subjectNameIDFormat) {
+        this.subjectNameIDFormat = subjectNameIDFormat;
     }
 
     @Override
@@ -121,60 +142,36 @@ public abstract class AbstractSAMLCallbackHandler implements SAMLCallbackHandler
     }
 
     @Override
-    public void setSubjectNameIDFormat(String subjectNameIDFormat) {
-        this.subjectNameIDFormat = subjectNameIDFormat;
+    public byte[] getEphemeralKey() {
+        return ephemeralKey;
     }
 
     @Override
-    public void setSubjectLocality(String ipAddress, String dnsAddress) {
-        this.subjectLocalityIpAddress = ipAddress;
-        this.subjectLocalityDnsAddress = dnsAddress;
+    public void setCerts(X509Certificate[] certs) {
+        this.certs = certs;
     }
 
     @Override
-    public void setResource(String resource) {
-        this.resource = resource;
-    }
-
-    @Override
-    public void setCustomAttributeName(String customAttributeName) {
-        this.customAttributeName = customAttributeName;
-    }
-
-    @Override
-    public void setCustomAttributeValues(List<?> customAttributeValues) {
-        this.customAttributeValues = customAttributeValues;
-    }
-
-    @Override
-    public Crypto getCrypto() {
-        return crypto;
-    }
-
-    @Override
-    public void setCrypto(Crypto crypto) {
-        this.crypto = crypto;
-    }
-
-    @Override
-    public String getAlias() {
-        return alias;
-    }
-
-    @Override
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setCertIdentifier(CERT_IDENTIFIER certIdentifier) {
+        this.certIdentifier = certIdentifier;
     }
 
     @Override
     public void setStatement(String statement) {
         if (statement.equals(AutomaticSAMLEntry.AUTHENTICATION_ASSERTION_TYPE)) {
             this.statement = Statement.AUTHN;
-        } else if (statement.equals(AutomaticSAMLEntry.ATTRIBUTE_ASSERTION_TYPE)) {
+        }
+        else if (statement.equals(AutomaticSAMLEntry.ATTRIBUTE_ASSERTION_TYPE)) {
             this.statement = Statement.ATTR;
-        } else if (statement.equals(AutomaticSAMLEntry.AUTHORIZATION_ASSERTION_TYPE)) {
+        }
+        else if (statement.equals(AutomaticSAMLEntry.AUTHORIZATION_ASSERTION_TYPE)) {
             this.statement = Statement.AUTHZ;
         }
+    }
+
+    @Override
+    public void setCustomAttributeName(String customAttributeName) {
+        this.customAttributeName = customAttributeName;
     }
 
     /**
@@ -194,7 +191,8 @@ public abstract class AbstractSAMLCallbackHandler implements SAMLCallbackHandler
             }
             authBean.setAuthenticationMethod("Password");
             callback.setAuthenticationStatementData(Collections.singletonList(authBean));
-        } else if (statement == Statement.ATTR) {
+        }
+        else if (statement == Statement.ATTR) {
             AttributeStatementBean attrBean = new AttributeStatementBean();
             if (subjectBean != null) {
                 attrBean.setSubject(subjectBean);
@@ -212,7 +210,8 @@ public abstract class AbstractSAMLCallbackHandler implements SAMLCallbackHandler
 
             attrBean.setSamlAttributes(Collections.singletonList(attributeBean));
             callback.setAttributeStatementData(Collections.singletonList(attrBean));
-        } else {
+        }
+        else {
             AuthDecisionStatementBean authzBean = new AuthDecisionStatementBean();
             if (subjectBean != null) {
                 authzBean.setSubject(subjectBean);
@@ -232,7 +231,8 @@ public abstract class AbstractSAMLCallbackHandler implements SAMLCallbackHandler
         if (statement == Statement.AUTHN) {
             keyInfo.setCertificate(certs[0]);
             keyInfo.setCertIdentifer(certIdentifier);
-        } else if (statement == Statement.ATTR) {
+        }
+        else if (statement == Statement.ATTR) {
             // Build a new Document
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             docBuilderFactory.setNamespaceAware(true);
@@ -248,13 +248,18 @@ public abstract class AbstractSAMLCallbackHandler implements SAMLCallbackHandler
             Element encryptedKeyElement = encrKey.getEncryptedKeyElement();
 
             // Append the EncryptedKey to a KeyInfo element
-            Element keyInfoElement = doc.createElementNS(WSConstants.SIG_NS, WSConstants.SIG_PREFIX + ":"
-                    + WSConstants.KEYINFO_LN);
+            Element keyInfoElement = doc.createElementNS(WSConstants.SIG_NS, WSConstants.SIG_PREFIX + ":" + WSConstants.KEYINFO_LN);
             keyInfoElement.setAttributeNS(WSConstants.XMLNS_NS, "xmlns:" + WSConstants.SIG_PREFIX, WSConstants.SIG_NS);
             keyInfoElement.appendChild(encryptedKeyElement);
 
             keyInfo.setElement(keyInfoElement);
         }
         return keyInfo;
+    }
+
+    public enum Statement {
+        AUTHN,
+        ATTR,
+        AUTHZ
     }
 }

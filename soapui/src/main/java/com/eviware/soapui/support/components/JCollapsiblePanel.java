@@ -1,33 +1,25 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
 
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class JCollapsiblePanel extends JPanel {
@@ -89,7 +81,8 @@ public class JCollapsiblePanel extends JPanel {
     public void setExpanded(boolean expanded) {
         if (!expanded) {
             toggleAction.setShow();
-        } else {
+        }
+        else {
             toggleAction.setHide();
         }
 
@@ -100,7 +93,7 @@ public class JCollapsiblePanel extends JPanel {
     private void refresh() {
         contentPanel.revalidate();
         if (contentPanel.getParent() instanceof JComponent) {
-            ((JComponent) contentPanel.getParent()).revalidate();
+            contentPanel.getParent().revalidate();
         }
     }
 
@@ -110,26 +103,6 @@ public class JCollapsiblePanel extends JPanel {
         contentPanel = panel;
 
         refresh();
-    }
-
-    private class ToggleAction extends AbstractAction {
-        public ToggleAction() {
-            setHide();
-        }
-
-        public void setHide() {
-            putValue(Action.SMALL_ICON, getMinusIcon());
-            putValue(Action.SHORT_DESCRIPTION, "Hides the content of this block");
-        }
-
-        public void setShow() {
-            putValue(Action.SMALL_ICON, getPlusIcon());
-            putValue(Action.SHORT_DESCRIPTION, "Shows the content of this block");
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            setExpanded(!isExpanded());
-        }
     }
 
     public JXToolBar getToolbar() {
@@ -157,12 +130,33 @@ public class JCollapsiblePanel extends JPanel {
             if (!titleLabel.getText().startsWith(HIGHLIGHT_SIGN)) {
                 titleLabel.setText(HIGHLIGHT_SIGN + nonHighlightedTitle);
             }
-        } else {
+        }
+        else {
             titleLabel.setText(nonHighlightedTitle);
         }
     }
 
     public void setTitle(String title) {
         titleLabel.setText(title);
+    }
+
+    private class ToggleAction extends AbstractAction {
+        public ToggleAction() {
+            setHide();
+        }
+
+        public void setHide() {
+            putValue(SMALL_ICON, getMinusIcon());
+            putValue(SHORT_DESCRIPTION, "Hides the content of this block");
+        }
+
+        public void setShow() {
+            putValue(SMALL_ICON, getPlusIcon());
+            putValue(SHORT_DESCRIPTION, "Shows the content of this block");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            setExpanded(!isExpanded());
+        }
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.request;
@@ -25,7 +25,7 @@ import org.apache.ws.security.message.WSSecUsernameToken;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
-import javax.swing.AbstractAction;
+import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.event.ActionEvent;
@@ -48,8 +48,7 @@ public class AddWSSUsernameTokenAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        if ((request.getUsername() == null || request.getUsername().length() == 0)
-                && (request.getPassword() == null || request.getPassword().length() == 0)) {
+        if ((request.getUsername() == null || request.getUsername().length() == 0) && (request.getPassword() == null || request.getPassword().length() == 0)) {
             UISupport.showErrorMessage("Request is missing username and password");
             return;
         }
@@ -57,8 +56,7 @@ public class AddWSSUsernameTokenAction extends AbstractAction {
         String req = request.getRequestContent();
 
         try {
-            String passwordType = (String) UISupport.prompt("Add WSS Username Token", "Specify Password Type",
-                    new String[]{WsdlRequest.PW_TYPE_TEXT, WsdlRequest.PW_TYPE_DIGEST});
+            String passwordType = UISupport.prompt("Add WSS Username Token", "Specify Password Type", new String[]{WsdlRequest.PW_TYPE_TEXT, WsdlRequest.PW_TYPE_DIGEST});
 
             if (passwordType == null) {
                 return;
@@ -72,7 +70,8 @@ public class AddWSSUsernameTokenAction extends AbstractAction {
 
             if (WsdlRequest.PW_TYPE_DIGEST.equals(passwordType)) {
                 addUsernameToken.setPasswordType(WSConstants.PASSWORD_DIGEST);
-            } else {
+            }
+            else {
                 addUsernameToken.setPasswordType(WSConstants.PASSWORD_TEXT);
             }
 
@@ -86,7 +85,8 @@ public class AddWSSUsernameTokenAction extends AbstractAction {
             secHeader.insertSecurityHeader(doc);
             XmlUtils.serializePretty(addUsernameToken.build(doc, secHeader), writer);
             request.setRequestContent(writer.toString());
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             UISupport.showErrorMessage(e1);
         }
     }

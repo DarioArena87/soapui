@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.support;
@@ -59,16 +59,17 @@ public class RestURIParserImpl implements RestURIParser {
             }
 
             parseWithURI(uriString);
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             parseWithURL(uriString);
-
         }
     }
 
     private void postValidation() throws MalformedURLException {
         if (!validateScheme()) {
             throw new MalformedURLException("URI contains unsupported protocol. Supported protocols are HTTP/HTTPS");
-        } else if (!validateAuthority()) {
+        }
+        else if (!validateAuthority()) {
             throw new MalformedURLException("Invalid endpoint");
         }
     }
@@ -76,13 +77,11 @@ public class RestURIParserImpl implements RestURIParser {
     private boolean validateScheme() throws MalformedURLException {
         String scheme = getScheme();
         return scheme.isEmpty() || scheme.matches("(HTTP|http).*");
-
     }
 
     private boolean validateAuthority() throws MalformedURLException {
         String endpoint = getEndpoint();
         return endpoint.isEmpty() || !endpoint.matches(".*[\\\\]+.*");
-
     }
 
     @Override
@@ -91,9 +90,11 @@ public class RestURIParserImpl implements RestURIParser {
 
         if (authority.isEmpty()) {
             endpoint = "";
-        } else if (scheme.isEmpty()) {
+        }
+        else if (scheme.isEmpty()) {
             endpoint = DEFAULT_SCHEME + SCHEME_SEPARATOR + authority;
-        } else {
+        }
+        else {
             endpoint = scheme + SCHEME_SEPARATOR + authority;
         }
 
@@ -161,14 +162,12 @@ public class RestURIParserImpl implements RestURIParser {
 
     private boolean isURIWithoutScheme(String uriString) {
         return !uriString.matches("[a-zA-Z]+\\:[\\/\\/]+.*");
-
     }
 
     private boolean isAPossibleEndPointWithoutScheme(String uriString) {
         int indexOfDot = uriString.indexOf(".");
 
         return indexOfDot > 0 && isURIWithoutScheme(uriString);
-
     }
 
     private void parseWithURL(String uriString) throws MalformedURLException {
@@ -179,7 +178,8 @@ public class RestURIParserImpl implements RestURIParser {
             query = (url.getQuery() == null ? "" : url.getQuery());
             scheme = (url.getProtocol() == null ? "" : url.getProtocol());
             authority = (url.getAuthority() == null ? "" : url.getAuthority());
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             parseManually(uriString);
         }
     }
@@ -202,5 +202,4 @@ public class RestURIParserImpl implements RestURIParser {
             authority = resourcePath.substring(0, startIndexOfResource);
         }
     }
-
 }

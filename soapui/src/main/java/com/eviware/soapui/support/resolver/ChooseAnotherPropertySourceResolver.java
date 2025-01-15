@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.resolver;
@@ -29,15 +29,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -46,11 +39,11 @@ public class ChooseAnotherPropertySourceResolver implements Resolver {
     private boolean resolved;
     private PropertyTransfer badTransfer = null;
     private PropertyTransfersTestStep parent = null;
-    private ArrayList<Object> sources = new ArrayList<Object>();
-    private ArrayList<String[]> properties = new ArrayList<String[]>();
+    private final ArrayList<Object> sources = new ArrayList<Object>();
+    private final ArrayList<String[]> properties = new ArrayList<String[]>();
 
     public ChooseAnotherPropertySourceResolver(PropertyTransfer propertyTransfer, PropertyTransfersTestStep parent) {
-        this.badTransfer = propertyTransfer;
+        badTransfer = propertyTransfer;
         this.parent = parent;
 
         sources.add(PropertyExpansionUtils.getGlobalProperties());
@@ -72,25 +65,11 @@ public class ChooseAnotherPropertySourceResolver implements Resolver {
             sources.add(testStep);
             properties.add(testStep.getPropertyNames());
         }
-
-    }
-
-    public String getDescription() {
-        return "Change source property";
     }
 
     @Override
     public String toString() {
         return getDescription();
-    }
-
-    public String getResolvedPath() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public boolean isResolved() {
-        return resolved;
     }
 
     public boolean resolve() {
@@ -101,13 +80,26 @@ public class ChooseAnotherPropertySourceResolver implements Resolver {
         return resolved;
     }
 
+    public boolean isResolved() {
+        return resolved;
+    }
+
+    public String getResolvedPath() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String getDescription() {
+        return "Change source property";
+    }
+
     @SuppressWarnings("serial")
     private class PropertyChangeDialog extends JDialog {
 
         private JComboBox sourceStepCombo;
         private JComboBox propertiesCombo;
-        private JButton okBtn = new JButton(" Ok ");
-        private JButton cancelBtn = new JButton(" Cancel ");
+        private final JButton okBtn = new JButton(" Ok ");
+        private final JButton cancelBtn = new JButton(" Cancel ");
 
         public PropertyChangeDialog(String title) {
             super(UISupport.getMainFrame(), title, true);
@@ -115,8 +107,7 @@ public class ChooseAnotherPropertySourceResolver implements Resolver {
         }
 
         private void init() {
-            FormLayout layout = new FormLayout("min,right:pref, 4dlu, 40dlu, 5dlu, 40dlu, min ",
-                    "min, pref, 4dlu, pref, 4dlu, pref, min");
+            FormLayout layout = new FormLayout("min,right:pref, 4dlu, 40dlu, 5dlu, 40dlu, min ", "min, pref, 4dlu, pref, 4dlu, pref, min");
             CellConstraints cc = new CellConstraints();
             PanelBuilder panel = new PanelBuilder(layout);
             panel.addLabel("Source:", cc.xy(2, 2));
@@ -149,12 +140,11 @@ public class ChooseAnotherPropertySourceResolver implements Resolver {
                         for (String str : properties.get(index)) {
                             propertiesCombo.addItem(str);
                         }
-                    } else {
+                    }
+                    else {
                         propertiesCombo.setEnabled(false);
                     }
-
                 }
-
             });
 
             okBtn.addActionListener(new ActionListener() {
@@ -162,28 +152,31 @@ public class ChooseAnotherPropertySourceResolver implements Resolver {
                 public void actionPerformed(ActionEvent e) {
 
                     String name;
-                    TestPropertyHolder sourceStep = (TestPropertyHolder) sourceStepCombo.getSelectedItem();
+                    TestPropertyHolder sourceStep = (TestPropertyHolder)sourceStepCombo.getSelectedItem();
                     if (sourceStep == PropertyExpansionUtils.getGlobalProperties()) {
                         name = PropertyExpansion.GLOBAL_REFERENCE;
-                    } else if (sourceStep == parent.getTestCase().getTestSuite().getProject()) {
+                    }
+                    else if (sourceStep == parent.getTestCase().getTestSuite().getProject()) {
                         name = PropertyExpansion.PROJECT_REFERENCE;
-                    } else if (sourceStep == parent.getTestCase().getTestSuite()) {
+                    }
+                    else if (sourceStep == parent.getTestCase().getTestSuite()) {
                         name = PropertyExpansion.TESTSUITE_REFERENCE;
-                    } else if (sourceStep == parent.getTestCase()) {
+                    }
+                    else if (sourceStep == parent.getTestCase()) {
                         name = PropertyExpansion.TESTCASE_REFERENCE;
-                    } else {
+                    }
+                    else {
                         name = sourceStep.getModelItem().getName();
                     }
 
                     badTransfer.setSourceStepName(name);
 
-                    badTransfer.setSourcePropertyName((String) propertiesCombo.getSelectedItem());
+                    badTransfer.setSourcePropertyName((String)propertiesCombo.getSelectedItem());
 
                     resolved = true;
 
                     setVisible(false);
                 }
-
             });
 
             cancelBtn.addActionListener(new ActionListener() {
@@ -192,18 +185,17 @@ public class ChooseAnotherPropertySourceResolver implements Resolver {
                     resolved = false;
                     setVisible(false);
                 }
-
             });
 
             setLocationRelativeTo(UISupport.getParentFrame(this));
             panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            this.add(panel.getPanel());
-            setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            add(panel.getPanel());
+            setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         }
 
         public void showAndChoose() {
-            this.pack();
-            this.setVisible(true);
+            pack();
+            setVisible(true);
         }
     }
 
@@ -211,23 +203,26 @@ public class ChooseAnotherPropertySourceResolver implements Resolver {
     private class StepComboRenderer extends DefaultListCellRenderer {
         @SuppressWarnings("finally")
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
             Component result = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             try {
                 if (value instanceof TestModelItem) {
-                    TestModelItem item = (TestModelItem) value;
+                    TestModelItem item = (TestModelItem)value;
                     setIcon(item.getIcon());
                     setText(item.getName());
-                } else if (value == PropertyExpansionUtils.getGlobalProperties()) {
+                }
+                else if (value == PropertyExpansionUtils.getGlobalProperties()) {
                     setText("Global");
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 setText("Removed element");
-            } finally {
+            }
+            finally {
                 return result;
             }
         }
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.support;
@@ -22,31 +22,24 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.swing.JTableFactory;
 import com.eviware.soapui.support.types.StringToStringMap;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
  * @author Erik R. Yverling
- *         <p/>
- *         Displays a table of SAML attribute values
+ * <p/>
+ * Displays a table of SAML attribute values
  */
 public class SAMLAttributeValuesTable extends JPanel {
     private final List<StringToStringMap> attributeValues;
-    private WssEntryBase entry;
-    private AttributeValuesTableModel attributeValuesTableModel;
-    private JTable attributeValuesTable;
+    private final WssEntryBase entry;
+    private final AttributeValuesTableModel attributeValuesTableModel;
+    private final JTable attributeValuesTable;
     private JButton removeAttributeValueButton;
     private JButton createAttributeValueButton;
 
@@ -93,12 +86,17 @@ public class SAMLAttributeValuesTable extends JPanel {
     }
 
     private class AttributeValuesTableModel extends AbstractTableModel {
+        public int getRowCount() {
+            return attributeValues.size();
+        }
+
         public int getColumnCount() {
             return 1;
         }
 
-        public int getRowCount() {
-            return attributeValues.size();
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            StringToStringMap attributeValue = attributeValues.get(rowIndex);
+            return attributeValue.get("value");
         }
 
         @Override
@@ -117,11 +115,6 @@ public class SAMLAttributeValuesTable extends JPanel {
             attributeValue.put("value", aValue.toString());
 
             entry.saveConfig();
-        }
-
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            StringToStringMap attributeValue = attributeValues.get(rowIndex);
-            return attributeValue.get("value");
         }
 
         public void remove(int row) {

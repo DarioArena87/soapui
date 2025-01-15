@@ -1,25 +1,24 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.preferences;
 
 import com.eviware.soapui.SoapUI;
 
-import java.awt.Frame;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -40,7 +39,20 @@ public class UserPreferences {
     static final String INSTALLATION_TYPE = "SoapUIInstallationType";
     private static final Preferences unifiedPreferences = Preferences.userRoot().node("user-preferences");
 
-    private Preferences preferences = Preferences.userRoot().node(ROOT_NODE_NAME);
+    private final Preferences preferences = Preferences.userRoot().node(ROOT_NODE_NAME);
+
+    public static void main(String[] args) throws BackingStoreException {
+        new UserPreferences().setSoapUIWindowBounds(null);
+    }
+
+    public Rectangle getSoapUIWindowBounds() {
+        if (hasAllIntProperties(WINDOW_X, WINDOW_Y, WINDOW_WIDTH, WINDOW_HEIGHT)) {
+            return new Rectangle(preferences.getInt(WINDOW_X, 0), preferences.getInt(WINDOW_Y, 0), preferences.getInt(WINDOW_WIDTH, 800), preferences.getInt(WINDOW_HEIGHT, 600));
+        }
+        else {
+            return null;
+        }
+    }
 
     public void setSoapUIWindowBounds(Rectangle windowBounds) throws BackingStoreException {
         if (windowBounds == null) {
@@ -54,12 +66,12 @@ public class UserPreferences {
         preferences.flush();
     }
 
-    public Rectangle getSoapUIWindowBounds() {
-        if (hasAllIntProperties(WINDOW_X, WINDOW_Y, WINDOW_WIDTH, WINDOW_HEIGHT)) {
-            return new Rectangle(preferences.getInt(WINDOW_X, 0), preferences.getInt(WINDOW_Y, 0),
-                    preferences.getInt(WINDOW_WIDTH, 800), preferences.getInt(WINDOW_HEIGHT, 600));
-        } else {
-            return null;
+    public int getSoapUIExtendedState() {
+        if (hasAllIntProperties(EXTENDED_STATE)) {
+            return preferences.getInt(EXTENDED_STATE, Frame.NORMAL);
+        }
+        else {
+            return Frame.NORMAL;
         }
     }
 
@@ -68,25 +80,18 @@ public class UserPreferences {
         preferences.flush();
     }
 
-    public int getSoapUIExtendedState() {
-        if (hasAllIntProperties(EXTENDED_STATE)) {
-            return preferences.getInt(EXTENDED_STATE, Frame.NORMAL);
-        } else {
-            return Frame.NORMAL;
+    public int getInstallationType() {
+        if (hasAllIntProperties(INSTALLATION_TYPE)) {
+            return preferences.getInt(INSTALLATION_TYPE, -1);
+        }
+        else {
+            return -1;
         }
     }
 
     public void setInstallationType(int type) throws BackingStoreException {
         preferences.putInt(INSTALLATION_TYPE, type);
         preferences.flush();
-    }
-
-    public int getInstallationType() {
-        if (hasAllIntProperties(INSTALLATION_TYPE)) {
-            return preferences.getInt(INSTALLATION_TYPE, -1);
-        } else {
-            return -1;
-        }
     }
 
     private void clearAllProperties(String... propertyNames) {
@@ -104,15 +109,11 @@ public class UserPreferences {
         return true;
     }
 
-    public void setAnalyticsUserId(String userId) {
-        unifiedPreferences.put("user-id", userId);
-    }
-
     public String getAnalyticsUserId() {
         return unifiedPreferences.get("user-id", "");
     }
 
-    public static void main(String[] args) throws BackingStoreException {
-        new UserPreferences().setSoapUIWindowBounds(null);
+    public void setAnalyticsUserId(String userId) {
+        unifiedPreferences.put("user-id", userId);
     }
 }

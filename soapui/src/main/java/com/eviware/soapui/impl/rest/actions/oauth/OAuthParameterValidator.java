@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.oauth;
@@ -44,7 +44,7 @@ public class OAuthParameterValidator {
         }
 
         if (parameters.getOAuth2Flow() != OAuth2Profile.OAuth2Flow.RESOURCE_OWNER_PASSWORD_CREDENTIALS &&
-                parameters.getOAuth2Flow() != OAuth2Profile.OAuth2Flow.CLIENT_CREDENTIALS_GRANT) {
+            parameters.getOAuth2Flow() != OAuth2Profile.OAuth2Flow.CLIENT_CREDENTIALS_GRANT) {
             validateHttpUrl(parameters.authorizationUri, OAuth2GetAccessTokenForm.AUTHORIZATION_URI_TITLE);
             validateUri(parameters.redirectUri, OAuth2GetAccessTokenForm.REDIRECT_URI_TITLE);
         }
@@ -59,6 +59,12 @@ public class OAuthParameterValidator {
         validateUri(parameters.redirectUri, OAuth1GetTokenForm.REDIRECT_URI_TITLE);
     }
 
+    static void validateRequiredStringValue(String value, String propertyName) {
+        if (!StringUtils.hasContent(value)) {
+            throw new InvalidOAuthParametersException(propertyName + " is empty");
+        }
+    }
+
     private static void validateUri(String uri, String uriName) {
         if (!StringUtils.hasContent(uri)) {
             throw new InvalidOAuthParametersException(uri + " is not a valid " + uriName);
@@ -66,7 +72,8 @@ public class OAuthParameterValidator {
 
         try {
             new URI(uri);
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             throw new InvalidOAuthParametersException(uri + " is not a valid " + uriName);
         }
     }
@@ -84,15 +91,9 @@ public class OAuthParameterValidator {
         try {
             URL url = new URL(authorizationUri);
             return url.getProtocol().startsWith("http");
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             return false;
         }
     }
-
-    static void validateRequiredStringValue(String value, String propertyName) {
-        if (!StringUtils.hasContent(value)) {
-            throw new InvalidOAuthParametersException(propertyName + " is empty");
-        }
-    }
-
 }

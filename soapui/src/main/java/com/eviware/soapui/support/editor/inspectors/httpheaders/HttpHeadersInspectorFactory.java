@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.httpheaders;
@@ -50,29 +50,27 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
     public EditorInspector<?> createRequestInspector(Editor<?> editor, ModelItem modelItem) {
 
         if (modelItem instanceof AbstractHttpRequestInterface<?>) {
-            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlRequestHeadersModel(
-                    (AbstractHttpRequest<?>) modelItem));
+            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlRequestHeadersModel((AbstractHttpRequest<?>)modelItem));
             inspector.setEnabled(!JMSUtils.checkIfJMS(modelItem));
             return inspector;
-        } else if (modelItem instanceof WsdlMockResponse) {
-            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlMockResponseRequestHeadersModel(
-                    (WsdlMockResponse) modelItem));
+        }
+        else if (modelItem instanceof WsdlMockResponse) {
+            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlMockResponseRequestHeadersModel((WsdlMockResponse)modelItem));
             inspector.setEnabled(!JMSUtils.checkIfJMS(modelItem));
             return inspector;
-        } else if (modelItem instanceof MessageExchangeModelItem) {
-            if (((MessageExchangeModelItem) modelItem).getMessageExchange() instanceof AMFTestStepResult) {
-                HttpHeadersInspector inspector = new HttpHeadersInspector(new AMFMessageExchangeRequestHTTPHeadersModel(
-                        (MessageExchangeModelItem) modelItem));
+        }
+        else if (modelItem instanceof MessageExchangeModelItem) {
+            if (((MessageExchangeModelItem)modelItem).getMessageExchange() instanceof AMFTestStepResult) {
+                HttpHeadersInspector inspector = new HttpHeadersInspector(new AMFMessageExchangeRequestHTTPHeadersModel((MessageExchangeModelItem)modelItem));
                 inspector.setEnabled(true);
                 return inspector;
             }
-            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlMessageExchangeRequestHeadersModel(
-                    (MessageExchangeModelItem) modelItem));
+            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlMessageExchangeRequestHeadersModel((MessageExchangeModelItem)modelItem));
             inspector.setEnabled(!JMSUtils.checkIfJMS(modelItem));
             return inspector;
-        } else if (modelItem instanceof AMFRequestTestStep) {
-            HttpHeadersInspector inspector = new HttpHeadersInspector(new AMFRequestHeadersModel(
-                    (AMFRequestTestStep) modelItem));
+        }
+        else if (modelItem instanceof AMFRequestTestStep) {
+            HttpHeadersInspector inspector = new HttpHeadersInspector(new AMFRequestHeadersModel((AMFRequestTestStep)modelItem));
             inspector.setEnabled(!JMSUtils.checkIfJMS(modelItem));
             return inspector;
         }
@@ -82,28 +80,27 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
 
     public EditorInspector<?> createResponseInspector(Editor<?> editor, ModelItem modelItem) {
         if (modelItem instanceof AbstractHttpRequestInterface<?>) {
-            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlRequestResponseHeadersModel(
-                    (AbstractHttpRequest<?>) modelItem));
+            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlRequestResponseHeadersModel((AbstractHttpRequest<?>)modelItem));
             inspector.setEnabled(!JMSUtils.checkIfJMS(modelItem));
             return inspector;
-        } else if (modelItem instanceof WsdlMockResponse) {
-            HttpHeadersInspector inspector = new HttpHeadersInspector(new MockResponseHeadersModel((WsdlMockResponse) modelItem));
+        }
+        else if (modelItem instanceof WsdlMockResponse) {
+            HttpHeadersInspector inspector = new HttpHeadersInspector(new MockResponseHeadersModel((WsdlMockResponse)modelItem));
             inspector.setEnabled(!JMSUtils.checkIfJMS(modelItem));
             return inspector;
-        } else if (modelItem instanceof MessageExchangeModelItem) {
-            if (((MessageExchangeModelItem) modelItem).getMessageExchange() instanceof AMFTestStepResult) {
-                HttpHeadersInspector inspector = new HttpHeadersInspector(new AMFMessageExchangeResponseHTTPHeadersModel(
-                        (MessageExchangeModelItem) modelItem));
+        }
+        else if (modelItem instanceof MessageExchangeModelItem) {
+            if (((MessageExchangeModelItem)modelItem).getMessageExchange() instanceof AMFTestStepResult) {
+                HttpHeadersInspector inspector = new HttpHeadersInspector(new AMFMessageExchangeResponseHTTPHeadersModel((MessageExchangeModelItem)modelItem));
                 inspector.setEnabled(true);
                 return inspector;
             }
-            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlMessageExchangeResponseHeadersModel(
-                    (MessageExchangeModelItem) modelItem));
+            HttpHeadersInspector inspector = new HttpHeadersInspector(new WsdlMessageExchangeResponseHeadersModel((MessageExchangeModelItem)modelItem));
             inspector.setEnabled(!JMSUtils.checkIfJMS(modelItem));
             return inspector;
-        } else if (modelItem instanceof AMFRequestTestStep) {
-            HttpHeadersInspector inspector = new HttpHeadersInspector(new AMFResponseHeadersModel(
-                    (AMFRequestTestStep) modelItem));
+        }
+        else if (modelItem instanceof AMFRequestTestStep) {
+            HttpHeadersInspector inspector = new HttpHeadersInspector(new AMFResponseHeadersModel((AMFRequestTestStep)modelItem));
             inspector.setEnabled(!JMSUtils.checkIfJMS(modelItem));
             return inspector;
         }
@@ -129,8 +126,8 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
 
         public StringToStringsMap getHeaders() {
             if (getModelItem().getMessageExchange() instanceof AMFTestStepResult) {
-                AMFTestStepResult messageExchange = (AMFTestStepResult) getModelItem().getMessageExchange();
-                return ((AMFRequestTestStep) messageExchange.getTestStep()).getHttpHeaders();
+                AMFTestStepResult messageExchange = (AMFTestStepResult)getModelItem().getMessageExchange();
+                return ((AMFRequestTestStep)messageExchange.getTestStep()).getHttpHeaders();
             }
             return new StringToStringsMap();
         }
@@ -143,8 +140,8 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
 
         public StringToStringsMap getHeaders() {
             if (getModelItem().getMessageExchange() instanceof AMFTestStepResult) {
-                AMFTestStepResult messageExchange = (AMFTestStepResult) getModelItem().getMessageExchange();
-                return ((AMFResponse) messageExchange.getResponse()).getResponseHeaders();
+                AMFTestStepResult messageExchange = (AMFTestStepResult)getModelItem().getMessageExchange();
+                return messageExchange.getResponse().getResponseHeaders();
             }
             return new StringToStringsMap();
         }
@@ -159,7 +156,6 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
             MessageExchange messageExchange = getModelItem().getMessageExchange();
             return messageExchange == null ? new StringToStringsMap() : messageExchange.getResponseHeaders();
         }
-
     }
 
     private class WsdlRequestHeadersModel extends AbstractHeadersModel<AbstractHttpRequest<?>> {
@@ -168,8 +164,8 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
 
         public WsdlRequestHeadersModel(AbstractHttpRequest<?> abstractHttpRequest) {
             super(false, abstractHttpRequest, AbstractHttpRequestInterface.REQUEST_HEADERS_PROPERTY);
-            this.request = abstractHttpRequest;
-            this.request.addPropertyChangeListener(this);
+            request = abstractHttpRequest;
+            request.addPropertyChangeListener(this);
         }
 
         public StringToStringsMap getHeaders() {
@@ -180,14 +176,14 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
             getModelItem().setRequestHeaders(headers);
         }
 
-        public void setInspector(AbstractXmlInspector inspector) {
-            this.inspector = inspector;
-        }
-
         @Override
         public void release() {
             super.release();
             request.removePropertyChangeListener(this);
+        }
+
+        public void setInspector(AbstractXmlInspector inspector) {
+            this.inspector = inspector;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -198,7 +194,6 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
             }
             super.propertyChange(evt);
         }
-
     }
 
     private class AMFRequestHeadersModel extends AbstractHeadersModel<AMFRequestTestStep> {
@@ -218,7 +213,6 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
         public void release() {
             super.release();
         }
-
     }
 
     private class AMFResponseHeadersModel extends AbstractHeadersModel<AMFRequestTestStep> {
@@ -234,7 +228,8 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
             if (testStep.getAMFRequest().getResponse() != null) {
                 AMFResponse response = testStep.getAMFRequest().getResponse();
                 return response.getResponseHeaders();
-            } else {
+            }
+            else {
                 return new StringToStringsMap();
             }
         }
@@ -276,6 +271,13 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
             return request.getResponse() == null ? new StringToStringsMap() : request.getResponse().getResponseHeaders();
         }
 
+        @Override
+        public void release() {
+            super.release();
+
+            request.removePropertyChangeListener(this);
+        }
+
         public void setInspector(AbstractXmlInspector inspector) {
             this.inspector = inspector;
         }
@@ -286,13 +288,6 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
             }
             super.propertyChange(evt);
         }
-
-        @Override
-        public void release() {
-            super.release();
-
-            request.removePropertyChangeListener(this);
-        }
     }
 
     private class WsdlMockResponseRequestHeadersModel extends AbstractHeadersModel<WsdlMockResponse> {
@@ -302,8 +297,7 @@ public class HttpHeadersInspectorFactory implements RequestInspectorFactory, Res
 
         public StringToStringsMap getHeaders() {
             WsdlMockResponse request = getModelItem();
-            return request.getMockResult() == null ? new StringToStringsMap() : request.getMockResult().getMockRequest()
-                    .getRequestHeaders();
+            return request.getMockResult() == null ? new StringToStringsMap() : request.getMockResult().getMockRequest().getRequestHeaders();
         }
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support.definition.support;
@@ -39,7 +39,7 @@ import java.util.Map;
 
 public abstract class AbstractDefinitionCache<T extends AbstractInterface<?>> implements DefinitionCache {
     protected DefinitionCacheConfig definitionCache;
-    private T container;
+    private final T container;
     private InterfaceDefinitionPart rootPart;
     private List<InterfaceDefinitionPart> parts;
 
@@ -63,25 +63,7 @@ public abstract class AbstractDefinitionCache<T extends AbstractInterface<?>> im
             return false;
         }
 
-        if (definitionCache.sizeOfPartArray() == 0) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public void importCache(DefinitionCache cache) throws Exception {
-        if (cache instanceof AbstractDefinitionCache<?>) {
-            definitionCache = reinit(container);
-            definitionCache.set(((AbstractDefinitionCache<?>) cache).getConfig());
-            initParts();
-        } else {
-            update(new InterfaceCacheDefinitionLoader(cache));
-        }
-    }
-
-    protected DefinitionCacheConfig getConfig() {
-        return definitionCache;
+        return definitionCache.sizeOfPartArray() != 0;
     }
 
     public void update(DefinitionLoader loader) throws Exception {
@@ -100,7 +82,7 @@ public abstract class AbstractDefinitionCache<T extends AbstractInterface<?>> im
             Node domNode = xmlObject.getDomNode();
 
             if (domNode.getNodeType() == Node.DOCUMENT_FRAGMENT_NODE) {
-                Node node = ((DocumentFragment) domNode).getFirstChild();
+                Node node = domNode.getFirstChild();
                 if (node.getNodeType() == Node.TEXT_NODE) {
                     domNode = XmlUtils.parseXml(node.getNodeValue());
                     // xmlObject = XmlObject.Factory.parse( domNode );
@@ -108,7 +90,7 @@ public abstract class AbstractDefinitionCache<T extends AbstractInterface<?>> im
                 }
             }
 
-            Element contentElement = ((Document) domNode).getDocumentElement();
+            Element contentElement = ((Document)domNode).getDocumentElement();
 
             Node newDomNode = definitionPart.addNewContent().getDomNode();
             newDomNode.appendChild(newDomNode.getOwnerDocument().createTextNode(xmlObject.toString()));
@@ -126,32 +108,6 @@ public abstract class AbstractDefinitionCache<T extends AbstractInterface<?>> im
         return parts;
     }
 
-    private void initParts() {
-        parts = new ArrayList<InterfaceDefinitionPart>();
-
-        List<DefintionPartConfig> partList = definitionCache.getPartList();
-        for (DefintionPartConfig part : partList) {
-            try {
-                boolean rootElement = URLDecoder.decode(part.getUrl(), "UTF-8").equals(
-                        URLDecoder.decode(definitionCache.getRootPart(), "UTF-8"));
-                ConfigInterfaceDefinitionPart configInterfaceDefinitionPart = new ConfigInterfaceDefinitionPart(part,
-                        rootElement, definitionCache.getType());
-                parts.add(configInterfaceDefinitionPart);
-
-                if (configInterfaceDefinitionPart.isRootPart()) {
-                    rootPart = configInterfaceDefinitionPart;
-                }
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-            // ConfigInterfaceDefinitionPart configInterfaceDefinitionPart = new
-            // ConfigInterfaceDefinitionPart( part, part
-            // .getUrl().equals( definitionCache.getRootPart() ),
-            // definitionCache.getType() );
-
-        }
-    }
-
     public InterfaceDefinitionPart getRootPart() {
         if (parts == null) {
             initParts();
@@ -165,6 +121,46 @@ public abstract class AbstractDefinitionCache<T extends AbstractInterface<?>> im
 
         while (definitionCache.sizeOfPartArray() > 0) {
             definitionCache.removePart(0);
+        }
+    }
+
+    public void importCache(DefinitionCache cache) throws Exception {
+        if (cache instanceof AbstractDefinitionCache<?>) {
+            definitionCache = reinit(container);
+            definitionCache.set(((AbstractDefinitionCache<?>)cache).getConfig());
+            initParts();
+        }
+        else {
+            update(new InterfaceCacheDefinitionLoader(cache));
+        }
+    }
+
+    protected DefinitionCacheConfig getConfig() {
+        return definitionCache;
+    }
+
+    private void initParts() {
+        parts = new ArrayList<InterfaceDefinitionPart>();
+
+        List<DefintionPartConfig> partList = definitionCache.getPartList();
+        for (DefintionPartConfig part : partList) {
+            try {
+                boolean rootElement = URLDecoder.decode(part.getUrl(), "UTF-8").equals(URLDecoder.decode(definitionCache.getRootPart(), "UTF-8"));
+                ConfigInterfaceDefinitionPart configInterfaceDefinitionPart = new ConfigInterfaceDefinitionPart(part, rootElement, definitionCache.getType());
+                parts.add(configInterfaceDefinitionPart);
+
+                if (configInterfaceDefinitionPart.isRootPart()) {
+                    rootPart = configInterfaceDefinitionPart;
+                }
+            }
+            catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            // ConfigInterfaceDefinitionPart configInterfaceDefinitionPart = new
+            // ConfigInterfaceDefinitionPart( part, part
+            // .getUrl().equals( definitionCache.getRootPart() ),
+            // definitionCache.getType() );
+
         }
     }
 }

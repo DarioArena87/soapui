@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.entries;
@@ -28,7 +28,7 @@ import org.apache.ws.security.message.WSSecHeader;
 import org.apache.ws.security.message.WSSecTimestamp;
 import org.w3c.dom.Document;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 
 public class TimestampEntry extends WssEntryBase {
     public static final String TYPE = "Timestamp";
@@ -37,7 +37,7 @@ public class TimestampEntry extends WssEntryBase {
     private boolean strictTimestamp;
 
     public void init(WSSEntryConfig config, OutgoingWss container) {
-        super.init(config, container, TYPE);
+        init(config, container, TYPE);
     }
 
     @Override
@@ -84,6 +84,15 @@ public class TimestampEntry extends WssEntryBase {
         return String.valueOf(timeToLive);
     }
 
+    public void setTimeToLive(String timeToLive) {
+        try {
+            this.timeToLive = Integer.valueOf(timeToLive);
+            saveConfig();
+        }
+        catch (Exception e) {
+        }
+    }
+
     public boolean isStrictTimestamp() {
         return strictTimestamp;
     }
@@ -91,13 +100,5 @@ public class TimestampEntry extends WssEntryBase {
     public void setStrictTimestamp(boolean strictTimestamp) {
         this.strictTimestamp = strictTimestamp;
         saveConfig();
-    }
-
-    public void setTimeToLive(String timeToLive) {
-        try {
-            this.timeToLive = Integer.valueOf(timeToLive);
-            saveConfig();
-        } catch (Exception e) {
-        }
     }
 }

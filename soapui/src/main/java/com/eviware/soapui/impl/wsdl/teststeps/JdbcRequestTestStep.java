@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -56,7 +56,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.impl.values.XmlAnyTypeImpl;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import javax.xml.namespace.QName;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -70,41 +70,40 @@ import java.util.Map;
  * @author dragica.soldo
  */
 
-public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements Assertable, MutableTestPropertyHolder,
-        PropertyChangeListener, SamplerTestStep {
-    @SuppressWarnings("unused")
-    private final static Logger log = LogManager.getLogger(WsdlTestRequestStep.class);
-
+public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements Assertable, MutableTestPropertyHolder, PropertyChangeListener, SamplerTestStep {
     public final static String JDBCREQUEST = JdbcRequestTestStep.class.getName() + "@jdbcrequest";
     public static final String STATUS_PROPERTY = WsdlTestRequest.class.getName() + "@status";
     public static final String RESPONSE_PROPERTY = "response";
+    public static final String PASS_TEMPLATE = "PASS_VALUE";
+    public static final String QUERY_FIELD = "SQL Query";
     protected static final String DRIVER_FIELD = "Driver";
     protected static final String CONNSTR_FIELD = "Connection String";
     protected static final String PASS_FIELD = "Password";
-    public static final String PASS_TEMPLATE = "PASS_VALUE";
-    public static final String QUERY_FIELD = "SQL Query";
     protected static final String STOREDPROCEDURE_FIELD = "Stored Procedure";
     protected static final String DATA_CONNECTION_FIELD = "Connection";
-
     protected static final String QUERY_ELEMENT = "query";
     protected static final String STOREDPROCEDURE_ELEMENT = "stored-procedure";
-
+    @SuppressWarnings("unused")
+    private final static Logger log = LogManager.getLogger(WsdlTestRequestStep.class);
     private AssertionsSupport assertionsSupport;
     private PropertyChangeNotifier notifier;
-    private XmlBeansPropertiesTestPropertyHolder propertyHolderSupport;
+    private final XmlBeansPropertiesTestPropertyHolder propertyHolderSupport;
     private JdbcRequestTestStepConfig jdbcRequestTestStepConfig;
-    private JdbcRequest jdbcRequest;
+    private final JdbcRequest jdbcRequest;
     private JdbcSubmit submit;
+
+    public static boolean isNeededPassword(String connStr) {
+        return !StringUtils.isNullOrEmpty(connStr) && connStr.contains(PASS_TEMPLATE);
+    }
 
     public JdbcRequestTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
         super(testCase, config, true, forLoadTest);
 
         if (getConfig().getConfig() != null) {
-            jdbcRequestTestStepConfig = (JdbcRequestTestStepConfig) getConfig().getConfig().changeType(
-                    JdbcRequestTestStepConfig.type);
-        } else {
-            jdbcRequestTestStepConfig = (JdbcRequestTestStepConfig) getConfig().addNewConfig().changeType(
-                    JdbcRequestTestStepConfig.type);
+            jdbcRequestTestStepConfig = (JdbcRequestTestStepConfig)getConfig().getConfig().changeType(JdbcRequestTestStepConfig.type);
+        }
+        else {
+            jdbcRequestTestStepConfig = (JdbcRequestTestStepConfig)getConfig().addNewConfig().changeType(JdbcRequestTestStepConfig.type);
         }
 
         if (jdbcRequestTestStepConfig.getProperties() == null) {
@@ -125,16 +124,15 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
     }
 
     private void addResponseAsXmlVirtualProperty() {
-        TestStepBeanProperty responseProperty = new TestStepBeanProperty(WsdlTestStepWithProperties.RESPONSE_AS_XML,
-                true, this, "responseContent", this) {
-            @Override
-            public String getDefaultValue() {
-                return "</no-response>";
-            }
-
+        TestStepBeanProperty responseProperty = new TestStepBeanProperty(RESPONSE_AS_XML, true, this, "responseContent", this) {
             @Override
             public QName getType() {
                 return getSchemaType().getName();
+            }
+
+            @Override
+            public String getDefaultValue() {
+                return "</no-response>";
             }
 
             @Override
@@ -143,47 +141,11 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
             }
         };
 
-        propertyHolderSupport.addVirtualProperty(WsdlTestStepWithProperties.RESPONSE_AS_XML, responseProperty);
-    }
-
-    @Override
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        propertyHolderSupport.addTestPropertyListener(listener);
-    }
-
-    @Override
-    public void removeTestPropertyListener(TestPropertyListener listener) {
-        propertyHolderSupport.removeTestPropertyListener(listener);
+        propertyHolderSupport.addVirtualProperty(RESPONSE_AS_XML, responseProperty);
     }
 
     public JdbcRequestTestStepConfig getJdbcRequestTestStepConfig() {
         return jdbcRequestTestStepConfig;
-    }
-
-    @Override
-    public void resetConfigOnMove(TestStepConfig config) {
-        super.resetConfigOnMove(config);
-
-        jdbcRequestTestStepConfig = (JdbcRequestTestStepConfig) config.getConfig().changeType(
-                JdbcRequestTestStepConfig.type);
-        propertyHolderSupport.resetPropertiesConfig(jdbcRequestTestStepConfig.getProperties());
-        // addResponseAsXmlVirtualProperty();
-        assertionsSupport.refresh();
-    }
-
-    @Override
-    public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
-        beforeSave();
-
-        TestStepConfig config = (TestStepConfig) getConfig().copy();
-        JdbcRequestTestStep result = (JdbcRequestTestStep) targetTestCase.addTestStep(config);
-
-        return result;
-    }
-
-    @Override
-    public void release() {
-        super.release();
     }
 
     public TestStepResult run(TestCaseRunner runner, TestCaseRunContext runContext) {
@@ -201,12 +163,14 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
                     testStepResult.addMessage(submit.getError().toString());
 
                     jdbcRequest.setResponse(null);
-                } else if (response == null) {
+                }
+                else if (response == null) {
                     testStepResult.setStatus(TestStepStatus.FAILED);
                     testStepResult.addMessage("Request is missing response");
 
                     jdbcRequest.setResponse(null);
-                } else {
+                }
+                else {
                     runContext.setProperty(AssertedXPathsContainer.ASSERTEDXPATHSCONTAINER_PROPERTY, testStepResult);
                     jdbcRequest.setResponse(response);
 
@@ -227,23 +191,27 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
 
                     testStepResult.setResponse(response, testStepResult.getStatus() != TestStepStatus.FAILED);
                 }
-            } else {
+            }
+            else {
                 testStepResult.setStatus(TestStepStatus.CANCELED);
                 testStepResult.addMessage("Request was canceled");
             }
 
             if (response != null) {
                 testStepResult.setRequestContent(response.getRequestContent());
-            } else {
+            }
+            else {
                 testStepResult.setRequestContent(jdbcRequest.getRequestContent());
             }
 
             testStepResult.stopTimer();
-        } catch (SubmitException e) {
+        }
+        catch (SubmitException e) {
             testStepResult.setStatus(TestStepStatus.FAILED);
             testStepResult.addMessage("SubmitException: " + e);
             testStepResult.stopTimer();
-        } finally {
+        }
+        finally {
             submit = null;
         }
 
@@ -256,7 +224,8 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
                     testStepResult.setStatus(TestStepStatus.FAILED);
                     if (getAssertionCount() == 0) {
                         testStepResult.addMessage("Invalid/empty response");
-                    } else {
+                    }
+                    else {
                         for (int c = 0; c < getAssertionCount(); c++) {
                             TestAssertion assertion = getAssertionAt(c);
                             AssertionError[] errors = assertion.getErrors();
@@ -284,28 +253,8 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         return testStepResult;
     }
 
-    @Override
-    public boolean cancel() {
-        if (submit == null) {
-            return false;
-        }
-
-        submit.cancel();
-
-        return true;
-    }
-
-    @Override
-    public String getDefaultSourcePropertyName() {
-        return "Response";
-    }
-
     private void initAssertions() {
         assertionsSupport = new AssertionsSupport(this, new AssertableConfig() {
-
-            public TestAssertionConfig addNewAssertion() {
-                return getJdbcRequestTestStepConfig().addNewAssertion();
-            }
 
             public List<TestAssertionConfig> getAssertionList() {
                 return getJdbcRequestTestStepConfig().getAssertionList();
@@ -315,38 +264,16 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
                 getJdbcRequestTestStepConfig().removeAssertion(ix);
             }
 
+            public TestAssertionConfig addNewAssertion() {
+                return getJdbcRequestTestStepConfig().addNewAssertion();
+            }
+
             public TestAssertionConfig insertAssertion(TestAssertionConfig source, int ix) {
                 TestAssertionConfig conf = getJdbcRequestTestStepConfig().insertNewAssertion(ix);
                 conf.set(source);
                 return conf;
             }
         });
-    }
-
-    private class PropertyChangeNotifier {
-        private AssertionStatus oldStatus;
-        private ImageIcon oldIcon;
-
-        public PropertyChangeNotifier() {
-            oldStatus = getAssertionStatus();
-            oldIcon = getIcon();
-        }
-
-        public void notifyChange() {
-            AssertionStatus newStatus = getAssertionStatus();
-            ImageIcon newIcon = getIcon();
-
-            if (oldStatus != newStatus) {
-                notifyPropertyChanged(STATUS_PROPERTY, oldStatus, newStatus);
-            }
-
-            if (oldIcon != newIcon) {
-                notifyPropertyChanged(ICON_PROPERTY, oldIcon, getIcon());
-            }
-
-            oldStatus = newStatus;
-            oldIcon = newIcon;
-        }
     }
 
     public TestAssertion addAssertion(String assertionLabel) {
@@ -359,13 +286,13 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
             }
 
             if (getJdbcRequest().getResponse() != null) {
-                assertion.assertResponse(new JdbcMessageExchange(this, getJdbcRequest().getResponse()),
-                        new WsdlTestRunContext(this));
+                assertion.assertResponse(new JdbcMessageExchange(this, getJdbcRequest().getResponse()), new WsdlTestRunContext(this));
                 notifier.notifyChange();
             }
 
             return assertion;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return null;
         }
@@ -375,8 +302,32 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         assertionsSupport.addAssertionsListener(listener);
     }
 
-    public TestAssertion cloneAssertion(TestAssertion source, String name) {
-        return assertionsSupport.cloneAssertion(source, name);
+    public int getAssertionCount() {
+        return assertionsSupport.getAssertionCount();
+    }
+
+    public TestAssertion getAssertionAt(int c) {
+        return assertionsSupport.getAssertionAt(c);
+    }
+
+    public void removeAssertionsListener(AssertionsListener listener) {
+        assertionsSupport.removeAssertionsListener(listener);
+    }
+
+    public void removeAssertion(TestAssertion assertion) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+
+        try {
+            assertionsSupport.removeAssertion((WsdlMessageAssertion)assertion);
+        }
+        finally {
+            ((WsdlMessageAssertion)assertion).release();
+            notifier.notifyChange();
+        }
+    }
+
+    public AssertionStatus getAssertionStatus() {
+        return jdbcRequest.getAssertionStatus();
     }
 
     public String getAssertableContentAsXml() {
@@ -389,67 +340,36 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         return StringUtils.hasContent(value) ? value : property.getDefaultValue();
     }
 
-    public boolean isConvertColumnNamesToUpperCase() {
-        return jdbcRequestTestStepConfig.getConvertColumnNamesToUpperCase();
-    }
-
-    public String getResponseContent() {
-        return getJdbcRequest().getResponse() == null ? "" : getJdbcRequest().getResponse().getContentAsString();
-    }
-
-    public WsdlMessageAssertion importAssertion(WsdlMessageAssertion source, boolean overwrite, boolean createCopy,
-                                                String newName) {
-        return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
+    public String getDefaultAssertableContent() {
+        return null;
     }
 
     public AssertableType getAssertableType() {
         return AssertableType.RESPONSE;
     }
 
-    public TestAssertion getAssertionAt(int c) {
-        return assertionsSupport.getAssertionAt(c);
+    public List<TestAssertion> getAssertionList() {
+        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
     }
 
     public TestAssertion getAssertionByName(String name) {
         return assertionsSupport.getAssertionByName(name);
     }
 
-    public int getAssertionCount() {
-        return assertionsSupport.getAssertionCount();
-    }
-
-    public List<TestAssertion> getAssertionList() {
-        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
-    }
-
-    public void propertyChange(PropertyChangeEvent arg0) {
-        if (arg0.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY)
-                || arg0.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
-            if (getJdbcRequest().getResponse() != null) {
-                assertResponse(new WsdlTestRunContext(this));
-            }
-        }
-    }
-
-    public Map<String, TestAssertion> getAssertions() {
-        return assertionsSupport.getAssertions();
-    }
-
-    public String getDefaultAssertableContent() {
-        return null;
-    }
-
-    public AssertionStatus getAssertionStatus() {
-        return jdbcRequest.getAssertionStatus();
-    }
-
-    @Override
-    public ImageIcon getIcon() {
-        return jdbcRequest.getIcon();
+    public TestStep getTestStep() {
+        return this;
     }
 
     public Interface getInterface() {
         return null;
+    }
+
+    public TestAssertion cloneAssertion(TestAssertion source, String name) {
+        return assertionsSupport.cloneAssertion(source, name);
+    }
+
+    public Map<String, TestAssertion> getAssertions() {
+        return assertionsSupport.getAssertions();
     }
 
     public TestAssertion moveAssertion(int ix, int offset) {
@@ -457,26 +377,47 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         TestAssertion assertion = getAssertionAt(ix);
         try {
             return assertionsSupport.moveAssertion(ix, offset);
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
+        }
+        finally {
+            ((WsdlMessageAssertion)assertion).release();
             notifier.notifyChange();
         }
     }
 
-    public void removeAssertion(TestAssertion assertion) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+    public boolean isConvertColumnNamesToUpperCase() {
+        return jdbcRequestTestStepConfig.getConvertColumnNamesToUpperCase();
+    }
 
-        try {
-            assertionsSupport.removeAssertion((WsdlMessageAssertion) assertion);
+    public void setConvertColumnNamesToUpperCase(boolean sp) {
+        jdbcRequestTestStepConfig.setConvertColumnNamesToUpperCase(sp);
+    }
 
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
-            notifier.notifyChange();
+    public String getResponseContent() {
+        return getJdbcRequest().getResponse() == null ? "" : getJdbcRequest().getResponse().getContentAsString();
+    }
+
+    public WsdlMessageAssertion importAssertion(
+        WsdlMessageAssertion source, boolean overwrite, boolean createCopy, String newName
+    ) {
+        return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
+    }
+
+    public void propertyChange(PropertyChangeEvent arg0) {
+        if (arg0.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY) || arg0.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
+            if (getJdbcRequest().getResponse() != null) {
+                assertResponse(new WsdlTestRunContext(this));
+            }
         }
     }
 
-    public void removeAssertionsListener(AssertionsListener listener) {
-        assertionsSupport.removeAssertionsListener(listener);
+    @Override
+    public ImageIcon getIcon() {
+        return jdbcRequest.getIcon();
+    }
+
+    @Override
+    public void release() {
+        super.release();
     }
 
     public void assertResponse(SubmitContext context) {
@@ -495,7 +436,8 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
             }
 
             notifier.notifyChange();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -508,14 +450,34 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         return propertyHolderSupport.removeProperty(propertyName);
     }
 
+    public boolean renameProperty(String name, String newName) {
+        return PropertyExpansionUtils.renameProperty(propertyHolderSupport.getProperty(name), newName, getTestCase()) != null;
+    }
+
     public void removeAllProperties() {
         for (String propertyName : propertyHolderSupport.getPropertyNames()) {
             propertyHolderSupport.removeProperty(propertyName);
         }
     }
 
-    public boolean renameProperty(String name, String newName) {
-        return PropertyExpansionUtils.renameProperty(propertyHolderSupport.getProperty(name), newName, getTestCase()) != null;
+    @Override
+    public String[] getPropertyNames() {
+        return propertyHolderSupport.getPropertyNames();
+    }
+
+    @Override
+    public TestProperty getProperty(String name) {
+        return propertyHolderSupport.getProperty(name);
+    }
+
+    @Override
+    public String getPropertyValue(String name) {
+        return propertyHolderSupport.getPropertyValue(name);
+    }
+
+    @Override
+    public void setPropertyValue(String name, String value) {
+        propertyHolderSupport.setPropertyValue(name, value);
     }
 
     // FIXME Remove the overridden methods in TestPropertyHolder
@@ -526,13 +488,23 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
     //	}
 
     @Override
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        propertyHolderSupport.addTestPropertyListener(listener);
+    }
+
+    @Override
+    public void removeTestPropertyListener(TestPropertyListener listener) {
+        propertyHolderSupport.removeTestPropertyListener(listener);
+    }
+
+    @Override
     public Map<String, TestProperty> getProperties() {
         return propertyHolderSupport.getProperties();
     }
 
     @Override
-    public TestProperty getProperty(String name) {
-        return propertyHolderSupport.getProperty(name);
+    public boolean hasProperty(String name) {
+        return propertyHolderSupport.hasProperty(name);
     }
 
     @Override
@@ -551,32 +523,12 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
     }
 
     @Override
-    public String[] getPropertyNames() {
-        return propertyHolderSupport.getPropertyNames();
-    }
-
-    @Override
-    public String getPropertyValue(String name) {
-        return propertyHolderSupport.getPropertyValue(name);
-    }
-
-    @Override
-    public boolean hasProperty(String name) {
-        return propertyHolderSupport.hasProperty(name);
-    }
-
-    @Override
-    public void setPropertyValue(String name, String value) {
-        propertyHolderSupport.setPropertyValue(name, value);
+    public void moveProperty(String propertyName, int targetIndex) {
+        propertyHolderSupport.moveProperty(propertyName, targetIndex);
     }
 
     public void setPropertyValue(String name, Object value) {
         setPropertyValue(name, String.valueOf(value));
-    }
-
-    @Override
-    public void moveProperty(String propertyName, int targetIndex) {
-        propertyHolderSupport.moveProperty(propertyName, targetIndex);
     }
 
     public String getDriver() {
@@ -619,10 +571,6 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         notifyPropertyChanged("password", old, p);
     }
 
-    public static boolean isNeededPassword(String connStr) {
-        return !StringUtils.isNullOrEmpty(connStr) ? connStr.contains(PASS_TEMPLATE) : false;
-    }
-
     public boolean isStoredProcedure() {
         return jdbcRequestTestStepConfig.getStoredProcedure();
     }
@@ -633,10 +581,6 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         notifyPropertyChanged("password", old, sp);
     }
 
-    public void setConvertColumnNamesToUpperCase(boolean sp) {
-        jdbcRequestTestStepConfig.setConvertColumnNamesToUpperCase(sp);
-    }
-
     public JdbcRequest getJdbcRequest() {
         return jdbcRequest;
     }
@@ -645,24 +589,24 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         return jdbcRequestTestStepConfig.getQueryTimeout();
     }
 
-    public String getMaxRows() {
-        return jdbcRequestTestStepConfig.getMaxRows();
-    }
-
-    public String getFetchSize() {
-        return jdbcRequestTestStepConfig.getFetchSize();
-    }
-
     public void setQueryTimeout(String queryTimeout) {
         String old = getQueryTimeout();
         jdbcRequestTestStepConfig.setQueryTimeout(queryTimeout);
         notifyPropertyChanged("queryTimeout", old, queryTimeout);
     }
 
+    public String getMaxRows() {
+        return jdbcRequestTestStepConfig.getMaxRows();
+    }
+
     public void setMaxRows(String maxRows) {
         String old = getMaxRows();
         jdbcRequestTestStepConfig.setMaxRows(maxRows);
         notifyPropertyChanged("maxRows", old, maxRows);
+    }
+
+    public String getFetchSize() {
+        return jdbcRequestTestStepConfig.getFetchSize();
     }
 
     public void setFetchSize(String fetchSize) {
@@ -691,10 +635,6 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
         return jdbcRequest;
     }
 
-    public TestStep getTestStep() {
-        return this;
-    }
-
     @Override
     public void prepare(TestCaseRunner testRunner, TestCaseRunContext testRunContext) throws Exception {
         super.prepare(testRunner, testRunContext);
@@ -703,6 +643,68 @@ public class JdbcRequestTestStep extends WsdlTestStepWithProperties implements A
 
         for (TestAssertion assertion : jdbcRequest.getAssertionList()) {
             assertion.prepare(testRunner, testRunContext);
+        }
+    }
+
+    @Override
+    public boolean cancel() {
+        if (submit == null) {
+            return false;
+        }
+
+        submit.cancel();
+
+        return true;
+    }
+
+    @Override
+    public void resetConfigOnMove(TestStepConfig config) {
+        super.resetConfigOnMove(config);
+
+        jdbcRequestTestStepConfig = (JdbcRequestTestStepConfig)config.getConfig().changeType(JdbcRequestTestStepConfig.type);
+        propertyHolderSupport.resetPropertiesConfig(jdbcRequestTestStepConfig.getProperties());
+        // addResponseAsXmlVirtualProperty();
+        assertionsSupport.refresh();
+    }
+
+    @Override
+    public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
+        beforeSave();
+
+        TestStepConfig config = (TestStepConfig)getConfig().copy();
+        JdbcRequestTestStep result = (JdbcRequestTestStep)targetTestCase.addTestStep(config);
+
+        return result;
+    }
+
+    @Override
+    public String getDefaultSourcePropertyName() {
+        return "Response";
+    }
+
+    private class PropertyChangeNotifier {
+        private AssertionStatus oldStatus;
+        private ImageIcon oldIcon;
+
+        public PropertyChangeNotifier() {
+            oldStatus = getAssertionStatus();
+            oldIcon = getIcon();
+        }
+
+        public void notifyChange() {
+            AssertionStatus newStatus = getAssertionStatus();
+            ImageIcon newIcon = getIcon();
+
+            if (oldStatus != newStatus) {
+                notifyPropertyChanged(STATUS_PROPERTY, oldStatus, newStatus);
+            }
+
+            if (oldIcon != newIcon) {
+                notifyPropertyChanged(ICON_PROPERTY, oldIcon, getIcon());
+            }
+
+            oldStatus = newStatus;
+            oldIcon = newIcon;
         }
     }
 }

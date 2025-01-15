@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.scan;
@@ -48,17 +48,15 @@ public class GroovySecurityScan extends AbstractSecurityScanWithProperties {
     public static final String SCRIPT_PROPERTY = GroovySecurityScan.class.getName() + "@script";
     public static final String TYPE = "GroovySecurityScan";
     public static final String NAME = "Custom Script";
-    private GroovySecurityScanConfig groovyscc;
+    private static final String PARAMETERS_INITIALIZED = "parameterInitialized";
+    private final GroovySecurityScanConfig groovyscc;
     private Boolean hasNext = true;
     private Object scriptResult;
-    private SoapUIScriptEngine scriptEngine;
-
-    private StringToStringMap parameters;
+    private final SoapUIScriptEngine scriptEngine;
     // private TestStepResult stepResult;
 
     // private TestProperty response;
-
-    private static final String PARAMETERS_INITIALIZED = "parameterInitialized";
+    private StringToStringMap parameters;
 
     public GroovySecurityScan(TestStep testStep, SecurityScanConfig config, ModelItem parent, String icon) {
 
@@ -69,8 +67,9 @@ public class GroovySecurityScan extends AbstractSecurityScanWithProperties {
             groovyscc.getExecuteScript().setLanguage("groovy");
             groovyscc.getExecuteScript().setStringValue("");
             config.setConfig(groovyscc);
-        } else {
-            groovyscc = (GroovySecurityScanConfig) config.getConfig();
+        }
+        else {
+            groovyscc = (GroovySecurityScanConfig)config.getConfig();
             if (groovyscc.getExecuteScript() == null) {
                 groovyscc.setExecuteScript(ScriptConfig.Factory.newInstance());
                 groovyscc.getExecuteScript().setLanguage("groovy");
@@ -81,23 +80,6 @@ public class GroovySecurityScan extends AbstractSecurityScanWithProperties {
         scriptEngine = SoapUIScriptEngineRegistry.create(this);
 
         getExecutionStrategy().setImmutable(true);
-    }
-
-    @Override
-    protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
-        if (!context.hasProperty(PARAMETERS_INITIALIZED)) {
-            parameters = new StringToStringMap();
-            initParameters(parameters);
-            context.put(PARAMETERS_INITIALIZED, "true");
-            hasNext = true;
-        }
-
-        if (!hasNext) {
-            context.remove(PARAMETERS_INITIALIZED);
-            scriptEngine.clearVariables();
-        }
-
-        return hasNext;
     }
 
     private void initParameters(StringToStringMap parameters2) {
@@ -131,44 +113,76 @@ public class GroovySecurityScan extends AbstractSecurityScanWithProperties {
                             mynode.setValue(1, parameters.get(scp.getLabel()));
                         }
                         updateRequestProperty(testStep, scp.getName(), model.getXmlObject().toString());
-
-                    } else {
+                    }
+                    else {
                         updateRequestProperty(testStep, scp.getName(), parameters.get(scp.getLabel()));
                     }
-                } else if (parameters.containsKey(scp.getLabel()) && parameters.get(scp.getLabel()) == null) {// clears null values form parameters
+                }
+                else if (parameters.containsKey(scp.getLabel()) && parameters.get(scp.getLabel()) == null) {// clears null values form parameters
                     parameters.remove(scp.getLabel());
                 }
-
             }
 
-            MessageExchange message = (MessageExchange) testStep.run((TestCaseRunner) securityTestRunner, context);
+            MessageExchange message = (MessageExchange)testStep.run((TestCaseRunner)securityTestRunner, context);
             createMessageExchange(clearNullValues(parameters), message, context);
-
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             hasNext = false;
-        } finally {
-            // if( scriptResult != null )
-            // {
-            // getTestStep().getProperty( "Request" ).setValue( ( String
-            // )scriptResult );
-            //
-            // getTestStep().run( ( TestCaseRunner )securityTestRunner,
-            // ( TestCaseRunContext )securityTestRunner.getRunContext() );
-            // }
+        }
+    }
 
+    @Override
+    protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
+        if (!context.hasProperty(PARAMETERS_INITIALIZED)) {
+            parameters = new StringToStringMap();
+            initParameters(parameters);
+            context.put(PARAMETERS_INITIALIZED, "true");
+            hasNext = true;
         }
 
+        if (!hasNext) {
+            context.remove(PARAMETERS_INITIALIZED);
+            scriptEngine.clearVariables();
+        }
+
+        return hasNext;
+    }
+
+    @Override
+    public SecurityScanConfigPanel getComponent() {
+        return new GroovySecurityScanPanel(this);
+    }
+
+    @Override
+    public String getType() {
+        return TYPE;
+    }
+
+    @Override
+    public String getConfigName() {
+        return "Configuration for Custom Script Security Scan";
+    }
+
+    @Override
+    public String getConfigDescription() {
+        return "Configuration for Custom Script Security Scan";
+    }
+
+    @Override
+    public String getHelpURL() {
+        return "http://soapui.org/Security/script-custom-scan.html";
     }
 
     private Boolean castResultToBoolean(Object scriptResult2) {
         try {
-            hasNext = (Boolean) scriptResult2;
+            hasNext = (Boolean)scriptResult2;
             if (hasNext == null) {
                 hasNext = false;
                 SoapUI.ensureGroovyLog().error("You must return Boolean value from groovy script!");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             hasNext = false;
             SoapUI.ensureGroovyLog().error("You must return Boolean value from groovy script!");
         }
@@ -187,7 +201,10 @@ public class GroovySecurityScan extends AbstractSecurityScanWithProperties {
 
     private void updateRequestProperty(TestStep testStep, String propertyName, String propertyValue) {
         testStep.getProperty(propertyName).setValue(propertyValue);
+    }
 
+    public String getExecuteScript() {
+        return groovyscc.getExecuteScript().getStringValue();
     }
 
     public void setExecuteScript(String script) {
@@ -195,34 +212,4 @@ public class GroovySecurityScan extends AbstractSecurityScanWithProperties {
         groovyscc.getExecuteScript().setStringValue(script);
         notifyPropertyChanged(SCRIPT_PROPERTY, old, script);
     }
-
-    public String getExecuteScript() {
-        return groovyscc.getExecuteScript().getStringValue();
-    }
-
-    @Override
-    public SecurityScanConfigPanel getComponent() {
-        return new GroovySecurityScanPanel(this);
-    }
-
-    @Override
-    public String getType() {
-        return TYPE;
-    }
-
-    @Override
-    public String getConfigDescription() {
-        return "Configuration for Custom Script Security Scan";
-    }
-
-    @Override
-    public String getConfigName() {
-        return "Configuration for Custom Script Security Scan";
-    }
-
-    @Override
-    public String getHelpURL() {
-        return "http://soapui.org/Security/script-custom-scan.html";
-    }
-
 }

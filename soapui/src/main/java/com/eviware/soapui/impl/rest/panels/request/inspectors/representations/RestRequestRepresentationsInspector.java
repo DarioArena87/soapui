@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.inspectors.representations;
@@ -29,18 +29,17 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.xml.XmlUtils;
 import org.apache.xmlbeans.XmlCursor;
 
-import javax.swing.JCheckBox;
+import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 public class RestRequestRepresentationsInspector extends AbstractRestRepresentationsInspector implements SubmitListener {
-    private JCheckBox enableRecordingCheckBox;
     public static final String RECORD_REQUEST_REPRESENTATIONS = "RecordRequestRepresentations";
-    private RestRequest request;
+    private JCheckBox enableRecordingCheckBox;
+    private final RestRequest request;
 
     protected RestRequestRepresentationsInspector(RestRequest request) {
-        super(request.getRestMethod(), "Representations", "Request Representations",
-                new RestRepresentation.Type[]{RestRepresentation.Type.REQUEST});
+        super(request.getRestMethod(), "Representations", "Request Representations", new RestRepresentation.Type[]{RestRepresentation.Type.REQUEST});
 
         request.addSubmitListener(this);
         this.request = request;
@@ -55,9 +54,9 @@ public class RestRequestRepresentationsInspector extends AbstractRestRepresentat
         XmlBeansSettingsImpl settings = request.getSettings();
         if (settings.isSet(RECORD_REQUEST_REPRESENTATIONS)) {
             enableRecordingCheckBox.setSelected(settings.getBoolean(RECORD_REQUEST_REPRESENTATIONS));
-        } else {
-            enableRecordingCheckBox.setSelected(getMethod().getResource() == null
-                    || getMethod().getResource().getService().isGenerated());
+        }
+        else {
+            enableRecordingCheckBox.setSelected(getMethod().getResource() == null || getMethod().getResource().getService().isGenerated());
         }
 
         enableRecordingCheckBox.addItemListener(new ItemListener() {
@@ -71,8 +70,13 @@ public class RestRequestRepresentationsInspector extends AbstractRestRepresentat
         return true;
     }
 
+    public void release() {
+        super.release();
+        request.removeSubmitListener(this);
+    }
+
     public void afterSubmit(Submit submit, SubmitContext context) {
-        HttpResponse response = (HttpResponse) submit.getResponse();
+        HttpResponse response = (HttpResponse)submit.getResponse();
         if (response != null && enableRecordingCheckBox.isSelected()) {
             extractRepresentation(response);
         }
@@ -109,14 +113,10 @@ public class RestRequestRepresentationsInspector extends AbstractRestRepresentat
                     XmlCursor cursor = XmlUtils.createXmlObject(xmlContent).newCursor();
                     cursor.toFirstChild();
                     representation.setElement(cursor.getName());
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                 }
             }
         }
-    }
-
-    public void release() {
-        super.release();
-        request.removeSubmitListener(this);
     }
 }

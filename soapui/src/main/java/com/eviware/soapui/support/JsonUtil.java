@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -48,17 +48,15 @@ import java.util.Date;
  */
 public class JsonUtil {
 
-    public static boolean REMOVE_D_ELEMENT = true;
     private static final String WHILE_1 = "while(1);";
     private static final String CLOSING_BRACKETS_WITH_COMMA = ")]}',";
     private static final String CLOSING_BRACKETS = ")]}'";
     private static final String EMPTY_FOR = "for(;;);";
     private static final String D_PREFIXED = "{\"d\":";
     private static final String[] VULNERABILITY_TOKENS = {WHILE_1, CLOSING_BRACKETS_WITH_COMMA, CLOSING_BRACKETS, EMPTY_FOR};
-
     private static final String DEFAULT_INDENT = "   ";
     private final static Logger log = LogManager.getLogger(JsonUtil.class);
-
+    public static boolean REMOVE_D_ELEMENT = true;
     private static ObjectMapper mapper;
     private static JacksonJsonNodeJsonProvider defaultNodeProvider;
     private static Configuration configuration;
@@ -76,36 +74,12 @@ public class JsonUtil {
         return configuration;
     }
 
-    private static void initStaticVariables() {
-        mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
-                .enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
-        mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-        mapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
-        mapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
-        mapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
-        mapper.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Date.class, new DateObjectSerializer());
-        mapper.registerModule(module);
-        defaultNodeProvider = new JacksonJsonProvider(mapper);
-        configuration = Configuration.builder()
-                .jsonProvider(defaultNodeProvider)
-                .mappingProvider(new JacksonMappingProvider(mapper))
-                .build();
-        DefaultPrettyPrinter.Indenter indenter =
-                new DefaultIndenter(DEFAULT_INDENT, DefaultIndenter.SYS_LF);
-        printer = new DefaultPrettyPrinter();
-        printer.indentObjectsWith(indenter);
-        printer.indentArraysWith(indenter);
-    }
-
     public static boolean isValidJson(String value) {
         try {
             JSON json = new JsonSlurper().parseText(value);
             return json != null && !(json instanceof JSONNull);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
     }
@@ -128,28 +102,18 @@ public class JsonUtil {
         try {
             new JsonSlurper().parseText(content);
             return true;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
-    }
-
-
-    public JSON parseTrimmedText(String text) {
-        if (text == null) {
-            return null;
-        }
-        String trimmedText = text.trim();
-        if (trimmedText.startsWith(WHILE_1)) {
-            trimmedText = trimmedText.substring(WHILE_1.length()).trim();
-        }
-        return JSONSerializer.toJSON(trimmedText);
     }
 
     public static String format(Object json) {
         if (json instanceof JsonNode) {
             try {
                 return mapper.writer(printer).writeValueAsString(json);
-            } catch (JsonProcessingException e) {
+            }
+            catch (JsonProcessingException e) {
                 log.error(e.getMessage(), e);
             }
         }
@@ -185,6 +149,37 @@ public class JsonUtil {
         return getJson(value, mapper);
     }
 
+    public JSON parseTrimmedText(String text) {
+        if (text == null) {
+            return null;
+        }
+        String trimmedText = text.trim();
+        if (trimmedText.startsWith(WHILE_1)) {
+            trimmedText = trimmedText.substring(WHILE_1.length()).trim();
+        }
+        return JSONSerializer.toJSON(trimmedText);
+    }
+
+    private static void initStaticVariables() {
+        mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
+        mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        mapper.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
+        mapper.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+        mapper.enable(JsonParser.Feature.ALLOW_COMMENTS);
+        mapper.setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Date.class, new DateObjectSerializer());
+        mapper.registerModule(module);
+        defaultNodeProvider = new JacksonJsonProvider(mapper);
+        configuration = Configuration.builder().jsonProvider(defaultNodeProvider).mappingProvider(new JacksonMappingProvider(mapper)).build();
+        DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter(DEFAULT_INDENT, DefaultIndenter.SYS_LF);
+        printer = new DefaultPrettyPrinter();
+        printer.indentObjectsWith(indenter);
+        printer.indentArraysWith(indenter);
+    }
+
     private static JsonNode getJson(String value, ObjectMapper mapper) throws IOException {
         JsonNode json = mapper.readTree(value);
         return (json instanceof NullNode) || (json instanceof MissingNode) ? null : json;
@@ -194,21 +189,6 @@ public class JsonUtil {
 
         public JacksonJsonProvider(ObjectMapper objectMapper) {
             super(objectMapper);
-        }
-
-        @Override
-        public void setArrayIndex(Object array, int index, Object newValue) {
-            if (!isArray(array)) {
-                throw new UnsupportedOperationException();
-            } else {
-                ArrayNode arrayNode = (ArrayNode) array;
-                removeDefaultNullNode(arrayNode);
-                if (index == arrayNode.size()) {
-                    arrayNode.add(createJsonElement(newValue));
-                } else {
-                    arrayNode.set(index, createJsonElement(newValue));
-                }
-            }
         }
 
         private void removeDefaultNullNode(ArrayNode node) {
@@ -225,27 +205,45 @@ public class JsonUtil {
         }
 
         @Override
+        public Object unwrap(Object o) {
+            if (o == null || o instanceof NullPathNode) {
+                return null;
+            }
+            else {
+                return super.unwrap(o);
+            }
+        }
+
+        @Override
         public Object getArrayIndex(Object obj, int idx) {
             Object arrayElement = super.getArrayIndex(obj, idx);
             return arrayElement != null ? arrayElement : new NullPathNode();
         }
 
-        private JsonNode createJsonElement(Object o) {
-            if (o != null) {
-                return o instanceof JsonNode ? (JsonNode) o : this.objectMapper.valueToTree(o);
-            } else {
-                return null;
+        @Override
+        public void setArrayIndex(Object array, int index, Object newValue) {
+            if (!isArray(array)) {
+                throw new UnsupportedOperationException();
+            }
+            else {
+                ArrayNode arrayNode = (ArrayNode)array;
+                removeDefaultNullNode(arrayNode);
+                if (index == arrayNode.size()) {
+                    arrayNode.add(createJsonElement(newValue));
+                }
+                else {
+                    arrayNode.set(index, createJsonElement(newValue));
+                }
             }
         }
 
-        @Override
-        public Object unwrap(Object o) {
-            if (o == null || o instanceof NullPathNode) {
+        private JsonNode createJsonElement(Object o) {
+            if (o != null) {
+                return o instanceof JsonNode ? (JsonNode)o : objectMapper.valueToTree(o);
+            }
+            else {
                 return null;
-            } else {
-                return super.unwrap(o);
             }
         }
     }
-
 }

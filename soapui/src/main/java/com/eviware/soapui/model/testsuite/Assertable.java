@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.testsuite;
@@ -30,45 +30,47 @@ import java.util.Map;
  */
 
 public interface Assertable {
-    public TestAssertion addAssertion(String selection);
+    TestAssertion addAssertion(String selection);
 
-    public void addAssertionsListener(AssertionsListener listener);
+    void addAssertionsListener(AssertionsListener listener);
 
-    public int getAssertionCount();
+    int getAssertionCount();
 
-    public TestAssertion getAssertionAt(int c);
+    TestAssertion getAssertionAt(int c);
 
-    public void removeAssertionsListener(AssertionsListener listener);
+    void removeAssertionsListener(AssertionsListener listener);
 
-    public void removeAssertion(TestAssertion assertion);
+    void removeAssertion(TestAssertion assertion);
 
-    public AssertionStatus getAssertionStatus();
+    AssertionStatus getAssertionStatus();
 
-    public enum AssertionStatus {
-        UNKNOWN, VALID, FAILED
+    String getAssertableContentAsXml();
+
+    String getAssertableContent();
+
+    String getDefaultAssertableContent();
+
+    AssertableType getAssertableType();
+
+    List<TestAssertion> getAssertionList();
+
+    TestAssertion getAssertionByName(String name);
+
+    ModelItem getModelItem();
+
+    TestStep getTestStep();
+
+    Interface getInterface();
+
+    TestAssertion cloneAssertion(TestAssertion source, String name);
+
+    Map<String, TestAssertion> getAssertions();
+
+    TestAssertion moveAssertion(int ix, int offset);
+
+    enum AssertionStatus {
+        UNKNOWN,
+        VALID,
+        FAILED
     }
-
-    public String getAssertableContentAsXml();
-
-    public String getAssertableContent();
-
-    public String getDefaultAssertableContent();
-
-    public AssertableType getAssertableType();
-
-    public List<TestAssertion> getAssertionList();
-
-    public TestAssertion getAssertionByName(String name);
-
-    public ModelItem getModelItem();
-
-    public TestStep getTestStep();
-
-    public Interface getInterface();
-
-    public TestAssertion cloneAssertion(TestAssertion source, String name);
-
-    public Map<String, TestAssertion> getAssertions();
-
-    public TestAssertion moveAssertion(int ix, int offset);
 }

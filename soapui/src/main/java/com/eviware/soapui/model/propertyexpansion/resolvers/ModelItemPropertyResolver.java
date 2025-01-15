@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.propertyexpansion.resolvers;
@@ -51,21 +51,21 @@ public class ModelItemPropertyResolver implements PropertyResolver {
 
         ModelItem modelItem = context.getModelItem();
         if (modelItem instanceof WsdlLoadTest) {
-            modelItem = ((WsdlLoadTest) modelItem).getTestCase();
-        } else if (modelItem instanceof TestRequest) {
-            modelItem = ((TestRequest) modelItem).getTestStep();
-        } else if (modelItem instanceof AbstractMockResponse
-                && ((AbstractMockResponse) modelItem).getMockOperation().getMockService() instanceof WsdlTestMockService) {
-            modelItem = ((WsdlTestMockService) ((AbstractMockResponse) modelItem).getMockOperation().getMockService())
-                    .getMockResponseStep();
+            modelItem = ((WsdlLoadTest)modelItem).getTestCase();
+        }
+        else if (modelItem instanceof TestRequest) {
+            modelItem = ((TestRequest)modelItem).getTestStep();
+        }
+        else if (modelItem instanceof AbstractMockResponse && ((AbstractMockResponse)modelItem).getMockOperation().getMockService() instanceof WsdlTestMockService) {
+            modelItem = ((WsdlTestMockService)((AbstractMockResponse)modelItem).getMockOperation().getMockService()).getMockResponseStep();
         }
         if (modelItem instanceof SecurityTest) {
-            modelItem = ((SecurityTest) modelItem).getTestCase();
+            modelItem = ((SecurityTest)modelItem).getTestCase();
         }
 
         if (modelItem instanceof WsdlTestStep || modelItem instanceof WsdlTestCase) {
-            WsdlTestStep testStep = (WsdlTestStep) (modelItem instanceof WsdlTestStep ? modelItem : null);
-            WsdlTestCase testCase = (WsdlTestCase) (testStep == null ? modelItem : testStep.getTestCase());
+            WsdlTestStep testStep = (WsdlTestStep)(modelItem instanceof WsdlTestStep ? modelItem : null);
+            WsdlTestCase testCase = (WsdlTestCase)(testStep == null ? modelItem : testStep.getTestCase());
 
             int sepIx = pe.indexOf(PropertyExpansion.PROPERTY_SEPARATOR);
             Object property = null;
@@ -90,13 +90,13 @@ public class ModelItemPropertyResolver implements PropertyResolver {
                             property = p.getValue();
                         }
                     }
-                } else {
+                }
+                else {
                     property = context.getProperty(name);
                 }
 
                 if (property != null && xpath != null) {
-                    property = ResolverUtils.extractXPathPropertyValue(property,
-                            PropertyExpander.expandProperties(context, xpath));
+                    property = ResolverUtils.extractXPathPropertyValue(property, PropertyExpander.expandProperties(context, xpath));
                 }
             }
 
@@ -120,51 +120,64 @@ public class ModelItemPropertyResolver implements PropertyResolver {
         SecurityTest securityTest = null;
 
         if (modelItem instanceof WsdlTestStep) {
-            testStep = (WsdlTestStep) modelItem;
+            testStep = (WsdlTestStep)modelItem;
             testCase = testStep.getTestCase();
             testSuite = testCase.getTestSuite();
             project = testSuite.getProject();
-        } else if (modelItem instanceof WsdlTestCase) {
-            testCase = (WsdlTestCase) modelItem;
+        }
+        else if (modelItem instanceof WsdlTestCase) {
+            testCase = (WsdlTestCase)modelItem;
             testSuite = testCase.getTestSuite();
             project = testSuite.getProject();
-        } else if (modelItem instanceof WsdlLoadTest) {
-            testCase = ((WsdlLoadTest) modelItem).getTestCase();
+        }
+        else if (modelItem instanceof WsdlLoadTest) {
+            testCase = ((WsdlLoadTest)modelItem).getTestCase();
             testSuite = testCase.getTestSuite();
             project = testSuite.getProject();
-        } else if (modelItem instanceof WsdlTestSuite) {
-            testSuite = (WsdlTestSuite) modelItem;
+        }
+        else if (modelItem instanceof WsdlTestSuite) {
+            testSuite = (WsdlTestSuite)modelItem;
             project = testSuite.getProject();
-        } else if (modelItem instanceof WsdlInterface) {
-            project = ((WsdlInterface) modelItem).getProject();
-        } else if (modelItem instanceof WsdlProject) {
-            project = (WsdlProject) modelItem;
-        } else if (modelItem instanceof WsdlMockService) {
-            mockService = (WsdlMockService) modelItem;
+        }
+        else if (modelItem instanceof WsdlInterface) {
+            project = ((WsdlInterface)modelItem).getProject();
+        }
+        else if (modelItem instanceof WsdlProject) {
+            project = (WsdlProject)modelItem;
+        }
+        else if (modelItem instanceof WsdlMockService) {
+            mockService = (WsdlMockService)modelItem;
             project = mockService.getProject();
-        } else if (modelItem instanceof TestRequest) {
-            testStep = ((TestRequest) modelItem).getTestStep();
+        }
+        else if (modelItem instanceof TestRequest) {
+            testStep = ((TestRequest)modelItem).getTestStep();
             testCase = testStep.getTestCase();
             testSuite = testCase.getTestSuite();
             project = testSuite.getProject();
-        } else if (modelItem instanceof AbstractHttpRequestInterface<?>) {
-            project = ((AbstractHttpRequest<?>) modelItem).getOperation().getInterface().getProject();
-        } else if (modelItem instanceof RestResource) {
+        }
+        else if (modelItem instanceof AbstractHttpRequestInterface<?>) {
+            project = ((AbstractHttpRequest<?>)modelItem).getOperation().getInterface().getProject();
+        }
+        else if (modelItem instanceof RestResource) {
             project = modelItem.getProject();
-        } else if (modelItem instanceof WsdlMockOperation) {
-            mockService = ((WsdlMockOperation) modelItem).getMockService();
+        }
+        else if (modelItem instanceof WsdlMockOperation) {
+            mockService = ((WsdlMockOperation)modelItem).getMockService();
             project = mockService.getProject();
-        } else if (modelItem instanceof AbstractMockResponse) {
-            mockResponse = (AbstractMockResponse) modelItem;
+        }
+        else if (modelItem instanceof AbstractMockResponse) {
+            mockResponse = (AbstractMockResponse)modelItem;
             mockService = mockResponse.getMockOperation().getMockService();
             project = mockService.getProject();
-        } else if (modelItem instanceof SecurityTest) {
-            securityTest = (SecurityTest) modelItem;
-            testCase = ((SecurityTest) modelItem).getTestCase();
+        }
+        else if (modelItem instanceof SecurityTest) {
+            securityTest = (SecurityTest)modelItem;
+            testCase = ((SecurityTest)modelItem).getTestCase();
             testSuite = testCase.getTestSuite();
             project = testSuite.getProject();
-        } else if (modelItem instanceof OAuth2Profile) {
-            project = ((WsdlProject) modelItem.getParent());
+        }
+        else if (modelItem instanceof OAuth2Profile) {
+            project = ((WsdlProject)modelItem.getParent());
         }
 
         // no project -> nothing
@@ -173,38 +186,32 @@ public class ModelItemPropertyResolver implements PropertyResolver {
         }
 
         // explicit item reference?
-        String result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.PROJECT_REFERENCE, project,
-                context, globalOverride);
+        String result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.PROJECT_REFERENCE, project, context, globalOverride);
         if (result != null) {
             return result;
         }
 
-        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.TESTSUITE_REFERENCE, testSuite, context,
-                globalOverride);
+        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.TESTSUITE_REFERENCE, testSuite, context, globalOverride);
         if (result != null) {
             return result;
         }
 
-        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.TESTCASE_REFERENCE, testCase, context,
-                globalOverride);
+        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.TESTCASE_REFERENCE, testCase, context, globalOverride);
         if (result != null) {
             return result;
         }
 
-        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.MOCKSERVICE_REFERENCE, mockService,
-                context, globalOverride);
+        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.MOCKSERVICE_REFERENCE, mockService, context, globalOverride);
         if (result != null) {
             return result;
         }
 
-        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.MOCKRESPONSE_REFERENCE, mockResponse,
-                context, globalOverride);
+        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.MOCKRESPONSE_REFERENCE, mockResponse, context, globalOverride);
         if (result != null) {
             return result;
         }
 
-        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.SECURITYTEST_REFERENCE, securityTest,
-                context, globalOverride);
+        result = ResolverUtils.checkForExplicitReference(pe, PropertyExpansion.SECURITYTEST_REFERENCE, securityTest, context, globalOverride);
         if (result != null) {
             return result;
         }

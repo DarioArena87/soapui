@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * $Header: /home/jerenkrantz/tmp/commons/commons-convert/cvs/home/cvs/jakarta-commons//httpclient/src/java/org/apache/commons/httpclient/HttpClientError.java,v 1.4 2004/05/13 04:03:25 mbecke Exp $
  * $Revision: 480424 $
  * $Date: 2006-11-29 06:56:49 +0100 (Wed, 29 Nov 2006) $
@@ -57,7 +57,6 @@ public class HttpClientError extends Error {
      * Creates a new HttpClientError with a <tt>null</tt> detail message.
      */
     public HttpClientError() {
-        super();
     }
 
     /**
@@ -68,5 +67,4 @@ public class HttpClientError extends Error {
     public HttpClientError(String message) {
         super(message);
     }
-
 }

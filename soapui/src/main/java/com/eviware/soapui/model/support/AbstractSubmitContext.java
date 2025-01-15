@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.support;
@@ -38,12 +38,12 @@ import java.util.Set;
  */
 
 public abstract class AbstractSubmitContext<T extends ModelItem> implements SubmitContext, Map<String, Object> {
-    private DefaultPropertyExpansionContext properties;
     private final T modelItem;
+    private DefaultPropertyExpansionContext properties;
 
     public AbstractSubmitContext(T modelItem) {
         this.modelItem = modelItem;
-        this.properties = new DefaultPropertyExpansionContext(modelItem);
+        properties = new DefaultPropertyExpansionContext(modelItem);
 
         setProperty(TestCaseRunContext.RUN_COUNT, 0);
         setProperty(TestCaseRunContext.THREAD_INDEX, 0);
@@ -59,10 +59,6 @@ public abstract class AbstractSubmitContext<T extends ModelItem> implements Subm
 
             this.properties.putAll(properties);
         }
-    }
-
-    public T getModelItem() {
-        return modelItem;
     }
 
     public Object getProperty(String name, TestStep testStep, WsdlTestCase testCase) {
@@ -101,16 +97,36 @@ public abstract class AbstractSubmitContext<T extends ModelItem> implements Subm
         return null;
     }
 
-    public Object removeProperty(String name) {
-        return properties == null ? null : properties.remove(name);
-    }
-
     public void setProperty(String name, Object value) {
         if (properties == null) {
             properties = new DefaultPropertyExpansionContext(modelItem);
         }
 
         properties.put(name, value);
+    }
+
+    public boolean hasProperty(String name) {
+        return properties != null && properties.containsKey(name);
+    }
+
+    public Object removeProperty(String name) {
+        return properties == null ? null : properties.remove(name);
+    }
+
+    public String[] getPropertyNames() {
+        return properties.keySet().toArray(new String[properties.size()]);
+    }
+
+    public T getModelItem() {
+        return modelItem;
+    }
+
+    public String expand(String content) {
+        return PropertyExpander.expandProperties(this, content);
+    }
+
+    public StringToObjectMap getProperties() {
+        return properties;
     }
 
     public void setProperty(String name, Object value, TestCase testCase) {
@@ -134,22 +150,34 @@ public abstract class AbstractSubmitContext<T extends ModelItem> implements Subm
         properties.put(name, value);
     }
 
-    public boolean hasProperty(String name) {
-        return properties == null ? false : properties.containsKey(name);
-    }
-
     public void resetProperties() {
         if (properties != null) {
             properties.clear();
         }
     }
 
-    public void clear() {
-        properties.clear();
+    public int hashCode() {
+        return properties.hashCode();
+    }
+
+    public boolean equals(Object o) {
+        return properties.equals(o);
     }
 
     public Object clone() {
         return properties.clone();
+    }
+
+    public String toString() {
+        return properties.toString();
+    }
+
+    public int size() {
+        return properties.size();
+    }
+
+    public boolean isEmpty() {
+        return properties.isEmpty();
     }
 
     public boolean containsKey(Object key) {
@@ -160,63 +188,35 @@ public abstract class AbstractSubmitContext<T extends ModelItem> implements Subm
         return properties.containsValue(value);
     }
 
-    public Set<Entry<String, Object>> entrySet() {
-        return properties.entrySet();
-    }
-
-    public boolean equals(Object o) {
-        return properties.equals(o);
-    }
-
     public Object get(Object key) {
         return properties.get(key);
-    }
-
-    public int hashCode() {
-        return properties.hashCode();
-    }
-
-    public boolean isEmpty() {
-        return properties.isEmpty();
-    }
-
-    public Set<String> keySet() {
-        return properties.keySet();
     }
 
     public Object put(String key, Object value) {
         return properties.put(key, value);
     }
 
-    public void putAll(Map<? extends String, ? extends Object> m) {
-        properties.putAll(m);
-    }
-
     public Object remove(Object key) {
         return properties.remove(key);
     }
 
-    public int size() {
-        return properties.size();
+    public void putAll(Map<? extends String, ? extends Object> m) {
+        properties.putAll(m);
     }
 
-    public String toString() {
-        return properties.toString();
+    public void clear() {
+        properties.clear();
+    }
+
+    public Set<String> keySet() {
+        return properties.keySet();
     }
 
     public Collection<Object> values() {
         return properties.values();
     }
 
-    public StringToObjectMap getProperties() {
-        return properties;
-    }
-
-    public String[] getPropertyNames() {
-        return properties.keySet().toArray(new String[properties.size()]);
-    }
-
-    public String expand(String content) {
-        return PropertyExpander.expandProperties(this, content);
+    public Set<Entry<String, Object>> entrySet() {
+        return properties.entrySet();
     }
 }

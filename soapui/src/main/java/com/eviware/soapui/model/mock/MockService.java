@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.mock;
@@ -31,36 +31,35 @@ import java.util.List;
  * @author ole.matzura
  */
 
-public interface MockService extends TestModelItem, Releasable, AnimatableItem, HasHelpUrl, MockServer, MockServiceScripts
-{
-    public final static String PATH_PROPERTY = MockService.class.getName() + "@path";
-    public final static String PORT_PROPERTY = MockService.class.getName() + "@port";
+public interface MockService extends TestModelItem, Releasable, AnimatableItem, HasHelpUrl, MockServer, MockServiceScripts {
+    String PATH_PROPERTY = MockService.class.getName() + "@path";
+    String PORT_PROPERTY = MockService.class.getName() + "@port";
 
-    public WsdlProject getProject();
+    WsdlProject getProject();
 
-    public List<MockOperation> getMockOperationList();
+    List<MockOperation> getMockOperationList();
 
-    public int getMockOperationCount();
+    int getMockOperationCount();
 
-    public MockOperation getMockOperationAt(int index);
+    MockOperation getMockOperationAt(int index);
 
-    public MockOperation getMockOperationByName(String name);
+    MockOperation getMockOperationByName(String name);
 
-    public MockOperation addNewMockOperation(Operation operation);
+    MockOperation addNewMockOperation(Operation operation);
 
-    public void removeMockOperation(MockOperation mockOperation);
+    void removeMockOperation(MockOperation mockOperation);
 
-    public void addMockServiceListener(MockServiceListener listener);
+    void addMockServiceListener(MockServiceListener listener);
 
-    public void removeMockServiceListener(MockServiceListener listener);
+    void removeMockServiceListener(MockServiceListener listener);
 
-    public void fireMockOperationAdded(MockOperation mockOperation);
+    void fireMockOperationAdded(MockOperation mockOperation);
 
-    public void fireMockOperationRemoved(MockOperation mockOperation);
+    void fireMockOperationRemoved(MockOperation mockOperation);
 
-    public void fireMockResponseAdded(MockResponse mockResponse);
+    void fireMockResponseAdded(MockResponse mockResponse);
 
-    public void fireMockResponseRemoved(MockResponse mockResponse);
+    void fireMockResponseRemoved(MockResponse mockResponse);
 
-    public String getStringID();
+    String getStringID();
 }

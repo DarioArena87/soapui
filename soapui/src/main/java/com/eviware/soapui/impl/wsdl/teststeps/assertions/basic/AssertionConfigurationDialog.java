@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.basic;
@@ -30,19 +30,8 @@ import com.jgoodies.forms.builder.ButtonBarBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -54,13 +43,13 @@ public class AssertionConfigurationDialog {
     private final static Logger log = LogManager.getLogger(AssertionConfigurationDialog.class);
 
     protected JDialog configurationDialog;
-    private JCheckBox allowWildcardsCheckBox;
-    private JCheckBox ignoreNamespaceDifferencesCheckBox;
-    private JCheckBox ignoreCommentsCheckBox;
     protected JTextArea pathArea;
     protected JTextArea contentArea;
     protected AbstractXmlContainsAssertion assertion;
     protected boolean configureResult;
+    private JCheckBox allowWildcardsCheckBox;
+    private JCheckBox ignoreNamespaceDifferencesCheckBox;
+    private JCheckBox ignoreCommentsCheckBox;
 
     public AssertionConfigurationDialog(AbstractXmlContainsAssertion assertion) {
         this.assertion = assertion;
@@ -78,13 +67,12 @@ public class AssertionConfigurationDialog {
     }
 
     protected void initializeFieldsWithValuesFromAssertion() {
-        pathArea.setText(this.assertion.getPath());
-        contentArea.setText(this.assertion.getExpectedContent());
-        allowWildcardsCheckBox.setSelected(this.assertion.isAllowWildcards());
-        ignoreNamespaceDifferencesCheckBox.setSelected(this.assertion.isIgnoreNamespaceDifferences());
-        ignoreCommentsCheckBox.setSelected(this.assertion.isIgnoreComments());
+        pathArea.setText(assertion.getPath());
+        contentArea.setText(assertion.getExpectedContent());
+        allowWildcardsCheckBox.setSelected(assertion.isAllowWildcards());
+        ignoreNamespaceDifferencesCheckBox.setSelected(assertion.isIgnoreNamespaceDifferences());
+        ignoreCommentsCheckBox.setSelected(assertion.isIgnoreComments());
     }
-
 
     public String getHelpURL() {
         return HelpUrls.ASSERTION_JSON_CONTENT;
@@ -105,8 +93,7 @@ public class AssertionConfigurationDialog {
         });
 
         JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.add(UISupport.buildDescription(assertion.getPathAreaTitle(), assertion.getPathAreaDescription(),
-                null), BorderLayout.NORTH);
+        contentPanel.add(UISupport.buildDescription(assertion.getPathAreaTitle(), assertion.getPathAreaDescription(), null), BorderLayout.NORTH);
 
         JSplitPane splitPane = UISupport.createVerticalSplit();
 
@@ -132,7 +119,7 @@ public class AssertionConfigurationDialog {
 
         ButtonBarBuilder builder = new ButtonBarBuilder();
 
-        ShowOnlineHelpAction showOnlineHelpAction = new ShowOnlineHelpAction(this.getHelpURL());
+        ShowOnlineHelpAction showOnlineHelpAction = new ShowOnlineHelpAction(getHelpURL());
         builder.addFixed(UISupport.createToolbarButton(showOnlineHelpAction));
         builder.addGlue();
 
@@ -256,7 +243,7 @@ public class AssertionConfigurationDialog {
     public class DeclareNamespacesFromCurrentAction extends AbstractAction {
         public DeclareNamespacesFromCurrentAction() {
             super("Declare");
-            putValue(Action.SHORT_DESCRIPTION, "Add namespace declaration from current message to " + assertion.getQueryType() + " expression");
+            putValue(SHORT_DESCRIPTION, "Add namespace declaration from current message to " + assertion.getQueryType() + " expression");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -264,11 +251,12 @@ public class AssertionConfigurationDialog {
                 String content = assertion.getAssertable().getAssertableContentAsXml();
                 if (content != null && content.trim().length() > 0) {
                     pathArea.setText(XmlUtils.declareXPathNamespaces(content) + pathArea.getText());
-                } else if (UISupport.confirm("Declare namespaces from schema instead?", "Missing Response")) {
-                    pathArea.setText(XmlUtils.declareXPathNamespaces((WsdlInterface) assertion.getAssertable().getInterface())
-                            + pathArea.getText());
                 }
-            } catch (Exception e) {
+                else if (UISupport.confirm("Declare namespaces from schema instead?", "Missing Response")) {
+                    pathArea.setText(XmlUtils.declareXPathNamespaces((WsdlInterface)assertion.getAssertable().getInterface()) + pathArea.getText());
+                }
+            }
+            catch (Exception e) {
                 log.error(e.getMessage());
             }
         }
@@ -277,8 +265,7 @@ public class AssertionConfigurationDialog {
     public class TestPathAction extends AbstractAction {
         public TestPathAction() {
             super("Test");
-            putValue(Action.SHORT_DESCRIPTION,
-                    "Tests the " + assertion.getQueryType() + " expression for the current message against the Expected Content field");
+            putValue(SHORT_DESCRIPTION, "Tests the " + assertion.getQueryType() + " expression for the current message against the Expected Content field");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -293,7 +280,7 @@ public class AssertionConfigurationDialog {
             try {
                 String assertableContent = assertion.getAssertable().getAssertableContent();
                 if (XPathContainsAssertion.ID.equals(assertion.getConfig().getType()) //Backward compatibility
-                        || (!JsonUtil.seemsToBeJson(assertableContent))) {
+                    || (!JsonUtil.seemsToBeJson(assertableContent))) {
                     assertableContent = assertion.getAssertable().getAssertableContentAsXml();
                 }
                 if (assertableContent == null) {
@@ -301,10 +288,10 @@ public class AssertionConfigurationDialog {
                     setAssertionParameters(oldPath, oldContent, oldAllowWildcards);
                     return;
                 }
-                String msg = assertion.assertContent(assertableContent,
-                        new WsdlTestRunContext(assertion.getAssertable().getTestStep()), "Response");
+                String msg = assertion.assertContent(assertableContent, new WsdlTestRunContext(assertion.getAssertable().getTestStep()), "Response");
                 UISupport.showInfoMessage(msg, "Success");
-            } catch (AssertionException e) {
+            }
+            catch (AssertionException e) {
                 UISupport.showErrorMessage(e.getMessage());
             }
             setAssertionParameters(oldPath, oldContent, oldAllowWildcards);
@@ -320,8 +307,7 @@ public class AssertionConfigurationDialog {
     public class SelectFromCurrentAction extends AbstractAction {
         public SelectFromCurrentAction() {
             super("Select from current");
-            putValue(Action.SHORT_DESCRIPTION,
-                    "Selects the " + assertion.getQueryType() + " expression from the current message into the Expected Content field");
+            putValue(SHORT_DESCRIPTION, "Selects the " + assertion.getQueryType() + " expression from the current message into the Expected Content field");
         }
 
         public void actionPerformed(ActionEvent arg0) {

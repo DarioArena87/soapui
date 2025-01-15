@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http;
@@ -42,17 +42,17 @@ import java.util.List;
 
 public abstract class BaseHttpResponse implements HttpResponse {
 
+    protected HTMLPageSourceDownloader downloader;
     private StringToStringsMap requestHeaders;
     private StringToStringsMap responseHeaders;
-
     private long timeTaken;
     private long timestamp;
     private String contentType;
     private SSLInfo sslInfo;
     private URL url;
-    private WeakReference<AbstractHttpRequestInterface<?>> httpRequest;
-    private String method;
-    private String version;
+    private final WeakReference<AbstractHttpRequestInterface<?>> httpRequest;
+    private final String method;
+    private final String version;
     private StringToStringMap properties;
     private byte[] rawRequestData;
     private byte[] rawResponseData;
@@ -60,21 +60,22 @@ public abstract class BaseHttpResponse implements HttpResponse {
     private int requestContentPos = -1;
     private String xmlContent;
     private Attachment[] attachments = new Attachment[0];
-    protected HTMLPageSourceDownloader downloader;
     private int statusCode;
 
-    public BaseHttpResponse(ExtendedHttpMethod httpMethod, AbstractHttpRequestInterface<?> httpRequest,
-                            PropertyExpansionContext context) {
+    public BaseHttpResponse(
+        ExtendedHttpMethod httpMethod, AbstractHttpRequestInterface<?> httpRequest, PropertyExpansionContext context
+    ) {
         this.httpRequest = new WeakReference<AbstractHttpRequestInterface<?>>(httpRequest);
-        this.timeTaken = httpMethod.getTimeTaken();
+        timeTaken = httpMethod.getTimeTaken();
 
         SoapUIMetrics metrics = httpMethod.getMetrics();
         method = httpMethod.getMethod();
         version = httpMethod.getProtocolVersion().toString();
 
         try {
-            this.url = httpMethod.getURL();
-        } catch (Exception e1) {
+            url = httpMethod.getURL();
+        }
+        catch (Exception e1) {
             SoapUI.logError(e1);
         }
 
@@ -83,7 +84,8 @@ public abstract class BaseHttpResponse implements HttpResponse {
 
             try {
                 rawResponseBody = httpMethod.getResponseBody();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
 
@@ -97,22 +99,23 @@ public abstract class BaseHttpResponse implements HttpResponse {
             metrics.getTotalTimer().add(httpMethod.getResponseReadTime());
 
             try {
-                this.timestamp = System.currentTimeMillis();
-                this.contentType = httpMethod.getResponseContentType();
-                this.statusCode = extractStatusCode(httpMethod);
-                this.sslInfo = httpMethod.getSSLInfo();
-                this.url = httpMethod.getURL();
+                timestamp = System.currentTimeMillis();
+                contentType = httpMethod.getResponseContentType();
+                statusCode = extractStatusCode(httpMethod);
+                sslInfo = httpMethod.getSSLInfo();
+                url = httpMethod.getURL();
 
                 metrics.setTimestamp(getTimestamp());
                 metrics.setHttpStatus(getStatusCode());
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         if (httpRequest instanceof TestRequest) {
-            TestCase tc = ((TestRequest) httpRequest).getTestStep().getTestCase();
-            if (tc instanceof WsdlTestCase && ((WsdlTestCase) tc).isForLoadTest()) {
+            TestCase tc = ((TestRequest)httpRequest).getTestStep().getTestCase();
+            if (tc instanceof WsdlTestCase && ((WsdlTestCase)tc).isForLoadTest()) {
                 initHeadersForLoadTest(httpMethod);
                 return;
             }
@@ -122,7 +125,7 @@ public abstract class BaseHttpResponse implements HttpResponse {
 
         AbstractHttpRequestInterface<?> requestInterface = this.httpRequest.get();
         if (requestInterface instanceof HttpRequest) {
-            boolean downloadIncludedResources = ((HttpRequest) requestInterface).getDownloadIncludedResources();
+            boolean downloadIncludedResources = ((HttpRequest)requestInterface).getDownloadIncludedResources();
 
             if (downloadIncludedResources) {
                 long beforeNanos = System.nanoTime();
@@ -137,28 +140,29 @@ public abstract class BaseHttpResponse implements HttpResponse {
 
     private int extractStatusCode(ExtendedHttpMethod httpMethod) {
         if (httpMethod instanceof HttpStatusHolder) {
-            return ((HttpStatusHolder) httpMethod).getResponseStatusCode();
-        } else {
-            return httpMethod.hasHttpResponse() ? httpMethod.getHttpResponse().getStatusLine()
-                    .getStatusCode() : 0;
-
+            return ((HttpStatusHolder)httpMethod).getResponseStatusCode();
+        }
+        else {
+            return httpMethod.hasHttpResponse() ? httpMethod.getHttpResponse().getStatusLine().getStatusCode() : 0;
         }
     }
 
     private void addIncludedContentsAsAttachments() {
         downloader = new HTMLPageSourceDownloader();
         try {
-            List<Attachment> attachmentList = downloader.downloadCssAndImages(url.toString(),
-                    (HttpRequest) httpRequest.get());
+            List<Attachment> attachmentList = downloader.downloadCssAndImages(url.toString(), (HttpRequest)httpRequest.get());
             attachments = attachmentList.toArray(new Attachment[attachmentList.size()]);
-        } catch (ClassCastException cce) {
+        }
+        catch (ClassCastException cce) {
             attachments = new Attachment[1];
             try {
                 attachments[0] = downloader.createAttachment(rawResponseData, url, httpRequest.get());
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 SoapUI.log.error(e);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.log.error(e);
         }
     }
@@ -172,11 +176,12 @@ public abstract class BaseHttpResponse implements HttpResponse {
                 try {
                     rawResponse.write(extractStatusLine(httpMethod).getBytes());
                     rawResponse.write("\r\n".getBytes());
-                } catch (Exception ignore) {
+                }
+                catch (Exception ignore) {
                 }
             }
 
-            rawRequest.write((method + " " + String.valueOf(url) + " " + version + "\r\n").getBytes());
+            rawRequest.write((method + " " + url + " " + version + "\r\n").getBytes());
 
             requestHeaders = new StringToStringsMap();
             Header[] headers = httpMethod.getAllHeaders();
@@ -202,11 +207,11 @@ public abstract class BaseHttpResponse implements HttpResponse {
                 rawRequest.write("\r\n".getBytes());
                 if (httpMethod.getRequestEntity().isRepeatable()) {
                     requestContentPos = rawRequest.size();
-                    MaxSizeByteArrayOutputStream tempOut = new MaxSizeByteArrayOutputStream(SoapUI.getSettings().getLong(
-                            UISettings.RAW_REQUEST_MESSAGE_SIZE, 0));
+                    MaxSizeByteArrayOutputStream tempOut = new MaxSizeByteArrayOutputStream(SoapUI.getSettings().getLong(UISettings.RAW_REQUEST_MESSAGE_SIZE, 0));
                     httpMethod.getRequestEntity().writeTo(tempOut);
                     tempOut.writeTo(rawRequest);
-                } else {
+                }
+                else {
                     rawRequest.write("<request data not available>".getBytes());
                 }
             }
@@ -218,17 +223,143 @@ public abstract class BaseHttpResponse implements HttpResponse {
 
             rawResponseData = rawResponse.toByteArray();
             rawRequestData = rawRequest.toByteArray();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private String extractStatusLine(ExtendedHttpMethod httpMethod) {
         if (httpMethod instanceof HttpStatusHolder) {
-            return ((HttpStatusHolder) httpMethod).getResponseStatusLine();
-        } else {
+            return ((HttpStatusHolder)httpMethod).getResponseStatusLine();
+        }
+        else {
             return String.valueOf(httpMethod.getHttpResponse().getStatusLine());
         }
+    }
+
+    protected void initHeadersForLoadTest(ExtendedHttpMethod httpMethod) {
+        try {
+            requestHeaders = new StringToStringsMap();
+            Header[] headers = httpMethod.getAllHeaders();
+            for (Header header : headers) {
+                requestHeaders.put(header.getName(), header.getValue());
+            }
+
+            if (!httpMethod.isFailed() && httpMethod.hasHttpResponse()) {
+                responseHeaders = new StringToStringsMap();
+                headers = httpMethod.getHttpResponse().getAllHeaders();
+                for (Header header : headers) {
+                    responseHeaders.put(header.getName(), header.getValue());
+                }
+
+                responseHeaders.put("#status#", extractStatusLine(httpMethod));
+            }
+        }
+        catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public AbstractHttpRequestInterface<?> getRequest() {
+        return httpRequest.get();
+    }
+
+    public SSLInfo getSSLInfo() {
+        return sslInfo;
+    }
+
+    public URL getURL() {
+        return url;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public String getHttpVersion() {
+        return version;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public byte[] getRawResponseBody() {
+        return rawResponseBody;
+    }
+
+    public String getRequestContent() {
+        return requestContentPos == -1 || rawRequestData == null ? null : new String(rawRequestData, requestContentPos, rawRequestData.length - requestContentPos);
+    }
+
+    public long getTimeTaken() {
+        return timeTaken;
+    }
+
+    public Attachment[] getAttachments() {
+        return attachments;
+    }
+
+    public Attachment[] getAttachmentsForPart(String partName) {
+        return new Attachment[0];
+    }
+
+    public StringToStringsMap getRequestHeaders() {
+        return requestHeaders;
+    }
+
+    public StringToStringsMap getResponseHeaders() {
+        return responseHeaders;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public byte[] getRawRequestData() {
+        return rawRequestData;
+    }
+
+    public byte[] getRawResponseData() {
+        return rawResponseData;
+    }
+
+    public String getContentAsXml() {
+        if (xmlContent == null) {
+            MediaTypeHandler typeHandler = MediaTypeHandlerRegistry.getTypeHandler(getContentType());
+            xmlContent = (typeHandler == null) ? "<xml/>" : typeHandler.createXmlRepresentation(this);
+        }
+        return xmlContent;
+    }
+
+    public String getProperty(String name) {
+        return properties == null ? null : properties.get(name);
+    }
+
+    public void setProperty(String name, String value) {
+        if (properties == null) {
+            properties = new StringToStringMap();
+        }
+
+        properties.put(name, value);
+    }
+
+    public String[] getPropertyNames() {
+        return properties == null ? new String[0] : properties.getKeys();
+    }
+
+    /**
+     * Returns a {@link String} representation of the header.
+     *
+     * @return stringHEAD
+     */
+    public String toExternalForm(Header header) {
+        return ((null == header.getName() ? "" : header.getName()) + ": " + (null == header.getValue() ? "" : header.getValue()) + "\r\n");
     }
 
     public static class MaxSizeByteArrayOutputStream extends ByteArrayOutputStream {
@@ -250,8 +381,9 @@ public abstract class BaseHttpResponse implements HttpResponse {
             if (maxSize > 0 && size() < maxSize) {
                 if (size() + len < maxSize) {
                     super.write(b, off, len);
-                } else {
-                    super.write(b, off, (int) (maxSize - size()));
+                }
+                else {
+                    super.write(b, off, (int)(maxSize - size()));
                 }
             }
         }
@@ -261,137 +393,11 @@ public abstract class BaseHttpResponse implements HttpResponse {
             if (maxSize > 0 && size() < maxSize) {
                 if (size() + b.length < maxSize) {
                     super.write(b);
-                } else {
-                    super.write(b, 0, (int) (maxSize - size()));
+                }
+                else {
+                    super.write(b, 0, (int)(maxSize - size()));
                 }
             }
         }
-
     }
-
-    protected void initHeadersForLoadTest(ExtendedHttpMethod httpMethod) {
-        try {
-            requestHeaders = new StringToStringsMap();
-            Header[] headers = httpMethod.getAllHeaders();
-            for (Header header : headers) {
-                requestHeaders.put(header.getName(), header.getValue());
-            }
-
-            if (!httpMethod.isFailed() && httpMethod.hasHttpResponse()) {
-                responseHeaders = new StringToStringsMap();
-                headers = httpMethod.getHttpResponse().getAllHeaders();
-                for (Header header : headers) {
-                    responseHeaders.put(header.getName(), header.getValue());
-                }
-
-                responseHeaders.put("#status#", extractStatusLine(httpMethod));
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
-
-    public StringToStringsMap getRequestHeaders() {
-        return requestHeaders;
-    }
-
-    public StringToStringsMap getResponseHeaders() {
-        return responseHeaders;
-    }
-
-    public long getTimeTaken() {
-        return timeTaken;
-    }
-
-    public SSLInfo getSSLInfo() {
-        return sslInfo;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public URL getURL() {
-        return url;
-    }
-
-    public AbstractHttpRequestInterface<?> getRequest() {
-        return httpRequest.get();
-    }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public Attachment[] getAttachments() {
-        return attachments;
-    }
-
-    public Attachment[] getAttachmentsForPart(String partName) {
-        return new Attachment[0];
-    }
-
-    public byte[] getRawRequestData() {
-        return rawRequestData;
-    }
-
-    public byte[] getRawResponseData() {
-        return rawResponseData;
-    }
-
-    public byte[] getRawResponseBody() {
-        return rawResponseBody;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public String getHttpVersion() {
-        return version;
-    }
-
-    public void setProperty(String name, String value) {
-        if (properties == null) {
-            properties = new StringToStringMap();
-        }
-
-        properties.put(name, value);
-    }
-
-    public String getProperty(String name) {
-        return properties == null ? null : properties.get(name);
-    }
-
-    public String[] getPropertyNames() {
-        return properties == null ? new String[0] : properties.getKeys();
-    }
-
-    public String getRequestContent() {
-        return requestContentPos == -1 || rawRequestData == null ? null : new String(rawRequestData, requestContentPos,
-                rawRequestData.length - requestContentPos);
-    }
-
-    public String getContentAsXml() {
-        if (xmlContent == null) {
-            MediaTypeHandler typeHandler = MediaTypeHandlerRegistry.getTypeHandler(getContentType());
-            xmlContent = (typeHandler == null) ? "<xml/>" : typeHandler.createXmlRepresentation(this);
-        }
-        return xmlContent;
-    }
-
-    /**
-     * Returns a {@link String} representation of the header.
-     *
-     * @return stringHEAD
-     */
-    public String toExternalForm(Header header) {
-        return ((null == header.getName() ? "" : header.getName()) + ": "
-                + (null == header.getValue() ? "" : header.getValue()) + "\r\n");
-    }
-
 }

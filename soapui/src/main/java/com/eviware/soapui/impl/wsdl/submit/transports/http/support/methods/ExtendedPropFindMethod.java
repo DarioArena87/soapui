@@ -18,7 +18,6 @@ public class ExtendedPropFindMethod extends HttpPropFindMethod implements Extend
     private final HttpMethodSupport httpMethodSupport;
 
     public ExtendedPropFindMethod() {
-        super();
         httpMethodSupport = new HttpMethodSupport();
     }
 
@@ -35,28 +34,16 @@ public class ExtendedPropFindMethod extends HttpPropFindMethod implements Extend
         httpMethodSupport.setDumpFile(dumpFile);
     }
 
-    public boolean hasResponse() {
-        return httpMethodSupport.hasResponse();
-    }
-
-    public void afterReadResponse(SSLSession session) {
-        httpMethodSupport.afterReadResponse(session);
-    }
-
-    public String getResponseCharSet() {
-        return httpMethodSupport.getResponseCharset();
-    }
-
-    public HttpEntity getRequestEntity() {
-        return super.getEntity();
-    }
-
     public long getMaxSize() {
         return httpMethodSupport.getMaxSize();
+    }    public boolean hasResponse() {
+        return httpMethodSupport.hasResponse();
     }
 
     public void setMaxSize(long maxSize) {
         httpMethodSupport.setMaxSize(maxSize);
+    }    public void afterReadResponse(SSLSession session) {
+        httpMethodSupport.afterReadResponse(session);
     }
 
     public long getResponseReadTime() {
@@ -65,10 +52,8 @@ public class ExtendedPropFindMethod extends HttpPropFindMethod implements Extend
 
     public long getResponseReadTimeNanos() {
         return httpMethodSupport.getResponseReadTimeNanos();
-    }
-
-    public void afterWriteRequest() {
-        httpMethodSupport.afterWriteRequest();
+    }    public HttpEntity getRequestEntity() {
+        return getEntity();
     }
 
     public void initStartTime() {
@@ -83,17 +68,31 @@ public class ExtendedPropFindMethod extends HttpPropFindMethod implements Extend
         return httpMethodSupport.getStartTime();
     }
 
-    public byte[] getResponseBody() throws IOException {
-        return httpMethodSupport.getResponseBody();
-    }
-
     public SSLInfo getSSLInfo() {
         return httpMethodSupport.getSSLInfo();
+    }
+
+    public String getResponseCharSet() {
+        return httpMethodSupport.getResponseCharset();
+    }    public void afterWriteRequest() {
+        httpMethodSupport.afterWriteRequest();
     }
 
     public String getResponseContentType() {
         return httpMethodSupport.getResponseContentType();
     }
+
+
+
+
+
+    public byte[] getResponseBody() throws IOException {
+        return httpMethodSupport.getResponseBody();
+    }
+
+
+
+
 
     public Throwable getFailureCause() {
         return httpMethodSupport.getFailureCause();
@@ -131,7 +130,8 @@ public class ExtendedPropFindMethod extends HttpPropFindMethod implements Extend
         byte[] rawdata = getResponseBody();
         if (rawdata != null) {
             return EncodingUtil.getString(rawdata, getResponseCharSet());
-        } else {
+        }
+        else {
             return null;
         }
     }

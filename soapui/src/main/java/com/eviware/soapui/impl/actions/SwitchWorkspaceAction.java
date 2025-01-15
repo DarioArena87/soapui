@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.actions;
@@ -49,9 +49,9 @@ public class SwitchWorkspaceAction extends AbstractSoapUIAction<WorkspaceImpl> {
 
         if (param != null) {
             newPath = new File(param.toString());
-        } else {
-            newPath = UISupport.getFileDialogs().open(this, messages.get("SwitchWorkspaceAction.FileOpenTitle"),
-                    ".xml", "SoapUI Workspace (*.xml)", workspace.getPath());
+        }
+        else {
+            newPath = UISupport.getFileDialogs().open(this, messages.get("SwitchWorkspaceAction.FileOpenTitle"), ".xml", "SoapUI Workspace (*.xml)", workspace.getPath());
         }
 
         if (newPath != null) {
@@ -59,15 +59,16 @@ public class SwitchWorkspaceAction extends AbstractSoapUIAction<WorkspaceImpl> {
                 boolean save = true;
 
                 if (!newPath.exists()) {
-                    if (!UISupport.confirm(messages.get("SwitchWorkspaceAction.Confirm.Label", newPath.getName()),
-                            messages.get("SwitchWorkspaceAction.Confirm.Title"))) {
+                    if (!UISupport.confirm(messages.get("SwitchWorkspaceAction.Confirm.Label", newPath.getName()), messages.get("SwitchWorkspaceAction.Confirm.Title"))) {
                         return;
                     }
 
                     save = false;
-                } else if (workspace.getOpenProjectList().size() > 0) {
+                }
+                else if (workspace.getOpenProjectList().size() > 0) {
                     Boolean val = UISupport.confirmOrCancel(messages.get("SwitchWorkspaceAction.SaveOpenProjects.Label"),
-                            messages.get("SwitchWorkspaceAction.SaveOpenProjects.Title"));
+                                                            messages.get("SwitchWorkspaceAction.SaveOpenProjects.Title")
+                    );
                     if (val == null) {
                         return;
                     }
@@ -81,7 +82,8 @@ public class SwitchWorkspaceAction extends AbstractSoapUIAction<WorkspaceImpl> {
                     workspace.switchWorkspace(newPath);
                     SoapUI.getSettings().setString(SoapUI.CURRENT_SOAPUI_WORKSPACE, newPath.getAbsolutePath());
                     UISupport.select(workspace);
-                } catch (SoapUIException e) {
+                }
+                catch (SoapUIException e) {
                     UISupport.showErrorMessage(e);
                 }
             }

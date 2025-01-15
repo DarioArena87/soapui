@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -22,16 +22,13 @@ import com.eviware.soapui.support.actions.FindAndReplaceable;
 import com.eviware.soapui.support.components.JEditorStatusBar.JEditorStatusBarTarget;
 import com.eviware.soapui.support.swing.JTextComponentPopupMenu;
 
-import javax.swing.JComponent;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
@@ -43,8 +40,7 @@ import java.awt.event.KeyEvent;
  * @author Ole.Matzura
  */
 
-public class JUndoableTextArea extends JTextArea implements Undoable, UndoableEditListener, FocusListener,
-        FindAndReplaceable, JEditorStatusBarTarget {
+public class JUndoableTextArea extends JTextArea implements Undoable, UndoableEditListener, FocusListener, FindAndReplaceable, JEditorStatusBarTarget {
     public static final int UNDO_LIMIT = 1500;
 
     private UndoManager undoManager;
@@ -52,7 +48,16 @@ public class JUndoableTextArea extends JTextArea implements Undoable, UndoableEd
     private FindAndReplaceDialog findAndReplaceAction;
 
     public JUndoableTextArea() {
-        super();
+        init();
+    }
+
+    public JUndoableTextArea(int i, int j) {
+        super(i, j);
+        init();
+    }
+
+    public JUndoableTextArea(String text) {
+        super(text);
         init();
     }
 
@@ -67,21 +72,26 @@ public class JUndoableTextArea extends JTextArea implements Undoable, UndoableEd
             public void keyPressed(KeyEvent e) {
                 if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu Z"))) {
                     undo();
-                } else if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu Y"))) {
+                }
+                else if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu Y"))) {
                     redo();
-                } else if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu X"))) {
+                }
+                else if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu X"))) {
                     cut();
-                } else if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu C"))) {
+                }
+                else if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu C"))) {
                     copy();
-                } else if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu V"))) {
+                }
+                else if (KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("menu V"))) {
                     paste();
-                } else if (UISupport.isMac()
-                        && KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("meta F"))) {
+                }
+                else if (UISupport.isMac() && KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("meta F"))) {
                     findAndReplace();
-                } else if (!UISupport.isMac()
-                        && KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("ctrl F"))) {
+                }
+                else if (!UISupport.isMac() && KeyStroke.getKeyStrokeForEvent(e).equals(UISupport.getKeyStroke("ctrl F"))) {
                     findAndReplace();
-                } else {
+                }
+                else {
                     return;
                 }
 
@@ -90,16 +100,6 @@ public class JUndoableTextArea extends JTextArea implements Undoable, UndoableEd
         });
 
         JTextComponentPopupMenu.add(this);
-    }
-
-    public JUndoableTextArea(int i, int j) {
-        super(i, j);
-        init();
-    }
-
-    public JUndoableTextArea(String text) {
-        super(text);
-        init();
     }
 
     protected void findAndReplace() {
@@ -162,7 +162,8 @@ public class JUndoableTextArea extends JTextArea implements Undoable, UndoableEd
             if (undoManager != null) {
                 undoManager.undo();
             }
-        } catch (CannotUndoException cue) {
+        }
+        catch (CannotUndoException cue) {
             Toolkit.getDefaultToolkit().beep();
         }
     }
@@ -177,21 +178,22 @@ public class JUndoableTextArea extends JTextArea implements Undoable, UndoableEd
             if (undoManager != null) {
                 undoManager.redo();
             }
-        } catch (CannotRedoException cue) {
+        }
+        catch (CannotRedoException cue) {
             Toolkit.getDefaultToolkit().beep();
         }
     }
 
-    public void setSelectedText(String txt) {
-        replaceSelection(txt);
+    public boolean canUndo() {
+        return undoManager != null && undoManager.canUndo();
     }
 
     public boolean canRedo() {
         return undoManager != null && undoManager.canRedo();
     }
 
-    public boolean canUndo() {
-        return undoManager != null && undoManager.canUndo();
+    public void setSelectedText(String txt) {
+        replaceSelection(txt);
     }
 
     @Override

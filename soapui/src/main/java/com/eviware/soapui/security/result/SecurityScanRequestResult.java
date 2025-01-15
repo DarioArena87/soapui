@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.result;
@@ -37,14 +37,14 @@ import java.util.List;
  */
 
 public class SecurityScanRequestResult implements SecurityResult {
-    private static final String[] EMPTY_MESSAGES = new String[0];
     public final static String TYPE = "SecurityScanRequestResult";
+    private static final String[] EMPTY_MESSAGES = new String[0];
     private ResultStatus status = ResultStatus.UNKNOWN;
     private SecurityScan securityCheck;
-    private List<String> messages = new ArrayList<String>();
+    private final List<String> messages = new ArrayList<String>();
     private long timeTaken;
     private long startTime;
-    private long timeStamp;
+    private final long timeStamp;
     private long size;
     private boolean discarded;
     private MessageExchange messageExchange;
@@ -56,31 +56,8 @@ public class SecurityScanRequestResult implements SecurityResult {
         timeStamp = System.currentTimeMillis();
     }
 
-    public ResultStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ResultStatus status) {
-        this.status = status;
-    }
-
     public SecurityScan getSecurityScan() {
         return securityCheck;
-    }
-
-    /**
-     * Returns a list of actions that can be applied to this result
-     */
-
-    public ActionList getActions() {
-        if (actionList == null) {
-            actionList = new DefaultActionList(getSecurityScan().getName());
-        }
-        if (!addedAction) {
-            actionList.addAction(new ShowMessageExchangeAction(this.getMessageExchange(), "SecurityScanRequest"), true);
-            addedAction = true;
-        }
-        return actionList;
     }
 
     public String[] getMessages() {
@@ -93,15 +70,19 @@ public class SecurityScanRequestResult implements SecurityResult {
         }
     }
 
-    // public Throwable getError();
-
     public long getTimeTaken() {
         return timeTaken;
+    }
+
+    public void setTimeTaken(long timeTaken) {
+        this.timeTaken = timeTaken;
     }
 
     public long getTimeStamp() {
         return timeStamp;
     }
+
+    // public Throwable getError();
 
     /**
      * Used for calculating the output
@@ -145,10 +126,6 @@ public class SecurityScanRequestResult implements SecurityResult {
         this.messageExchange = messageExchange;
     }
 
-    public void setTimeTaken(long timeTaken) {
-        this.timeTaken = timeTaken;
-    }
-
     public void startTimer() {
         startTime = System.nanoTime();
     }
@@ -174,20 +151,43 @@ public class SecurityScanRequestResult implements SecurityResult {
         return null;
     }
 
+    public ResultStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ResultStatus status) {
+        this.status = status;
+    }
+
+    /**
+     * Returns a list of actions that can be applied to this result
+     */
+
+    public ActionList getActions() {
+        if (actionList == null) {
+            actionList = new DefaultActionList(getSecurityScan().getName());
+        }
+        if (!addedAction) {
+            actionList.addAction(new ShowMessageExchangeAction(getMessageExchange(), "SecurityScanRequest"), true);
+            addedAction = true;
+        }
+        return actionList;
+    }
+
     public String getChangedParamsInfo(int requestCount) {
         StringToStringMap changedParams = null;
 
         if (getMessageExchange() != null && getMessageExchange().getProperties() != null) {
-            changedParams = StringToStringMap.fromXml(getMessageExchange().getProperties().get(
-                    AbstractSecurityScanWithProperties.SECURITY_CHANGED_PARAMETERS));
-        } else {
+            changedParams = StringToStringMap.fromXml(getMessageExchange().getProperties().get(AbstractSecurityScanWithProperties.SECURITY_CHANGED_PARAMETERS));
+        }
+        else {
             changedParams = new StringToStringMap();
         }
         StringBuilder changedParamsInfo = new StringBuilder();
         changedParamsInfo.append("[");
         Iterator<String> keys = changedParams.keySet().iterator();
         while (keys.hasNext()) {
-            String param = (String) keys.next();
+            String param = keys.next();
             String value = changedParams.get(param);
             if (value.length() > SecurityScanResult.MAX_SECURITY_CHANGED_PARAMETERS_LENGTH) {
                 value = value.substring(0, SecurityScanResult.MAX_SECURITY_CHANGED_PARAMETERS_LENGTH);
@@ -196,10 +196,9 @@ public class SecurityScanRequestResult implements SecurityResult {
         }
         changedParamsInfo.replace(changedParamsInfo.length() - 1, changedParamsInfo.length(), "]");
 
-        StringBuilder checkRequestResultStr = new StringBuilder("[" + getSecurityScan().getName() + "] Request "
-                + requestCount + " - " + getStatus());
+        StringBuilder checkRequestResultStr = new StringBuilder("[" + getSecurityScan().getName() + "] Request " + requestCount + " - " + getStatus());
         if (changedParamsInfo.length() > 1) {
-            checkRequestResultStr.append(" - " + changedParamsInfo.toString());
+            checkRequestResultStr.append(" - " + changedParamsInfo);
         }
         checkRequestResultStr.append(": took ").append(getTimeTaken()).append(" ms");
         return checkRequestResultStr.toString();
@@ -208,5 +207,4 @@ public class SecurityScanRequestResult implements SecurityResult {
     public void release() {
         securityCheck = null;
     }
-
 }

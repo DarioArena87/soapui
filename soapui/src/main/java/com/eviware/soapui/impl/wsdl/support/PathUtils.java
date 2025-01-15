@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support;
@@ -61,8 +61,7 @@ public class PathUtils {
             path = path.replaceAll(" ", "%20");
         }
         // }
-        path = context == null ? PropertyExpander.expandProperties(modelItem, path) : PropertyExpander
-                .expandProperties(context, path);
+        path = context == null ? PropertyExpander.expandProperties(modelItem, path) : PropertyExpander.expandProperties(context, path);
 
         if (!isRelativePath(path)) {
             return path;
@@ -75,20 +74,12 @@ public class PathUtils {
 
         if (isHttpPath(root)) {
             root += "/";
-        } else {
+        }
+        else {
             root += File.separatorChar;
         }
 
         return Tools.joinRelativeUrl(root, path);
-    }
-
-    private static String stripQuotes(String path) {
-        if (path != null) {
-            if (path.startsWith("\"") && path.endsWith("\"")) {
-                path = path.substring(1, path.length() - 1);
-            }
-        }
-        return path;
     }
 
     public static String adjustRelativePath(String str, String root, ModelItem contextModelItem) {
@@ -104,7 +95,8 @@ public class PathUtils {
 
         if (isHttpPath(root)) {
             root += "/";
-        } else {
+        }
+        else {
             root += File.separatorChar;
         }
 
@@ -133,9 +125,13 @@ public class PathUtils {
 
         str = str.toLowerCase();
 
-        return !str.startsWith("/") && !str.startsWith("\\") && !str.startsWith("http:/")
-                && !str.startsWith("https:/") && str.indexOf(":\\") != 1 && !str.startsWith("file:")
-                && str.indexOf(":/") != 1;
+        return !str.startsWith("/") &&
+               !str.startsWith("\\") &&
+               !str.startsWith("http:/") &&
+               !str.startsWith("https:/") &&
+               str.indexOf(":\\") != 1 &&
+               !str.startsWith("file:") &&
+               str.indexOf(":/") != 1;
     }
 
     public static String createRelativePath(String path, String root, ModelItem contextModelItem) {
@@ -162,7 +158,8 @@ public class PathUtils {
             if (UISupport.confirm("Save project before setting path?", "Project has not been saved")) {
                 try {
                     project.save();
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     SoapUI.logError(e);
                     UISupport.showErrorMessage(e);
                     return path;
@@ -175,7 +172,7 @@ public class PathUtils {
             return path;
         }
 
-        return PathUtils.relativize(path, projectPath);
+        return relativize(path, projectPath);
     }
 
     public static String resolveResourcePath(String path, ModelItem modelItem) {
@@ -183,7 +180,7 @@ public class PathUtils {
             return path;
         }
 
-        path = PathUtils.denormalizePath(path);
+        path = denormalizePath(path);
         path = PropertyExpander.expandProperties(new DefaultPropertyExpansionContext(modelItem), path);
 
         String prefix = "";
@@ -193,11 +190,11 @@ public class PathUtils {
             path = path.substring(5);
         }
 
-        if (PathUtils.isAbsolutePath(path)) {
+        if (isAbsolutePath(path)) {
             return prefix + path;
         }
 
-        WsdlProject project = (WsdlProject) ModelSupport.getModelItemProject(modelItem);
+        WsdlProject project = (WsdlProject)ModelSupport.getModelItemProject(modelItem);
         if (project == null) {
             return prefix + path;
         }
@@ -228,7 +225,8 @@ public class PathUtils {
                     }
 
                     break;
-                } else {
+                }
+                else {
                     int ix = rootPath.lastIndexOf('/');
                     rootPath = ix == -1 ? null : rootPath.substring(0, ix);
                     prefix += "../";
@@ -236,14 +234,16 @@ public class PathUtils {
             }
 
             return prefix + path;
-        } else {
+        }
+        else {
             String prefix = "";
 
             // file url?
             if (path.toLowerCase().startsWith("file:")) {
                 try {
                     path = new File(new URL(path).toURI()).getAbsolutePath();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -251,15 +251,15 @@ public class PathUtils {
             if (rootPath.startsWith("file:")) {
                 try {
                     rootPath = new File(new URL(rootPath).toURI()).getAbsolutePath();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
             // different drives on windows? (can't relativize)
-            if (rootPath.toUpperCase().charAt(0) != path.toUpperCase().charAt(0)
-                    && ((rootPath.indexOf(":\\") == 1 || rootPath.indexOf(":/") == 1) && (path.indexOf(":\\") == 1 || path
-                    .indexOf(":/") == 1))) {
+            if (rootPath.toUpperCase().charAt(0) != path.toUpperCase().charAt(0) &&
+                ((rootPath.indexOf(":\\") == 1 || rootPath.indexOf(":/") == 1) && (path.indexOf(":\\") == 1 || path.indexOf(":/") == 1))) {
                 return path;
             }
 
@@ -271,7 +271,8 @@ public class PathUtils {
                     }
 
                     break;
-                } else {
+                }
+                else {
                     File file = new File(rootPath);
                     rootPath = file.getParent();
                     prefix += ".." + File.separatorChar;
@@ -311,8 +312,7 @@ public class PathUtils {
             return path;
         }
 
-        return File.separatorChar == '/' ? path.replace('\\', File.separatorChar) : path.replace('/',
-                File.separatorChar);
+        return File.separatorChar == '/' ? path.replace('\\', File.separatorChar) : path.replace('/', File.separatorChar);
     }
 
     public static String getExpandedResourceRoot(ModelItem modelItem) {
@@ -324,7 +324,7 @@ public class PathUtils {
             return null;
         }
 
-        WsdlProject project = (WsdlProject) ModelSupport.getModelItemProject(modelItem);
+        WsdlProject project = (WsdlProject)ModelSupport.getModelItemProject(modelItem);
         if (project == null) {
             return null;
         }
@@ -334,8 +334,7 @@ public class PathUtils {
             return new File("").getAbsolutePath();
         }
 
-        docroot = context == null ? PropertyExpander.expandProperties(modelItem, docroot) : PropertyExpander
-                .expandProperties(context, docroot);
+        docroot = context == null ? PropertyExpander.expandProperties(modelItem, docroot) : PropertyExpander.expandProperties(context, docroot);
 
         return docroot;
     }
@@ -344,7 +343,8 @@ public class PathUtils {
         if (isFilePath(url) && !url.startsWith("file:")) {
             try {
                 return new File(url).toURI().toURL().toString();
-            } catch (MalformedURLException e) {
+            }
+            catch (MalformedURLException e) {
                 e.printStackTrace();
             }
         }
@@ -378,6 +378,15 @@ public class PathUtils {
             path = path + query;
         }
 
+        return path;
+    }
+
+    private static String stripQuotes(String path) {
+        if (path != null) {
+            if (path.startsWith("\"") && path.endsWith("\"")) {
+                path = path.substring(1, path.length() - 1);
+            }
+        }
         return path;
     }
 }

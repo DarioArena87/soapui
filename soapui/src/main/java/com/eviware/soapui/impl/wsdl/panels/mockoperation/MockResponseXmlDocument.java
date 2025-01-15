@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.mockoperation;
@@ -41,36 +41,9 @@ public class MockResponseXmlDocument extends AbstractXmlDocument implements Prop
     private final MockResponse mockResponse;
 
     public MockResponseXmlDocument(MockResponse response) {
-        this.mockResponse = response;
+        mockResponse = response;
 
         mockResponse.addPropertyChangeListener(WsdlMockResponse.RESPONSE_CONTENT_PROPERTY, this);
-    }
-
-    public SchemaTypeSystem getTypeSystem() {
-        try {
-            if (mockResponse instanceof WsdlMockResponse) {
-                WsdlOperation operation = (WsdlOperation) mockResponse.getMockOperation().getOperation();
-                if (operation != null) {
-                    WsdlInterface iface = operation.getInterface();
-                    WsdlContext wsdlContext = iface.getWsdlContext();
-                    return wsdlContext.getSchemaTypeSystem();
-                }
-            }
-        } catch (Exception e1) {
-            SoapUI.logError(e1);
-        }
-
-        return XmlBeans.getBuiltinTypeSystem();
-    }
-
-    @Override
-    public void setDocumentContent(DocumentContent documentContent) {
-        mockResponse.setResponseContent(documentContent.getContentAsString());
-    }
-
-    @Override
-    public String getContentType() {
-        return mockResponse.getContentType();
     }
 
     public void propertyChange(PropertyChangeEvent arg0) {
@@ -83,9 +56,37 @@ public class MockResponseXmlDocument extends AbstractXmlDocument implements Prop
         super.release();
     }
 
+    public SchemaTypeSystem getTypeSystem() {
+        try {
+            if (mockResponse instanceof WsdlMockResponse) {
+                WsdlOperation operation = (WsdlOperation)mockResponse.getMockOperation().getOperation();
+                if (operation != null) {
+                    WsdlInterface iface = operation.getInterface();
+                    WsdlContext wsdlContext = iface.getWsdlContext();
+                    return wsdlContext.getSchemaTypeSystem();
+                }
+            }
+        }
+        catch (Exception e1) {
+            SoapUI.logError(e1);
+        }
+
+        return XmlBeans.getBuiltinTypeSystem();
+    }
+
+    @Override
+    public String getContentType() {
+        return mockResponse.getContentType();
+    }
+
     @Nonnull
     @Override
     public DocumentContent getDocumentContent(Format format) {
         return new DocumentContent(mockResponse.getContentType(), mockResponse.getResponseContent());
+    }
+
+    @Override
+    public void setDocumentContent(DocumentContent documentContent) {
+        mockResponse.setResponseContent(documentContent.getContentAsString());
     }
 }

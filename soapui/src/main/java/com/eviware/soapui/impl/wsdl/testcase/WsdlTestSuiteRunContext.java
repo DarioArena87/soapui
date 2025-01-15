@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.testcase;
@@ -38,16 +38,12 @@ public class WsdlTestSuiteRunContext extends AbstractSubmitContext<WsdlTestSuite
     private TestSuite testSuite;
 
     public WsdlTestSuiteRunContext(TestSuiteRunner testRunner, StringToObjectMap properties) {
-        super((WsdlTestSuite) testRunner.getTestSuite(), properties);
-        this.testRunner = (WsdlTestSuiteRunner) testRunner;
+        super((WsdlTestSuite)testRunner.getTestSuite(), properties);
+        this.testRunner = (WsdlTestSuiteRunner)testRunner;
     }
 
     public TestSuiteRunner getTestRunner() {
         return testRunner;
-    }
-
-    public TestSuite getTestSuite() {
-        return testRunner.getTestSuite();
     }
 
     @Override
@@ -82,12 +78,12 @@ public class WsdlTestSuiteRunContext extends AbstractSubmitContext<WsdlTestSuite
         return oldValue;
     }
 
-    public void reset() {
-        resetProperties();
-    }
-
     public String expand(String content) {
         return PropertyExpander.expandProperties(this, content);
+    }
+
+    public void reset() {
+        resetProperties();
     }
 
     public Settings getSettings() {
@@ -104,6 +100,10 @@ public class WsdlTestSuiteRunContext extends AbstractSubmitContext<WsdlTestSuite
 
     public TestSuiteRunner getTestSuiteRunner() {
         return testRunner;
+    }
+
+    public TestSuite getTestSuite() {
+        return testRunner.getTestSuite();
     }
 
     public Object getProperty(String name) {

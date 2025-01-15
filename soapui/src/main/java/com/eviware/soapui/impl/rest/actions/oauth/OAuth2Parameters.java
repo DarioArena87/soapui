@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.oauth;
@@ -28,8 +28,6 @@ import java.util.List;
  */
 public class OAuth2Parameters {
 
-    private final OAuth2Profile profile;
-
     final String authorizationUri;
     final String redirectUri;
     final String accessTokenUri;
@@ -39,6 +37,7 @@ public class OAuth2Parameters {
     final String refreshToken;
     final String resourceOwnerName;
     final String resourceOwnerPassword;
+    private final OAuth2Profile profile;
 
     /**
      * Constructs an OAuth2Parameters object
@@ -47,15 +46,15 @@ public class OAuth2Parameters {
      */
     public OAuth2Parameters(OAuth2Profile profile) {
         this.profile = profile;
-        this.authorizationUri = expandProperty(profile, profile.getAuthorizationURI());
-        this.redirectUri = expandProperty(profile, profile.getRedirectURI());
-        this.accessTokenUri = expandProperty(profile, profile.getAccessTokenURI());
-        this.clientId = expandProperty(profile, profile.getClientID());
-        this.clientSecret = expandProperty(profile, profile.getClientSecret());
-        this.scope = expandProperty(profile, profile.getScope());
-        this.refreshToken = expandProperty(profile, profile.getRefreshToken());
-        this.resourceOwnerName = expandProperty(profile, profile.getResourceOwnerName());
-        this.resourceOwnerPassword = expandProperty(profile, profile.getResourceOwnerPassword());
+        authorizationUri = expandProperty(profile, profile.getAuthorizationURI());
+        redirectUri = expandProperty(profile, profile.getRedirectURI());
+        accessTokenUri = expandProperty(profile, profile.getAccessTokenURI());
+        clientId = expandProperty(profile, profile.getClientID());
+        clientSecret = expandProperty(profile, profile.getClientSecret());
+        scope = expandProperty(profile, profile.getScope());
+        refreshToken = expandProperty(profile, profile.getRefreshToken());
+        resourceOwnerName = expandProperty(profile, profile.getResourceOwnerName());
+        resourceOwnerPassword = expandProperty(profile, profile.getResourceOwnerPassword());
     }
 
     /**

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.json;
@@ -32,7 +32,7 @@ import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import junit.framework.Assert;
 
-import javax.swing.JTextArea;
+import javax.swing.*;
 
 public class JsonPathExistenceAssertion extends JsonPathAssertionBase implements RequestAssertion, ResponseAssertion {
 
@@ -45,11 +45,6 @@ public class JsonPathExistenceAssertion extends JsonPathAssertionBase implements
     }
 
     @Override
-    public String getHelpURL() {
-        return HelpUrls.ASSERTION_JSON_EXIST;
-    }
-
-    @Override
     protected XPathContainsAssertion getAssertion() {
         return this;
     }
@@ -57,6 +52,42 @@ public class JsonPathExistenceAssertion extends JsonPathAssertionBase implements
     @Override
     public String getConfigurationDialogTitle() {
         return "JSONPath Existence Match Configuration";
+    }
+
+    private void setExpectedValueFromSelectedNode(JTextArea contentArea, String stringValue) {
+        if (contentArea != null && contentArea.isVisible()) {
+            contentArea.setText(stringValue);
+        }
+        else {
+            setExpectedContent(stringValue, false);
+        }
+    }
+
+    @Override
+    public String assertContent(String assertableContent, SubmitContext context, String type) throws AssertionException {
+        String path = getPath();
+        try {
+            if (path == null) {
+                return "Missing path for JsonPath assertion";
+            }
+            if (getExpectedContent() == null) {
+                return "Missing content for JsonPath assertion";
+            }
+            String expandedPath = PropertyExpander.expandProperties(context, path);
+            JsonPathFacade jsonPathFacade = new JsonPathFacade(assertableContent);
+            Object result = jsonPathFacade.readObjectValue(expandedPath);
+            String expandedExpectedValue = PropertyExpander.expandProperties(context, getExpectedContent());
+            Assert.assertEquals(expandedExpectedValue, Boolean.toString(result != null));
+        }
+        catch (Throwable exception) {
+            throwAssertionException(path, exception);
+        }
+        return type + " matches content for [" + path + "]";
+    }
+
+    @Override
+    public String getHelpURL() {
+        return HelpUrls.ASSERTION_JSON_EXIST;
     }
 
     @Override
@@ -80,46 +111,16 @@ public class JsonPathExistenceAssertion extends JsonPathAssertionBase implements
 
             Object result = new JsonPathFacade(assertableContent).readObjectValue(expandedPath);
             setExpectedValueFromSelectedNode(contentArea, Boolean.toString(result != null));
-
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             UISupport.showErrorMessage("Invalid JsonPath expression.");
             SoapUI.logError(e);
         }
     }
 
-    private void setExpectedValueFromSelectedNode(JTextArea contentArea, String stringValue) {
-        if (contentArea != null && contentArea.isVisible()) {
-            contentArea.setText(stringValue);
-        } else {
-            setExpectedContent(stringValue, false);
-        }
-    }
-
-    @Override
-    public String assertContent(String assertableContent, SubmitContext context, String type) throws AssertionException {
-        String path = getPath();
-        try {
-            if (path == null) {
-                return "Missing path for JsonPath assertion";
-            }
-            if (getExpectedContent() == null) {
-                return "Missing content for JsonPath assertion";
-            }
-            String expandedPath = PropertyExpander.expandProperties(context, path);
-            JsonPathFacade jsonPathFacade = new JsonPathFacade(assertableContent);
-            Object result = jsonPathFacade.readObjectValue(expandedPath);
-            String expandedExpectedValue = PropertyExpander.expandProperties(context, getExpectedContent());
-            Assert.assertEquals(expandedExpectedValue, Boolean.toString(result != null));
-        } catch (Throwable exception) {
-            throwAssertionException(path, exception);
-        }
-        return type + " matches content for [" + path + "]";
-    }
-
     public static class Factory extends JsonAssertionFactory {
         public Factory() {
-            super(JsonPathExistenceAssertion.ID, JsonPathExistenceAssertion.LABEL,
-                    JsonPathExistenceAssertion.DESCRIPTION, JsonPathExistenceAssertion.class);
+            super(ID, LABEL, DESCRIPTION, JsonPathExistenceAssertion.class);
         }
     }
 }

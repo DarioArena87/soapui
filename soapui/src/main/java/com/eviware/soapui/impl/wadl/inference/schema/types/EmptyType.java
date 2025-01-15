@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema.types;
@@ -35,7 +35,7 @@ import org.apache.xmlbeans.XmlException;
  */
 public class EmptyType implements Type {
     private Schema schema;
-    private EmptyContent empty;
+    private final EmptyContent empty;
     private boolean completed = false;
 
     public EmptyType(Schema schema) {
@@ -49,12 +49,6 @@ public class EmptyType implements Type {
         completed = xml.getCompleted();
     }
 
-    public EmptyTypeConfig save() {
-        EmptyTypeConfig xml = EmptyTypeConfig.Factory.newInstance();
-        xml.setCompleted(completed);
-        return xml;
-    }
-
     public String getName() {
         return "empty_element";
     }
@@ -65,6 +59,12 @@ public class EmptyType implements Type {
 
     public void setSchema(Schema schema) {
         this.schema = schema;
+    }
+
+    public EmptyTypeConfig save() {
+        EmptyTypeConfig xml = EmptyTypeConfig.Factory.newInstance();
+        xml.setCompleted(completed);
+        return xml;
     }
 
     public Type validate(Context context) throws XmlException {
@@ -82,7 +82,8 @@ public class EmptyType implements Type {
             XmlAnySimpleType simpleType;
             if (completed) {
                 simpleType = TypeInferrer.getBlankType();
-            } else {
+            }
+            else {
                 simpleType = TypeInferrer.inferSimpleType(value);
             }
             // return
@@ -95,8 +96,6 @@ public class EmptyType implements Type {
 
     public String toString() {
         String xsdns = schema.getPrefixForNamespace(Settings.xsdns);
-        StringBuilder s = new StringBuilder("<" + xsdns + ":complexType name=\"" + getName() + "\"/>");
-        return s.toString();
+        return "<" + xsdns + ":complexType name=\"" + getName() + "\"/>";
     }
-
 }

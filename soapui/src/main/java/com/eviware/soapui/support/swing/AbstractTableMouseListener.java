@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.swing;
@@ -33,10 +33,8 @@ import java.awt.event.MouseEvent;
  */
 
 public abstract class AbstractTableMouseListener extends MouseAdapter {
-    private boolean enablePopup;
+    private final boolean enablePopup;
     private JPopupMenu menu;
-
-    protected abstract ActionList getActionsForRow(JTable table, int row);
 
     public AbstractTableMouseListener() {
         this(true);
@@ -46,12 +44,14 @@ public abstract class AbstractTableMouseListener extends MouseAdapter {
         this.enablePopup = enablePopup;
     }
 
+    protected abstract ActionList getActionsForRow(JTable table, int row);
+
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() < 2) {
             return;
         }
 
-        JTable list = (JTable) e.getSource();
+        JTable list = (JTable)e.getSource();
 
         int selectedIndex = list.getSelectedRow();
         if (selectedIndex == -1) {
@@ -82,7 +82,7 @@ public abstract class AbstractTableMouseListener extends MouseAdapter {
             return;
         }
 
-        JTable list = (JTable) e.getSource();
+        JTable list = (JTable)e.getSource();
         int row = list.rowAtPoint(e.getPoint());
         if (row == -1) {
             return;

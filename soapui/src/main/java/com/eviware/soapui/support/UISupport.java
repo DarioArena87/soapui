@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -42,47 +42,12 @@ import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import org.syntax.jedit.InputHandler;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JProgressBar;
-import javax.swing.JRootPane;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicProgressBarUI;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Event;
-import java.awt.Font;
-import java.awt.Frame;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -107,16 +72,19 @@ public class UISupport {
     public static final String TOOL_ICON_PATH = "/applications-system.png";
     public static final String OPTIONS_ICON_PATH = "/preferences-system.png";
     public static final int EXTENDED_ERROR_MESSAGE_THRESHOLD = 120;
-
-    // This is needed in Eclipse that has strict class loader constraints.
-    private static List<ClassLoader> secondaryResourceLoaders = new ArrayList<ClassLoader>();
-
-    private static Component frame;
-    private static Map<String, ImageIcon> iconCache = new HashMap<String, ImageIcon>();
+    public static final String DEFAULT_EDITOR_FONT = "Courier plain";
+    public static final int DEFAULT_EDITOR_FONT_SIZE = 11;
+    public static final Color MAC_BACKGROUND_COLOR = new Color(255, 255, 255);
+    public static final Color MAC_PROGRESSBAR_BACKGROUND_COLOR = new Color(196, 196, 196);
+    public static final Color MAC_PROGRESSBAR_MATTE_BORDER_COLOR = new Color(238, 238, 238);
+    public static final Color MAC_PROGRESSBAR_LINE_BORDER_COLOR = new Color(166, 166, 166);
     public static Dimension TOOLBAR_BUTTON_DIMENSION;
-    private static boolean isWindows = System.getProperty("os.name").contains("Windows");
-    private static boolean isMac = System.getProperty("os.name").contains("Mac");
-
+    // This is needed in Eclipse that has strict class loader constraints.
+    private static final List<ClassLoader> secondaryResourceLoaders = new ArrayList<ClassLoader>();
+    private static Component frame;
+    private static final Map<String, ImageIcon> iconCache = new HashMap<String, ImageIcon>();
+    private static final boolean isWindows = System.getProperty("os.name").contains("Windows");
+    private static final boolean isMac = System.getProperty("os.name").contains("Mac");
     private static XDialogs dialogs;
     private static XFileDialogs fileDialogs;
     private static UIUtils uiUtils;
@@ -124,13 +92,10 @@ public class UISupport {
     private static Cursor hourglassCursor;
     private static Cursor defaultCursor;
     private static Boolean isHeadless;
-
-    public static final String DEFAULT_EDITOR_FONT = "Courier plain";
-    public static final int DEFAULT_EDITOR_FONT_SIZE = 11;
-    public static final Color MAC_BACKGROUND_COLOR = new Color(255, 255, 255);
-    public static final Color MAC_PROGRESSBAR_BACKGROUND_COLOR = new Color(196, 196, 196);
-    public static final Color MAC_PROGRESSBAR_MATTE_BORDER_COLOR = new Color(238, 238, 238);
-    public static final Color MAC_PROGRESSBAR_LINE_BORDER_COLOR = new Color(166, 166, 166);
+    public static ImageIcon TOOL_ICON = createImageIcon(TOOL_ICON_PATH);
+    public static ImageIcon OPTIONS_ICON = createImageIcon(OPTIONS_ICON_PATH);
+    public static ImageIcon HELP_ICON = createImageIcon("/help-browser.png");
+    private static final EditorFactory editorFactory = new DefaultEditorFactory();
 
     static {
         setDialogs(new ConsoleDialogs());
@@ -140,11 +105,6 @@ public class UISupport {
             TOOLBAR_BUTTON_DIMENSION = new Dimension(22, 21);
         }
     }
-
-    public static ImageIcon TOOL_ICON = UISupport.createImageIcon(TOOL_ICON_PATH);
-    public static ImageIcon OPTIONS_ICON = UISupport.createImageIcon(OPTIONS_ICON_PATH);
-    public static ImageIcon HELP_ICON = UISupport.createImageIcon("/help-browser.png");
-    private static EditorFactory editorFactory = new DefaultEditorFactory();
 
     /**
      * Add a classloader to find resources.
@@ -165,6 +125,22 @@ public class UISupport {
         secondaryResourceLoaders.add(loader);
     }
 
+    public static EditorFactory getEditorFactory() {
+        return editorFactory;
+    }
+
+    public static ToolHost getToolHost() {
+        return toolHost;
+    }
+
+    public static void setToolHost(ToolHost host) {
+        toolHost = host;
+    }
+
+    public static Frame getMainFrame() {
+        return (Frame)(frame instanceof Frame ? frame : null);
+    }
+
     /**
      * Set the main frame of this application. This is only used when running
      * under Swing.
@@ -177,30 +153,6 @@ public class UISupport {
         setFileDialogs(new SwingFileDialogs(frame));
     }
 
-    public static void setDialogs(XDialogs xDialogs) {
-        dialogs = xDialogs;
-    }
-
-    public static EditorFactory getEditorFactory() {
-        return editorFactory;
-    }
-
-    public static void setFileDialogs(XFileDialogs xFileDialogs) {
-        fileDialogs = xFileDialogs;
-    }
-
-    public static ToolHost getToolHost() {
-        return toolHost;
-    }
-
-    public static void setToolHost(ToolHost host) {
-        toolHost = host;
-    }
-
-    public static Frame getMainFrame() {
-        return (Frame) (frame instanceof Frame ? frame : null);
-    }
-
     public static JComboBox addTooltipListener(JComboBox combo, String defaultTooltip) {
         combo.setToolTipText(defaultTooltip);
         combo.addItemListener(new ItemListenerImplementation(combo, defaultTooltip));
@@ -211,7 +163,7 @@ public class UISupport {
     public static Frame getParentFrame(Component component) {
         for (Container c = component.getParent(); c != null; c = c.getParent()) {
             if (c instanceof Frame) {
-                return (Frame) c;
+                return (Frame)c;
             }
         }
         return getMainFrame();
@@ -221,8 +173,16 @@ public class UISupport {
         return dialogs;
     }
 
+    public static void setDialogs(XDialogs xDialogs) {
+        dialogs = xDialogs;
+    }
+
     public static XFileDialogs getFileDialogs() {
         return fileDialogs;
+    }
+
+    public static void setFileDialogs(XFileDialogs xFileDialogs) {
+        fileDialogs = xFileDialogs;
     }
 
     /**
@@ -230,8 +190,9 @@ public class UISupport {
      */
 
     @Deprecated
-    public static ConfigurationDialog createConfigurationDialog(String name, String helpUrl, String description,
-                                                                ImageIcon icon) {
+    public static ConfigurationDialog createConfigurationDialog(
+        String name, String helpUrl, String description, ImageIcon icon
+    ) {
         return new SwingConfigurationDialogImpl(name, helpUrl, description, icon);
     }
 
@@ -253,10 +214,11 @@ public class UISupport {
         return new SwingConfigurationDialogImpl(name, null, null, null);
     }
 
-    public static void showErrorMessage(final String message) {
+    public static void showErrorMessage(String message) {
         if (message != null && message.length() > EXTENDED_ERROR_MESSAGE_THRESHOLD) {
             dialogs.showExtendedInfo("Error", "An error occurred", message, null);
-        } else {
+        }
+        else {
             dialogs.showErrorMessage(message);
         }
     }
@@ -279,7 +241,7 @@ public class UISupport {
 
     /**
      * @deprecated use prompt(String question, String title, String value)
-     *             instead
+     * instead
      */
 
     @Deprecated
@@ -299,7 +261,8 @@ public class UISupport {
                     cellEditor.stopCellEditing();
                 }
             }
-        } catch (RuntimeException e) {
+        }
+        catch (RuntimeException e) {
             return false;
         }
         return true;
@@ -320,13 +283,13 @@ public class UISupport {
 
         if (isMac()) {
             progressBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
-            Border compound = BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(space, space, space, space, MAC_PROGRESSBAR_MATTE_BORDER_COLOR),
-                    BorderFactory.createLineBorder(MAC_PROGRESSBAR_LINE_BORDER_COLOR)
+            Border compound = BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(space, space, space, space, MAC_PROGRESSBAR_MATTE_BORDER_COLOR),
+                                                                 BorderFactory.createLineBorder(MAC_PROGRESSBAR_LINE_BORDER_COLOR)
             );
             panel.setBorder(compound);
             panel.setBackground(MAC_PROGRESSBAR_BACKGROUND_COLOR);
-        } else {
+        }
+        else {
             progressBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, Color.LIGHT_GRAY));
             panel.setBorder(BorderFactory.createEmptyBorder(space, space, space, space));
         }
@@ -378,13 +341,13 @@ public class UISupport {
 
         if (owner != null && owner.isVisible()) {
             b = owner.getBounds();
-        } else if (b == null) {
+        }
+        else if (b == null) {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             b = ge.getDefaultScreenDevice().getDefaultConfiguration().getBounds();
         }
 
-        dialog.setLocation((int) ((b.getWidth() - sz.getWidth()) / 2) + (int) b.getX(),
-                (int) ((b.getHeight() - sz.getHeight()) / 2) + (int) b.getY());
+        dialog.setLocation((int)((b.getWidth() - sz.getWidth()) / 2) + (int)b.getX(), (int)((b.getHeight() - sz.getHeight()) / 2) + (int)b.getY());
     }
 
     public static void showDialog(JDialog dialog) {
@@ -402,13 +365,14 @@ public class UISupport {
         }
 
         String orgPath = path;
-        java.net.URL imgURL = null;
+        URL imgURL = null;
 
         try {
             File file = new File(path);
             if (file.exists()) {
                 imgURL = file.toURI().toURL();
-            } else {
+            }
+            else {
                 String p = path;
                 if (p.indexOf('/', 1) == -1) {
                     p = "/com/eviware/soapui/resources/images" + p;
@@ -424,7 +388,8 @@ public class UISupport {
             if (imgURL == null) {
                 imgURL = loadFromSecondaryLoader(path);
             }
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t, "Failed to find icon [" + path + "]");
             return null;
         }
@@ -434,16 +399,19 @@ public class UISupport {
                 ImageIcon imageIcon = new ImageIcon(imgURL);
                 iconCache.put(orgPath, imageIcon);
                 return imageIcon;
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 if (e instanceof NoClassDefFoundError) {
                     isHeadless = true;
-                } else {
+                }
+                else {
                     System.err.println("Failed to create icon: " + e);
                 }
 
                 return null;
             }
-        } else {
+        }
+        else {
             System.err.println("Couldn't find icon file: " + path);
             return null;
         }
@@ -457,16 +425,6 @@ public class UISupport {
         return isHeadless.booleanValue();
     }
 
-    private static URL loadFromSecondaryLoader(String path) {
-        for (ClassLoader loader : secondaryResourceLoaders) {
-            URL url = loader.getResource(path);
-            if (url != null) {
-                return url;
-            }
-        }
-        return null;
-    }
-
     public static void showInfoMessage(String message) {
         dialogs.showInfoMessage(message);
     }
@@ -477,12 +435,12 @@ public class UISupport {
 
     @SuppressWarnings("unchecked")
     public static <T extends Object> T prompt(String question, String title, T[] objects) {
-        return (T) dialogs.prompt(question, title, objects);
+        return (T)dialogs.prompt(question, title, objects);
     }
 
     @SuppressWarnings("unchecked")
     public static <T extends Object> T prompt(String question, String title, T[] objects, String value) {
-        return (T) dialogs.prompt(question, title, objects, value);
+        return (T)dialogs.prompt(question, title, objects, value);
     }
 
     public static JButton createToolbarButton(Action action) {
@@ -521,7 +479,8 @@ public class UISupport {
         if (addBorder) {
             if (tabs.getTabPlacement() == JTabbedPane.TOP) {
                 panel.setBorder(BorderFactory.createMatteBorder(1, 1, 0, 0, Color.GRAY));
-            } else {
+            }
+            else {
                 panel.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.GRAY));
             }
         }
@@ -534,13 +493,12 @@ public class UISupport {
     public static void showPopup(JPopupMenu popup, JComponent invoker, Point p) {
         popup.setInvoker(invoker);
 
-        popup.setLocation((int) (invoker.getLocationOnScreen().getX() + p.getX()), (int) (invoker
-                .getLocationOnScreen().getY() + p.getY()));
+        popup.setLocation((int)(invoker.getLocationOnScreen().getX() + p.getX()), (int)(invoker.getLocationOnScreen().getY() + p.getY()));
         popup.setVisible(true);
     }
 
     public static DesktopPanel selectAndShow(ModelItem modelItem) {
-        UISupport.select(modelItem);
+        select(modelItem);
         return showDesktopPanel(modelItem);
     }
 
@@ -550,21 +508,23 @@ public class UISupport {
         }
 
         try {
-            UISupport.setHourglassCursor();
+            setHourglassCursor();
             SoapUIDesktop desktop = SoapUI.getDesktop();
             return desktop == null ? null : desktop.showDesktopPanel(modelItem);
-        } finally {
-            UISupport.resetCursor();
+        }
+        finally {
+            resetCursor();
         }
     }
 
     public static DesktopPanel showDesktopPanel(DesktopPanel desktopPanel) {
         try {
-            UISupport.setHourglassCursor();
+            setHourglassCursor();
             SoapUIDesktop desktop = SoapUI.getDesktop();
             return desktop == null ? null : desktop.showDesktopPanel(desktopPanel);
-        } finally {
-            UISupport.resetCursor();
+        }
+        finally {
+            resetCursor();
         }
     }
 
@@ -597,9 +557,9 @@ public class UISupport {
         SoapUI.logError(ex);
 
         if (ex.toString().length() > 100) {
-            dialogs.showExtendedInfo("Error", "An error of type " + ex.getClass().getSimpleName() + " occured.",
-                    ex.toString(), null);
-        } else {
+            dialogs.showExtendedInfo("Error", "An error of type " + ex.getClass().getSimpleName() + " occured.", ex.toString(), null);
+        }
+        else {
             dialogs.showErrorMessage(ex.toString());
         }
     }
@@ -644,12 +604,12 @@ public class UISupport {
         frame.setCursor(defaultCursor);
     }
 
-    public static void setUIUtils(UIUtils utils) {
-        UISupport.uiUtils = utils;
-    }
-
     public static UIUtils getUIUtils() {
         return uiUtils;
+    }
+
+    public static void setUIUtils(UIUtils utils) {
+        uiUtils = utils;
     }
 
     public static void invokeLater(Runnable runnable) {
@@ -697,10 +657,12 @@ public class UISupport {
         try {
             if (InputHandler.getMenuShortcutKeyMask() == Event.META_MASK) {
                 keyStroke = keyStroke.replaceAll("menu", "meta");
-            } else {
+            }
+            else {
                 keyStroke = keyStroke.replaceAll("menu", "ctrl");
             }
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             keyStroke = keyStroke.replaceAll("menu", "ctrl");
         }
 
@@ -712,50 +674,19 @@ public class UISupport {
     }
 
     public static void setPreferredHeight(Component component, int heigth) {
-        component.setPreferredSize(new Dimension((int) component.getPreferredSize().getWidth(), heigth));
+        component.setPreferredSize(new Dimension((int)component.getPreferredSize().getWidth(), heigth));
     }
 
-    public static JButtonBar initDialogActions(ActionList actions, final JDialog dialog) {
+    public static JButtonBar initDialogActions(ActionList actions, JDialog dialog) {
         return initWindowActions(actions, dialog.getRootPane(), dialog);
     }
 
-    public static JButtonBar initFrameActions(ActionList actions, final JFrame frame) {
+    public static JButtonBar initFrameActions(ActionList actions, JFrame frame) {
         return initWindowActions(actions, frame.getRootPane(), frame);
     }
 
-    private static JButtonBar initWindowActions(ActionList actions, JRootPane rootPane, final Window dialog) {
-        rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "ESCAPE");
-        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                dialog.setVisible(false);
-            }
-        });
-
-        if (actions != null) {
-            JButtonBar buttons = new JButtonBar();
-            buttons.addActions(actions);
-            rootPane.setDefaultButton(buttons.getDefaultButton());
-
-            for (int c = 0; c < actions.getActionCount(); c++) {
-                Action action = actions.getActionAt(c);
-                if (action instanceof HelpActionMarker) {
-                    rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-                            KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "HELP");
-                    rootPane.getActionMap().put("HELP", action);
-                    break;
-                }
-            }
-
-            return buttons;
-        }
-
-        return null;
-    }
-
-    public static void initDialogActions(final JDialog dialog, Action helpAction, JButton defaultButton) {
-        dialog.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "ESCAPE");
+    public static void initDialogActions(JDialog dialog, Action helpAction, JButton defaultButton) {
+        dialog.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "ESCAPE");
         dialog.getRootPane().getActionMap().put("ESCAPE", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 dialog.setVisible(false);
@@ -767,19 +698,17 @@ public class UISupport {
         }
 
         if (helpAction != null) {
-            dialog.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                    .put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "HELP");
+            dialog.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "HELP");
             dialog.getRootPane().getActionMap().put("HELP", helpAction);
         }
     }
 
     public static <T extends JComponent> T addTitledBorder(T component, String title) {
-        component
-                .setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createEmptyBorder(3, 0, 0, 0),
-                        BorderFactory.createCompoundBorder(
-                                BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), title),
-                                component.getBorder())));
+        component.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0),
+                                                               BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), title),
+                                                                                                  component.getBorder()
+                                                               )
+        ));
 
         return component;
     }
@@ -790,12 +719,12 @@ public class UISupport {
 
     @SuppressWarnings("unchecked")
     public static <T extends Object> T prompt(String question, String title, List<T> objects) {
-        return (T) dialogs.prompt(question, title, objects.toArray());
+        return (T)dialogs.prompt(question, title, objects.toArray());
     }
 
     @SuppressWarnings("unchecked")
     public static <T extends Object> T prompt(String question, String title, List<T> objects, String value) {
-        return (T) dialogs.prompt(question, title, objects.toArray(), value);
+        return (T)dialogs.prompt(question, title, objects.toArray(), value);
     }
 
     public static void showExtendedInfo(String title, String description, String content, Dimension size) {
@@ -829,17 +758,20 @@ public class UISupport {
         try {
             if (!file.exists()) {
                 url = SoapUI.class.getResource("/com/eviware/soapui/resources/images/" + filename);
-            } else {
+            }
+            else {
                 url = file.toURI().toURL();
             }
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
         }
 
         try {
             if (url == null) {
                 url = new URL("http://www.soapui.org/images/" + filename);
             }
-        } catch (Exception e2) {
+        }
+        catch (Exception e2) {
             SoapUI.logError(e2);
         }
 
@@ -855,7 +787,7 @@ public class UISupport {
     }
 
     public static PreviewCorner addPreviewCorner(JScrollPane scrollPane, boolean forceScrollbars) {
-        ImageIcon previewIcon = UISupport.createImageIcon("/previewscroller.gif");
+        ImageIcon previewIcon = createImageIcon("/previewscroller.gif");
         PreviewCorner previewCorner = new PreviewCorner(scrollPane, previewIcon, true, JScrollPane.LOWER_RIGHT_CORNER);
         scrollPane.setCorner(JScrollPane.LOWER_RIGHT_CORNER, previewCorner);
 
@@ -915,7 +847,7 @@ public class UISupport {
             return Font.decode(editorFont);
         }
 
-        Integer fontSize = (Integer) UIManager.get("customFontSize");
+        Integer fontSize = (Integer)UIManager.get("customFontSize");
         if (fontSize == null) {
             fontSize = DEFAULT_EDITOR_FONT_SIZE;
         }
@@ -928,39 +860,11 @@ public class UISupport {
         while (currentComponent != null && !(expectedClass.isAssignableFrom(currentComponent.getClass()))) {
             currentComponent = currentComponent.getParent();
         }
-        return (T) currentComponent;
+        return (T)currentComponent;
     }
 
     public static char[] promptPassword(String question, String title) {
         return dialogs.promptPassword(question, title);
-    }
-
-    private static final class ItemListenerImplementation implements ItemListener {
-        private final JComboBox combo;
-        private final String defaultTooltip;
-
-        public ItemListenerImplementation(JComboBox combo, String defaultTooltip) {
-            this.combo = combo;
-            this.defaultTooltip = defaultTooltip;
-        }
-
-        // set tooltip, property is set by model directly
-        public void itemStateChanged(ItemEvent e) {
-            Object item = combo.getSelectedItem();
-            if (item == null) {
-                combo.setToolTipText(defaultTooltip);
-            } else {
-                String selectedItem = item.toString();
-
-                if (item instanceof ModelItem) {
-                    selectedItem = ((ModelItem) item).getName();
-                } else if (item instanceof TestProperty) {
-                    selectedItem = ((TestProperty) item).getName();
-                }
-
-                combo.setToolTipText(selectedItem);
-            }
-        }
     }
 
     public static boolean isIdePlugin() {
@@ -973,7 +877,7 @@ public class UISupport {
         return panel;
     }
 
-    public static JLabel createLabelLink(final String url, String labelText) {
+    public static JLabel createLabelLink(String url, String labelText) {
         JLabel label = new JLabel(labelText);
         label.setForeground(Color.BLUE);
         label.addMouseListener(new MouseAdapter() {
@@ -992,13 +896,51 @@ public class UISupport {
             return true;
         }
         double bottomYCoordinate = componentLocation.getY() + expandableDialogHeight + componentHeight;
-        double bottomUsableYCoordinateOnScreen = currentGraphicsConfiguration.getBounds().getMaxY()
-                - Toolkit.getDefaultToolkit().getScreenInsets(currentGraphicsConfiguration).bottom;
+        double bottomUsableYCoordinateOnScreen = currentGraphicsConfiguration.getBounds().getMaxY() -
+                                                 Toolkit.getDefaultToolkit().getScreenInsets(currentGraphicsConfiguration).bottom;
         return bottomYCoordinate <= bottomUsableYCoordinateOnScreen;
     }
 
     public static boolean isUsingConsoleDialogs() {
         return dialogs instanceof ConsoleDialogs;
+    }
+
+    private static URL loadFromSecondaryLoader(String path) {
+        for (ClassLoader loader : secondaryResourceLoaders) {
+            URL url = loader.getResource(path);
+            if (url != null) {
+                return url;
+            }
+        }
+        return null;
+    }
+
+    private static JButtonBar initWindowActions(ActionList actions, JRootPane rootPane, Window dialog) {
+        rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "ESCAPE");
+        rootPane.getActionMap().put("ESCAPE", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                dialog.setVisible(false);
+            }
+        });
+
+        if (actions != null) {
+            JButtonBar buttons = new JButtonBar();
+            buttons.addActions(actions);
+            rootPane.setDefaultButton(buttons.getDefaultButton());
+
+            for (int c = 0; c < actions.getActionCount(); c++) {
+                Action action = actions.getActionAt(c);
+                if (action instanceof HelpActionMarker) {
+                    rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0), "HELP");
+                    rootPane.getActionMap().put("HELP", action);
+                    break;
+                }
+            }
+
+            return buttons;
+        }
+
+        return null;
     }
 
     private static GraphicsConfiguration getGraphicsConfigurationForPosition(Point point) {
@@ -1008,5 +950,35 @@ public class UISupport {
             }
         }
         return null;
+    }
+
+    private static final class ItemListenerImplementation implements ItemListener {
+        private final JComboBox combo;
+        private final String defaultTooltip;
+
+        public ItemListenerImplementation(JComboBox combo, String defaultTooltip) {
+            this.combo = combo;
+            this.defaultTooltip = defaultTooltip;
+        }
+
+        // set tooltip, property is set by model directly
+        public void itemStateChanged(ItemEvent e) {
+            Object item = combo.getSelectedItem();
+            if (item == null) {
+                combo.setToolTipText(defaultTooltip);
+            }
+            else {
+                String selectedItem = item.toString();
+
+                if (item instanceof ModelItem) {
+                    selectedItem = ((ModelItem)item).getName();
+                }
+                else if (item instanceof TestProperty) {
+                    selectedItem = ((TestProperty)item).getName();
+                }
+
+                combo.setToolTipText(selectedItem);
+            }
+        }
     }
 }

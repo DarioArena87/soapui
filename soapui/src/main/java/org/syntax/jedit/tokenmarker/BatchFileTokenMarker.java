@@ -12,13 +12,13 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
-import javax.swing.text.Segment;
-
 import org.syntax.jedit.SyntaxUtilities;
+
+import javax.swing.text.Segment;
 
 /**
  * Batch file token marker.
@@ -52,7 +52,8 @@ public class BatchFileTokenMarker extends TokenMarker {
                                 addToken(2, Token.KEYWORD2);
                                 i += 2;
                                 lastOffset = i;
-                            } else {
+                            }
+                            else {
                                 token = Token.KEYWORD2;
                             }
                             break;
@@ -98,7 +99,8 @@ public class BatchFileTokenMarker extends TokenMarker {
         if (lastOffset != length) {
             if (token != Token.NULL) {
                 token = Token.INVALID;
-            } else if (lastOffset == offset) {
+            }
+            else if (lastOffset == offset) {
                 token = Token.KEYWORD1;
             }
             addToken(length - lastOffset, token);

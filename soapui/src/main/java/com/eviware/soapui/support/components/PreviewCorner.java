@@ -1,45 +1,25 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
 
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JViewport;
-import javax.swing.MenuSelectionManager;
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Composite;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -54,8 +34,8 @@ import java.awt.image.BufferedImage;
  */
 
 public class PreviewCorner extends JButton implements ActionListener {
-    private String _corner;
-    private PreviewPopup _previewPopup;
+    private final String _corner;
+    private final PreviewPopup _previewPopup;
 
     /**
      * @param scrollPane        the <code>JScrollPane</code> to preview
@@ -73,7 +53,7 @@ public class PreviewCorner extends JButton implements ActionListener {
     public PreviewCorner(JScrollPane scrollPane, ImageIcon zoomIcon, boolean doCloseAfterClick, String corner) {
 
         super(zoomIcon);
-        this._corner = corner;
+        _corner = corner;
 
         // Creates the popup menu, containing the scaled image of the component.
         _previewPopup = new PreviewPopup(scrollPane, doCloseAfterClick);
@@ -100,30 +80,37 @@ public class PreviewCorner extends JButton implements ActionListener {
 
 class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListener {
 
+    // DELTA is the space between the scroll pane and the preview popup menu.
+    private static final int DELTA = 5;
+    float _ratio;
     private JScrollPane _scrollPane;
     private JViewport _viewPort;
-
-    private JLabel _zoomWindow; // the JLabel containing the scaled image
-
-    private JPanel _cursorLabel; // the JLabel mimicking the fake rectangle
     // cursor
-
+    private final JLabel _zoomWindow; // the JLabel containing the scaled image
+    private final JPanel _cursorLabel; // the JLabel mimicking the fake rectangle
     // This component will hold both JLabels _zoomWindow and _cursorLabel,
     // the latter on top of the other.
     private JLayeredPane _layeredPane;
-
     private int _iconWidth;
     private int _iconHeight;
+    private final boolean _doCloseAfterClick;
 
-    private boolean _doCloseAfterClick;
-
-    float _ratio;
-
-    // DELTA is the space between the scroll pane and the preview popup menu.
-    private static int DELTA = 5;
+    /**
+     * takes a java component and generates an image out of it.
+     *
+     * @param c the component for which image needs to be generated
+     * @return the generated image
+     */
+    public static BufferedImage captureComponentViewAsBufferedImage(Component c) {
+        Dimension size = c.getSize();
+        BufferedImage bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
+        Graphics bufferedGraphics = bufferedImage.createGraphics();
+        c.paint(bufferedGraphics);
+        return bufferedImage;
+    }
 
     public PreviewPopup(JScrollPane scrollPane, boolean doCloseAfterClick) {
-        this.setBorder(BorderFactory.createEtchedBorder());
+        setBorder(BorderFactory.createEtchedBorder());
 
         _doCloseAfterClick = doCloseAfterClick;
 
@@ -135,15 +122,15 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
 
         _layeredPane = new JLayeredPane();
 
-        _layeredPane.add(_zoomWindow, new Integer(0));
-        _layeredPane.add(_cursorLabel, new Integer(1));
+        _layeredPane.add(_zoomWindow, Integer.valueOf(0));
+        _layeredPane.add(_cursorLabel, Integer.valueOf(1));
 
         // Creates a blank transparent cursor to be used as the cursor of
         // the popup menu.
         BufferedImage bim = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
         setCursor(getToolkit().createCustomCursor(bim, (new Point(0, 0)), "PreviewCursor"));
 
-        this.add(_layeredPane);
+        add(_layeredPane);
 
         // Adds the mouse input listeners to the _layeredPane to scroll the
         // viewport and to move the fake cursor (_cursorLabel).
@@ -189,7 +176,7 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
         // else
         // _ratio = ( int ) (( _viewPort.getComponent(0).getHeight() /
         // (_viewPort.getHeight()) / scaleFactor ));
-        _ratio = (((float) _viewPort.getComponent(0).getHeight() / ((float) _viewPort.getHeight()) / scaleFactor));
+        _ratio = (((float)_viewPort.getComponent(0).getHeight() / ((float)_viewPort.getHeight()) / scaleFactor));
 
         if (_ratio < 2) {
             _ratio = 2;
@@ -197,32 +184,32 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
 
         // System.out.println( "ratio = " + _ratio );
 
-        int zoomWindowImageWidth = (int) (_viewPort.getComponent(0).getWidth() / _ratio);
+        int zoomWindowImageWidth = (int)(_viewPort.getComponent(0).getWidth() / _ratio);
         if (zoomWindowImageWidth < 10) {
             UISupport.showInfoMessage("Viewport too large for readable image, use scrollbar instead");
             return;
         }
 
-        int zoomWindowImageHeight = (int) (_viewPort.getComponent(0).getHeight() / _ratio);
+        int zoomWindowImageHeight = (int)(_viewPort.getComponent(0).getHeight() / _ratio);
 
         // System.out.println( "ratio = " + _ratio + ", zoomWindowImageWidth = " +
         // zoomWindowImageWidth +
         // ", zoomWindowImageHeight = " + zoomWindowImageHeight);
 
-		/*
+        /*
          * Image componentImage =
-		 * captureComponentViewAsBufferedImage(_viewPort.getComponent(0))
-		 * .getScaledInstance( zoomWindowImageWidth, zoomWindowImageHeight,
-		 * Image.SCALE_SMOOTH);
-		 */
-		/*
-		 * Based on Shannon Hickey's comments. This is much faster way to scale
-		 * instance Thanks! Shannon
-		 */
+         * captureComponentViewAsBufferedImage(_viewPort.getComponent(0))
+         * .getScaledInstance( zoomWindowImageWidth, zoomWindowImageHeight,
+         * Image.SCALE_SMOOTH);
+         */
+        /*
+         * Based on Shannon Hickey's comments. This is much faster way to scale
+         * instance Thanks! Shannon
+         */
         Image capture = captureComponentViewAsBufferedImage(_viewPort.getComponent(0));
         Image componentImage = new BufferedImage(zoomWindowImageWidth, zoomWindowImageHeight, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = (Graphics2D) componentImage.getGraphics();
-		/* if you want smoother scaling */
+        Graphics2D g2d = (Graphics2D)componentImage.getGraphics();
+        /* if you want smoother scaling */
         if (zoomWindowImageWidth > 15) {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         }
@@ -239,9 +226,9 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
 
         _zoomWindow.setBounds(0, 0, _iconWidth, _iconHeight);
 
-        int cursorWidth = (int) (_viewPort.getWidth() / _ratio);
+        int cursorWidth = (int)(_viewPort.getWidth() / _ratio);
 
-        int cursorHeight = (int) (_viewPort.getHeight() / _ratio);
+        int cursorHeight = (int)(_viewPort.getHeight() / _ratio);
 
         _cursorLabel.setBounds(0, 0, cursorWidth, cursorHeight);
 
@@ -251,13 +238,15 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
         int dy = componentIcon.getIconHeight() + DELTA;
 
         if (corner.equals(JScrollPane.UPPER_LEFT_CORNER)) {
-            ;
-        } else if (corner.equals(JScrollPane.UPPER_RIGHT_CORNER)) {
+        }
+        else if (corner.equals(JScrollPane.UPPER_RIGHT_CORNER)) {
             dx = -dx;
-        } else if (corner.equals(JScrollPane.LOWER_RIGHT_CORNER)) {
+        }
+        else if (corner.equals(JScrollPane.LOWER_RIGHT_CORNER)) {
             dx = -dx;
             dy = -dy;
-        } else if (corner.equals(JScrollPane.LOWER_LEFT_CORNER)) {
+        }
+        else if (corner.equals(JScrollPane.LOWER_LEFT_CORNER)) {
             dy = -dy;
         }
 
@@ -268,8 +257,7 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
         // System.out.println( "Showing at " + dx + ", " + dy );
 
         // Shows the popup menu at the right place.
-        this.show(c, dx, dy);
-
+        show(c, dx, dy);
     }
 
     public JPanel createCursor() {
@@ -277,12 +265,11 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
 
             @Override
             protected void paintComponent(Graphics g) {
-                Composite composite = ((Graphics2D) g).getComposite();
-                ((Graphics2D) g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
+                Composite composite = ((Graphics2D)g).getComposite();
+                ((Graphics2D)g).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.2f));
                 super.paintComponent(g);
-                ((Graphics2D) g).setComposite(composite);
+                ((Graphics2D)g).setComposite(composite);
             }
-
         };
         label.setBorder(BorderFactory.createLineBorder(Color.gray));
         label.setVisible(false);
@@ -292,6 +279,20 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
     }
 
     public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+        // When the mouse is released, set the visibility of the preview
+        // popup menu to false only if doCloseAfterClick is set to true.
+        if (_doCloseAfterClick) {
+            setVisible(false);
+            _cursorLabel.setVisible(false);
+            MenuSelectionManager.defaultManager().clearSelectedPath();
+            setInvoker(null);
+        }
     }
 
     public void mouseEntered(MouseEvent e) {
@@ -304,20 +305,6 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
         // When the mouse exits the preview popup menu, set the visibility
         // of the fake cursor to false.
         _cursorLabel.setVisible(false);
-    }
-
-    public void mousePressed(MouseEvent e) {
-    }
-
-    public void mouseReleased(MouseEvent e) {
-        // When the mouse is released, set the visibility of the preview
-        // popup menu to false only if doCloseAfterClick is set to true.
-        if (_doCloseAfterClick) {
-            this.setVisible(false);
-            _cursorLabel.setVisible(false);
-            MenuSelectionManager.defaultManager().clearSelectedPath();
-            setInvoker(null);
-        }
     }
 
     public void mouseDragged(MouseEvent e) {
@@ -346,28 +333,12 @@ class PreviewPopup extends JPopupMenu implements MouseListener, MouseMotionListe
      */
     private void scrollViewPort() {
         Point cursorLocation = _cursorLabel.getLocation();
-        int dx = (int) Math.max(cursorLocation.getX(), 0);
-        int dy = (int) Math.max(cursorLocation.getY(), 0);
+        int dx = (int)Math.max(cursorLocation.getX(), 0);
+        int dy = (int)Math.max(cursorLocation.getY(), 0);
 
-        dx = (int) (dx * _ratio);
-        dy = (int) (dy * _ratio);
+        dx = (int)(dx * _ratio);
+        dy = (int)(dy * _ratio);
 
-        ((JComponent) _viewPort.getComponent(0)).scrollRectToVisible(new Rectangle(dx, dy, _viewPort.getWidth(),
-                _viewPort.getHeight()));
+        ((JComponent)_viewPort.getComponent(0)).scrollRectToVisible(new Rectangle(dx, dy, _viewPort.getWidth(), _viewPort.getHeight()));
     }
-
-    /**
-     * takes a java component and generates an image out of it.
-     *
-     * @param c the component for which image needs to be generated
-     * @return the generated image
-     */
-    public static BufferedImage captureComponentViewAsBufferedImage(Component c) {
-        Dimension size = c.getSize();
-        BufferedImage bufferedImage = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_RGB);
-        Graphics bufferedGraphics = bufferedImage.createGraphics();
-        c.paint(bufferedGraphics);
-        return bufferedImage;
-    }
-
 }

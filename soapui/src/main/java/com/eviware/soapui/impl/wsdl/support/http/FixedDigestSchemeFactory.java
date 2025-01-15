@@ -6,7 +6,7 @@ import org.apache.http.protocol.HttpContext;
 
 public class FixedDigestSchemeFactory extends DigestSchemeFactory {
     @Override
-    public AuthScheme create(final HttpContext context) {
+    public AuthScheme create(HttpContext context) {
         return new FixedDigestScheme();
     }
 }

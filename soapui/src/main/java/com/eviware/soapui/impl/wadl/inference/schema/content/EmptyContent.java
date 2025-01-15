@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema.content;
@@ -30,7 +30,7 @@ import org.apache.xmlbeans.XmlException;
  * @author Dain Nilsson
  */
 public class EmptyContent implements Content {
-    private Schema schema;
+    private final Schema schema;
     private boolean completed = false;
 
     public EmptyContent(Schema schema, boolean completed) {
@@ -43,16 +43,6 @@ public class EmptyContent implements Content {
         completed = xml.getCompleted();
     }
 
-    public EmptyContentConfig save() {
-        EmptyContentConfig xml = EmptyContentConfig.Factory.newInstance();
-        xml.setCompleted(completed);
-        return xml;
-    }
-
-    public String toString(String attrs) {
-        return attrs;
-    }
-
     public Content validate(Context context) throws XmlException {
         XmlCursor cursor = context.getCursor();
         cursor.push();
@@ -60,11 +50,13 @@ public class EmptyContent implements Content {
             // Element has children
             cursor.pop();
             return new SequenceContent(schema, completed);
-        } else if (cursor.pop() && !cursor.isEnd()) {
+        }
+        else if (cursor.pop() && !cursor.isEnd()) {
             // Element has simple content
             if (completed) {
                 return new SimpleContent(schema, TypeInferrer.getBlankType());
-            } else {
+            }
+            else {
                 return new SimpleContent(schema, cursor.getTextValue());
             }
         }
@@ -72,4 +64,13 @@ public class EmptyContent implements Content {
         return this;
     }
 
+    public String toString(String attrs) {
+        return attrs;
+    }
+
+    public EmptyContentConfig save() {
+        EmptyContentConfig xml = EmptyContentConfig.Factory.newInstance();
+        xml.setCompleted(completed);
+        return xml;
+    }
 }

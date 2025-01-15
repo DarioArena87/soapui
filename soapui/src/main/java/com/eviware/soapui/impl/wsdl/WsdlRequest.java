@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl;
@@ -65,15 +65,12 @@ import java.util.Map;
  * @author Ole.Matzura
  */
 
-public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implements WsdlAttachmentContainer,
-        PropertyExpansionContainer, WsaContainer, WsrmContainer, PropertyChangeListener {
+public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implements WsdlAttachmentContainer, PropertyExpansionContainer, WsaContainer, WsrmContainer, PropertyChangeListener {
     public final static Logger log = LogManager.getLogger(WsdlRequest.class);
 
     public static final String RESPONSE_CONTENT_PROPERTY = WsdlRequest.class.getName() + "@response-content";
-    public static final String INLINE_RESPONSE_ATTACHMENTS = WsdlRequest.class.getName()
-            + "@inline-response-attachments";
-    public static final String EXPAND_MTOM_RESPONSE_ATTACHMENTS = WsdlRequest.class.getName()
-            + "@expand-mtom-attachments";
+    public static final String INLINE_RESPONSE_ATTACHMENTS = WsdlRequest.class.getName() + "@inline-response-attachments";
+    public static final String EXPAND_MTOM_RESPONSE_ATTACHMENTS = WsdlRequest.class.getName() + "@expand-mtom-attachments";
     public static final String FORCE_MTOM = WsdlRequest.class.getName() + "@force_mtom";
     public static final String ENABLE_INLINE_FILES = WsdlRequest.class.getName() + "@enable_inline_files";
     public static final String SKIP_SOAP_ACTION = WsdlRequest.class.getName() + "@skip_soap_action";
@@ -89,10 +86,12 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
 
     private WsdlOperation operation;
     private List<HttpAttachmentPart> definedAttachmentParts;
-    private InternalInterfaceListener interfaceListener = new InternalInterfaceListener();
+    private final InternalInterfaceListener interfaceListener = new InternalInterfaceListener();
 
     private WsaConfig wsaConfig;
     private WsrmConfig wsrmConfig;
+    private JMSHeaderConfig jmsHeaderConfig;
+    private JMSPropertiesConfig jmsPropertyConfig;
 
     public WsdlRequest(WsdlOperation operation, WsdlRequestConfig callConfig) {
         this(operation, callConfig, false);
@@ -176,25 +175,35 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         return getResponse() == null ? null : getResponse().getContentAsString();
     }
 
-    public WsdlResponse getResponse() {
-        return (WsdlResponse) super.getResponse();
+    public WsdlSubmit<WsdlRequest> submit(SubmitContext submitContext, boolean async) throws SubmitException {
+        String endpoint = PropertyExpander.expandProperties(submitContext, getEndpoint());
+        if (endpoint == null || endpoint.trim().length() == 0) {
+            UISupport.showErrorMessage("Missing endpoint for request [" + getName() + "]");
+            return null;
+        }
+
+        try {
+            WsdlSubmit<WsdlRequest> submitter = new WsdlSubmit<WsdlRequest>(this, getSubmitListeners(), RequestTransportRegistry.getTransport(endpoint, submitContext));
+            submitter.submitRequest(submitContext, async);
+            return submitter;
+        }
+        catch (Exception e) {
+            throw new SubmitException(e.toString());
+        }
     }
 
-    public WsdlOperation getOperation() {
-        return operation;
-    }
+    public MessagePart[] getRequestParts() {
+        try {
+            List<MessagePart> result = new ArrayList<MessagePart>();
+            result.addAll(Arrays.asList(getOperation().getDefaultRequestParts()));
+            result.addAll(Arrays.asList(getDefinedAttachmentParts()));
 
-    public void setOperation(WsdlOperation wsdlOperation) {
-        WsdlOperation oldOperation = operation;
-        this.operation = wsdlOperation;
-
-        definedAttachmentParts = null;
-        notifyPropertyChanged(OPERATION_PROPERTY, oldOperation, operation);
-    }
-
-    public void setRequestContent(String request) {
-        definedAttachmentParts = null;
-        super.setRequestContent(request);
+            return result.toArray(new MessagePart[result.size()]);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return new MessagePart[0];
+        }
     }
 
     // public void setResponse( WsdlResponse response, SubmitContext context )
@@ -205,38 +214,26 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
     // notifyPropertyChanged( RESPONSE_PROPERTY, oldResponse, response );
     // }
 
-    public WsdlSubmit<WsdlRequest> submit(SubmitContext submitContext, boolean async) throws SubmitException {
-        String endpoint = PropertyExpander.expandProperties(submitContext, getEndpoint());
-        if (endpoint == null || endpoint.trim().length() == 0) {
-            UISupport.showErrorMessage("Missing endpoint for request [" + getName() + "]");
-            return null;
-        }
-
+    public MessagePart[] getResponseParts() {
         try {
-            WsdlSubmit<WsdlRequest> submitter = new WsdlSubmit<WsdlRequest>(this, getSubmitListeners(),
-                    RequestTransportRegistry.getTransport(endpoint, submitContext));
-            submitter.submitRequest(submitContext, async);
-            return submitter;
-        } catch (Exception e) {
-            throw new SubmitException(e.toString());
-        }
-    }
+            List<MessagePart> result = new ArrayList<MessagePart>();
+            result.addAll(Arrays.asList(getOperation().getDefaultResponseParts()));
 
-    private class InternalInterfaceListener extends InterfaceListenerAdapter implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(Interface.ENDPOINT_PROPERTY)) {
-                String endpoint = getEndpoint();
-                if (evt.getOldValue() != null && evt.getOldValue().equals(endpoint)) {
-                    setEndpoint((String) evt.getNewValue());
-                }
+            if (getResponse() != null) {
+                result.addAll(AttachmentUtils.extractAttachmentParts(getOperation(), getResponse().getContentAsString(), true, true, isMtomEnabled()));
             }
+
+            return result.toArray(new MessagePart[result.size()]);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return new MessagePart[0];
         }
     }
 
     public String getWssPasswordType() {
         String wssPasswordType = getConfig().getWssPasswordType();
-        return StringUtils.isNullOrEmpty(wssPasswordType) || PW_TYPE_NONE.equals(wssPasswordType) ? null
-                : wssPasswordType;
+        return StringUtils.isNullOrEmpty(wssPasswordType) || PW_TYPE_NONE.equals(wssPasswordType) ? null : wssPasswordType;
     }
 
     public void setWssPasswordType(String wssPasswordType) {
@@ -244,34 +241,40 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
             if (getConfig().isSetWssPasswordType()) {
                 getConfig().unsetWssPasswordType();
             }
-        } else {
+        }
+        else {
             getConfig().setWssPasswordType(wssPasswordType);
         }
     }
-
-	/*
-     * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.eviware.soapui.impl.wsdl.AttachmentContainer#getDefinedAttachmentParts
-	 * ()
-	 */
 
     public synchronized HttpAttachmentPart[] getDefinedAttachmentParts() {
         if (definedAttachmentParts == null) {
             try {
                 UISupport.setHourglassCursor();
-                definedAttachmentParts = AttachmentUtils.extractAttachmentParts(operation, getRequestContent(), true,
-                        false, isMtomEnabled());
-            } catch (Exception e) {
+                definedAttachmentParts = AttachmentUtils.extractAttachmentParts(operation, getRequestContent(), true, false, isMtomEnabled());
+            }
+            catch (Exception e) {
                 log.warn(e.toString());
                 definedAttachmentParts = new ArrayList<HttpAttachmentPart>();
-            } finally {
+            }
+            finally {
                 UISupport.resetCursor();
             }
         }
 
         return definedAttachmentParts.toArray(new HttpAttachmentPart[definedAttachmentParts.size()]);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * com.eviware.soapui.impl.wsdl.AttachmentContainer#getDefinedAttachmentParts
+     * ()
+     */
+
+    public ModelItem getModelItem() {
+        return this;
     }
 
     public RestRequestInterface.HttpMethod getMethod() {
@@ -296,6 +299,50 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         return null;
     }
 
+    @Override
+    public void release() {
+        super.release();
+
+        getOperation().getInterface().removeInterfaceListener(interfaceListener);
+        getOperation().getInterface().removePropertyChangeListener(interfaceListener);
+    }
+
+    public WsdlOperation getOperation() {
+        return operation;
+    }
+
+    public void setOperation(WsdlOperation wsdlOperation) {
+        WsdlOperation oldOperation = operation;
+        operation = wsdlOperation;
+
+        definedAttachmentParts = null;
+        notifyPropertyChanged(OPERATION_PROPERTY, oldOperation, operation);
+    }
+
+    public void setRequestContent(String request) {
+        definedAttachmentParts = null;
+        super.setRequestContent(request);
+    }
+
+    public PropertyExpansion[] getPropertyExpansions() {
+        PropertyExpansionsResult result = new PropertyExpansionsResult(this, this);
+        result.addAll(super.getPropertyExpansions());
+
+        StringToStringsMap requestHeaders = getRequestHeaders();
+        for (Map.Entry<String, List<String>> headerEntry : requestHeaders.entrySet()) {
+            for (String value : headerEntry.getValue()) {
+                result.addAll(PropertyExpansionUtils.extractPropertyExpansions(this, new HttpTestRequestStep.RequestHeaderHolder(headerEntry.getKey(), value, this), "value"));
+            }
+        }
+        addWsaPropertyExpansions(result, getWsaConfig(), this);
+        addJMSHeaderExpansions(result, getJMSHeaderConfig(), this);
+        return result.toArray();
+    }
+
+    public WsdlResponse getResponse() {
+        return (WsdlResponse)super.getResponse();
+    }
+
     public void copyTo(WsdlRequest newRequest, boolean copyAttachments, boolean copyHeaders) {
         newRequest.setEncoding(getEncoding());
         newRequest.setEndpoint(getEndpoint());
@@ -304,7 +351,7 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
 
         CredentialsConfig credentials = getConfig().getCredentials();
         if (credentials != null) {
-            newRequest.getConfig().setCredentials((CredentialsConfig) credentials.copy());
+            newRequest.getConfig().setCredentials((CredentialsConfig)credentials.copy());
         }
 
         if (copyAttachments) {
@@ -334,57 +381,39 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
     }
 
     public boolean isInlineFilesEnabled() {
-        return getSettings().getBoolean(WsdlRequest.ENABLE_INLINE_FILES);
+        return getSettings().getBoolean(ENABLE_INLINE_FILES);
     }
 
     public void setInlineFilesEnabled(boolean inlineFilesEnabled) {
-        getSettings().setBoolean(WsdlRequest.ENABLE_INLINE_FILES, inlineFilesEnabled);
+        getSettings().setBoolean(ENABLE_INLINE_FILES, inlineFilesEnabled);
+    }
+
+    public boolean isEncodeAttachments() {
+        return getSettings().getBoolean(ENCODE_ATTACHMENTS);
+    }
+
+    public void setEncodeAttachments(boolean encodeAttachments) {
+        boolean old = getSettings().getBoolean(ENCODE_ATTACHMENTS);
+        getSettings().setBoolean(ENCODE_ATTACHMENTS, encodeAttachments);
+        notifyPropertyChanged(ENCODE_ATTACHMENTS, old, encodeAttachments);
+    }
+
+    public AttachmentEncoding getAttachmentEncoding(String partName) {
+        HttpAttachmentPart attachmentPart = getAttachmentPart(partName);
+        if (attachmentPart == null) {
+            return AttachmentUtils.getAttachmentEncoding(getOperation(), partName, false);
+        }
+        else {
+            return AttachmentUtils.getAttachmentEncoding(getOperation(), attachmentPart, false);
+        }
     }
 
     public boolean isSkipSoapAction() {
-        return getSettings().getBoolean(WsdlRequest.SKIP_SOAP_ACTION);
+        return getSettings().getBoolean(SKIP_SOAP_ACTION);
     }
 
     public void setSkipSoapAction(boolean skipSoapAction) {
-        getSettings().setBoolean(WsdlRequest.SKIP_SOAP_ACTION, skipSoapAction);
-    }
-
-    @Override
-    public void release() {
-        super.release();
-
-        getOperation().getInterface().removeInterfaceListener(interfaceListener);
-        getOperation().getInterface().removePropertyChangeListener(interfaceListener);
-    }
-
-    public MessagePart[] getRequestParts() {
-        try {
-            List<MessagePart> result = new ArrayList<MessagePart>();
-            result.addAll(Arrays.asList(getOperation().getDefaultRequestParts()));
-            result.addAll(Arrays.asList(getDefinedAttachmentParts()));
-
-            return result.toArray(new MessagePart[result.size()]);
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return new MessagePart[0];
-        }
-    }
-
-    public MessagePart[] getResponseParts() {
-        try {
-            List<MessagePart> result = new ArrayList<MessagePart>();
-            result.addAll(Arrays.asList(getOperation().getDefaultResponseParts()));
-
-            if (getResponse() != null) {
-                result.addAll(AttachmentUtils.extractAttachmentParts(getOperation(), getResponse().getContentAsString(),
-                        true, true, isMtomEnabled()));
-            }
-
-            return result.toArray(new MessagePart[result.size()]);
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return new MessagePart[0];
-        }
+        getSettings().setBoolean(SKIP_SOAP_ACTION, skipSoapAction);
     }
 
     public String getWssTimeToLive() {
@@ -407,16 +436,6 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         boolean old = getSettings().getBoolean(FORCE_MTOM);
         getSettings().setBoolean(FORCE_MTOM, forceMtom);
         notifyPropertyChanged(FORCE_MTOM, old, forceMtom);
-    }
-
-    public boolean isEncodeAttachments() {
-        return getSettings().getBoolean(ENCODE_ATTACHMENTS);
-    }
-
-    public void setEncodeAttachments(boolean encodeAttachments) {
-        boolean old = getSettings().getBoolean(ENCODE_ATTACHMENTS);
-        getSettings().setBoolean(ENCODE_ATTACHMENTS, encodeAttachments);
-        notifyPropertyChanged(ENCODE_ATTACHMENTS, old, encodeAttachments);
     }
 
     public String getIncomingWss() {
@@ -449,22 +468,6 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         notifyPropertyChanged("wsAddressing", old, wsAddressing);
     }
 
-    public PropertyExpansion[] getPropertyExpansions() {
-        PropertyExpansionsResult result = new PropertyExpansionsResult(this, this);
-        result.addAll(super.getPropertyExpansions());
-
-        StringToStringsMap requestHeaders = getRequestHeaders();
-        for (Map.Entry<String, List<String>> headerEntry : requestHeaders.entrySet()) {
-            for (String value : headerEntry.getValue()) {
-                result.addAll(PropertyExpansionUtils.extractPropertyExpansions(this,
-                        new HttpTestRequestStep.RequestHeaderHolder(headerEntry.getKey(), value, this), "value"));
-            }
-        }
-        addWsaPropertyExpansions(result, getWsaConfig(), this);
-        addJMSHeaderExpansions(result, getJMSHeaderConfig(), this);
-        return result.toArray();
-    }
-
     public void addWsaPropertyExpansions(PropertyExpansionsResult result, WsaConfig wsaConfig, ModelItem modelItem) {
         result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, wsaConfig, "action"));
         result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, wsaConfig, "from"));
@@ -478,31 +481,25 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, wsaConfig, "messageID"));
     }
 
-    public void addJMSHeaderExpansions(PropertyExpansionsResult result, JMSHeaderConfig jmsHeaderConfig,
-                                       ModelItem modelItem) {
-        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig,
-                JMSHeader.JMSCORRELATIONID));
-        result.addAll(PropertyExpansionUtils
-                .extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.JMSREPLYTO));
+    public void addJMSHeaderExpansions(
+        PropertyExpansionsResult result, JMSHeaderConfig jmsHeaderConfig, ModelItem modelItem
+    ) {
+        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.JMSCORRELATIONID));
+        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.JMSREPLYTO));
         result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.JMSTYPE));
-        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig,
-                JMSHeader.JMSPRIORITY));
-        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig,
-                JMSHeader.DURABLE_SUBSCRIPTION_NAME));
+        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.JMSPRIORITY));
+        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.DURABLE_SUBSCRIPTION_NAME));
         result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.CLIENT_ID));
-        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig,
-                JMSHeader.SEND_AS_BYTESMESSAGE));
-        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig,
-                JMSHeader.SOAP_ACTION_ADD));
+        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.SEND_AS_BYTESMESSAGE));
+        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(modelItem, jmsHeaderConfig, JMSHeader.SOAP_ACTION_ADD));
     }
 
-    public AttachmentEncoding getAttachmentEncoding(String partName) {
-        HttpAttachmentPart attachmentPart = getAttachmentPart(partName);
-        if (attachmentPart == null) {
-            return AttachmentUtils.getAttachmentEncoding(getOperation(), partName, false);
-        } else {
-            return AttachmentUtils.getAttachmentEncoding(getOperation(), attachmentPart, false);
-        }
+    public boolean isWsaEnabled() {
+        return isWsAddressing();
+    }
+
+    public void setWsaEnabled(boolean arg0) {
+        setWsAddressing(arg0);
     }
 
     public WsaConfig getWsaConfig() {
@@ -515,18 +512,6 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         return wsaConfig;
     }
 
-    public ModelItem getModelItem() {
-        return this;
-    }
-
-    public boolean isWsaEnabled() {
-        return isWsAddressing();
-    }
-
-    public void setWsaEnabled(boolean arg0) {
-        setWsAddressing(arg0);
-    }
-
     public boolean isWsReliableMessaging() {
         return getConfig().getUseWsReliableMessaging();
     }
@@ -535,6 +520,14 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         boolean old = getConfig().getUseWsReliableMessaging();
         getConfig().setUseWsReliableMessaging(wsReliableMessaging);
         notifyPropertyChanged("wsReliableMessaging", old, wsReliableMessaging);
+    }
+
+    public boolean isWsrmEnabled() {
+        return isWsReliableMessaging();
+    }
+
+    public void setWsrmEnabled(boolean arg0) {
+        setWsReliableMessaging(arg0);
     }
 
     public WsrmConfig getWsrmConfig() {
@@ -548,20 +541,9 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         return wsrmConfig;
     }
 
-    public boolean isWsrmEnabled() {
-        return isWsReliableMessaging();
-    }
-
-    public void setWsrmEnabled(boolean arg0) {
-        setWsReliableMessaging(arg0);
-    }
-
     public String getResponseContentAsXml() {
         return getResponse() == null ? null : getResponse().getContentAsString();
     }
-
-    private JMSHeaderConfig jmsHeaderConfig;
-    private JMSPropertiesConfig jmsPropertyConfig;
 
     public JMSHeaderConfig getJMSHeaderConfig() {
         if (jmsHeaderConfig == null) {
@@ -596,6 +578,17 @@ public class WsdlRequest extends AbstractHttpRequest<WsdlRequestConfig> implemen
         if (evt.getSource() == wsrmConfig && evt.getPropertyName().equals("version")) {
             if (evt.getNewValue().equals(WsrmVersionTypeConfig.X_1_0.toString())) {
                 getWsaConfig().setVersion(WsaVersionTypeConfig.X_200408.toString());
+            }
+        }
+    }
+
+    private class InternalInterfaceListener extends InterfaceListenerAdapter implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(Interface.ENDPOINT_PROPERTY)) {
+                String endpoint = getEndpoint();
+                if (evt.getOldValue() != null && evt.getOldValue().equals(endpoint)) {
+                    setEndpoint((String)evt.getNewValue());
+                }
             }
         }
     }

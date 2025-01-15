@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.dnd;
@@ -73,49 +73,50 @@ import java.util.List;
 
 public class SoapUIDragAndDropHandler implements DragGestureListener, DragSourceListener {
     public static final int ON_RANGE = 3;
-    private final SoapUIDragAndDropable<ModelItem> dragAndDropable;
-    private BufferedImage _imgGhost; // The 'drag image'
-    private Point _ptOffset = new Point(); // Where, in the drag image, the mouse
-    private static List<ModelItemDropHandler<ModelItem>> handlers;
-    private Rectangle2D _raGhost = new Rectangle2D.Float();
-    private final int dropType;
-    private Point _ptLast = new Point();
+    private static final List<ModelItemDropHandler<ModelItem>> handlers;
 
     static {
         handlers = new ArrayList<ModelItemDropHandler<ModelItem>>();
-        SoapUIDragAndDropHandler.addDropHandler(new TestStepToTestCaseDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new TestStepToTestStepsDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new TestStepToTestStepDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new TestSuiteToProjectDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new InterfaceToProjectDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new TestCaseToProjectDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new TestCaseToTestSuiteDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new TestCaseToTestCaseDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new RequestToTestCaseDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new RequestToTestStepsDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new RequestToTestStepDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new RequestToMockOperationDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new MockServiceToProjectDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new OperationToMockServiceDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new MockResponseToTestCaseDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new MockResponseToTestStepDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new MockResponseToTestStepsDropHandler());
-        SoapUIDragAndDropHandler.addDropHandler(new TestSuiteToTestSuiteDropHandler());
+        addDropHandler(new TestStepToTestCaseDropHandler());
+        addDropHandler(new TestStepToTestStepsDropHandler());
+        addDropHandler(new TestStepToTestStepDropHandler());
+        addDropHandler(new TestSuiteToProjectDropHandler());
+        addDropHandler(new InterfaceToProjectDropHandler());
+        addDropHandler(new TestCaseToProjectDropHandler());
+        addDropHandler(new TestCaseToTestSuiteDropHandler());
+        addDropHandler(new TestCaseToTestCaseDropHandler());
+        addDropHandler(new RequestToTestCaseDropHandler());
+        addDropHandler(new RequestToTestStepsDropHandler());
+        addDropHandler(new RequestToTestStepDropHandler());
+        addDropHandler(new RequestToMockOperationDropHandler());
+        addDropHandler(new MockServiceToProjectDropHandler());
+        addDropHandler(new OperationToMockServiceDropHandler());
+        addDropHandler(new MockResponseToTestCaseDropHandler());
+        addDropHandler(new MockResponseToTestStepDropHandler());
+        addDropHandler(new MockResponseToTestStepsDropHandler());
+        addDropHandler(new TestSuiteToTestSuiteDropHandler());
+    }
+
+    private final SoapUIDragAndDropable<ModelItem> dragAndDropable;
+    private final int dropType;
+    private BufferedImage _imgGhost; // The 'drag image'
+    private Point _ptOffset = new Point(); // Where, in the drag image, the mouse
+    private Rectangle2D _raGhost = new Rectangle2D.Float();
+    private Point _ptLast = new Point();
+
+    @SuppressWarnings("unchecked")
+    public static void addDropHandler(ModelItemDropHandler dropHandler) {
+        handlers.add(dropHandler);
     }
 
     @SuppressWarnings("unchecked")
     public SoapUIDragAndDropHandler(SoapUIDragAndDropable target, int dropType) {
-        this.dragAndDropable = target;
+        dragAndDropable = target;
         this.dropType = dropType;
 
         // Also, make this JTree a drag target
         DropTarget dropTarget = new DropTarget(target.getComponent(), new SoapUIDropTargetListener());
         dropTarget.setDefaultActions(DnDConstants.ACTION_COPY_OR_MOVE);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static void addDropHandler(ModelItemDropHandler dropHandler) {
-        handlers.add(dropHandler);
     }
 
     public void dragGestureRecognized(DragGestureEvent e) {
@@ -134,11 +135,10 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
 
         Component renderer = dragAndDropable.getRenderer(modelItem);
         if (renderer != null) {
-            renderer.setSize((int) raPath.getWidth(), (int) raPath.getHeight()); // <--
+            renderer.setSize((int)raPath.getWidth(), (int)raPath.getHeight()); // <--
 
             // Get a buffered image of the selection for dragging a ghost image
-            _imgGhost = new BufferedImage((int) raPath.getWidth(), (int) raPath.getHeight(),
-                    BufferedImage.TYPE_INT_ARGB_PRE);
+            _imgGhost = new BufferedImage((int)raPath.getWidth(), (int)raPath.getHeight(), BufferedImage.TYPE_INT_ARGB_PRE);
             Graphics2D g2 = _imgGhost.createGraphics();
 
             // Ask the cell renderer to paint itself into the BufferedImage
@@ -151,7 +151,8 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
             g2.setPaint(new GradientPaint(0, 0, SystemColor.controlShadow, width, 0, new Color(255, 255, 255, 0)));
             g2.fillRect(0, 0, width, _imgGhost.getHeight());
             g2.dispose();
-        } else {
+        }
+        else {
             _imgGhost = null;
         }
 
@@ -165,20 +166,7 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
         e.startDrag(null, _imgGhost, new Point(5, 5), transferable, this);
     }
 
-    public void dragDropEnd(DragSourceDropEvent dsde) {
-        if (_raGhost != null) {
-            dragAndDropable.getComponent().repaint(_raGhost.getBounds());
-        }
-
-        _ptOffset = null;
-        SoapUI.getNavigator().getMainTree().setToolTipText(null);
-    }
-
     public void dragEnter(DragSourceDragEvent dsde) {
-
-    }
-
-    public void dragExit(DragSourceEvent dse) {
 
     }
 
@@ -188,20 +176,32 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
     public void dropActionChanged(DragSourceDragEvent dsde) {
     }
 
+    public void dragExit(DragSourceEvent dse) {
+
+    }
+
+    public void dragDropEnd(DragSourceDropEvent dsde) {
+        if (_raGhost != null) {
+            dragAndDropable.getComponent().repaint(_raGhost.getBounds());
+        }
+
+        _ptOffset = null;
+        SoapUI.getNavigator().getMainTree().setToolTipText(null);
+    }
+
     // DropTargetListener interface object...
     class SoapUIDropTargetListener implements DropTargetListener {
         // Fields...
         private ModelItem _pathLast = null;
-        private Rectangle2D _raCueLine = new Rectangle2D.Float();
-        private Color _colorCueLine;
-        private Timer _timerHover;
+        private final Rectangle2D _raCueLine = new Rectangle2D.Float();
+        private final Color _colorCueLine;
+        private final Timer _timerHover;
         // private int _nLeftRight = 0; // Cumulative left/right mouse movement
         private String dropInfo;
 
         // Constructor...
         public SoapUIDropTargetListener() {
-            _colorCueLine = new Color(SystemColor.controlShadow.getRed(), SystemColor.controlShadow.getGreen(),
-                    SystemColor.controlShadow.getBlue(), 128);
+            _colorCueLine = new Color(SystemColor.controlShadow.getRed(), SystemColor.controlShadow.getGreen(), SystemColor.controlShadow.getBlue(), 128);
 
             // Set up a hover timer, so that a node will be automatically expanded
             _timerHover = new Timer(1000, new ActionListener() {
@@ -220,31 +220,9 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
 
             if (dt == DropType.NONE || !isDragAcceptable(e, dt)) {
                 e.rejectDrag();
-            } else {
+            }
+            else {
                 e.acceptDrag(e.getDropAction());
-            }
-        }
-
-        private int getDropTypeAtPoint(Point pt) {
-            ModelItem modelItem = dragAndDropable.getModelItemForLocation(pt.x, pt.y);
-            if (modelItem == null) {
-                return DropType.NONE;
-            }
-
-            Rectangle raPath = dragAndDropable.getModelItemBounds(modelItem);
-
-            if (pt.y > (raPath.y + (raPath.getHeight() / 2) + ON_RANGE)) {
-                return DropType.AFTER;
-            } else if (pt.y < (raPath.y + (raPath.getHeight() / 2) - ON_RANGE)) {
-                return DropType.BEFORE;
-            } else {
-                return DropType.ON;
-            }
-        }
-
-        public void dragExit(DropTargetEvent e) {
-            if (!DragSource.isDragImageSupported()) {
-                dragAndDropable.getComponent().repaint(_raGhost.getBounds());
             }
         }
 
@@ -261,7 +239,7 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
 
             _ptLast = pt;
 
-            Graphics2D g2 = (Graphics2D) dragAndDropable.getComponent().getGraphics();
+            Graphics2D g2 = (Graphics2D)dragAndDropable.getComponent().getGraphics();
 
             // If a drag image is not supported by the platform, then draw my own
             // drag image
@@ -274,7 +252,8 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
                 // And remember where we are about to draw the new ghost image
                 _raGhost.setRect(pt.x - _ptOffset.x, pt.y - _ptOffset.y, _imgGhost.getWidth(), _imgGhost.getHeight());
                 g2.drawImage(_imgGhost, AffineTransform.getTranslateInstance(_raGhost.getX(), _raGhost.getY()), null);
-            } else
+            }
+            else
             // Just rub out the last cue line
             {
                 dragAndDropable.getComponent().paintImmediately(_raCueLine.getBounds());
@@ -299,21 +278,24 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
             int dt = dropType;
 
             if (dropType == DropType.AFTER) {
-                _raCueLine.setRect(0, raPath.y + (int) raPath.getHeight() - 2, dragAndDropable.getComponent().getWidth(),
-                        2);
-            } else if (dropType == DropType.BEFORE) {
+                _raCueLine.setRect(0, raPath.y + (int)raPath.getHeight() - 2, dragAndDropable.getComponent().getWidth(), 2);
+            }
+            else if (dropType == DropType.BEFORE) {
                 _raCueLine.setRect(0, raPath.y, dragAndDropable.getComponent().getWidth(), 2);
-            } else if (dropType == DropType.ON) {
+            }
+            else if (dropType == DropType.ON) {
                 _raCueLine.setRect(0, raPath.y, dragAndDropable.getComponent().getWidth(), raPath.getHeight());
-            } else {
+            }
+            else {
                 if (pt.y > (raPath.y + (raPath.getHeight() / 2) + ON_RANGE)) {
-                    _raCueLine.setRect(0, raPath.y + (int) raPath.getHeight() - 2, dragAndDropable.getComponent()
-                            .getWidth(), 2);
+                    _raCueLine.setRect(0, raPath.y + (int)raPath.getHeight() - 2, dragAndDropable.getComponent().getWidth(), 2);
                     dt = DropType.AFTER;
-                } else if (pt.y < (raPath.y + (raPath.getHeight() / 2) - ON_RANGE)) {
+                }
+                else if (pt.y < (raPath.y + (raPath.getHeight() / 2) - ON_RANGE)) {
                     _raCueLine.setRect(0, raPath.y, dragAndDropable.getComponent().getWidth(), 2);
                     dt = DropType.BEFORE;
-                } else {
+                }
+                else {
                     _raCueLine.setRect(0, raPath.y, dragAndDropable.getComponent().getWidth(), raPath.getHeight());
                     dt = DropType.ON;
                 }
@@ -325,27 +307,29 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
 
             if (dragAcceptable) {
                 dragAndDropable.setDragInfo(dropInfo);
-            } else {
+            }
+            else {
                 dragAndDropable.setDragInfo("");
             }
 
-            ToolTipManager.sharedInstance().mouseMoved(
-                    new MouseEvent(dragAndDropable.getComponent(), 0, 0, 0, pt.x, pt.y + 10, // X-Y
-                            // of
-                            // the
-                            // mouse
-                            // for
-                            // the
-                            // tool
-                            // tip
-                            0, false));
+            ToolTipManager.sharedInstance().mouseMoved(new MouseEvent(dragAndDropable.getComponent(), 0, 0, 0, pt.x, pt.y + 10, // X-Y
+                                                                      // of
+                                                                      // the
+                                                                      // mouse
+                                                                      // for
+                                                                      // the
+                                                                      // tool
+                                                                      // tip
+                                                                      0, false
+            ));
 
             // And include the cue line in the area to be rubbed out next time
             _raGhost = _raGhost.createUnion(_raCueLine);
 
             if (!dragAcceptable) {
                 e.rejectDrag();
-            } else {
+            }
+            else {
                 e.acceptDrag(e.getDropAction());
             }
         }
@@ -355,8 +339,15 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
 
             if (dt == DropType.NONE || !isDragAcceptable(e, dt)) {
                 e.rejectDrag();
-            } else {
+            }
+            else {
                 e.acceptDrag(e.getDropAction());
+            }
+        }
+
+        public void dragExit(DropTargetEvent e) {
+            if (!DragSource.isDragImageSupported()) {
+                dragAndDropable.getComponent().repaint(_raGhost.getBounds());
             }
         }
 
@@ -380,7 +371,7 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
                     try {
                         Point pt = e.getLocation();
                         ModelItem pathTarget = dragAndDropable.getModelItemForLocation(pt.x, pt.y);
-                        ModelItem pathSource = (ModelItem) transferable.getTransferData(flavor);
+                        ModelItem pathSource = (ModelItem)transferable.getTransferData(flavor);
 
                         for (ModelItemDropHandler<ModelItem> handler : handlers) {
                             if (handler.canDrop(pathSource, pathTarget, e.getDropAction(), dt)) {
@@ -394,7 +385,8 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
                         }
 
                         break; // No need to check remaining flavors
-                    } catch (Exception ioe) {
+                    }
+                    catch (Exception ioe) {
                         System.out.println(ioe);
                         e.dropComplete(false);
                         return;
@@ -403,6 +395,25 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
             }
 
             e.dropComplete(true);
+        }
+
+        private int getDropTypeAtPoint(Point pt) {
+            ModelItem modelItem = dragAndDropable.getModelItemForLocation(pt.x, pt.y);
+            if (modelItem == null) {
+                return DropType.NONE;
+            }
+
+            Rectangle raPath = dragAndDropable.getModelItemBounds(modelItem);
+
+            if (pt.y > (raPath.y + (raPath.getHeight() / 2) + ON_RANGE)) {
+                return DropType.AFTER;
+            }
+            else if (pt.y < (raPath.y + (raPath.getHeight() / 2) - ON_RANGE)) {
+                return DropType.BEFORE;
+            }
+            else {
+                return DropType.ON;
+            }
         }
 
         // Helpers...
@@ -426,7 +437,7 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
                     try {
                         Point pt = e.getLocation();
                         ModelItem pathTarget = dragAndDropable.getModelItemForLocation(pt.x, pt.y);
-                        ModelItem pathSource = (ModelItem) transferable.getTransferData(flavor);
+                        ModelItem pathSource = (ModelItem)transferable.getTransferData(flavor);
 
                         for (ModelItemDropHandler<ModelItem> handler : handlers) {
                             if (handler.canDrop(pathSource, pathTarget, e.getDropAction(), dt)) {
@@ -442,7 +453,8 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
                         // pathSource.getName() + " to " + pathTarget.getName() );
 
                         dropInfo = null;
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex) {
                         SoapUI.logError(ex);
                     }
                 }
@@ -470,7 +482,7 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
                 if (flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType)) {
                     try {
                         Point pt = e.getLocation();
-                        ModelItem pathSource = (ModelItem) transferable.getTransferData(flavor);
+                        ModelItem pathSource = (ModelItem)transferable.getTransferData(flavor);
                         ModelItem pathTarget = dragAndDropable.getModelItemForLocation(pt.x, pt.y);
 
                         for (ModelItemDropHandler<ModelItem> handler : handlers) {
@@ -478,7 +490,8 @@ public class SoapUIDragAndDropHandler implements DragGestureListener, DragSource
                                 return true;
                             }
                         }
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex) {
                         SoapUI.logError(ex);
                     }
                 }

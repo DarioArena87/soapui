@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.swing;
@@ -33,10 +33,8 @@ import java.awt.event.MouseEvent;
  */
 
 public abstract class AbstractListMouseListener extends MouseAdapter {
-    private boolean enablePopup;
+    private final boolean enablePopup;
     private JPopupMenu menu;
-
-    protected abstract ActionList getActionsForRow(JList list, int row);
 
     public AbstractListMouseListener() {
         this(true);
@@ -46,12 +44,14 @@ public abstract class AbstractListMouseListener extends MouseAdapter {
         this.enablePopup = enablePopup;
     }
 
+    protected abstract ActionList getActionsForRow(JList list, int row);
+
     public void mouseClicked(MouseEvent e) {
         if (e.getClickCount() < 2) {
             return;
         }
 
-        JList list = (JList) e.getSource();
+        JList list = (JList)e.getSource();
 
         int selectedIndex = list.getSelectedIndex();
 
@@ -60,10 +60,6 @@ public abstract class AbstractListMouseListener extends MouseAdapter {
         if (actions != null) {
             actions.performDefaultAction(new ActionEvent(this, 0, null));
         }
-    }
-
-    protected ActionList getDefaultActions() {
-        return null;
     }
 
     public void mousePressed(MouseEvent e) {
@@ -78,13 +74,17 @@ public abstract class AbstractListMouseListener extends MouseAdapter {
         }
     }
 
+    protected ActionList getDefaultActions() {
+        return null;
+    }
+
     public void showPopup(MouseEvent e) {
         if (!enablePopup) {
             return;
         }
 
         ActionList actions = null;
-        JList list = (JList) e.getSource();
+        JList list = (JList)e.getSource();
         int row = list.locationToIndex(e.getPoint());
         if (row == -1 || !list.getCellBounds(row, row).contains(e.getPoint())) {
             if (list.getSelectedIndex() != -1) {
@@ -92,7 +92,8 @@ public abstract class AbstractListMouseListener extends MouseAdapter {
             }
 
             actions = getDefaultActions();
-        } else {
+        }
+        else {
             if (list.getSelectedIndex() != row) {
                 list.setSelectedIndex(row);
             }

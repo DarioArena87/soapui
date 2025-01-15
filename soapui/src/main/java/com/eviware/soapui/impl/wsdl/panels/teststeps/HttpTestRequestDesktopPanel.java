@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps;
@@ -55,16 +55,9 @@ import com.eviware.soapui.support.components.JUndoableTextField;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.log.JLogList;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -74,17 +67,16 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Date;
 
-public class HttpTestRequestDesktopPanel extends
-        AbstractHttpXmlRequestDesktopPanel<HttpTestRequestStepInterface, HttpTestRequestInterface<?>> {
-    private JLogList logArea;
-    private InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
-    private JButton addAssertionButton;
+public class HttpTestRequestDesktopPanel extends AbstractHttpXmlRequestDesktopPanel<HttpTestRequestStepInterface, HttpTestRequestInterface<?>> {
     protected boolean updatingRequest;
+    private JLogList logArea;
+    private final InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
+    private JButton addAssertionButton;
     private AssertionsPanel assertionsPanel;
     private JInspectorPanel inspectorPanel;
     private JComponentInspector<?> assertionInspector;
     private JComponentInspector<?> logInspector;
-    private InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
+    private final InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
     private long startTime;
     private boolean updating;
     private JUndoableTextField pathTextField;
@@ -126,29 +118,13 @@ public class HttpTestRequestDesktopPanel extends
     }
 
     @Override
-    public void setContent(JComponent content) {
-        inspectorPanel.setContentComponent(content);
-    }
-
-    @Override
-    public void removeContent(JComponent content) {
-        inspectorPanel.setContentComponent(null);
-    }
-
-    @Override
-    protected String getHelpUrl() {
-        return HelpUrls.HTTP_REQUEST_HELP_URL;
-    }
-
-    @Override
     protected JComponent buildContent() {
         JComponent component = super.buildContent();
 
         inspectorPanel = JInspectorPanelFactory.build(component);
         assertionsPanel = buildAssertionsPanel();
 
-        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions ("
-                + getModelItem().getAssertionCount() + ")", "Assertions for this Request", true);
+        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions (" + getModelItem().getAssertionCount() + ")", "Assertions for this Request", true);
 
         inspectorPanel.addInspector(assertionInspector);
 
@@ -165,8 +141,142 @@ public class HttpTestRequestDesktopPanel extends
     }
 
     @Override
+    protected JComponent buildToolbar() {
+        addAssertionButton = createActionButton(new AddAssertionAction(getRequest()), true);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(super.buildToolbar(), BorderLayout.NORTH);
+
+        JXToolBar toolbar = UISupport.createToolbar();
+        addToolbarComponents(toolbar);
+
+        panel.add(toolbar, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    @Override
     protected JComponent buildEndpointComponent() {
         return null;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(RestTestRequestInterface.STATUS_PROPERTY)) {
+            updateStatusIcon();
+        }
+        else if (evt.getPropertyName().equals("path")) {
+            getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
+        }
+        else if (evt.getPropertyName().equals(AbstractHttpRequest.ENDPOINT_PROPERTY)) {
+            // fix SOAP-3369
+            getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
+            // end of SOAP-3369
+            if (updating) {
+                return;
+            }
+
+            updating = true;
+            pathTextField.setText(String.valueOf(evt.getNewValue()));
+            updating = false;
+        }
+        super.propertyChange(evt);
+    }
+
+    @Override
+    protected String getHelpUrl() {
+        return HelpUrls.HTTP_REQUEST_HELP_URL;
+    }
+
+    @Override
+    protected void insertButtons(JXToolBar toolbar) {
+        toolbar.add(addAssertionButton);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            enabled = !SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem().getTestCase()) && !SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase());
+        }
+
+        super.setEnabled(enabled);
+        addAssertionButton.setEnabled(enabled);
+        assertionsPanel.setEnabled(enabled);
+
+        if (SoapUI.getTestMonitor().hasRunningLoadTest(getRequest().getTestCase()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase())) {
+            getRequest().removeSubmitListener(this);
+        }
+        else {
+            getRequest().addSubmitListener(this);
+        }
+    }
+
+    @Override
+    protected Submit doSubmit() throws SubmitException {
+        return getRequest().submit(new WsdlTestRunContext(getModelItem()), true);
+    }
+
+    @Override
+    public boolean beforeSubmit(Submit submit, SubmitContext context) {
+        boolean result = super.beforeSubmit(submit, context);
+        startTime = System.currentTimeMillis();
+        return result;
+    }
+
+    @Override
+    public void afterSubmit(Submit submit, SubmitContext context) {
+        super.afterSubmit(submit, context);
+        if (!isHasClosed()) {
+            updateStatusIcon();
+        }
+    }
+
+    @Override
+    protected void logMessages(String message, String infoMessage) {
+        super.logMessages(message, infoMessage);
+        logArea.addLine(DateUtil.formatFull(new Date(startTime)) + " - " + message);
+    }
+
+    @Override
+    public boolean onClose(boolean canCancel) {
+        if (super.onClose(canCancel)) {
+            assertionsPanel.release();
+            inspectorPanel.release();
+            SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
+            getModelItem().getTestRequest().removeAssertionsListener(assertionsListener);
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean dependsOn(ModelItem modelItem) {
+        if (getRequest().getOperation() == null) {
+            return modelItem == getRequest() ||
+                   modelItem == getModelItem() ||
+                   ModelSupport.getModelItemProject(getRequest()) == modelItem ||
+                   modelItem == getModelItem().getTestCase() ||
+                   modelItem == getModelItem().getTestCase().getTestSuite();
+        }
+        else {
+            return modelItem == getRequest() ||
+                   modelItem == getModelItem() ||
+                   modelItem == getRequest().getOperation() ||
+                   modelItem == getRequest().getOperation().getInterface() ||
+                   modelItem == getRequest().getOperation().getInterface().getProject() ||
+                   modelItem == getModelItem().getTestCase() ||
+                   modelItem == getModelItem().getTestCase().getTestSuite();
+        }
+    }
+
+    @Override
+    public void setContent(JComponent content) {
+        inspectorPanel.setContentComponent(content);
+    }
+
+    @Override
+    public void removeContent(JComponent content) {
+        inspectorPanel.setContentComponent(null);
     }
 
     private void updateStatusIcon() {
@@ -197,7 +307,7 @@ public class HttpTestRequestDesktopPanel extends
         methodCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 updatingRequest = true;
-                getRequest().setMethod((RestRequestInterface.HttpMethod) methodCombo.getSelectedItem());
+                getRequest().setMethod((RestRequestInterface.HttpMethod)methodCombo.getSelectedItem());
                 updatingRequest = false;
             }
         });
@@ -256,9 +366,9 @@ public class HttpTestRequestDesktopPanel extends
     private void addCheckBox(JXToolBar toolbar) {
         downloadResources = new JCheckBox();
         try {
-            downloadResources.setSelected(((HttpRequest) getModelItem().getHttpRequest())
-                    .getDownloadIncludedResources());
-        } catch (Exception cce) {
+            downloadResources.setSelected(((HttpRequest)getModelItem().getHttpRequest()).getDownloadIncludedResources());
+        }
+        catch (Exception cce) {
             SoapUI.logError(cce);
         }
         downloadResources.setPreferredSize(new Dimension(17, 17));
@@ -267,62 +377,17 @@ public class HttpTestRequestDesktopPanel extends
             public void actionPerformed(ActionEvent e) {
                 try {
                     if (1001 == e.getID() && getModelItem() instanceof HttpTestRequestStep) {
-                        ((HttpRequest) getModelItem().getHttpRequest())
-                                .setDownloadIncludedResources(((JCheckBox) e.getSource()).isSelected());
+                        ((HttpRequest)getModelItem().getHttpRequest()).setDownloadIncludedResources(((JCheckBox)e.getSource()).isSelected());
                     }
-                } catch (Exception cce) {
+                }
+                catch (Exception cce) {
                     SoapUI.logError(cce);
                 }
-
             }
         });
         toolbar.addLabeledFixed("Download Resources", downloadResources);
 
         toolbar.addSeparator();
-    }
-
-    @Override
-    protected JComponent buildToolbar() {
-        addAssertionButton = createActionButton(new AddAssertionAction(getRequest()), true);
-
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(super.buildToolbar(), BorderLayout.NORTH);
-
-        JXToolBar toolbar = UISupport.createToolbar();
-        addToolbarComponents(toolbar);
-
-        panel.add(toolbar, BorderLayout.SOUTH);
-        return panel;
-
-    }
-
-    @Override
-    protected void insertButtons(JXToolBar toolbar) {
-        toolbar.add(addAssertionButton);
-    }
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (enabled == true) {
-            enabled = !SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem().getTestCase())
-                    && !SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase());
-        }
-
-        super.setEnabled(enabled);
-        addAssertionButton.setEnabled(enabled);
-        assertionsPanel.setEnabled(enabled);
-
-        if (SoapUI.getTestMonitor().hasRunningLoadTest(getRequest().getTestCase())
-                || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase())) {
-            getRequest().removeSubmitListener(this);
-        } else {
-            getRequest().addSubmitListener(this);
-        }
-    }
-
-    @Override
-    protected Submit doSubmit() throws SubmitException {
-        return getRequest().submit(new WsdlTestRunContext(getModelItem()), true);
     }
 
     private final class InternalAssertionsListener implements AssertionsListener {
@@ -339,60 +404,7 @@ public class HttpTestRequestDesktopPanel extends
         }
     }
 
-    @Override
-    public boolean beforeSubmit(Submit submit, SubmitContext context) {
-        boolean result = super.beforeSubmit(submit, context);
-        startTime = System.currentTimeMillis();
-        return result;
-    }
-
-    @Override
-    protected void logMessages(String message, String infoMessage) {
-        super.logMessages(message, infoMessage);
-        logArea.addLine(DateUtil.formatFull(new Date(startTime)) + " - " + message);
-    }
-
-    @Override
-    public void afterSubmit(Submit submit, SubmitContext context) {
-        super.afterSubmit(submit, context);
-        if (!isHasClosed()) {
-            updateStatusIcon();
-        }
-    }
-
-    @Override
-    public boolean onClose(boolean canCancel) {
-        if (super.onClose(canCancel)) {
-            assertionsPanel.release();
-            inspectorPanel.release();
-            SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
-            getModelItem().getTestRequest().removeAssertionsListener(assertionsListener);
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean dependsOn(ModelItem modelItem) {
-        if (getRequest().getOperation() == null) {
-            return modelItem == getRequest() || modelItem == getModelItem()
-                    || ModelSupport.getModelItemProject(getRequest()) == modelItem
-                    || modelItem == getModelItem().getTestCase() || modelItem == getModelItem().getTestCase().getTestSuite();
-        } else {
-            return modelItem == getRequest() || modelItem == getModelItem() || modelItem == getRequest().getOperation()
-                    || modelItem == getRequest().getOperation().getInterface()
-                    || modelItem == getRequest().getOperation().getInterface().getProject()
-                    || modelItem == getModelItem().getTestCase() || modelItem == getModelItem().getTestCase().getTestSuite();
-        }
-    }
-
     private class InternalTestMonitorListener extends TestMonitorListenerAdapter {
-        @Override
-        public void loadTestFinished(LoadTestRunner runner) {
-            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
-        }
-
         @Override
         public void loadTestStarted(LoadTestRunner runner) {
             if (runner.getLoadTest().getTestCase() == getModelItem().getTestCase()) {
@@ -400,7 +412,8 @@ public class HttpTestRequestDesktopPanel extends
             }
         }
 
-        public void securityTestFinished(SecurityTestRunner runner) {
+        @Override
+        public void loadTestFinished(LoadTestRunner runner) {
             setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
 
@@ -410,8 +423,7 @@ public class HttpTestRequestDesktopPanel extends
             }
         }
 
-        @Override
-        public void testCaseFinished(TestCaseRunner runner) {
+        public void securityTestFinished(SecurityTestRunner runner) {
             setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
 
@@ -421,27 +433,10 @@ public class HttpTestRequestDesktopPanel extends
                 setEnabled(false);
             }
         }
-    }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RestTestRequestInterface.STATUS_PROPERTY)) {
-            updateStatusIcon();
-        } else if (evt.getPropertyName().equals("path")) {
-            getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
-        } else if (evt.getPropertyName().equals(AbstractHttpRequest.ENDPOINT_PROPERTY)) {
-            // fix SOAP-3369
-            getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
-            // end of SOAP-3369
-            if (updating) {
-                return;
-            }
-
-            updating = true;
-            pathTextField.setText(String.valueOf(evt.getNewValue()));
-            updating = false;
+        @Override
+        public void testCaseFinished(TestCaseRunner runner) {
+            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
-        super.propertyChange(evt);
     }
-
 }

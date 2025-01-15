@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps.support;
@@ -34,17 +34,10 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.beans.PropertyChangeEvent;
@@ -62,12 +55,12 @@ public class GroovyEditor extends JPanel implements JEditorStatusBarTarget, Prop
     private final RSyntaxTextArea editArea;
     private final GoToLineAction goToLineAction;
     private final EnableLineNumbersAction enableLineNumbersAction;
-    private FindAndReplaceDialogView findAndReplaceDialog;
-    private FormatXmlAction formatXmlAction;
-    private GroovyEditorModel model;
     private final InternalSettingsListener settingsListener;
     private final GroovyDocumentListener groovyDocumentListener;
     private final RTextScrollPane scrollPane;
+    private final FindAndReplaceDialogView findAndReplaceDialog;
+    private FormatXmlAction formatXmlAction;
+    private GroovyEditorModel model;
     private boolean updating;
 
     public GroovyEditor(GroovyEditorModel model) {
@@ -82,11 +75,11 @@ public class GroovyEditor extends JPanel implements JEditorStatusBarTarget, Prop
         editArea = new RSyntaxTextArea();
         editArea.restoreDefaultSyntaxScheme();
 
-        String defaultScriptLanguage = ((WsdlProject) ModelSupport.getModelItemProject(model.getModelItem()))
-                .getDefaultScriptLanguage();
+        String defaultScriptLanguage = ((WsdlProject)ModelSupport.getModelItemProject(model.getModelItem())).getDefaultScriptLanguage();
         if (defaultScriptLanguage.equals(GroovyScriptEngineFactory.ID)) {
             editArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_GROOVY);
-        } else if (defaultScriptLanguage.equals(JsScriptEngineFactory.ID)) {
+        }
+        else if (defaultScriptLanguage.equals(JsScriptEngineFactory.ID)) {
             editArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT);
         }
 
@@ -124,7 +117,8 @@ public class GroovyEditor extends JPanel implements JEditorStatusBarTarget, Prop
         findAndReplaceDialog = new FindAndReplaceDialogView(editArea);
         if (UISupport.isMac()) {
             editArea.getInputMap().put(KeyStroke.getKeyStroke("meta F"), findAndReplaceDialog);
-        } else {
+        }
+        else {
             editArea.getInputMap().put(KeyStroke.getKeyStroke("ctrl F"), findAndReplaceDialog);
         }
         popup.add(findAndReplaceDialog);
@@ -166,30 +160,61 @@ public class GroovyEditor extends JPanel implements JEditorStatusBarTarget, Prop
         if (ix >= 0) {
             try {
                 int ix2 = message.indexOf(',', ix);
-                int line = ix2 == -1 ? Integer.parseInt(message.substring(ix + 6).trim()) : Integer.parseInt(message
-                        .substring(ix + 6, ix2).trim());
+                int line = ix2 == -1 ? Integer.parseInt(message.substring(ix + 6).trim()) : Integer.parseInt(message.substring(ix + 6, ix2).trim());
                 int column = 0;
                 if (ix2 != -1) {
                     ix = message.indexOf("column ", ix2);
                     if (ix >= 0) {
                         ix2 = message.indexOf('.', ix);
-                        column = ix2 == -1 ? Integer.parseInt(message.substring(ix + 7).trim()) : Integer
-                                .parseInt(message.substring(ix + 7, ix2).trim());
+                        column = ix2 == -1 ? Integer.parseInt(message.substring(ix + 7).trim()) : Integer.parseInt(message.substring(ix + 7, ix2).trim());
                     }
                 }
 
                 editArea.setCaretPosition(editArea.getLineStartOffset(line - 1) + column - 1);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
             }
 
             editArea.requestFocus();
         }
     }
 
+    public void setEditorFont(Font newFont) {
+        editArea.setFont(newFont);
+    }
+
+    public void addCaretListener(CaretListener listener) {
+        editArea.addCaretListener(listener);
+    }
+
+    public int getCaretPosition() {
+        return editArea.getCaretPosition();
+    }
+
+    public void removeCaretListener(CaretListener listener) {
+        editArea.removeCaretListener(listener);
+    }
+
+    public int getLineStartOffset(int line) throws Exception {
+        return editArea.getLineStartOffset(line);
+    }
+
+    public int getLineOfOffset(int offset) throws Exception {
+        return editArea.getLineOfOffset(offset);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(SCRIPT_PROPERTY)) {
+            updating = true;
+            editArea.setText(String.valueOf(evt.getNewValue()));
+            updating = false;
+        }
+    }
+
     private final class GroovyDocumentListener extends DocumentListenerAdapter {
         public void update(Document document) {
             if (!updating) {
-                GroovyEditor.this.model.setScript(editArea.getText());
+                model.setScript(editArea.getText());
             }
         }
     }
@@ -209,37 +234,4 @@ public class GroovyEditor extends JPanel implements JEditorStatusBarTarget, Prop
 
         }
     }
-
-    public void setEditorFont(Font newFont) {
-        editArea.setFont(newFont);
-    }
-
-    public void addCaretListener(CaretListener listener) {
-        editArea.addCaretListener(listener);
-    }
-
-    public int getCaretPosition() {
-        return editArea.getCaretPosition();
-    }
-
-    public int getLineOfOffset(int offset) throws Exception {
-        return editArea.getLineOfOffset(offset);
-    }
-
-    public int getLineStartOffset(int line) throws Exception {
-        return editArea.getLineStartOffset(line);
-    }
-
-    public void removeCaretListener(CaretListener listener) {
-        editArea.removeCaretListener(listener);
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(SCRIPT_PROPERTY)) {
-            updating = true;
-            editArea.setText(String.valueOf(evt.getNewValue()));
-            updating = false;
-        }
-    }
-
 }

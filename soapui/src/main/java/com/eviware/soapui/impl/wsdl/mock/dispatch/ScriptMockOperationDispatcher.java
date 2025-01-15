@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock.dispatch;
@@ -39,18 +39,14 @@ import com.eviware.soapui.support.scripting.ScriptEnginePool;
 import com.eviware.soapui.support.scripting.SoapUIScriptEngine;
 import com.eviware.soapui.ui.support.ModelItemDesktopPanel;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatcher implements PropertyChangeListener {
-    private ScriptEnginePool scriptEnginePool;
+    private final ScriptEnginePool scriptEnginePool;
     private GroovyEditor groovyEditor;
     private JPanel groovyEditorPanel;
 
@@ -63,8 +59,7 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
         mockOperation.addPropertyChangeListener(AbstractMockOperation.DISPATCH_PATH_PROPERTY, this);
     }
 
-    public MockResponse selectMockResponse(MockRequest request, MockResult result)
-            throws DispatchException {
+    public MockResponse selectMockResponse(MockRequest request, MockResult result) throws DispatchException {
         String dispatchScript = getMockOperation().getScript();
         if (StringUtils.hasContent(dispatchScript)) {
             SoapUIScriptEngine scriptEngine = scriptEnginePool.getScriptEngine();
@@ -72,8 +67,7 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
             try {
                 MockService mockService = getMockOperation().getMockService();
                 MockRunner mockRunner = mockService.getMockRunner();
-                MockRunContext context = mockRunner == null ? new WsdlMockRunContext(mockService, null) : mockRunner
-                        .getMockContext();
+                MockRunContext context = mockRunner == null ? new WsdlMockRunContext(mockService, null) : mockRunner.getMockContext();
 
                 scriptEngine.setVariable("context", context);
                 scriptEngine.setVariable("requestContext", request == null ? null : request.getRequestContext());
@@ -84,10 +78,12 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
                 scriptEngine.setScript(dispatchScript);
                 Object retVal = scriptEngine.run();
                 return getMockOperation().getMockResponseByName(String.valueOf(retVal));
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 SoapUI.logError(e);
                 throw new DispatchException("Failed to dispatch using script; " + e);
-            } finally {
+            }
+            finally {
                 scriptEnginePool.returnScriptEngine(scriptEngine);
             }
         }
@@ -96,14 +92,8 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
     }
 
     @Override
-    public void release() {
-        scriptEnginePool.release();
-
-        releaseEditorComponent();
-
-        getMockOperation().removePropertyChangeListener(AbstractMockOperation.DISPATCH_PATH_PROPERTY, this);
-
-        super.release();
+    public boolean hasDefaultResponse() {
+        return true;
     }
 
     @Override
@@ -111,7 +101,7 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
         if (groovyEditorPanel == null) {
             groovyEditorPanel = new JPanel(new BorderLayout());
             DispatchScriptGroovyEditorModel editorModel = new DispatchScriptGroovyEditorModel();
-            groovyEditor = (GroovyEditor) UISupport.getEditorFactory().buildGroovyEditor(editorModel);
+            groovyEditor = (GroovyEditor)UISupport.getEditorFactory().buildGroovyEditor(editorModel);
             groovyEditorPanel.add(groovyEditor, BorderLayout.CENTER);
             groovyEditorPanel.add(buildGroovyEditorToolbar(editorModel), BorderLayout.PAGE_START);
         }
@@ -132,8 +122,14 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
     }
 
     @Override
-    public boolean hasDefaultResponse() {
-        return true;
+    public void release() {
+        scriptEnginePool.release();
+
+        releaseEditorComponent();
+
+        getMockOperation().removePropertyChangeListener(AbstractMockOperation.DISPATCH_PATH_PROPERTY, this);
+
+        super.release();
     }
 
     protected JXToolBar buildGroovyEditorToolbar(DispatchScriptGroovyEditorModel editorModel) {
@@ -142,14 +138,13 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
         toolbar.addFixed(UISupport.createToolbarButton(editorModel.getRunAction()));
         toolbar.addGlue();
 
-        JLabel label = new JLabel("<html>Script is invoked with <code>log</code>, <code>context</code>, "
-                + "<code>requestContext</code>, <code>mockRequest</code> and <code>mockOperation</code> variables</html>");
+        JLabel label = new JLabel("<html>Script is invoked with <code>log</code>, <code>context</code>, " +
+                                  "<code>requestContext</code>, <code>mockRequest</code> and <code>mockOperation</code> variables</html>");
         label.setToolTipText(label.getText());
         label.setMaximumSize(label.getPreferredSize());
 
         toolbar.add(label);
-        toolbar.addFixed(ModelItemDesktopPanel.createActionButton(new ShowOnlineHelpAction(
-                getMockOperation().getScriptHelpUrl()), true));
+        toolbar.addFixed(ModelItemDesktopPanel.createActionButton(new ShowOnlineHelpAction(getMockOperation().getScriptHelpUrl()), true));
         return toolbar;
     }
 
@@ -164,26 +159,26 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
     }
 
     public class DispatchScriptGroovyEditorModel implements GroovyEditorModel {
-        private RunScriptAction runScriptAction = new RunScriptAction();
+        private final RunScriptAction runScriptAction = new RunScriptAction();
 
         public String[] getKeywords() {
             return new String[]{"mockRequest", "context", "requestContext", "log", "mockOperation"};
-        }
-
-        public Action getRunAction() {
-            return runScriptAction;
         }
 
         public String getScript() {
             return getMockOperation().getScript();
         }
 
-        public Settings getSettings() {
-            return getMockOperation().getSettings();
-        }
-
         public void setScript(String text) {
             getMockOperation().setScript(text);
+        }
+
+        public Action getRunAction() {
+            return runScriptAction;
+        }
+
+        public Settings getSettings() {
+            return getMockOperation().getSettings();
         }
 
         public String getScriptName() {
@@ -203,8 +198,8 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
 
     private class RunScriptAction extends AbstractAction {
         public RunScriptAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Runs this script using a mockRequest and context");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Runs this script using a mockRequest and context");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -214,7 +209,8 @@ public class ScriptMockOperationDispatcher extends AbstractMockOperationDispatch
             try {
                 MockResponse retVal = selectMockResponse(mockRequest, null);
                 UISupport.showInfoMessage("Script returned [" + (retVal == null ? "null" : retVal.getName()) + "]");
-            } catch (Exception e1) {
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1);
             }
         }

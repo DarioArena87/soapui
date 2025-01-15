@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.soap;
@@ -51,18 +51,21 @@ public abstract class AbstractSoapVersion implements SoapVersion {
             XmlObject xmlObject = getSoapEnvelopeSchemaLoader().parse(soapMessage, getEnvelopeType(), xmlOptions);
             xmlOptions.setErrorListener(errorList);
             xmlObject.validate(xmlOptions);
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             if (e.getErrors() != null) {
                 errorList.addAll(e.getErrors());
             }
 
             errors.add(XmlError.forMessage(e.getMessage()));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             errors.add(XmlError.forMessage(e.getMessage()));
-        } finally {
+        }
+        finally {
             for (XmlError error : errorList) {
-                if (error instanceof XmlValidationError && shouldIgnore((XmlValidationError) error)) {
-                    log.warn("Ignoring validation error: " + error.toString());
+                if (error instanceof XmlValidationError && shouldIgnore((XmlValidationError)error)) {
+                    log.warn("Ignoring validation error: " + error);
                     continue;
                 }
 
@@ -71,22 +74,21 @@ public abstract class AbstractSoapVersion implements SoapVersion {
         }
     }
 
-    protected abstract SchemaTypeLoader getSoapEnvelopeSchemaLoader();
-
     public boolean shouldIgnore(XmlValidationError error) {
         QName offendingQName = error.getOffendingQName();
         if (offendingQName != null) {
             if (offendingQName.equals(new QName(getEnvelopeNamespace(), "encodingStyle"))) {
                 return true;
-            } else if (offendingQName.equals(new QName(getEnvelopeNamespace(), "mustUnderstand"))) {
-                return true;
             }
+            else return offendingQName.equals(new QName(getEnvelopeNamespace(), "mustUnderstand"));
         }
 
         return false;
     }
 
+    public abstract SchemaType getEnvelopeType();
+
     public abstract SchemaType getFaultType();
 
-    public abstract SchemaType getEnvelopeType();
+    protected abstract SchemaTypeLoader getSoapEnvelopeSchemaLoader();
 }

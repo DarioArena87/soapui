@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.dnd.handlers;
@@ -36,18 +36,13 @@ public class RequestToTestStepDropHandler extends AbstractCopyingModelItemDropHa
     }
 
     @Override
-    boolean canCopyAfter(AbstractHttpRequest source, TestStep target) {
-        return true;
-    }
-
-    @Override
     boolean copyBefore(AbstractHttpRequest source, TestStep target) {
         return addRequestToTestCase(source, target, target.getTestCase().getIndexOfTestStep(target));
     }
 
     @Override
-    boolean copyOn(AbstractHttpRequest source, TestStep target) {
-        return copyAfter(source, target);
+    boolean canCopyAfter(AbstractHttpRequest source, TestStep target) {
+        return true;
     }
 
     @Override
@@ -55,8 +50,9 @@ public class RequestToTestStepDropHandler extends AbstractCopyingModelItemDropHa
         return addRequestToTestCase(source, target, target.getTestCase().getIndexOfTestStep(target) + 1);
     }
 
-    private boolean addRequestToTestCase(AbstractHttpRequest source, TestStep target, int index) {
-        return AbstractAddRequestToTestCaseAction.addRequestToTestCase(source, target.getTestCase(), index);
+    @Override
+    boolean copyOn(AbstractHttpRequest source, TestStep target) {
+        return copyAfter(source, target);
     }
 
     @Override
@@ -72,5 +68,9 @@ public class RequestToTestStepDropHandler extends AbstractCopyingModelItemDropHa
     @Override
     String getCopyAfterInfo(AbstractHttpRequest source, TestStep target) {
         return "Add Request [" + source.getName() + "] to TestCase [" + target.getTestCase().getName() + "]";
+    }
+
+    private boolean addRequestToTestCase(AbstractHttpRequest source, TestStep target, int index) {
+        return AbstractAddRequestToTestCaseAction.addRequestToTestCase(source, target.getTestCase(), index);
     }
 }

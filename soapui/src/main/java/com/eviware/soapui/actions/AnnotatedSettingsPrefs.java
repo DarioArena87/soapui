@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -37,9 +37,9 @@ import java.util.List;
  */
 
 public class AnnotatedSettingsPrefs implements Prefs {
-    private SimpleForm simpleForm;
-    private Class<?> settingsClass;
     private final String title;
+    private SimpleForm simpleForm;
+    private final Class<?> settingsClass;
 
     public AnnotatedSettingsPrefs(Class<?> settingsClass, String title) {
         this.settingsClass = settingsClass;
@@ -57,6 +57,55 @@ public class AnnotatedSettingsPrefs implements Prefs {
         }
 
         return simpleForm;
+    }
+
+    public void setFormValues(Settings settings) {
+        getForm().setValues(getValues(settings));
+    }
+
+    public void getFormValues(Settings settings) {
+        StringToStringMap values = new StringToStringMap();
+        getForm().getValues(values);
+        storeValues(values, settings);
+    }
+
+    public void storeValues(StringToStringMap values, Settings settings) {
+        for (Field field : settingsClass.getFields()) {
+            Setting annotation = field.getAnnotation(Setting.class);
+            if (annotation != null) {
+                try {
+                    settings.setString(field.get(null).toString(), values.get(annotation.name()));
+                }
+                catch (IllegalArgumentException e) {
+                    SoapUI.logError(e);
+                }
+                catch (IllegalAccessException e) {
+                    SoapUI.logError(e);
+                }
+            }
+        }
+    }
+
+    public StringToStringMap getValues(Settings settings) {
+        StringToStringMap result = new StringToStringMap();
+
+        for (Field field : settingsClass.getFields()) {
+            Setting annotation = field.getAnnotation(Setting.class);
+            if (annotation != null) {
+                try {
+                    result.put(annotation.name(), settings.getString(field.get(null).toString(), annotation.defaultValue()));
+                }
+                catch (Exception e) {
+                    SoapUI.logError(e);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public List<Setting> getSettings() {
@@ -109,52 +158,4 @@ public class AnnotatedSettingsPrefs implements Prefs {
             }
         }
     }
-
-    public StringToStringMap getValues(Settings settings) {
-        StringToStringMap result = new StringToStringMap();
-
-        for (Field field : settingsClass.getFields()) {
-            Setting annotation = field.getAnnotation(Setting.class);
-            if (annotation != null) {
-                try {
-                    result.put(annotation.name(),
-                            settings.getString(field.get(null).toString(), annotation.defaultValue()));
-                } catch (Exception e) {
-                    SoapUI.logError(e);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    public void setFormValues(Settings settings) {
-        getForm().setValues(getValues(settings));
-    }
-
-    public void getFormValues(Settings settings) {
-        StringToStringMap values = new StringToStringMap();
-        getForm().getValues(values);
-        storeValues(values, settings);
-    }
-
-    public void storeValues(StringToStringMap values, Settings settings) {
-        for (Field field : settingsClass.getFields()) {
-            Setting annotation = field.getAnnotation(Setting.class);
-            if (annotation != null) {
-                try {
-                    settings.setString(field.get(null).toString(), values.get(annotation.name()));
-                } catch (IllegalArgumentException e) {
-                    SoapUI.logError(e);
-                } catch (IllegalAccessException e) {
-                    SoapUI.logError(e);
-                }
-            }
-        }
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
 }

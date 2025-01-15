@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request;
@@ -23,23 +23,10 @@ import com.eviware.soapui.impl.rest.panels.resource.RestParamsTable;
 import com.eviware.soapui.impl.rest.panels.resource.RestParamsTableModel;
 import com.eviware.soapui.impl.rest.support.RestUtils;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.FlowLayout;
-import java.awt.IllegalComponentStateException;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -69,9 +56,9 @@ class ParametersField extends JPanel {
         textField.setBackground(Color.WHITE);
         textField.setName(PARAMETERS_FIELD);
         setToolTipText(paramsString);
-        super.setLayout(new BorderLayout());
-        super.add(textLabel, BorderLayout.NORTH);
-        super.add(textField, BorderLayout.SOUTH);
+        setLayout(new BorderLayout());
+        add(textLabel, BorderLayout.NORTH);
+        add(textField, BorderLayout.SOUTH);
         addListeners();
     }
 
@@ -80,22 +67,19 @@ class ParametersField extends JPanel {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                final ParameterFinder finder = new ParameterFinder(textField.getText());
+                ParameterFinder finder = new ParameterFinder(textField.getText());
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         openPopup(finder.findParameterAt(lastSelectedPosition));
                     }
                 });
             }
-
-
         });
         textField.addCaretListener(new CaretListener() {
             @Override
-            public void caretUpdate(final CaretEvent e) {
+            public void caretUpdate(CaretEvent e) {
                 lastSelectedPosition = e.getDot();
             }
-
         });
     }
 
@@ -115,10 +99,14 @@ class ParametersField extends JPanel {
         textField.setToolTipText(text);
     }
 
-    private void openPopup(final String selectedParameter) {
-        RestParamsTable restParamsTable = new RestParamsTable(request.getParams(), false, new RestParamsTableModel(
-                request.getParams(), RestParamsTableModel.Mode.MINIMAL),
-                NewRestResourceActionBase.ParamLocation.RESOURCE, true, true);
+    private void openPopup(String selectedParameter) {
+        RestParamsTable restParamsTable = new RestParamsTable(request.getParams(),
+                                                              false,
+                                                              new RestParamsTableModel(request.getParams(), RestParamsTableModel.Mode.MINIMAL),
+                                                              NewRestResourceActionBase.ParamLocation.RESOURCE,
+                                                              true,
+                                                              true
+        );
         showParametersTableInWindow(restParamsTable, selectedParameter);
     }
 
@@ -135,7 +123,8 @@ class ParametersField extends JPanel {
         try {
             Point textFieldLocation = textField.getLocationOnScreen();
             popupWindow.setLocation(textFieldLocation.x, textFieldLocation.y + textField.getHeight());
-        } catch (IllegalComponentStateException ignore) {
+        }
+        catch (IllegalComponentStateException ignore) {
             // this will happen when the desktop panel is being closed
         }
     }
@@ -147,9 +136,9 @@ class ParametersField extends JPanel {
     private class PopupWindow extends JDialog {
 
         private final JButton closeButton;
-        private RestParamsTable restParamsTable;
+        private final RestParamsTable restParamsTable;
 
-        private PopupWindow(final RestParamsTable restParamsTable) {
+        private PopupWindow(RestParamsTable restParamsTable) {
             super(SoapUI.getFrame());
             setResizable(false);
             this.restParamsTable = restParamsTable;
@@ -166,7 +155,7 @@ class ParametersField extends JPanel {
             buttonPanel.add(closeButton);
             getContentPane().add(restParamsTable, BorderLayout.CENTER);
             getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-            closeButton.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char) KeyEvent.VK_ESCAPE), "closePopup");
+            closeButton.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke((char)KeyEvent.VK_ESCAPE), "closePopup");
             closeButton.getActionMap().put("closePopup", new CloseAction());
         }
 
@@ -191,6 +180,9 @@ class ParametersField extends JPanel {
             }
 
             @Override
+            public void actionPerformed(ActionEvent e) {
+                close();
+            }            @Override
             public void setEnabled(boolean b) {
 
             }
@@ -210,11 +202,7 @@ class ParametersField extends JPanel {
 
             }
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                close();
-            }
+
         }
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.actions;
@@ -28,9 +28,8 @@ import com.eviware.x.form.XFormFactory;
 import com.eviware.x.form.XFormField;
 import com.eviware.x.impl.swing.JTextFieldFormField;
 
-import javax.swing.AbstractAction;
-import java.awt.Color;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -50,7 +49,6 @@ public class RestUriDialogHandler {
     private XFormDialog dialog;
     private String uriLabelKey;
     private String exampleUri;
-
 
     public XFormDialog buildDialog(MessageSupport messages) {
         return buildDialog(messages, HelpUrls.NEWRESTPROJECT_HELP_URL, null);
@@ -83,7 +81,7 @@ public class RestUriDialogHandler {
 
         if (uriField instanceof JTextFieldFormField) {
             defaultURIReplaced = false;
-            textField = ((JTextFieldFormField) uriField).getComponent();
+            textField = ((JTextFieldFormField)uriField).getComponent();
             textField.requestFocus();
             originalFont = textField.getFont();
             textField.setFont(originalFont.deriveFont(Font.ITALIC));
@@ -100,7 +98,8 @@ public class RestUriDialogHandler {
                 textField.setText("");
                 textField.setFont(originalFont);
                 textField.setForeground(Color.BLACK);
-            } finally {
+            }
+            finally {
                 if (initialKeyListener != null) {
                     textField.removeKeyListener(initialKeyListener);
                 }
@@ -109,7 +108,6 @@ public class RestUriDialogHandler {
                 }
             }
         }
-
     }
 
     private void addListenersToTextField() {

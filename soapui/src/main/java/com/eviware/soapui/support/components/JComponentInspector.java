@@ -1,23 +1,22 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
 
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -28,25 +27,31 @@ public class JComponentInspector<T extends JComponent> implements Inspector {
     private boolean enabled;
     private PropertyChangeSupport propertyChangeSupport;
     private ImageIcon imageIcon;
-    private String id;
+    private final String id;
 
     public JComponentInspector(T component, String title, String description, boolean enabled) {
         this.component = component;
         this.title = title;
-        this.id = title;
+        id = title;
         this.description = description;
         this.enabled = enabled;
     }
 
-    public void activate() {
+    public String getTitle() {
+        return title;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (propertyChangeSupport == null) {
-            propertyChangeSupport = new PropertyChangeSupport(this);
-        }
+    public void setTitle(String title) {
+        String old = this.title;
+        this.title = title;
 
-        propertyChangeSupport.addPropertyChangeListener(listener);
+        if (propertyChangeSupport != null) {
+            propertyChangeSupport.firePropertyChange(TITLE_PROPERTY, old, title);
+        }
+    }
+
+    public ImageIcon getIcon() {
+        return imageIcon;
     }
 
     public T getComponent() {
@@ -57,28 +62,35 @@ public class JComponentInspector<T extends JComponent> implements Inspector {
         return description;
     }
 
-    public String getInspectorId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
     public boolean isEnabled() {
         return enabled;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (propertyChangeSupport == null) {
+            propertyChangeSupport = new PropertyChangeSupport(this);
+        }
+
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (propertyChangeSupport != null) {
+            propertyChangeSupport.removePropertyChangeListener(listener);
+        }
+    }
+
+    public String getInspectorId() {
+        return id;
     }
 
     public void release() {
     }
 
-    public void setDescription(String description) {
-        String old = this.description;
-        this.description = description;
+    public void activate() {
+    }
 
-        if (propertyChangeSupport != null) {
-            propertyChangeSupport.firePropertyChange(Inspector.DESCRIPTION_PROPERTY, old, description);
-        }
+    public void deactivate() {
     }
 
     public void setEnabled(boolean enabled) {
@@ -88,27 +100,17 @@ public class JComponentInspector<T extends JComponent> implements Inspector {
 
         this.enabled = enabled;
         if (propertyChangeSupport != null) {
-            propertyChangeSupport.firePropertyChange(Inspector.ENABLED_PROPERTY, !enabled, enabled);
+            propertyChangeSupport.firePropertyChange(ENABLED_PROPERTY, !enabled, enabled);
         }
     }
 
-    public void setTitle(String title) {
-        String old = this.title;
-        this.title = title;
+    public void setDescription(String description) {
+        String old = this.description;
+        this.description = description;
 
         if (propertyChangeSupport != null) {
-            propertyChangeSupport.firePropertyChange(Inspector.TITLE_PROPERTY, old, title);
+            propertyChangeSupport.firePropertyChange(DESCRIPTION_PROPERTY, old, description);
         }
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        if (propertyChangeSupport != null) {
-            propertyChangeSupport.removePropertyChangeListener(listener);
-        }
-    }
-
-    public ImageIcon getIcon() {
-        return imageIcon;
     }
 
     public void setIcon(ImageIcon imageIcon) {
@@ -116,10 +118,7 @@ public class JComponentInspector<T extends JComponent> implements Inspector {
 
         this.imageIcon = imageIcon;
         if (propertyChangeSupport != null) {
-            propertyChangeSupport.firePropertyChange(Inspector.ICON_PROPERTY, old, imageIcon);
+            propertyChangeSupport.firePropertyChange(ICON_PROPERTY, old, imageIcon);
         }
-    }
-
-    public void deactivate() {
     }
 }

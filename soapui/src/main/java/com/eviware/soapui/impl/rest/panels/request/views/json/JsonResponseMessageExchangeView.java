@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.views.json;
@@ -29,16 +29,13 @@ import net.sf.json.JSON;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 @SuppressWarnings("unchecked")
-public class JsonResponseMessageExchangeView extends AbstractXmlEditorView<HttpResponseDocument> implements
-        PropertyChangeListener {
+public class JsonResponseMessageExchangeView extends AbstractXmlEditorView<HttpResponseDocument> implements PropertyChangeListener {
     private final MessageExchangeModelItem messageExchangeModelItem;
     private JPanel contentPanel;
     private RSyntaxTextArea contentEditor;
@@ -64,11 +61,12 @@ public class JsonResponseMessageExchangeView extends AbstractXmlEditorView<HttpR
         return panel;
     }
 
-    @Override
-    public void release() {
-        super.release();
+    public void setEditable(boolean enabled) {
+    }
 
-        messageExchangeModelItem.removePropertyChangeListener(this);
+    @Override
+    public int getSupportScoreForContentType(String contentType) {
+        return JsonUtil.seemsToBeJsonContentType(contentType) ? 2 : 0;
     }
 
     private Component buildStatus() {
@@ -96,7 +94,8 @@ public class JsonResponseMessageExchangeView extends AbstractXmlEditorView<HttpR
     protected void setEditorContent(MessageExchange me) {
         if (me == null) {
             contentEditor.setText("");
-        } else {
+        }
+        else {
             String content = "<Not JSON content>";
 
             if (JsonUtil.seemsToBeJsonContentType(me.getResponseHeaders().get("Content-Type", ""))) {
@@ -104,19 +103,23 @@ public class JsonResponseMessageExchangeView extends AbstractXmlEditorView<HttpR
                     JSON json = new JsonUtil().parseTrimmedText(me.getResponseContent());
                     if (json.isEmpty()) {
                         content = "<Empty JSON content>";
-                    } else {
+                    }
+                    else {
                         content = json.toString(3);
                     }
-                } catch (Throwable e) {
+                }
+                catch (Throwable e) {
                     if (!"Invalid JSON String".equals(e.getMessage())) {
                         e.printStackTrace();
-                    } else {
+                    }
+                    else {
                         content = me.getResponseContent();
                     }
                 }
 
                 contentEditor.setText(content);
-            } else {
+            }
+            else {
                 contentEditor.setText("<Not JSON content>");
             }
         }
@@ -130,19 +133,18 @@ public class JsonResponseMessageExchangeView extends AbstractXmlEditorView<HttpR
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("messageExchange") && !updatingRequest) {
-            setEditorContent(((MessageExchange) evt.getNewValue()));
+            setEditorContent(((MessageExchange)evt.getNewValue()));
         }
+    }
+
+    @Override
+    public void release() {
+        super.release();
+
+        messageExchangeModelItem.removePropertyChangeListener(this);
     }
 
     public boolean saveDocument(boolean validate) {
         return false;
-    }
-
-    public void setEditable(boolean enabled) {
-    }
-
-    @Override
-    public int getSupportScoreForContentType(String contentType ) {
-        return JsonUtil.seemsToBeJsonContentType(contentType)? 2 : 0;
     }
 }

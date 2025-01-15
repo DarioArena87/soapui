@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.attachments;
@@ -36,15 +36,15 @@ import java.util.Arrays;
 
 public class AttachmentsTableModel extends AbstractTableModel implements PropertyChangeListener, AttachmentTableModel {
 
-    private AttachmentContainer container;
+    private final AttachmentContainer container;
 
     /**
      * Creates a new instance of AttachmentTableModel
      */
     public AttachmentsTableModel(AttachmentContainer request) {
-        this.container = request;
+        container = request;
 
-        this.container.addAttachmentsChangeListener(this);
+        container.addAttachmentsChangeListener(this);
     }
 
     public void release() {
@@ -60,10 +60,10 @@ public class AttachmentsTableModel extends AbstractTableModel implements Propert
      */
     public void addFile(File file, boolean cacheInRequest) throws IOException {
         if (container instanceof MutableAttachmentContainer) {
-            ((MutableAttachmentContainer) container).attachFile(file, cacheInRequest);
+            ((MutableAttachmentContainer)container).attachFile(file, cacheInRequest);
         }
 
-        this.fireTableRowsInserted(container.getAttachmentCount(), container.getAttachmentCount());
+        fireTableRowsInserted(container.getAttachmentCount(), container.getAttachmentCount());
     }
 
     public void removeAttachment(int[] rowIndexes) {
@@ -75,8 +75,8 @@ public class AttachmentsTableModel extends AbstractTableModel implements Propert
 
     public void removeAttachment(int rowIndex) {
         if (container instanceof MutableAttachmentContainer) {
-            ((MutableAttachmentContainer) container).removeAttachment(container.getAttachmentAt(rowIndex));
-            this.fireTableRowsDeleted(rowIndex, rowIndex);
+            ((MutableAttachmentContainer)container).removeAttachment(container.getAttachmentAt(rowIndex));
+            fireTableRowsDeleted(rowIndex, rowIndex);
         }
     }
 
@@ -86,10 +86,6 @@ public class AttachmentsTableModel extends AbstractTableModel implements Propert
 
     public int getColumnCount() {
         return container instanceof MutableAttachmentContainer ? 7 : 6;
-    }
-
-    public Attachment getAttachmentAt(int rowIndex) {
-        return container.getAttachmentAt(rowIndex);
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -119,40 +115,55 @@ public class AttachmentsTableModel extends AbstractTableModel implements Propert
         }
     }
 
-    public int findColumn(String columnName) {
-        if (columnName.equals("Name")) {
-            return 0;
-        } else if (columnName.equals("Content type")) {
-            return 1;
-        } else if (columnName.equals("Size")) {
-            return 2;
-        } else if (columnName.equals("Part")) {
-            return 3;
-        } else if (columnName.equals("Type")) {
-            return 4;
-        }
-
-        return -1;
+    public Attachment getAttachmentAt(int rowIndex) {
+        return container.getAttachmentAt(rowIndex);
     }
 
     public String getColumnName(int column) {
         if (column == 0) {
             return "Name";
-        } else if (column == 1) {
+        }
+        else if (column == 1) {
             return "Content type";
-        } else if (column == 2) {
+        }
+        else if (column == 2) {
             return "Size";
-        } else if (column == 3) {
+        }
+        else if (column == 3) {
             return "Part";
-        } else if (column == 4) {
+        }
+        else if (column == 4) {
             return "Type";
-        } else if (column == 5) {
+        }
+        else if (column == 5) {
             return "ContentID";
-        } else if (column == 6) {
+        }
+        else if (column == 6) {
             return "Cached";
-        } else {
+        }
+        else {
             return null;
         }
+    }
+
+    public int findColumn(String columnName) {
+        if (columnName.equals("Name")) {
+            return 0;
+        }
+        else if (columnName.equals("Content type")) {
+            return 1;
+        }
+        else if (columnName.equals("Size")) {
+            return 2;
+        }
+        else if (columnName.equals("Part")) {
+            return 3;
+        }
+        else if (columnName.equals("Type")) {
+            return 4;
+        }
+
+        return -1;
     }
 
     @Override
@@ -161,8 +172,7 @@ public class AttachmentsTableModel extends AbstractTableModel implements Propert
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return container instanceof MutableAttachmentContainer
-                && (columnIndex == 0 || columnIndex == 1 || columnIndex == 3 || columnIndex == 5);
+        return container instanceof MutableAttachmentContainer && (columnIndex == 0 || columnIndex == 1 || columnIndex == 3 || columnIndex == 5);
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
@@ -170,19 +180,23 @@ public class AttachmentsTableModel extends AbstractTableModel implements Propert
             return;
         }
 
-        WsdlAttachment att = (WsdlAttachment) container.getAttachmentAt(rowIndex);
+        WsdlAttachment att = (WsdlAttachment)container.getAttachmentAt(rowIndex);
         if (columnIndex == 0) {
             if (att.isCached()) {
-                att.setName((String) aValue);
-            } else {
+                att.setName((String)aValue);
+            }
+            else {
                 att.setUrl(aValue.toString());
             }
-        } else if (columnIndex == 1) {
-            att.setContentType((String) aValue);
-        } else if (columnIndex == 3) {
-            att.setPart((String) aValue);
-        } else if (columnIndex == 5) {
-            att.setContentID((String) aValue);
+        }
+        else if (columnIndex == 1) {
+            att.setContentType((String)aValue);
+        }
+        else if (columnIndex == 3) {
+            att.setPart((String)aValue);
+        }
+        else if (columnIndex == 5) {
+            att.setContentID((String)aValue);
         }
 
         fireTableRowsUpdated(rowIndex, rowIndex);

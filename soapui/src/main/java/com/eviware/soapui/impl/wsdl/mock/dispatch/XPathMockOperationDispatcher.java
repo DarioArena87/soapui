@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock.dispatch;
@@ -36,11 +36,8 @@ import com.eviware.soapui.ui.support.ModelItemDesktopPanel;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 
@@ -51,12 +48,12 @@ public class XPathMockOperationDispatcher extends AbstractMockOperationDispatche
         super(mockOperation);
     }
 
-    public MockResponse selectMockResponse(MockRequest request, MockResult result)
-            throws DispatchException {
+    public MockResponse selectMockResponse(MockRequest request, MockResult result) throws DispatchException {
         XmlObject xmlObject;
         try {
             xmlObject = request.getRequestXmlObject();
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             throw new DispatchException("Error getting XmlObject for request: " + e);
         }
 
@@ -77,6 +74,11 @@ public class XPathMockOperationDispatcher extends AbstractMockOperationDispatche
     }
 
     @Override
+    public boolean hasDefaultResponse() {
+        return true;
+    }
+
+    @Override
     public JComponent getEditorComponent() {
         JPanel xpathEditorPanel = new JPanel(new BorderLayout());
         DispatchXPathGroovyEditorModel editorModel = new DispatchXPathGroovyEditorModel();
@@ -85,16 +87,6 @@ public class XPathMockOperationDispatcher extends AbstractMockOperationDispatche
         xpathEditorPanel.add(buildXPathEditorToolbar(editorModel), BorderLayout.PAGE_START);
 
         return xpathEditorPanel;
-    }
-
-    public GroovyEditor getXPathEditor() {
-        return xpathEditor;
-    }
-
-    @Override
-    public void release() {
-        releaseEditorComponent();
-        super.release();
     }
 
     @Override
@@ -107,8 +99,13 @@ public class XPathMockOperationDispatcher extends AbstractMockOperationDispatche
     }
 
     @Override
-    public boolean hasDefaultResponse() {
-        return true;
+    public void release() {
+        releaseEditorComponent();
+        super.release();
+    }
+
+    public GroovyEditor getXPathEditor() {
+        return xpathEditor;
     }
 
     protected JXToolBar buildXPathEditorToolbar(DispatchXPathGroovyEditorModel editorModel) {
@@ -116,8 +113,7 @@ public class XPathMockOperationDispatcher extends AbstractMockOperationDispatche
         toolbar.addSpace(3);
         addToolbarActions(editorModel, toolbar);
         toolbar.addGlue();
-        toolbar.addFixed(ModelItemDesktopPanel.createActionButton(new ShowOnlineHelpAction(
-                HelpUrls.MOCKOPERATION_XPATHDISPATCH_HELP_URL), true));
+        toolbar.addFixed(ModelItemDesktopPanel.createActionButton(new ShowOnlineHelpAction(HelpUrls.MOCKOPERATION_XPATHDISPATCH_HELP_URL), true));
         return toolbar;
     }
 
@@ -132,26 +128,26 @@ public class XPathMockOperationDispatcher extends AbstractMockOperationDispatche
     }
 
     public class DispatchXPathGroovyEditorModel implements GroovyEditorModel {
-        private RunXPathAction runXPathAction = new RunXPathAction();
+        private final RunXPathAction runXPathAction = new RunXPathAction();
 
         public String[] getKeywords() {
             return new String[]{"define", "namespace"};
-        }
-
-        public Action getRunAction() {
-            return runXPathAction;
         }
 
         public String getScript() {
             return getMockOperation().getScript();
         }
 
-        public Settings getSettings() {
-            return getMockOperation().getSettings();
-        }
-
         public void setScript(String text) {
             getMockOperation().setScript(text);
+        }
+
+        public Action getRunAction() {
+            return runXPathAction;
+        }
+
+        public Settings getSettings() {
+            return getMockOperation().getSettings();
         }
 
         public String getScriptName() {
@@ -171,8 +167,8 @@ public class XPathMockOperationDispatcher extends AbstractMockOperationDispatche
 
     private class RunXPathAction extends AbstractAction {
         public RunXPathAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Evaluates this xpath expression against the latest request");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Evaluates this xpath expression against the latest request");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -184,9 +180,9 @@ public class XPathMockOperationDispatcher extends AbstractMockOperationDispatche
 
             try {
                 MockResponse retVal = selectMockResponse(lastMockResult.getMockRequest(), null);
-                UISupport.showInfoMessage("XPath Selection returned [" + (retVal == null ? "null" : retVal.getName())
-                        + "]");
-            } catch (Exception e1) {
+                UISupport.showInfoMessage("XPath Selection returned [" + (retVal == null ? "null" : retVal.getName()) + "]");
+            }
+            catch (Exception e1) {
                 SoapUI.logError(e1);
             }
         }

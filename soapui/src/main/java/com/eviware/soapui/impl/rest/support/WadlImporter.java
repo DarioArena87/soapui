@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.support;
@@ -30,7 +30,6 @@ import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.Tools;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.xml.XmlUtils;
-import com.eviware.soapui.tools.PropertyExpansionRemover;
 import net.java.dev.wadl.x2009.x02.ApplicationDocument;
 import net.java.dev.wadl.x2009.x02.ApplicationDocument.Application;
 import net.java.dev.wadl.x2009.x02.DocDocument.Doc;
@@ -65,11 +64,98 @@ import java.util.List;
 import java.util.Map;
 
 public class WadlImporter {
-    private RestService service;
+    private final RestService service;
     private Application application;
     private List<Resources> resourcesList;
-    private Map<String, ApplicationDocument> refCache = new HashMap<String, ApplicationDocument>();
+    private final Map<String, ApplicationDocument> refCache = new HashMap<String, ApplicationDocument>();
     private boolean isWADL11 = true;
+
+    public static Map<String, XmlObject> getDefinitionParts(String wadlUrl) {
+        Map<String, XmlObject> result = new HashMap<String, XmlObject>();
+
+        try {
+            return SchemaUtils.getSchemas(wadlUrl, new UrlSchemaLoader(wadlUrl));
+
+            // URL url = new URL(wadlUrl);
+            // ApplicationDocument applicationDocument =
+            // ApplicationDocument.Factory.parse(url);
+            // result.put(url.getPath(), applicationDocument);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public static String extractParams(URL param, RestParamsPropertyHolder params) {
+        String path = param.getPath();
+        String[] items = path.split("/");
+
+        int templateParamCount = 0;
+        StringBuffer resultPath = new StringBuffer();
+
+        for (int i = 0; i < items.length; i++) {
+            String item = items[i];
+            try {
+                String[] matrixParams = item.split(";");
+                if (matrixParams.length > 0) {
+                    item = matrixParams[0];
+                    for (int c = 1; c < matrixParams.length; c++) {
+                        String matrixParam = matrixParams[c];
+
+                        int ix = matrixParam.indexOf('=');
+                        if (ix == -1) {
+                            params.addProperty(URLDecoder.decode(matrixParam, "Utf-8")).setStyle(ParameterStyle.MATRIX);
+                        }
+                        else {
+                            String name = matrixParam.substring(0, ix);
+                            RestParamProperty property = params.addProperty(URLDecoder.decode(name, "Utf-8"));
+                            property.setStyle(ParameterStyle.MATRIX);
+                            property.setValue(URLDecoder.decode(matrixParam.substring(ix + 1), "Utf-8"));
+                        }
+                    }
+                }
+
+                Integer.parseInt(item);
+                RestParamProperty prop = params.addProperty("param" + templateParamCount++);
+                prop.setStyle(ParameterStyle.TEMPLATE);
+                prop.setValue(item);
+
+                item = "{" + prop.getName() + "}";
+            }
+            catch (Exception e) {
+            }
+
+            if (StringUtils.hasContent(item)) {
+                resultPath.append('/').append(item);
+            }
+        }
+
+        String query = param.getQuery();
+        if (StringUtils.hasContent(query)) {
+            items = query.split("&");
+            for (String item : items) {
+                try {
+                    int ix = item.indexOf('=');
+                    if (ix == -1) {
+                        params.addProperty(URLDecoder.decode(item, "Utf-8")).setStyle(ParameterStyle.QUERY);
+                    }
+                    else {
+                        String name = item.substring(0, ix);
+                        RestParamProperty property = params.addProperty(URLDecoder.decode(name, "Utf-8"));
+                        property.setStyle(ParameterStyle.QUERY);
+                        property.setValue(URLDecoder.decode(item.substring(ix + 1), "Utf-8"));
+                    }
+                }
+                catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return resultPath.toString();
+    }
 
     public WadlImporter(RestService service) {
         this.service = service;
@@ -82,15 +168,14 @@ public class WadlImporter {
 
             String content = Tools.removePropertyExpansions(wadlUrl, xmlObject.xmlText());
 
-            Element element = ((Document) xmlObject.getDomNode()).getDocumentElement();
+            Element element = ((Document)xmlObject.getDomNode()).getDocumentElement();
 
             // try to allow older namespaces
-            if (element.getLocalName().equals("application")
-                    && element.getNamespaceURI().startsWith("http://research.sun.com/wadl")) {
+            if (element.getLocalName().equals("application") && element.getNamespaceURI().startsWith("http://research.sun.com/wadl")) {
                 isWADL11 = false;
                 content = content.replaceAll("\"" + element.getNamespaceURI() + "\"", "\"" + Constants.WADL11_NS + "\"");
-            } else if (!element.getLocalName().equals("application")
-                    || !element.getNamespaceURI().equals(Constants.WADL11_NS)) {
+            }
+            else if (!element.getLocalName().equals("application") || !element.getNamespaceURI().equals(Constants.WADL11_NS)) {
                 throw new Exception("Document is not a WADL application with " + Constants.WADL11_NS + " namespace");
             }
 
@@ -108,7 +193,8 @@ public class WadlImporter {
                 service.setBasePath(baseUrl.getPath());
 
                 service.addEndpoint(Tools.getEndpointFromUrl(baseUrl));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 service.setBasePath(base);
             }
 
@@ -138,7 +224,8 @@ public class WadlImporter {
                         if (newResource == null) {
                             newResource = baseResource.addNewChildResource(name, path);
                         }
-                    } else if (path != null) {
+                    }
+                    else if (path != null) {
                         for (RestResource res : service.getResourceList()) {
                             if (path.equals(res.getPath())) {
                                 newResource = res;
@@ -149,7 +236,8 @@ public class WadlImporter {
                         if (newResource == null) {
                             newResource = service.addNewResource(name, path);
                         }
-                    } else {
+                    }
+                    else {
                         newResource = service.addNewResource(name, "");
                     }
 
@@ -157,9 +245,11 @@ public class WadlImporter {
                     addSubResources(newResource, resource);
                 }
             }
-        } catch (InvalidDefinitionException ex) {
+        }
+        catch (InvalidDefinitionException ex) {
             ex.show();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e);
         }
     }
@@ -206,8 +296,7 @@ public class WadlImporter {
             param = resolveParameter(param);
             if (param != null) {
                 String nm = param.getName();
-                RestParamProperty prop = newResource.hasProperty(nm) ? newResource.getProperty(nm) : newResource
-                        .addProperty(nm);
+                RestParamProperty prop = newResource.hasProperty(nm) ? newResource.getProperty(nm) : newResource.addProperty(nm);
 
                 initParam(param, prop);
             }
@@ -231,8 +320,7 @@ public class WadlImporter {
                             param = resolveParameter(param);
                             if (param != null) {
                                 String nm = param.getName();
-                                RestParamProperty prop = restMethod.hasProperty(nm) ? restMethod.getProperty(nm)
-                                        : restMethod.addProperty(nm);
+                                RestParamProperty prop = restMethod.hasProperty(nm) ? restMethod.getProperty(nm) : restMethod.addProperty(nm);
 
                                 initParam(param, prop);
                             }
@@ -301,12 +389,11 @@ public class WadlImporter {
                             // XmlObject obj = XmlObject.Factory.parse(
                             // content.replaceFirst( "<(([a-z]+:)?)fault ",
                             // "<$1representation " ), options );
-                            XmlObject obj = XmlUtils.createXmlObject(
-                                    content.replaceFirst("<(([a-z]+:)?)fault ", "<$1representation "), options);
-                            RepresentationDocument representation = (RepresentationDocument) obj
-                                    .changeType(RepresentationDocument.type);
+                            XmlObject obj = XmlUtils.createXmlObject(content.replaceFirst("<(([a-z]+:)?)fault ", "<$1representation "), options);
+                            RepresentationDocument representation = (RepresentationDocument)obj.changeType(RepresentationDocument.type);
                             addRepresentation(response, restMethod, representation.getRepresentation());
-                        } catch (XmlException e) {
+                        }
+                        catch (XmlException e) {
                         }
                     }
                 }
@@ -322,7 +409,8 @@ public class WadlImporter {
         List<Long> status = null;
         if (isWADL11) {
             status = response.getStatus();
-        } else {
+        }
+        else {
             Node n = representation.getDomNode().getAttributes().getNamedItem("status");
             if (n != null) {
                 status = new ArrayList<Long>();
@@ -345,8 +433,9 @@ public class WadlImporter {
         addRepresentationFromConfig(restMethod, representation, type, status);
     }
 
-    private void addRepresentationFromConfig(RestMethod restMethod, Representation representation,
-                                             RestRepresentation.Type type, List<?> status) {
+    private void addRepresentationFromConfig(
+        RestMethod restMethod, Representation representation, RestRepresentation.Type type, List<?> status
+    ) {
         RestRepresentation restRepresentation = restMethod.addNewRepresentation(type);
         restRepresentation.setMediaType(representation.getMediaType());
         restRepresentation.setElement(representation.getElement());
@@ -406,12 +495,29 @@ public class WadlImporter {
                     }
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
 
         return method;
     }
+
+    /*
+     * private Representation resolveFault( Representation representation ) {
+     * String href = representation.getHref(); if( !StringUtils.hasContent( href
+     * ) ) return representation;
+     *
+     * try { ApplicationDocument applicationDocument = loadReferencedWadl( href
+     * ); if( applicationDocument != null ) { int ix = href.lastIndexOf( '#' );
+     * if( ix > 0 ) href = href.substring( ix + 1 );
+     *
+     * for( Representation m : application.getFaultList() ) { if(
+     * m.getId().equals( href ) ) return m; } } } catch( Exception e ) {
+     * e.printStackTrace(); }
+     *
+     * return representation; }
+     */
 
     private Representation resolveRepresentation(Representation representation) {
         String href = representation.getHref();
@@ -439,7 +545,8 @@ public class WadlImporter {
                     }
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -472,28 +579,13 @@ public class WadlImporter {
                     }
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
 
         return null;
     }
-
-	/*
-     * private Representation resolveFault( Representation representation ) {
-	 * String href = representation.getHref(); if( !StringUtils.hasContent( href
-	 * ) ) return representation;
-	 * 
-	 * try { ApplicationDocument applicationDocument = loadReferencedWadl( href
-	 * ); if( applicationDocument != null ) { int ix = href.lastIndexOf( '#' );
-	 * if( ix > 0 ) href = href.substring( ix + 1 );
-	 * 
-	 * for( Representation m : application.getFaultList() ) { if(
-	 * m.getId().equals( href ) ) return m; } } } catch( Exception e ) {
-	 * e.printStackTrace(); }
-	 * 
-	 * return representation; }
-	 */
 
     private ResourceTypeDocument.ResourceType resolveResource(String id) {
         for (ResourceTypeDocument.ResourceType resourceType : application.getResourceTypeList()) {
@@ -510,14 +602,14 @@ public class WadlImporter {
                     id = id.substring(ix + 1);
                 }
 
-                for (ResourceTypeDocument.ResourceType resourceType : applicationDocument.getApplication()
-                        .getResourceTypeList()) {
+                for (ResourceTypeDocument.ResourceType resourceType : applicationDocument.getApplication().getResourceTypeList()) {
                     if (resourceType.getId().equals(id)) {
                         return resourceType;
                     }
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -538,87 +630,5 @@ public class WadlImporter {
         }
 
         return applicationDocument;
-    }
-
-    public static Map<String, XmlObject> getDefinitionParts(String wadlUrl) {
-        Map<String, XmlObject> result = new HashMap<String, XmlObject>();
-
-        try {
-            return SchemaUtils.getSchemas(wadlUrl, new UrlSchemaLoader(wadlUrl));
-
-            // URL url = new URL(wadlUrl);
-            // ApplicationDocument applicationDocument =
-            // ApplicationDocument.Factory.parse(url);
-            // result.put(url.getPath(), applicationDocument);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return result;
-    }
-
-    public static String extractParams(URL param, RestParamsPropertyHolder params) {
-        String path = param.getPath();
-        String[] items = path.split("/");
-
-        int templateParamCount = 0;
-        StringBuffer resultPath = new StringBuffer();
-
-        for (int i = 0; i < items.length; i++) {
-            String item = items[i];
-            try {
-                String[] matrixParams = item.split(";");
-                if (matrixParams.length > 0) {
-                    item = matrixParams[0];
-                    for (int c = 1; c < matrixParams.length; c++) {
-                        String matrixParam = matrixParams[c];
-
-                        int ix = matrixParam.indexOf('=');
-                        if (ix == -1) {
-                            params.addProperty(URLDecoder.decode(matrixParam, "Utf-8")).setStyle(ParameterStyle.MATRIX);
-                        } else {
-                            String name = matrixParam.substring(0, ix);
-                            RestParamProperty property = params.addProperty(URLDecoder.decode(name, "Utf-8"));
-                            property.setStyle(ParameterStyle.MATRIX);
-                            property.setValue(URLDecoder.decode(matrixParam.substring(ix + 1), "Utf-8"));
-                        }
-                    }
-                }
-
-                Integer.parseInt(item);
-                RestParamProperty prop = params.addProperty("param" + templateParamCount++);
-                prop.setStyle(ParameterStyle.TEMPLATE);
-                prop.setValue(item);
-
-                item = "{" + prop.getName() + "}";
-            } catch (Exception e) {
-            }
-
-            if (StringUtils.hasContent(item)) {
-                resultPath.append('/').append(item);
-            }
-        }
-
-        String query = ((URL) param).getQuery();
-        if (StringUtils.hasContent(query)) {
-            items = query.split("&");
-            for (String item : items) {
-                try {
-                    int ix = item.indexOf('=');
-                    if (ix == -1) {
-                        params.addProperty(URLDecoder.decode(item, "Utf-8")).setStyle(ParameterStyle.QUERY);
-                    } else {
-                        String name = item.substring(0, ix);
-                        RestParamProperty property = params.addProperty(URLDecoder.decode(name, "Utf-8"));
-                        property.setStyle(ParameterStyle.QUERY);
-                        property.setValue(URLDecoder.decode(item.substring(ix + 1), "Utf-8"));
-                    }
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return resultPath.toString();
     }
 }

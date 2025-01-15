@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * $Header: /home/jerenkrantz/tmp/commons/commons-convert/cvs/home/cvs/jakarta-commons//httpclient/src/java/org/apache/commons/httpclient/HttpException.java,v 1.19 2004/09/30 18:53:20 olegk Exp $
  * $Revision: 480424 $
  * $Date: 2006-11-29 06:56:49 +0100 (Wed, 29 Nov 2006) $
@@ -58,11 +58,29 @@ import java.lang.reflect.Method;
 public class HttpException extends IOException {
 
     /**
+     * The original Throwable representing the cause of this error
+     */
+    private final Throwable cause;
+    /**
+     * A "reason" string provided for compatibility with older clients.
+     *
+     * @deprecated HttpClient no longer uses this field for itself.  It
+     * is only provided for compatibility with existing clients.
+     */
+    private String reason;
+    /**
+     * Reason code for compatibility with older clients.
+     *
+     * @deprecated HttpClient no longer uses this field for itself.
+     * It is only provided for compatibility with existing clients.
+     */
+    private int reasonCode = HttpStatus.SC_OK;
+
+    /**
      * Creates a new HttpException with a <tt>null</tt> detail message.
      */
     public HttpException() {
-        super();
-        this.cause = null;
+        cause = null;
     }
 
     /**
@@ -72,7 +90,7 @@ public class HttpException extends IOException {
      */
     public HttpException(String message) {
         super(message);
-        this.cause = null;
+        cause = null;
     }
 
     /**
@@ -91,8 +109,9 @@ public class HttpException extends IOException {
         try {
             Class[] paramsClasses = new Class[]{Throwable.class};
             Method initCause = Throwable.class.getMethod("initCause", paramsClasses);
-            initCause.invoke(this, new Object[]{cause});
-        } catch (Exception e) {
+            initCause.invoke(this, cause);
+        }
+        catch (Exception e) {
             // The setCause method must not be available
         }
     }
@@ -102,7 +121,7 @@ public class HttpException extends IOException {
      * if the cause is unavailable, unknown, or not a <tt>Throwable</tt>.
      *
      * @return the <tt>Throwable</tt> that caused this exception, or <tt>null</tt>
-     *         if the cause is unavailable, unknown, or not a <tt>Throwable</tt>
+     * if the cause is unavailable, unknown, or not a <tt>Throwable</tt>
      * @since 3.0
      */
     public Throwable getCause() {
@@ -129,11 +148,12 @@ public class HttpException extends IOException {
         try {
             // JDK 1.4 has a nice printStackTrace method that prints the cause's stack
             // trace too and prunes out duplicate stack frames.  Call it if possible,
-            // which is determined by checking whether JDK 1.4's getStackTrace method is present 
+            // which is determined by checking whether JDK 1.4's getStackTrace method is present
             Class[] paramsClasses = new Class[]{};
-            this.getClass().getMethod("getStackTrace", paramsClasses);
+            getClass().getMethod("getStackTrace", paramsClasses);
             super.printStackTrace(s);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             // If that didn't work, print it out ourselves
             // First print this exception's stack trace.
             super.printStackTrace(s);
@@ -157,11 +177,12 @@ public class HttpException extends IOException {
         try {
             // JDK 1.4 has a nice printStackTrace method that prints the cause's stack
             // trace too and prunes out duplicate stack frames.  Call it if possible,
-            // which is determined by checking whether JDK 1.4's getStackTrace method is present 
+            // which is determined by checking whether JDK 1.4's getStackTrace method is present
             Class[] paramsClasses = new Class[]{};
-            this.getClass().getMethod("getStackTrace", paramsClasses);
+            getClass().getMethod("getStackTrace", paramsClasses);
             super.printStackTrace(s);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             // If that didn't work, print it out ourselves
             // First print this exception's stack trace.
             super.printStackTrace(s);
@@ -175,26 +196,37 @@ public class HttpException extends IOException {
     }
 
     /**
+     * Get the text description of the reason for an exception.
+     *
+     * @deprecated HttpClient no longer uses this for itself.  It is only
+     * provided for compatibility with existing clients, and will be removed
+     * in a future release.
+     */
+    public String getReason() {
+        return reason;
+    }
+
+    /**
      * Sets the text description of the reason for an exception.
      *
      * @param reason The reason for the exception.
      * @deprecated HttpClient no longer uses this for itself.  It is only
-     *             provided for compatibility with existing clients, and will be removed
-     *             in a future release.
+     * provided for compatibility with existing clients, and will be removed
+     * in a future release.
      */
     public void setReason(String reason) {
         this.reason = reason;
     }
 
     /**
-     * Get the text description of the reason for an exception.
+     * Get the status code description of the reason for an exception.
      *
      * @deprecated HttpClient no longer uses this for itself.  It is only
-     *             provided for compatibility with existing clients, and will be removed
-     *             in a future release.
+     * provided for compatibility with existing clients, and will be removed
+     * in a future release.
      */
-    public String getReason() {
-        return reason;
+    public int getReasonCode() {
+        return reasonCode;
     }
 
     /**
@@ -203,42 +235,10 @@ public class HttpException extends IOException {
      * @param code The reason for the exception.  This is intended to be an
      *             HTTP status code.
      * @deprecated HttpClient no longer uses this for itself.  It is only
-     *             provided for compatibility with existing clients, and will be removed
-     *             in a future release.
+     * provided for compatibility with existing clients, and will be removed
+     * in a future release.
      */
     public void setReasonCode(int code) {
         reasonCode = code;
     }
-
-    /**
-     * Get the status code description of the reason for an exception.
-     *
-     * @deprecated HttpClient no longer uses this for itself.  It is only
-     *             provided for compatibility with existing clients, and will be removed
-     *             in a future release.
-     */
-    public int getReasonCode() {
-        return this.reasonCode;
-    }
-
-    /**
-     * A "reason" string provided for compatibility with older clients.
-     *
-     * @deprecated HttpClient no longer uses this field for itself.  It
-     *             is only provided for compatibility with existing clients.
-     */
-    private String reason;
-
-    /**
-     * Reason code for compatibility with older clients.
-     *
-     * @deprecated HttpClient no longer uses this field for itself.
-     *             It is only provided for compatibility with existing clients.
-     */
-    private int reasonCode = HttpStatus.SC_OK;
-
-    /**
-     * The original Throwable representing the cause of this error
-     */
-    private final Throwable cause;
 }

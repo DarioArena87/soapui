@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps.amf;
@@ -55,29 +55,38 @@ import java.util.Map;
  */
 
 public class SoapUIAMFConnection {
-    private static int DEFAULT_OBJECT_ENCODING = MessageIOConstants.AMF3;
-
-    /**
-     * Creates a default AMF connection instance.
-     */
-    public SoapUIAMFConnection() {
-    }
-
+    private static final int DEFAULT_OBJECT_ENCODING = MessageIOConstants.AMF3;
     private ActionContext actionContext;
     private boolean connected;
     private int objectEncoding;
     private boolean objectEncodingSet = false;
     private SerializationContext serializationContext;
     private String url;
-
     private List<MessageHeader> amfHeaders;
     private AMFHeaderProcessor amfHeaderProcessor;
     private Map<String, String> httpRequestHeaders;
     private int responseCounter;
-
     private ExtendedPostMethod postMethod;
-    private HttpContext httpState = new BasicHttpContext();
+    private final HttpContext httpState = new BasicHttpContext();
     private PropertyExpansionContext context;
+
+    /**
+     * Registers a custom alias for a class name bidirectionally.
+     *
+     * @param alias     The alias for the class name.
+     * @param className The concrete class name.
+     */
+    public static void registerAlias(String alias, String className) {
+        ClassAliasRegistry registry = ClassAliasRegistry.getRegistry();
+        registry.registerAlias(alias, className);
+        registry.registerAlias(className, alias);
+    }
+
+    /**
+     * Creates a default AMF connection instance.
+     */
+    public SoapUIAMFConnection() {
+    }
 
     public int getObjectEncoding() {
         if (!objectEncodingSet) {
@@ -202,8 +211,7 @@ public class SoapUIAMFConnection {
      * @throws ServerStatusException If there is a server side exception.
      */
 
-    public Object call(PropertyExpansionContext context, String command, Object... arguments)
-            throws ClientStatusException, ServerStatusException {
+    public Object call(PropertyExpansionContext context, String command, Object... arguments) throws ClientStatusException, ServerStatusException {
         this.context = context;
 
         if (!connected) {
@@ -235,19 +243,23 @@ public class SoapUIAMFConnection {
             amfMessageSerializer.writeMessage(requestMessage);
             Object result = send(outBuffer);
             return result;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             if (e instanceof ClientStatusException) {
-                throw (ClientStatusException) e;
-            } else if (e instanceof ServerStatusException) {
-                throw (ServerStatusException) e;
+                throw (ClientStatusException)e;
+            }
+            else if (e instanceof ServerStatusException) {
+                throw (ServerStatusException)e;
             }
             // Otherwise, wrap into a ClientStatusException.
             ClientStatusException exception = new ClientStatusException(e, ClientStatusException.AMF_CALL_FAILED_CODE);
             throw exception;
-        } finally {
+        }
+        finally {
             try {
                 outBuffer.close();
-            } catch (IOException ignore) {
+            }
+            catch (IOException ignore) {
             }
         }
     }
@@ -265,6 +277,12 @@ public class SoapUIAMFConnection {
         connected = false;
     }
 
+    // --------------------------------------------------------------------------
+    //
+    // Protected Methods
+    //
+    // --------------------------------------------------------------------------
+
     /**
      * Connects to the URL provided. Any previous connections are closed.
      *
@@ -281,17 +299,12 @@ public class SoapUIAMFConnection {
             serializationContext = new SerializationContext();
             serializationContext.createASObjectForMissingType = true;
             internalConnect();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             ClientStatusException exception = new ClientStatusException(e, ClientStatusException.AMF_CONNECT_FAILED_CODE);
             throw exception;
         }
     }
-
-    // --------------------------------------------------------------------------
-    //
-    // Protected Methods
-    //
-    // --------------------------------------------------------------------------
 
     /**
      * Generates the HTTP response info for the server status exception.
@@ -307,7 +320,8 @@ public class SoapUIAMFConnection {
             }
             String responseMessage = postMethod.getResponseBodyAsString();
             httpResponseInfo = new HttpResponseInfo(responseCode, responseMessage);
-        } catch (IOException ignore) {
+        }
+        catch (IOException ignore) {
         }
         return httpResponseInfo;
     }
@@ -339,16 +353,14 @@ public class SoapUIAMFConnection {
     /**
      * Processes the HTTP response headers and body.
      */
-    protected Object processHttpResponse(InputStream inputStream) throws ClassNotFoundException, IOException,
-            ClientStatusException, ServerStatusException {
+    protected Object processHttpResponse(InputStream inputStream) throws ClassNotFoundException, IOException, ClientStatusException, ServerStatusException {
         return processHttpResponseBody(inputStream);
     }
 
     /**
      * Processes the HTTP response body.
      */
-    protected Object processHttpResponseBody(InputStream inputStream) throws ClassNotFoundException, IOException,
-            ClientStatusException, ServerStatusException {
+    protected Object processHttpResponseBody(InputStream inputStream) throws ClassNotFoundException, IOException, ClientStatusException, ServerStatusException {
         DataInputStream din = new DataInputStream(inputStream);
         ActionMessage message = new ActionMessage();
         actionContext.setRequestMessage(message);
@@ -395,7 +407,8 @@ public class SoapUIAMFConnection {
 
             if (targetURI.endsWith(MessageIOConstants.RESULT_METHOD)) {
                 return message.getData();
-            } else if (targetURI.endsWith(MessageIOConstants.STATUS_METHOD)) {
+            }
+            else if (targetURI.endsWith(MessageIOConstants.STATUS_METHOD)) {
                 // String exMessage = "Server error";
                 // HttpResponseInfo responseInfo = generateHttpResponseInfo();
                 // ServerStatusException exception = new ServerStatusException(
@@ -411,8 +424,7 @@ public class SoapUIAMFConnection {
     /**
      * Writes the output buffer and processes the HTTP response.
      */
-    protected Object send(ByteArrayOutputStream outBuffer) throws ClassNotFoundException, IOException,
-            ClientStatusException, ServerStatusException {
+    protected Object send(ByteArrayOutputStream outBuffer) throws ClassNotFoundException, IOException, ClientStatusException, ServerStatusException {
         // internalConnect.
         internalConnect();
 
@@ -442,17 +454,5 @@ public class SoapUIAMFConnection {
                 postMethod.setHeader(key, value);
             }
         }
-    }
-
-    /**
-     * Registers a custom alias for a class name bidirectionally.
-     *
-     * @param alias     The alias for the class name.
-     * @param className The concrete class name.
-     */
-    public static void registerAlias(String alias, String className) {
-        ClassAliasRegistry registry = ClassAliasRegistry.getRegistry();
-        registry.registerAlias(alias, className);
-        registry.registerAlias(className, alias);
     }
 }

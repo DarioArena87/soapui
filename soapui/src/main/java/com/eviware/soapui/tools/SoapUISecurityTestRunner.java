@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.tools;
@@ -76,8 +76,8 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
     private int securityScanCount;
     private int securityScanRequestCount;
     private int securityScanAlertCount;
-    private List<SecurityTestStepResult> failedResults = new ArrayList<SecurityTestStepResult>();
-    private JUnitSecurityReportCollector reportCollector = new JUnitSecurityReportCollector();
+    private final List<SecurityTestStepResult> failedResults = new ArrayList<SecurityTestStepResult>();
+    private final JUnitSecurityReportCollector reportCollector = new JUnitSecurityReportCollector();
 
     /**
      * Runs the tests in the specified soapUI project file, see SoapUI xdocs for
@@ -91,16 +91,20 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
         System.exit(new SoapUISecurityTestRunner().runFromCommandLine(args));
     }
 
+    public SoapUISecurityTestRunner() {
+        super(TITLE);
+    }
+
+    public SoapUISecurityTestRunner(String title) {
+        super(title);
+    }
+
     protected boolean processCommandLine(CommandLine cmd) {
         if (cmd.hasOption("n")) {
             setSecurityTestName(cmd.getOptionValue("n"));
         }
 
         return super.processCommandLine(cmd);
-    }
-
-    public void setSecurityTestName(String securityTestName) {
-        this.securityTestName = securityTestName;
     }
 
     protected SoapUIOptions initCommandLineOptions() {
@@ -110,21 +114,12 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
         return options;
     }
 
-    public SoapUISecurityTestRunner() {
-        super(SoapUISecurityTestRunner.TITLE);
-    }
-
-    public SoapUISecurityTestRunner(String title) {
-        super(title);
-    }
-
     public boolean runRunner() throws Exception {
         initGroovyLog();
         getAssertions().clear();
         String projectFile = getProjectFile();
 
-        WsdlProject project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(projectFile,
-                getProjectPassword());
+        WsdlProject project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(projectFile, getProjectPassword());
 
         if (project.isDisabled()) {
             throw new Exception("Failed to load SoapUI project file [" + projectFile + "]");
@@ -148,8 +143,7 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
             TestSuite suite = project.getTestSuiteAt(c);
             for (int i = 0; i < suite.getTestCaseCount(); i++) {
                 TestCase tc = suite.getTestCaseAt(i);
-                if ((testSuite == null || suite.getName().equals(suite.getName())) && testCase != null
-                        && tc.getName().equals(testCase)) {
+                if ((testSuite == null || suite.getName().equals(suite.getName())) && testCase != null && tc.getName().equals(testCase)) {
                     testCasesToRun.add(tc);
                 }
 
@@ -160,16 +154,19 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
         // decide what to run
         if (testCasesToRun.size() > 0) {
             for (TestCase tc : testCasesToRun) {
-                runTestCase((WsdlTestCase) tc);
+                runTestCase((WsdlTestCase)tc);
             }
-        } else if (testSuite != null) {
+        }
+        else if (testSuite != null) {
             WsdlTestSuite ts = project.getTestSuiteByName(testSuite);
             if (ts == null) {
                 throw new Exception("TestSuite with name [" + testSuite + "] not found in project");
-            } else {
+            }
+            else {
                 runSuite(ts);
             }
-        } else {
+        }
+        else {
             runProject(project);
         }
 
@@ -184,14 +181,14 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
         if (isSaveAfterRun() && !project.isRemote()) {
             try {
                 project.save();
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 log.error("Failed to save project", t);
             }
         }
 
         if (securityScanAlertCount > 0 && !isIgnoreErrors()) {
-            throw new Exception("SecurityTest execution failed with " + securityScanAlertCount + " alert"
-                    + (securityScanAlertCount > 1 ? "s" : ""));
+            throw new Exception("SecurityTest execution failed with " + securityScanAlertCount + " alert" + (securityScanAlertCount > 1 ? "s" : ""));
         }
 
         return true;
@@ -201,9 +198,10 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
         try {
             log.info(("Running Project [" + project.getName() + "], runType = " + project.getRunType()));
             for (TestSuite testSuite : project.getTestSuiteList()) {
-                runSuite((WsdlTestSuite) testSuite);
+                runSuite((WsdlTestSuite)testSuite);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -223,11 +221,6 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
         if (isJunitReport()) {
             tc.addTestRunListener(reportCollector);
         }
-    }
-
-    public void exportJUnitReports(JUnitSecurityReportCollector collector, String folder, WsdlProject project)
-            throws Exception {
-        collector.saveReports(folder == null ? "" : folder);
     }
 
     public void printReport(long timeTaken) {
@@ -250,12 +243,12 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
     protected void runSuite(WsdlTestSuite suite) {
         try {
             for (TestCase testCase : suite.getTestCaseList()) {
-                runTestCase((WsdlTestCase) testCase);
+                runTestCase((WsdlTestCase)testCase);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     /**
@@ -274,9 +267,21 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
                     runSecurityTest(securityTest);
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+    }
+
+    public void setSecurityTestName(String securityTestName) {
+        this.securityTestName = securityTestName;
+    }
+
+    public void exportJUnitReports(JUnitSecurityReportCollector collector, String folder, WsdlProject project) throws Exception {
+        collector.saveReports(folder == null ? "" : folder);
     }
 
     /**
@@ -287,35 +292,38 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
             private int requestIndex = 0;
 
             @Override
-            public void afterSecurityScanRequest(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                                 SecurityScanRequestResult securityCheckReqResult) {
+            public void afterStep(
+                TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityTestStepResult result
+            ) {
+                if (result.getStatus() == ResultStatus.FAILED) {
+                    failedResults.add(result);
+                }
+            }
+
+            @Override
+            public void afterSecurityScan(
+                TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScanResult securityCheckResult
+            ) {
+                securityScanCount++;
+            }
+
+            @Override
+            public void beforeSecurityScan(
+                TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScan securityCheck
+            ) {
+                requestIndex = 0;
+            }
+
+            @Override
+            public void afterSecurityScanRequest(
+                TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScanRequestResult securityCheckReqResult
+            ) {
                 securityScanRequestCount++;
                 if (securityCheckReqResult.getStatus() == ResultStatus.FAILED) {
                     securityScanAlertCount++;
                 }
 
-                log.info(securityCheckReqResult.getSecurityScan().getName() + " - "
-                        + securityCheckReqResult.getChangedParamsInfo(++requestIndex));
-            }
-
-            @Override
-            public void afterSecurityScan(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                          SecurityScanResult securityCheckResult) {
-                securityScanCount++;
-            }
-
-            @Override
-            public void beforeSecurityScan(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                           SecurityScan securityCheck) {
-                requestIndex = 0;
-            }
-
-            @Override
-            public void afterStep(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                  SecurityTestStepResult result) {
-                if (result.getStatus() == ResultStatus.FAILED) {
-                    failedResults.add(result);
-                }
+                log.info(securityCheckReqResult.getSecurityScan().getName() + " - " + securityCheckReqResult.getChangedParamsInfo(++requestIndex));
             }
         });
 
@@ -323,18 +331,39 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
             securityTest.addSecurityTestRunListener(reportCollector);
         }
 
-        log.info("Running SecurityTest [" + securityTest.getName() + "] in TestCase ["
-                + securityTest.getTestCase().getName() + "] in TestSuite ["
-                + securityTest.getTestCase().getTestSuite().getName() + "]");
+        log.info("Running SecurityTest [" +
+                 securityTest.getName() +
+                 "] in TestCase [" +
+                 securityTest.getTestCase().getName() +
+                 "] in TestSuite [" +
+                 securityTest.getTestCase().getTestSuite().getName() +
+                 "]");
 
         SecurityTestRunner runner = securityTest.run(null, false);
         // log.info( "\n" + securityTest.getSecurityTestLog().getMessages() );
-        log.info("SecurityTest [" + securityTest.getName() + "] finished with status [" + runner.getStatus() + "] in "
-                + (runner.getTimeTaken()) + "ms");
+        log.info("SecurityTest [" + securityTest.getName() + "] finished with status [" + runner.getStatus() + "] in " + (runner.getTimeTaken()) + "ms");
 
         if (isJUnitReport()) {
             securityTest.removeSecurityTestRunListener(reportCollector);
         }
+    }
+
+    @Override
+    public void beforeRun(TestCaseRunner testRunner, SecurityTestRunContext runContext) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void afterRun(TestCaseRunner testRunner, SecurityTestRunContext runContext) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void beforeStep(TestCaseRunner testRunner, SecurityTestRunContext runContext, TestStepResult testStepResult) {
+        // TODO Auto-generated method stub
+
     }
 
     @Override
@@ -353,14 +382,14 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
         }
 
         String countPropertyName = currentStep.getName() + " run count";
-        Long count = new Long(getExportCount());// ( Long
+        Long count = Long.valueOf(getExportCount());// ( Long
         // )runContext.getProperty(
         // countPropertyName );
         if (count == null) {
-            count = new Long(0);
+            count = Long.valueOf(0);
         }
 
-        runContext.setProperty(countPropertyName, new Long(count.longValue() + 1));
+        runContext.setProperty(countPropertyName, Long.valueOf(count.longValue() + 1));
 
         if (result.getStatus() == SecurityResult.ResultStatus.FAILED || isExportAll()) {
             try {
@@ -368,29 +397,43 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
 
                 TestCase tc = currentStep.getTestCase();
 
-                String nameBase = StringUtils.createFileName(securityTestName, '_') + exportSeparator
-                        + StringUtils.createFileName(securityScanName, '_') + exportSeparator
-                        + StringUtils.createFileName(tc.getTestSuite().getName(), '_') + exportSeparator
-                        + StringUtils.createFileName(tc.getName(), '_') + exportSeparator
-                        + StringUtils.createFileName(currentStep.getName(), '_') + "-" + count.longValue() + "-"
-                        + result.getStatus();
+                String nameBase = StringUtils.createFileName(securityTestName, '_') +
+                                  exportSeparator +
+                                  StringUtils.createFileName(securityScanName, '_') +
+                                  exportSeparator +
+                                  StringUtils.createFileName(tc.getTestSuite().getName(), '_') +
+                                  exportSeparator +
+                                  StringUtils.createFileName(tc.getName(), '_') +
+                                  exportSeparator +
+                                  StringUtils.createFileName(currentStep.getName(), '_') +
+                                  "-" +
+                                  count.longValue() +
+                                  "-" +
+                                  result.getStatus();
 
-                WsdlTestCaseRunner callingTestCaseRunner = (WsdlTestCaseRunner) runContext
-                        .getProperty("#CallingTestCaseRunner#");
+                WsdlTestCaseRunner callingTestCaseRunner = (WsdlTestCaseRunner)runContext.getProperty("#CallingTestCaseRunner#");
 
                 if (callingTestCaseRunner != null) {
                     WsdlTestCase ctc = callingTestCaseRunner.getTestCase();
-                    WsdlRunTestCaseTestStep runTestCaseTestStep = (WsdlRunTestCaseTestStep) runContext
-                            .getProperty("#CallingRunTestCaseStep#");
+                    WsdlRunTestCaseTestStep runTestCaseTestStep = (WsdlRunTestCaseTestStep)runContext.getProperty("#CallingRunTestCaseStep#");
 
-                    nameBase = StringUtils.createFileName(securityTestName, '_') + exportSeparator
-                            + StringUtils.createFileName(ctc.getTestSuite().getName(), '_') + exportSeparator
-                            + StringUtils.createFileName(ctc.getName(), '_') + exportSeparator
-                            + StringUtils.createFileName(runTestCaseTestStep.getName(), '_') + exportSeparator
-                            + StringUtils.createFileName(tc.getTestSuite().getName(), '_') + exportSeparator
-                            + StringUtils.createFileName(tc.getName(), '_') + exportSeparator
-                            + StringUtils.createFileName(currentStep.getName(), '_') + "-" + count.longValue() + "-"
-                            + result.getStatus();
+                    nameBase = StringUtils.createFileName(securityTestName, '_') +
+                               exportSeparator +
+                               StringUtils.createFileName(ctc.getTestSuite().getName(), '_') +
+                               exportSeparator +
+                               StringUtils.createFileName(ctc.getName(), '_') +
+                               exportSeparator +
+                               StringUtils.createFileName(runTestCaseTestStep.getName(), '_') +
+                               exportSeparator +
+                               StringUtils.createFileName(tc.getTestSuite().getName(), '_') +
+                               exportSeparator +
+                               StringUtils.createFileName(tc.getName(), '_') +
+                               exportSeparator +
+                               StringUtils.createFileName(currentStep.getName(), '_') +
+                               "-" +
+                               count.longValue() +
+                               "-" +
+                               result.getStatus();
                 }
 
                 String absoluteOutputFolder = getAbsoluteOutputFolder(ModelSupport.getModelItemProject(tc));
@@ -409,17 +452,17 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
 
                 // write attachments
                 if (result instanceof MessageExchange) {
-                    Attachment[] attachments = ((MessageExchange) result).getResponseAttachments();
+                    Attachment[] attachments = ((MessageExchange)result).getResponseAttachments();
                     if (attachments != null && attachments.length > 0) {
                         for (int c = 0; c < attachments.length; c++) {
                             fileName = nameBase + "-attachment-" + (c + 1) + ".";
 
                             Attachment attachment = attachments[c];
                             String contentType = attachment.getContentType();
-                            if (!"application/octet-stream".equals(contentType) && contentType != null
-                                    && contentType.indexOf('/') != -1) {
+                            if (!"application/octet-stream".equals(contentType) && contentType != null && contentType.indexOf('/') != -1) {
                                 fileName += contentType.substring(contentType.lastIndexOf('/') + 1);
-                            } else {
+                            }
+                            else {
                                 fileName += "dat";
                             }
 
@@ -433,62 +476,44 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
                 }
 
                 setExportCount(getExportCount() + 1);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.error("Error saving failed result: " + e, e);
             }
         }
 
         setTestStepCount(getTestStepCount() + 1);
-
-    }
-
-    public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
     }
 
     @Override
-    public void afterOriginalStep(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                  SecurityTestStepResult result) {
+    public void afterOriginalStep(
+        TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityTestStepResult result
+    ) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void afterRun(TestCaseRunner testRunner, SecurityTestRunContext runContext) {
+    public void beforeSecurityScan(
+        TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScan securityScan
+    ) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void afterSecurityScan(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                  SecurityScanResult securityScanResult) {
+    public void afterSecurityScan(
+        TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScanResult securityScanResult
+    ) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void afterSecurityScanRequest(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                         SecurityScanRequestResult securityScanReqResult) {
+    public void afterSecurityScanRequest(
+        TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScanRequestResult securityScanReqResult
+    ) {
         // TODO Auto-generated method stub
 
     }
-
-    @Override
-    public void beforeRun(TestCaseRunner testRunner, SecurityTestRunContext runContext) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void beforeSecurityScan(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                   SecurityScan securityScan) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void beforeStep(TestCaseRunner testRunner, SecurityTestRunContext runContext, TestStepResult testStepResult) {
-        // TODO Auto-generated method stub
-
-    }
-
 }

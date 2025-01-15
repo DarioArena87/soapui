@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.action.swing;
@@ -27,33 +27,33 @@ import java.awt.event.KeyEvent;
  */
 
 public interface ActionList {
-    public int getActionCount();
+    int getActionCount();
 
-    public Action getActionAt(int index);
+    Action getActionAt(int index);
 
-    public Action getDefaultAction();
+    Action getDefaultAction();
 
-    public boolean hasDefaultAction();
+    void setDefaultAction(Action action);
 
-    public void performDefaultAction(ActionEvent event);
+    boolean hasDefaultAction();
 
-    public void addAction(Action action);
+    void performDefaultAction(ActionEvent event);
 
-    public void addSeparator();
+    void addAction(Action action);
 
-    public void insertAction(Action action, int index);
+    void addSeparator();
 
-    public void insertSeparator(int index);
+    void insertAction(Action action, int index);
 
-    public String getLabel();
+    void insertSeparator(int index);
 
-    public void clear();
+    String getLabel();
 
-    public void dispatchKeyEvent(KeyEvent e);
+    void clear();
 
-    public void addActions(ActionList defaultActions);
+    void dispatchKeyEvent(KeyEvent e);
 
-    public void setDefaultAction(Action action);
+    void addActions(ActionList defaultActions);
 
-    public void removeAction(int index);
+    void removeAction(int index);
 }

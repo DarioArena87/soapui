@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.testondemand;
@@ -72,61 +72,50 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * @author Erik R. Yverling
- *         <p/>
- *         Calls the AlertSite API for running Test On Demand.
+ * <p/>
+ * Calls the AlertSite API for running Test On Demand.
  */
 
 public class TestOnDemandCaller {
     // FIXME Should these be in a configuration file instead?
 
+    protected static final String COULD_NOT_SAVE_TEMPORARY_PROJECT_MESSAGE = "Could not save temporary project file before sending TestCase";
     private final static String DEFAULT_PROTOCOL = "https";
     private final static String PROTOCOL_DELIMITER = "://";
     private final static String PROD_HOST = "www.alertsite.com";
     private static final String LOCATIONS_PATH = "/restapi/v2/devices/list/locations";
     private static final String UPLOAD_PATH = "/restapi/v2/devices/upload/testondemand";
     private final static String TEST_ON_DEMAND_DOMAIN = getDomain();
-    private static final String LOCATIONS_URI = getProtocol() + PROTOCOL_DELIMITER + TEST_ON_DEMAND_DOMAIN
-            + LOCATIONS_PATH;
+    private static final String LOCATIONS_URI = getProtocol() + PROTOCOL_DELIMITER + TEST_ON_DEMAND_DOMAIN + LOCATIONS_PATH;
     private static final String UPLOAD_URI = getProtocol() + PROTOCOL_DELIMITER + TEST_ON_DEMAND_DOMAIN + UPLOAD_PATH;
-
     private static final String REDIRECT_URL_XPATH_EXPRESSION = "//RedirectURL";
     private static final String LOCATION_XPATH_EXPRESSION = "//Location";
     private static final String LOCATION_CODE_XPATH_EXPRESSION = "LocCode";
     private static final String LOCATION_NAME_XPATH_EXPRESSION = "LocName";
     private static final String LOCATION_SERVER_IP_ADDRESSES_XPATH_EXPRESSION = "LocIPs";
-
     private static final String API_VERSION = "2";
     private static final String APPLICATION_ZIP = "application/zip";
     private static final String BASE64 = "base64";
     private static final String USER_AGENT = "soapUI-" + SoapUI.SOAPUI_VERSION;
-
     private static final String LOCATIONS_NAME = "ListLocations";
     private static final String LOCATIONS_PARAMETER = "server_attrib=ITEST";
-
     private static final String UPLOAD_NAME = "TestOnDemand";
     private static final String UPLOAD_PARAMETER_LOCATION_PREFIX = "test_location=";
-
     private static final String SERVER_IP_ADDRESSES_DELIMETER = ",";
-
-    protected static final String COULD_NOT_SAVE_TEMPORARY_PROJECT_MESSAGE = "Could not save temporary project file before sending TestCase";
-
-    private final XPath xpath = XPathFactory.newInstance().newXPath();
-
     private static final Logger log = LogManager.getLogger(TestOnDemandCaller.class);
+    private final XPath xpath = XPathFactory.newInstance().newXPath();
 
     @Nonnull
     public List<Location> getLocations() throws Exception {
         Document responseDocument = makeCall(LOCATIONS_URI, generateLocationsRequestXML());
-        NodeList locationNodes = (NodeList) xpath.evaluate(LOCATION_XPATH_EXPRESSION, responseDocument,
-                XPathConstants.NODESET);
+        NodeList locationNodes = (NodeList)xpath.evaluate(LOCATION_XPATH_EXPRESSION, responseDocument, XPathConstants.NODESET);
 
         List<Location> locations = new ArrayList<Location>();
         for (int i = 0; i < locationNodes.getLength(); i++) {
             Node locationNode = locationNodes.item(i);
-            String name = (String) xpath.evaluate(LOCATION_NAME_XPATH_EXPRESSION, locationNode, XPathConstants.STRING);
-            String code = (String) xpath.evaluate(LOCATION_CODE_XPATH_EXPRESSION, locationNode, XPathConstants.STRING);
-            String unformattedServerIPAddresses = (String) xpath.evaluate(LOCATION_SERVER_IP_ADDRESSES_XPATH_EXPRESSION,
-                    locationNode, XPathConstants.STRING);
+            String name = (String)xpath.evaluate(LOCATION_NAME_XPATH_EXPRESSION, locationNode, XPathConstants.STRING);
+            String code = (String)xpath.evaluate(LOCATION_CODE_XPATH_EXPRESSION, locationNode, XPathConstants.STRING);
+            String unformattedServerIPAddresses = (String)xpath.evaluate(LOCATION_SERVER_IP_ADDRESSES_XPATH_EXPRESSION, locationNode, XPathConstants.STRING);
 
             String[] serverIPAddresses = new String[0];
             if (!unformattedServerIPAddresses.isEmpty()) {
@@ -143,7 +132,7 @@ public class TestOnDemandCaller {
     @Nonnull
     public String sendTestCase(@Nonnull WsdlTestCase testCase, @Nonnull Location location) throws Exception {
 
-        final ExtendedPostMethod post = new ExtendedPostMethod();
+        ExtendedPostMethod post = new ExtendedPostMethod();
         post.setURI(new URI(UPLOAD_URI));
 
         String locationCode = location.getCode();
@@ -163,19 +152,22 @@ public class TestOnDemandCaller {
         byte[] keystoreFileData = getBytes(keystoreFilePath);
         String encodedKeystoreFile = getBase64EncodedString(keystoreFileData);
 
-        String encodedKeystorePassword = getBase64EncodedString(SoapUI.getSettings()
-                .getString(SSLSettings.KEYSTORE_PASSWORD, "").getBytes());
+        String encodedKeystorePassword = getBase64EncodedString(SoapUI.getSettings().getString(SSLSettings.KEYSTORE_PASSWORD, "").getBytes());
 
-        String requestContent = generateUploadRequestXML(locationCode, encodedTestSuiteName, encodedTestCaseName,
-                encodedZipedProjectFile, encodedProjectPassword, encodedKeystoreFile, encodedKeystorePassword);
+        String requestContent = generateUploadRequestXML(locationCode,
+                                                         encodedTestSuiteName,
+                                                         encodedTestCaseName,
+                                                         encodedZipedProjectFile,
+                                                         encodedProjectPassword,
+                                                         encodedKeystoreFile,
+                                                         encodedKeystorePassword
+        );
 
-        byte[] compressedRequestContent = CompressionSupport.compress(CompressionSupport.ALG_GZIP,
-                requestContent.getBytes());
+        byte[] compressedRequestContent = CompressionSupport.compress(CompressionSupport.ALG_GZIP, requestContent.getBytes());
         post.setEntity(new ByteArrayEntity(compressedRequestContent));
 
         Document responseDocument = makeCall(UPLOAD_URI, requestContent);
-        String redirectURL = (String) xpath.evaluate(REDIRECT_URL_XPATH_EXPRESSION, responseDocument,
-                XPathConstants.STRING);
+        String redirectURL = (String)xpath.evaluate(REDIRECT_URL_XPATH_EXPRESSION, responseDocument, XPathConstants.STRING);
 
         if (Strings.isNullOrEmpty(redirectURL)) {
             throw new RuntimeException("The RedirectURL element is missing in the response message");
@@ -189,14 +181,15 @@ public class TestOnDemandCaller {
         try {
             tempFile = File.createTempFile("project-temp-", ".xml", null);
             project.saveIn(tempFile);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SoapUI.logError(e, COULD_NOT_SAVE_TEMPORARY_PROJECT_MESSAGE);
         }
         return tempFile;
     }
 
     private Document makeCall(String uri, String requestContent) throws Exception {
-        final ExtendedPostMethod post = new ExtendedPostMethod();
+        ExtendedPostMethod post = new ExtendedPostMethod();
         post.setURI(new URI(uri));
 
         post.setEntity(new StringEntity(requestContent));
@@ -218,8 +211,7 @@ public class TestOnDemandCaller {
     }
 
     private String generateLocationsRequestXML() {
-        TestOnDemandLocationsRequest locationsRequest = TestOnDemandLocationsRequestDocumentConfig.Factory.newInstance()
-                .addNewTestOnDemandLocationsRequest();
+        TestOnDemandLocationsRequest locationsRequest = TestOnDemandLocationsRequestDocumentConfig.Factory.newInstance().addNewTestOnDemandLocationsRequest();
 
         Request request = locationsRequest.addNewRequest();
         request.setApiVersion(API_VERSION);
@@ -233,14 +225,18 @@ public class TestOnDemandCaller {
         return locationsRequest.xmlText(getXmlOptionsWithoutNamespaces());
     }
 
-    private String generateUploadRequestXML(String locationCode, String encodedTestSuiteName,
-                                            String encodedTestCaseName, String encodedZipedProjectFile, String encodedProjectPassword,
-                                            String encodedKeystoreFile, String encodedKeystorePassword) {
-        TestOnDemandUploadRequest uploadRequestConfig = TestOnDemandUploadRequestDocumentConfig.Factory.newInstance()
-                .addNewTestOnDemandUploadRequest();
+    private String generateUploadRequestXML(
+        String locationCode,
+        String encodedTestSuiteName,
+        String encodedTestCaseName,
+        String encodedZipedProjectFile,
+        String encodedProjectPassword,
+        String encodedKeystoreFile,
+        String encodedKeystorePassword
+    ) {
+        TestOnDemandUploadRequest uploadRequestConfig = TestOnDemandUploadRequestDocumentConfig.Factory.newInstance().addNewTestOnDemandUploadRequest();
 
-        com.eviware.soapui.config.TestOnDemandUploadRequestDocumentConfig.TestOnDemandUploadRequest.Request requestConfig = uploadRequestConfig
-                .addNewRequest();
+        TestOnDemandUploadRequest.Request requestConfig = uploadRequestConfig.addNewRequest();
         requestConfig.setApiVersion(API_VERSION);
 
         TestOnDemandHeaderConfig headerConfig = requestConfig.addNewHeader();
@@ -301,7 +297,8 @@ public class TestOnDemandCaller {
             try {
                 inputStream = new FileInputStream(file);
                 byteArray = ByteStreams.toByteArray(inputStream);
-            } finally {
+            }
+            finally {
                 IOUtils.closeQuietly(inputStream);
             }
         }
@@ -316,7 +313,8 @@ public class TestOnDemandCaller {
         try {
             zipedOutputStream.putNextEntry(entry);
             zipedOutputStream.write(dataToBeZiped);
-        } finally {
+        }
+        finally {
             zipedOutputStream.closeEntry();
             zipedOutputStream.close();
         }
@@ -328,7 +326,8 @@ public class TestOnDemandCaller {
 
         if (customEndpoint == null) {
             return PROD_HOST;
-        } else {
+        }
+        else {
             return customEndpoint;
         }
     }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.scan;
@@ -38,7 +38,7 @@ import com.eviware.soapui.support.xml.XmlUtils;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +49,7 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
 
     public static final String TYPE = "MalformedXmlSecurityScan";
     public static final String NAME = "Malformed XML";
-    private Map<SecurityCheckedParameter, ArrayList<String>> parameterMutations = new HashMap<SecurityCheckedParameter, ArrayList<String>>();
+    private final Map<SecurityCheckedParameter, ArrayList<String>> parameterMutations = new HashMap<SecurityCheckedParameter, ArrayList<String>>();
     private boolean mutation;
     private MalformedXmlConfig malformedXmlConfig;
     private MalformedXmlAttributeConfig malformedAttributeConfig;
@@ -59,8 +59,9 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
         super(testStep, config, parent, icon);
         if (config.getConfig() == null || !(config.getConfig() instanceof MalformedXmlConfig)) {
             initMalformedXmlConfig();
-        } else {
-            malformedXmlConfig = ((MalformedXmlConfig) config.getConfig());
+        }
+        else {
+            malformedXmlConfig = ((MalformedXmlConfig)config.getConfig());
             malformedAttributeConfig = malformedXmlConfig.getAttributeMutation();
         }
     }
@@ -70,7 +71,7 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
      */
     protected void initMalformedXmlConfig() {
         getConfig().setConfig(MalformedXmlConfig.Factory.newInstance());
-        malformedXmlConfig = (MalformedXmlConfig) getConfig().getConfig();
+        malformedXmlConfig = (MalformedXmlConfig)getConfig().getConfig();
 
         malformedXmlConfig.addNewAttributeMutation();
 
@@ -90,23 +91,7 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
         malformedAttributeConfig.setNewAttributeValue("XXX");
     }
 
-    @Override
-    protected void execute(SecurityTestRunner runner, TestStep testStep, SecurityTestRunContext context) {
-        try {
-            StringToStringMap paramsUpdated = update(testStep, context);
-            MessageExchange message = (MessageExchange) testStep.run((TestCaseRunner) runner, context);
-            createMessageExchange(paramsUpdated, message, context);
-        } catch (XmlException e) {
-            SoapUI.logError(e, "[MalformedXmlSecurityScan]XPath seems to be invalid!");
-            reportSecurityScanException("Property value is not XML or XPath is wrong!");
-        } catch (Exception e) {
-            SoapUI.logError(e, "[MalformedXmlSecurityScan]Property value is not valid xml!");
-            reportSecurityScanException("Property value is not XML or XPath is wrong!");
-        }
-    }
-
-    protected StringToStringMap update(TestStep testStep, SecurityTestRunContext context) throws XmlException,
-            Exception {
+    protected StringToStringMap update(TestStep testStep, SecurityTestRunContext context) throws Exception {
         StringToStringMap params = new StringToStringMap();
 
         if (parameterMutations.size() == 0) {
@@ -115,8 +100,8 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
 
         if (getExecutionStrategy().getStrategy() == StrategyTypeConfig.ONE_BY_ONE) {
             /*
-			 * Idea is to drain for each parameter mutations.
-			 */
+             * Idea is to drain for each parameter mutations.
+             */
             for (SecurityCheckedParameter param : getParameterHolder().getParameterList()) {
                 if (parameterMutations.containsKey(param)) {
                     if (parameterMutations.get(param).size() > 0) {
@@ -124,7 +109,8 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                         String value = context.expand(property.getValue());
                         if (param.getXpath() == null || param.getXpath().trim().length() == 0) {
                             // no xpath ignore
-                        } else {
+                        }
+                        else {
                             // no value, do nothing.
                             if (value == null || value.trim().equals("")) {
                                 continue;
@@ -132,8 +118,7 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                             // XmlObjectTreeModel model = new XmlObjectTreeModel(
                             // property.getSchemaType().getTypeSystem(),
                             // XmlObject.Factory.parse( value ) );
-                            XmlObjectTreeModel model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(),
-                                    XmlUtils.createXmlObject(value));
+                            XmlObjectTreeModel model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(), XmlUtils.createXmlObject(value));
                             XmlTreeNode[] nodes = model.selectTreeNodes(context.expand(param.getXpath()));
                             StringBuffer buffer = new StringBuffer(value);
                             for (int cnt = 0; cnt < nodes.length; cnt++) {
@@ -155,9 +140,9 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                                 int end = value.indexOf("<" + nodes[cnt].getNodeName(), start + 1);
                                 if (end <= 0) {
                                     if (nodeXml.endsWith("</" + nodes[cnt].getDomNode().getNodeName() + ">")) {
-                                        end = value.indexOf("</" + nodes[cnt].getDomNode().getNodeName() + ">")
-                                                + ("</" + nodes[cnt].getDomNode().getNodeName() + ">").length();
-                                    } else {
+                                        end = value.indexOf("</" + nodes[cnt].getDomNode().getNodeName() + ">") + ("</" + nodes[cnt].getDomNode().getNodeName() + ">").length();
+                                    }
+                                    else {
                                         end = value.indexOf(">", value.indexOf("/", start));
                                     }
                                 }
@@ -177,7 +162,8 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                     }
                 }
             }
-        } else {
+        }
+        else {
             for (TestProperty property : testStep.getPropertyList()) {
 
                 String value = context.expand(property.getValue());
@@ -187,17 +173,16 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                     // model = new XmlObjectTreeModel(
                     // property.getSchemaType().getTypeSystem(),
                     // XmlObject.Factory.parse( value ) );
-                    model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(),
-                            XmlUtils.createXmlObject(value));
+                    model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(), XmlUtils.createXmlObject(value));
                     for (SecurityCheckedParameter param : getParameterHolder().getParameterList()) {
                         if (param.getXpath() == null || param.getXpath().trim().length() == 0) {
                             if (parameterMutations.containsKey(param)) {
-                                testStep.getProperties().get(param.getName())
-                                        .setValue(parameterMutations.get(param).get(0));
+                                testStep.getProperties().get(param.getName()).setValue(parameterMutations.get(param).get(0));
                                 params.put(param.getLabel(), parameterMutations.get(param).get(0));
                                 parameterMutations.get(param).remove(0);
                             }
-                        } else {
+                        }
+                        else {
                             // no value, do nothing.
                             if (value == null || value.trim().equals("")) {
                                 continue;
@@ -220,7 +205,8 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                                             if (end <= 0) {
                                                 if (nodeXml.endsWith("</" + nodes[cnt].getDomNode().getNodeName() + ">")) {
                                                     end = value.indexOf("</" + nodes[cnt].getDomNode().getNodeName() + ">");
-                                                } else {
+                                                }
+                                                else {
                                                     end = value.indexOf(">", value.indexOf("/", start));
                                                 }
                                             }
@@ -240,14 +226,12 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                         property.setValue(buffer.toString());
                     }
                 }
-
             }
         }
         return params;
     }
 
-    protected void mutateParameters(TestStep testStep, SecurityTestRunContext context) throws XmlException,
-            IOException {
+    protected void mutateParameters(TestStep testStep, SecurityTestRunContext context) throws XmlException, IOException {
         mutation = true;
         // for each parameter
         for (SecurityCheckedParameter parameter : getParameterHolder().getParameterList()) {
@@ -255,10 +239,11 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                 TestProperty property = getTestStep().getProperties().get(parameter.getName());
                 // check parameter does not have any xpath
                 if (parameter.getXpath() == null || parameter.getXpath().trim().length() == 0) {
-					/*
-					 * parameter xpath is not set ignore than ignore this parameter
-					 */
-                } else {
+                    /*
+                     * parameter xpath is not set ignore than ignore this parameter
+                     */
+                }
+                else {
                     // we have xpath but do we have xml which need to mutate
                     // ignore if there is no value, since than we'll get exception
                     if (!(property.getValue() == null && property.getDefaultValue() == null)) {
@@ -270,8 +255,7 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                         // XmlObjectTreeModel model = new XmlObjectTreeModel(
                         // property.getSchemaType().getTypeSystem(),
                         // XmlObject.Factory.parse( value ) );
-                        XmlObjectTreeModel model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(),
-                                XmlUtils.createXmlObject(value));
+                        XmlObjectTreeModel model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(), XmlUtils.createXmlObject(value));
                         XmlTreeNode[] nodes = model.selectTreeNodes(context.expand(parameter.getXpath()));
 
                         if (nodes.length > 0 && !(nodes[0] instanceof AttributeXmlTreeNode)) {
@@ -281,7 +265,6 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                             parameterMutations.get(parameter).addAll(mutateNode(nodes[0], value));
                         }
                     }
-
                 }
             }
         }
@@ -296,7 +279,8 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
             StringBuffer buffer = new StringBuffer(nodeXml);
             if (nodeXml.endsWith("</" + node.getDomNode().getNodeName() + ">")) {
                 buffer.insert(nodeXml.indexOf(">") + 1, malformedXmlConfig.getNewElementValue());
-            } else {
+            }
+            else {
                 buffer.delete(nodeXml.lastIndexOf("/"), nodeXml.length());
                 buffer.append(">" + malformedXmlConfig.getNewElementValue() + "</" + node.getDomNode().getNodeName() + ">");
             }
@@ -308,15 +292,18 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
 
             if (original.toUpperCase().equals(original)) {
                 result.add(nodeXml.replaceAll(original, original.toLowerCase()));
-            } else if (original.toLowerCase().equals(original)) {
+            }
+            else if (original.toLowerCase().equals(original)) {
                 result.add(nodeXml.replaceAll(original, original.toUpperCase()));
-            } else {
+            }
+            else {
                 StringBuffer buffer = new StringBuffer();
                 // kewl
                 for (char ch : original.toCharArray()) {
                     if (Character.isUpperCase(ch)) {
                         buffer.append(Character.toLowerCase(ch));
-                    } else {
+                    }
+                    else {
                         buffer.append(Character.toUpperCase(ch));
                     }
                 }
@@ -328,13 +315,13 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                 for (char ch : original.toCharArray()) {
                     if (Character.isUpperCase(ch)) {
                         buffer.append("_").append(Character.toLowerCase(ch));
-                    } else {
+                    }
+                    else {
                         buffer.append(ch);
                     }
                 }
                 result.add(nodeXml.replaceAll(original, buffer.toString()));
             }
-
         }
         // leave tag open
         if (malformedXmlConfig.getLeaveTagOpen()) {
@@ -352,10 +339,10 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                 // cut start tag and remove '/' from end tag
                 buffer = new StringBuffer(nodeXml);
                 buffer.delete(0, buffer.indexOf(">") + 1);
-                buffer.delete(buffer.indexOf("</" + node.getDomNode().getNodeName() + ">") + 1,
-                        buffer.indexOf("</" + node.getDomNode().getNodeName() + ">") + 2);
+                buffer.delete(buffer.indexOf("</" + node.getDomNode().getNodeName() + ">") + 1, buffer.indexOf("</" + node.getDomNode().getNodeName() + ">") + 2);
                 result.add(buffer.toString());
-            } else {
+            }
+            else {
                 // remove '/>' from end of tag
                 StringBuffer buffer = new StringBuffer(nodeXml);
                 buffer.delete(nodeXml.lastIndexOf("/"), nodeXml.length());
@@ -367,7 +354,8 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                 StringBuffer buffer = new StringBuffer(nodeXml);
                 if (nodeXml.endsWith("</" + node.getDomNode().getNodeName() + ">")) {
                     buffer.insert(buffer.indexOf("</" + node.getDomNode().getNodeName() + ">"), ch);
-                } else {
+                }
+                else {
                     buffer.delete(nodeXml.lastIndexOf("/"), nodeXml.length());
                     buffer.append('>').append(ch).append("</").append(node.getDomNode().getNodeName()).append(">");
                 }
@@ -381,8 +369,10 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
                 if (malformedAttributeConfig.getNewAttributeName().trim().length() > 0) {
                     // insert new attribute just after node tag
                     StringBuffer buffer = new StringBuffer(nodeXml);
-                    buffer.insert(node.getNodeName().length() + 1, " " + malformedAttributeConfig.getNewAttributeName()
-                            + "=" + "\"" + malformedAttributeConfig.getNewAttributeValue() + "\" ");
+                    buffer.insert(
+                        node.getNodeName().length() + 1,
+                        " " + malformedAttributeConfig.getNewAttributeName() + "=" + "\"" + malformedAttributeConfig.getNewAttributeValue() + "\" "
+                    );
                     result.add(buffer.toString());
                 }
             }
@@ -418,8 +408,8 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
     }
 
     @Override
-    public String getConfigDescription() {
-        return "Configures Malformed XML Security Scan";
+    public String getType() {
+        return TYPE;
     }
 
     @Override
@@ -428,25 +418,54 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
     }
 
     @Override
+    public String getConfigDescription() {
+        return "Configures Malformed XML Security Scan";
+    }
+
+    @Override
     public String getHelpURL() {
         return "http://soapui.org/Security/malformed-xml.html";
     }
 
     @Override
-    public String getType() {
-        return TYPE;
+    public JComponent getAdvancedSettingsPanel() {
+        if (advancedSettingsPanel == null) {
+            advancedSettingsPanel = new MalformedXmlAdvancedSettingsPanel(malformedXmlConfig);
+        }
+
+        return advancedSettingsPanel.getPanel();
+    }
+
+    @Override
+    protected void clear() {
+        parameterMutations.clear();
+        mutation = false;
+    }
+
+    @Override
+    protected void execute(SecurityTestRunner runner, TestStep testStep, SecurityTestRunContext context) {
+        try {
+            StringToStringMap paramsUpdated = update(testStep, context);
+            MessageExchange message = (MessageExchange)testStep.run((TestCaseRunner)runner, context);
+            createMessageExchange(paramsUpdated, message, context);
+        }
+        catch (XmlException e) {
+            SoapUI.logError(e, "[MalformedXmlSecurityScan]XPath seems to be invalid!");
+            reportSecurityScanException("Property value is not XML or XPath is wrong!");
+        }
+        catch (Exception e) {
+            SoapUI.logError(e, "[MalformedXmlSecurityScan]Property value is not valid xml!");
+            reportSecurityScanException("Property value is not XML or XPath is wrong!");
+        }
     }
 
     @Override
     protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
         boolean hasNext = false;
         if ((parameterMutations == null || parameterMutations.size() == 0) && !mutation) {
-            if (getParameterHolder().getParameterList().size() > 0) {
-                hasNext = true;
-            } else {
-                hasNext = false;
-            }
-        } else {
+            hasNext = getParameterHolder().getParameterList().size() > 0;
+        }
+        else {
             for (SecurityCheckedParameter param : parameterMutations.keySet()) {
                 if (parameterMutations.get(param).size() > 0) {
                     hasNext = true;
@@ -462,21 +481,6 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
     }
 
     @Override
-    protected void clear() {
-        parameterMutations.clear();
-        mutation = false;
-    }
-
-    @Override
-    public JComponent getAdvancedSettingsPanel() {
-        if (advancedSettingsPanel == null) {
-            advancedSettingsPanel = new MalformedXmlAdvancedSettingsPanel(malformedXmlConfig);
-        }
-
-        return advancedSettingsPanel.getPanel();
-    }
-
-    @Override
     public void release() {
         if (advancedSettingsPanel != null) {
             advancedSettingsPanel.release();
@@ -484,5 +488,4 @@ public class MalformedXmlSecurityScan extends AbstractSecurityScanWithProperties
 
         super.release();
     }
-
 }

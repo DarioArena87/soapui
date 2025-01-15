@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.propertyexpansion;
@@ -51,11 +51,10 @@ import java.util.Map;
  */
 
 public class PropertyExpander implements SoapUIFactoryRegistryListener {
-    private List<PropertyResolver> propertyResolvers = new ArrayList<PropertyResolver>();
-    private static List<PropertyResolver> defaultResolvers = new ArrayList<PropertyResolver>();
-    private static PropertyExpander defaultExpander;
+    private static final List<PropertyResolver> defaultResolvers = new ArrayList<PropertyResolver>();
+    private static final PropertyExpander defaultExpander;
     private static boolean debuggingMode;
-    private static Map<String, StringToStringMap> debuggingExpandedProperties;
+    private static final Map<String, StringToStringMap> debuggingExpandedProperties;
 
     static {
         // add default resolvers - this should be read from some external config
@@ -69,7 +68,6 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
         defaultResolvers.add(new GlobalPropertyResolver());
         defaultResolvers.add(new EvalPropertyResolver());
 
-
         defaultExpander = new PropertyExpander(true);
 
         for (PropertyResolverFactory factory : SoapUI.getFactoryRegistry().getFactories(PropertyResolverFactory.class)) {
@@ -81,13 +79,8 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
         debuggingExpandedProperties = new HashMap<String, StringToStringMap>();
     }
 
-    public PropertyExpander(boolean addDefaultResolvers) {
-        if (addDefaultResolvers) {
-            propertyResolvers.addAll(defaultResolvers);
-
-            SoapUI.getFactoryRegistry().addFactoryRegistryListener( this );
-        }
-    }
+    private final List<PropertyResolver> propertyResolvers = new ArrayList<PropertyResolver>();
+    private final Map<PropertyResolverFactory, PropertyResolver> resolverFactories = new HashMap<PropertyResolverFactory, PropertyResolver>();
 
     public static PropertyExpander getDefaultExpander() {
         return defaultExpander;
@@ -97,32 +90,6 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
     public static void addDefaultResolver(PropertyResolver resolver) {
         defaultResolvers.add(resolver);
         defaultExpander.addResolver(resolver);
-    }
-
-    public void addResolver(PropertyResolver propertyResolver) {
-        propertyResolvers.add(propertyResolver);
-    }
-
-    public void addResolverFactory( PropertyResolverFactory factory )
-    {
-        PropertyResolver resolver = factory.createPropertyResolver();
-        addResolver( resolver );
-
-        resolverFactories.put( factory, resolver );
-    }
-
-    private Map<PropertyResolverFactory,PropertyResolver> resolverFactories = new HashMap<PropertyResolverFactory, PropertyResolver>();
-
-    public void removeResolverFactory( PropertyResolverFactory factory )
-    {
-        if( resolverFactories.containsKey( factory )) {
-            removeResolver( resolverFactories.get( factory ));
-            resolverFactories.remove(factory);
-        }
-    }
-
-    private void removeResolver(PropertyResolver propertyResolver) {
-        propertyResolvers.remove( propertyResolver );
     }
 
     public static String expandProperties(String content) {
@@ -135,6 +102,62 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
 
     public static String expandProperties(PropertyExpansionContext context, String content, boolean entitize) {
         return defaultExpander.expand(context, content, entitize);
+    }
+
+    public static String expandProperties(ModelItem contextModelItem, String content) {
+        return defaultExpander.expand(contextModelItem, content);
+    }
+
+    public static void setDebuggingMode(String testCaseId, boolean debug) {
+        debuggingMode = debug;
+        if (debug) {
+            if (debuggingExpandedProperties.get(testCaseId) == null) {
+                debuggingExpandedProperties.put(testCaseId, new StringToStringMap());
+            }
+        }
+        else {
+            if (debuggingExpandedProperties.get(testCaseId) != null) {
+                debuggingExpandedProperties.remove(testCaseId);
+            }
+        }
+    }
+
+    public static StringToStringMap getDebuggingExpandedProperties(String testCaseId) {
+        return debuggingExpandedProperties.get(testCaseId);
+    }
+
+    public static void clearDebuggingExpandedProperties(String testCaseId) {
+        debuggingExpandedProperties.remove(testCaseId);
+    }
+
+    public PropertyExpander(boolean addDefaultResolvers) {
+        if (addDefaultResolvers) {
+            propertyResolvers.addAll(defaultResolvers);
+
+            SoapUI.getFactoryRegistry().addFactoryRegistryListener(this);
+        }
+    }
+
+    public void addResolver(PropertyResolver propertyResolver) {
+        propertyResolvers.add(propertyResolver);
+    }
+
+    public void addResolverFactory(PropertyResolverFactory factory) {
+        PropertyResolver resolver = factory.createPropertyResolver();
+        addResolver(resolver);
+
+        resolverFactories.put(factory, resolver);
+    }
+
+    public void removeResolverFactory(PropertyResolverFactory factory) {
+        if (resolverFactories.containsKey(factory)) {
+            removeResolver(resolverFactories.get(factory));
+            resolverFactories.remove(factory);
+        }
+    }
+
+    private void removeResolver(PropertyResolver propertyResolver) {
+        propertyResolvers.remove(propertyResolver);
     }
 
     public String expand(String content) {
@@ -163,14 +186,14 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
             int lastIx = 0;
             while (ix != -1) {
                 if (ix > lastIx && content.charAt(ix - 1) == '$') {
-                    buf.append(content.substring(lastIx, ix - 1));
+                    buf.append(content, lastIx, ix - 1);
                     lastIx = ix;
                     ix = content.indexOf("${", lastIx + 1);
                     continue;
                 }
 
                 if (ix > lastIx) {
-                    buf.append(content.substring(lastIx, ix));
+                    buf.append(content, lastIx, ix);
                 }
 
                 int ix2 = content.indexOf('}', ix + 2);
@@ -182,8 +205,7 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
                 int ix3 = content.lastIndexOf("${", ix2);
                 if (ix3 != ix) {
                     // buf.append( content.substring( ix, ix3 ));
-                    content = content.substring(0, ix3) + expand(context, content.substring(ix3, ix2 + 1))
-                            + content.substring(ix2 + 1);
+                    content = content.substring(0, ix3) + expand(context, content.substring(ix3, ix2 + 1)) + content.substring(ix2 + 1);
 
                     lastIx = ix;
                     continue;
@@ -196,8 +218,7 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
                     boolean globalOverrideEnabled = SoapUI.getSettings().getBoolean(GlobalPropertySettings.ENABLE_OVERRIDE);
 
                     for (int c = 0; c < propertyResolvers.size() && propertyValue == null; c++) {
-                        propertyValue = propertyResolvers.get(c).resolveProperty(context, propertyName,
-                                globalOverrideEnabled);
+                        propertyValue = propertyResolvers.get(c).resolveProperty(context, propertyName, globalOverrideEnabled);
                     }
                 }
 
@@ -221,7 +242,8 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
                         debuggingExpandedProperties.put(testCase.getId(), props);
                     }
                     buf.append(propertyValue);
-                } else {
+                }
+                else {
                     // if( log.isEnabledFor( Priority.WARN ))
                     // log.warn( "Missing property value for [" + propertyName + "]"
                     // );
@@ -238,7 +260,8 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
             }
 
             return buf.toString();
-        } finally {
+        }
+        finally {
             clState.restore();
         }
     }
@@ -247,41 +270,17 @@ public class PropertyExpander implements SoapUIFactoryRegistryListener {
         return expand(new DefaultPropertyExpansionContext(contextModelItem), content);
     }
 
-    public static String expandProperties(ModelItem contextModelItem, String content) {
-        return defaultExpander.expand(contextModelItem, content);
-    }
-
-    public static void setDebuggingMode(String testCaseId, boolean debug) {
-        debuggingMode = debug;
-        if (debug) {
-            if (debuggingExpandedProperties.get(testCaseId) == null) {
-                debuggingExpandedProperties.put(testCaseId, new StringToStringMap());
-            }
-        } else {
-            if (debuggingExpandedProperties.get(testCaseId) != null) {
-                debuggingExpandedProperties.remove(testCaseId);
-            }
-
-        }
-    }
-
-    public static StringToStringMap getDebuggingExpandedProperties(String testCaseId) {
-        return debuggingExpandedProperties.get(testCaseId);
-    }
-
-    public static void clearDebuggingExpandedProperties(String testCaseId) {
-        debuggingExpandedProperties.remove(testCaseId);
-    }
-
     @Override
     public void factoryAdded(Class<?> factoryType, Object factory) {
-        if( factory instanceof PropertyResolverFactory )
-            addResolverFactory((PropertyResolverFactory) factory);
+        if (factory instanceof PropertyResolverFactory) {
+            addResolverFactory((PropertyResolverFactory)factory);
+        }
     }
 
     @Override
     public void factoryRemoved(Class<?> factoryType, Object factory) {
-        if( factory instanceof PropertyResolverFactory )
-            removeResolverFactory((PropertyResolverFactory) factory);
+        if (factory instanceof PropertyResolverFactory) {
+            removeResolverFactory((PropertyResolverFactory)factory);
+        }
     }
 }

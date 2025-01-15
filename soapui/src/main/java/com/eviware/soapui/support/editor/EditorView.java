@@ -1,24 +1,24 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor;
 
 import com.eviware.soapui.support.PropertyChangeNotifier;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 
 /**
  * Views available for the XmlDocument of a XmlEditor
@@ -27,40 +27,41 @@ import javax.swing.JComponent;
  */
 
 public interface EditorView<T extends EditorDocument> extends PropertyChangeNotifier, EditorLocationListener<T> {
-    public final static String TITLE_PROPERTY = EditorView.class.getName() + "@title";
+    String TITLE_PROPERTY = EditorView.class.getName() + "@title";
 
-    public Editor<T> getEditor();
+    Editor<T> getEditor();
 
-    public String getTitle();
+    String getTitle();
 
-    public JComponent getComponent();
+    JComponent getComponent();
 
-    public boolean deactivate();
+    boolean deactivate();
 
-    public boolean activate(EditorLocation<T> location);
+    boolean activate(EditorLocation<T> location);
 
-    public EditorLocation<T> getEditorLocation();
+    EditorLocation<T> getEditorLocation();
 
-    public void setLocation(EditorLocation<T> location);
+    void setLocation(EditorLocation<T> location);
 
-    public void setDocument(T document);
+    T getDocument();
 
-    public T getDocument();
+    void setDocument(T document);
 
-    public void addLocationListener(EditorLocationListener<T> listener);
+    void addLocationListener(EditorLocationListener<T> listener);
 
-    public void removeLocationListener(EditorLocationListener<T> listener);
+    void removeLocationListener(EditorLocationListener<T> listener);
 
-    public void release();
+    void release();
 
-    public void setEditable(boolean enabled);
+    void setEditable(boolean enabled);
 
-    public String getViewId();
+    String getViewId();
 
-    public void requestFocus();
+    void requestFocus();
 
     /**
      * Returns the score of how well a given content type is supported by this editor view
+     *
      * @param contentType http payload's content type
      * @return a non-negative integer: greater values mean better support,
      * 0 means the given content type is not supported by this view

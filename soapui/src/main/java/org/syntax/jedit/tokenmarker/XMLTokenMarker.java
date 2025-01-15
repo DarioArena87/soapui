@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
@@ -26,9 +26,9 @@ package org.syntax.jedit.tokenmarker;
  * remains intact in all source distributions of this package.
  */
 
-import javax.swing.text.Segment;
-
 import org.syntax.jedit.SyntaxUtilities;
+
+import javax.swing.text.Segment;
 
 /**
  * XML Token Marker Rewrite
@@ -61,13 +61,16 @@ public class XMLTokenMarker extends TokenMarker {
                             if (SyntaxUtilities.regionMatches(false, line, ip1, "!--")) {
                                 i += 3;
                                 token = Token.COMMENT1;
-                            } else if (array[ip1] == '!') {
+                            }
+                            else if (array[ip1] == '!') {
                                 i += 1;
                                 token = Token.COMMENT2;
-                            } else if (array[ip1] == '?') {
+                            }
+                            else if (array[ip1] == '?') {
                                 i += 1;
                                 token = Token.KEYWORD3;
-                            } else {
+                            }
+                            else {
                                 token = Token.KEYWORD1;
                             }
                             break;
@@ -135,7 +138,8 @@ public class XMLTokenMarker extends TokenMarker {
                             lastOffset = i;
                             if (c == '\"') {
                                 token = Token.LITERAL1;
-                            } else {
+                            }
+                            else {
                                 token = Token.LITERAL2;
                             }
                             break;

@@ -10,8 +10,8 @@ import java.awt.Graphics;
 
 public class RoundButton extends JButton {
 
+    private static final boolean isMac = UISupport.isMac();
     protected int arc;
-    private static boolean isMac = UISupport.isMac();
 
     public RoundButton(int arc) {
         this.arc = arc;
@@ -24,12 +24,12 @@ public class RoundButton extends JButton {
 
     protected void paintComponent(Graphics g) {
         g.setColor(getBackground());
-        g.fillRoundRect(0, 0, getSize().width - 1, this.getSize().height - 1, arc, arc);
+        g.fillRoundRect(0, 0, getSize().width - 1, getSize().height - 1, arc, arc);
         super.paintComponent(g);
     }
 
     protected void paintBorder(Graphics g) {
         g.setColor(isMac ? getForeground() : new Color(39, 104, 158));
-        g.drawRoundRect(0, 0, getSize().width - 1, this.getSize().height - 1, arc, arc);
+        g.drawRoundRect(0, 0, getSize().width - 1, getSize().height - 1, arc, arc);
     }
 }

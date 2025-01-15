@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.xml.actions;
@@ -39,18 +39,19 @@ import java.io.IOException;
  */
 
 public class SaveXmlTextAreaAction extends AbstractAction {
-    private final RSyntaxTextArea textArea;
-    private String dialogTitle;
     private static final Logger log = LogManager.getLogger(SaveXmlTextAreaAction.class);
+    private final RSyntaxTextArea textArea;
+    private final String dialogTitle;
 
     public SaveXmlTextAreaAction(RSyntaxTextArea editArea, String dialogTitle) {
         super("Save as..");
-        this.textArea = editArea;
+        textArea = editArea;
         this.dialogTitle = dialogTitle;
         if (UISupport.isMac()) {
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu S"));
-        } else {
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("ctrl S"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu S"));
+        }
+        else {
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("ctrl S"));
         }
     }
 
@@ -67,20 +68,24 @@ public class SaveXmlTextAreaAction extends AbstractAction {
                 // XmlObject xml = XmlObject.Factory.parse( textArea.getText() );
                 XmlObject xml = XmlUtils.createXmlObject(textArea.getText());
                 xml.save(file);
-            } catch (XmlException e1) {
+            }
+            catch (XmlException e1) {
                 writer = new FileWriter(file);
                 writer.write(textArea.getText());
                 writer.close();
             }
 
             log.info("XML written to [" + file.getAbsolutePath() + "]");
-        } catch (IOException e1) {
+        }
+        catch (IOException e1) {
             UISupport.showErrorMessage("Error saving xml to file: " + e1.getMessage());
-        } finally {
+        }
+        finally {
             if (writer != null) {
                 try {
                     writer.close();
-                } catch (IOException e1) {
+                }
+                catch (IOException e1) {
                     SoapUI.logError(e1);
                 }
             }

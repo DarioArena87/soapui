@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.json;
@@ -40,63 +40,34 @@ public abstract class JsonPathAssertionBase extends XPathContainsAssertion {
         super(assertionConfig, assertable);
     }
 
-
     @Override
-    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
+    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
         if (!messageExchange.hasResponse()) {
             return "Missing Response";
-        } else {
+        }
+        else {
             return assertContent(messageExchange.getResponseContent(), context, "Response");
         }
+    }
+
+    @Override
+    protected String internalAssertProperty(
+        TestPropertyHolder source, String propertyName, MessageExchange messageExchange, SubmitContext context
+    ) throws AssertionException {
+        if (!JsonUtil.seemsToBeJson(source.getPropertyValue(propertyName))) {
+            throw new AssertionException(new AssertionError("Property '" + propertyName + "' has value which is not JSON!"));
+        }
+        return assertContent(source.getPropertyValue(propertyName), context, propertyName);
     }
 
     @Override
     protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
         if (!messageExchange.hasRequest(false)) {
             return "Missing Request";
-        } else {
+        }
+        else {
             return assertContent(messageExchange.getRequestContent(), context, "Request");
         }
-    }
-
-    @Override
-    protected String internalAssertProperty(TestPropertyHolder source, String propertyName,
-                                            MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
-        if (!JsonUtil.seemsToBeJson(source.getPropertyValue(propertyName))) {
-            throw new AssertionException(new AssertionError("Property '" + propertyName
-                    + "' has value which is not JSON!"));
-        }
-        return assertContent(source.getPropertyValue(propertyName), context, propertyName);
-    }
-
-    protected PropertyExpansionContext getPropertyExpansionContext() {
-        return getAssertable().getTestStep() == null ?
-                new DefaultPropertyExpansionContext(getAssertable().getModelItem()) :
-                new WsdlTestRunContext(getAssertable().getTestStep());
-    }
-
-    @Override
-    public boolean canAssertXmlContent() {
-        return false;
-    }
-
-    protected void throwAssertionException(String path, Throwable exception) throws AssertionException {
-        String msg = "";
-
-        if (exception instanceof ComparisonFailure) {
-            ComparisonFailure cf = (ComparisonFailure) exception;
-            String expected = cf.getExpected();
-            String actual = cf.getActual();
-
-            msg = "Comparison failed for path [" + path + "], expecting [" + expected + "], actual was [" + actual + "]";
-        } else {
-            msg = "Assertion failed for path [" + path + "] : " + exception.getClass().getSimpleName() + ":"
-                    + exception.getMessage();
-        }
-
-        throw new AssertionException(new AssertionError(msg));
     }
 
     @Override
@@ -129,6 +100,32 @@ public abstract class JsonPathAssertionBase extends XPathContainsAssertion {
         return "Expected Result";
     }
 
+    @Override
+    public boolean canAssertXmlContent() {
+        return false;
+    }
+
+    protected PropertyExpansionContext getPropertyExpansionContext() {
+        return getAssertable().getTestStep() == null ? new DefaultPropertyExpansionContext(getAssertable().getModelItem()) : new WsdlTestRunContext(getAssertable().getTestStep());
+    }
+
+    protected void throwAssertionException(String path, Throwable exception) throws AssertionException {
+        String msg = "";
+
+        if (exception instanceof ComparisonFailure) {
+            ComparisonFailure cf = (ComparisonFailure)exception;
+            String expected = cf.getExpected();
+            String actual = cf.getActual();
+
+            msg = "Comparison failed for path [" + path + "], expecting [" + expected + "], actual was [" + actual + "]";
+        }
+        else {
+            msg = "Assertion failed for path [" + path + "] : " + exception.getClass().getSimpleName() + ":" + exception.getMessage();
+        }
+
+        throw new AssertionException(new AssertionError(msg));
+    }
+
     protected String getPathString() {
         String path = getPathArea() == null || !getPathArea().isVisible() ? getPath() : getPathArea().getSelectedText();
         if (path == null) {
@@ -144,19 +141,15 @@ public abstract class JsonPathAssertionBase extends XPathContainsAssertion {
 
     public static class JsonAssertionFactory extends AbstractTestAssertionFactory {
 
-        private String assertionDescription;
         private final Class<? extends JsonPathAssertionBase> assertionClass;
+        private final String assertionDescription;
 
-        public JsonAssertionFactory(String assertionId, String assertionLabel, String assertionDescription,
-                                    Class assertionClass) {
+        public JsonAssertionFactory(
+            String assertionId, String assertionLabel, String assertionDescription, Class assertionClass
+        ) {
             super(assertionId, assertionLabel, assertionClass);
             this.assertionDescription = assertionDescription;
             this.assertionClass = assertionClass;
-        }
-
-        @Override
-        public String getCategory() {
-            return AssertionCategoryMapping.VALIDATE_RESPONSE_CONTENT_CATEGORY;
         }
 
         @Override
@@ -167,6 +160,11 @@ public abstract class JsonPathAssertionBase extends XPathContainsAssertion {
         @Override
         public AssertionListEntry getAssertionListEntry() {
             return new AssertionListEntry(getAssertionId(), getAssertionLabel(), assertionDescription);
+        }
+
+        @Override
+        public String getCategory() {
+            return AssertionCategoryMapping.VALIDATE_RESPONSE_CONTENT_CATEGORY;
         }
 
         @Override

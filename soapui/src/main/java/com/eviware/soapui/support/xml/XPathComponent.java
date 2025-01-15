@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.xml;
@@ -24,12 +24,12 @@ import com.eviware.soapui.support.types.StringToStringMap;
  * @author lars
  */
 public class XPathComponent {
-    private String namespace;
-    private String prefix;
-    private String localNameWithoutBraces;
+    private final String namespace;
+    private final String prefix;
+    private final String localNameWithoutBraces;
 
     // index and conditions, for example "[1]" or "[x > 3]"
-    private String braces;
+    private final String braces;
 
     public XPathComponent(String c, StringToStringMap prefixMap) {
         String localName;
@@ -38,7 +38,8 @@ public class XPathComponent {
             prefix = c.substring(0, ix);
             localName = c.substring(ix + 1);
             namespace = prefixMap.get(prefix);
-        } else {
+        }
+        else {
             prefix = null;
             localName = c;
             namespace = null;
@@ -47,19 +48,20 @@ public class XPathComponent {
         if (ix >= 0) {
             localNameWithoutBraces = localName.substring(0, ix);
             braces = localName.substring(ix);
-        } else {
+        }
+        else {
             localNameWithoutBraces = localName;
             braces = "";
         }
-        assert localName.equals(localNameWithoutBraces + braces) : localName + " != " + localNameWithoutBraces + " + "
-                + braces;
+        assert localName.equals(localNameWithoutBraces + braces) : localName + " != " + localNameWithoutBraces + " + " + braces;
     }
 
     @Override
     public String toString() {
         if (prefix != null) {
             return prefix + ":" + localNameWithoutBraces + braces;
-        } else {
+        }
+        else {
             return localNameWithoutBraces + braces;
         }
     }
@@ -75,7 +77,8 @@ public class XPathComponent {
     public String getPrefix() {
         if (prefix == null) {
             return "";
-        } else {
+        }
+        else {
             return prefix;
         }
     }

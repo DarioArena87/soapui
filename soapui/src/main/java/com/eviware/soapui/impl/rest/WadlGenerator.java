@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest;
@@ -50,9 +50,9 @@ import java.util.List;
 import java.util.Map;
 
 public class WadlGenerator {
-    private RestService restService;
+    private final RestService restService;
 
-    private boolean isWADL11 = true;
+    private final boolean isWADL11 = true;
 
     public WadlGenerator(RestService restService) {
         this.restService = restService;
@@ -96,7 +96,8 @@ public class WadlGenerator {
                 // return XmlObject.Factory.parse( applicationDocument.xmlText(),
                 // options );
                 return XmlUtils.createXmlObject(applicationDocument.xmlText(), options);
-            } catch (XmlException e) {
+            }
+            catch (XmlException e) {
                 e.printStackTrace();
             }
         }
@@ -214,7 +215,7 @@ public class WadlGenerator {
         for (RestRepresentation representation : restMethod.getRepresentations()) {
             Response response;
             if (isWADL11) {
-                List<Comparable> status = new ArrayList<Comparable>((List<Comparable>) representation.getStatus());
+                List<Comparable> status = new ArrayList<Comparable>((List<Comparable>)representation.getStatus());
                 Collections.sort(status);
                 StringBuilder statusStrBuilder = new StringBuilder();
                 for (Object o : status) {
@@ -226,10 +227,12 @@ public class WadlGenerator {
                     response = methodConfig.addNewResponse();
                     response.setStatus(status);
                     responses.put(statusStr, response);
-                } else {
+                }
+                else {
                     response = responses.get(statusStr);
                 }
-            } else {
+            }
+            else {
                 response = responses.get(null);
             }
 
@@ -237,8 +240,8 @@ public class WadlGenerator {
             generateRepresentation(representationConfig, representation);
 
             if (!isWADL11 && representation.getType() == RestRepresentation.Type.FAULT) {
-                Element resp = (Element) response.getDomNode();
-                Element rep = (Element) representationConfig.getDomNode();
+                Element resp = (Element)response.getDomNode();
+                Element rep = (Element)representationConfig.getDomNode();
                 Element fault = resp.getOwnerDocument().createElementNS(Constants.WADL11_NS, "fault");
 
                 NamedNodeMap attributes = rep.getAttributes();
@@ -270,7 +273,7 @@ public class WadlGenerator {
                 for (Object s : status) {
                     statusStr.append(s).append(" ");
                 }
-                ((Element) representationConfig.getDomNode()).setAttribute("status", statusStr.toString().trim());
+                ((Element)representationConfig.getDomNode()).setAttribute("status", statusStr.toString().trim());
             }
         }
 
@@ -278,5 +281,4 @@ public class WadlGenerator {
             representationConfig.setElement(representation.getElement());
         }
     }
-
 }

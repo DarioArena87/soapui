@@ -7,13 +7,8 @@ import com.eviware.soapui.support.components.PagePropertyMapper;
 import com.eviware.soapui.support.components.WebViewBasedBrowserComponent;
 import com.eviware.soapui.support.components.WebViewBasedBrowserComponentFactory;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.KeyStroke;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -26,14 +21,12 @@ public class EndpointExplorerAction extends AbstractAction {
     private JDialog dialog;
 
     public EndpointExplorerAction() {
-        putValue(Action.NAME, "Endpoint Explorer");
+        putValue(NAME, "Endpoint Explorer");
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        WebViewBasedBrowserComponent browser =
-                WebViewBasedBrowserComponentFactory.createBrowserComponent
-                        (false, WebViewBasedBrowserComponent.PopupStrategy.EXTERNAL_BROWSER);
+        WebViewBasedBrowserComponent browser = WebViewBasedBrowserComponentFactory.createBrowserComponent(false, WebViewBasedBrowserComponent.PopupStrategy.EXTERNAL_BROWSER);
         Component browserComponent = browser.getComponent();
 
         dialog = new JDialog(UISupport.getMainFrame(), "Endpoint Explorer", false);
@@ -44,9 +37,7 @@ public class EndpointExplorerAction extends AbstractAction {
         dialog.setResizable(true);
         dialog.setVisible(true);
         dialog.setIconImage((UISupport.createImageIcon("/SoapUI-OS_16-16.png")).getImage());
-        dialog.getRootPane().registerKeyboardAction((event) -> close(),
-                KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                JComponent.WHEN_IN_FOCUSED_WINDOW);
+        dialog.getRootPane().registerKeyboardAction((event) -> close(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         UISupport.centerDialog(dialog, UISupport.getMainFrame());
         UISupport.getMainFrame().setEnabled(false);
@@ -59,7 +50,7 @@ public class EndpointExplorerAction extends AbstractAction {
         });
 
         String path = "/com/eviware/soapui/explorer/soapui-pro-api-endpoint-explorer-starter-page.html";
-        String resource = this.getClass().getResource(path).toString();
+        String resource = getClass().getResource(path).toString();
         browser.navigate(resource);
         PagePropertyMapper pagePropertyMapper = browser.getPagePropertyMapper();
         if (pagePropertyMapper != null) {

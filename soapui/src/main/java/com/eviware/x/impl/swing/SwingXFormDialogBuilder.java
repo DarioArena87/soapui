@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.impl.swing;
@@ -26,14 +26,11 @@ import com.eviware.x.form.XFormDialog;
 import com.eviware.x.form.XFormDialogBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class SwingXFormDialogBuilder extends XFormDialogBuilder {
-    private String name;
+    private final String name;
     private SwingXFormDialog dialog;
 
     public SwingXFormDialogBuilder(String name) {
@@ -43,15 +40,7 @@ public class SwingXFormDialogBuilder extends XFormDialogBuilder {
     @Override
     public XForm createForm(String name) {
         XForm form = new SwingXFormImpl(name);
-        ((SwingXFormImpl) form).addSpace(5);
-        addForm(form);
-        return form;
-    }
-
-    @Override
-    public XForm createForm(String name, FormLayout layout) {
-        XForm form = new SwingXFormImpl(name, layout);
-        ((SwingXFormImpl) form).addSpace(5);
+        ((SwingXFormImpl)form).addSpace(5);
         addForm(form);
         return form;
     }
@@ -59,8 +48,7 @@ public class SwingXFormDialogBuilder extends XFormDialogBuilder {
     @Override
     public XFormDialog buildDialog(ActionList actions, String description, ImageIcon icon) {
         XForm[] forms = getForms();
-        dialog = forms.length > 1 ? new JTabbedFormDialog(name, forms, actions, description, icon) : new JFormDialog(
-                name, (SwingXFormImpl) forms[0], actions, description, icon);
+        dialog = forms.length > 1 ? new JTabbedFormDialog(name, forms, actions, description, icon) : new JFormDialog(name, (SwingXFormImpl)forms[0], actions, description, icon);
 
         return dialog;
     }
@@ -98,6 +86,14 @@ public class SwingXFormDialogBuilder extends XFormDialogBuilder {
         DefaultActionList actions = new DefaultActionList("Actions");
         actions.addAction(new HelpAction(url));
         return actions;
+    }
+
+    @Override
+    public XForm createForm(String name, FormLayout layout) {
+        XForm form = new SwingXFormImpl(name, layout);
+        ((SwingXFormImpl)form).addSpace(5);
+        addForm(form);
+        return form;
     }
 
     protected final class OKAction extends AbstractAction {
@@ -140,12 +136,12 @@ public class SwingXFormDialogBuilder extends XFormDialogBuilder {
         public HelpAction(String title, String url, KeyStroke accelerator) {
             super(title);
             this.url = url;
-            putValue(Action.SHORT_DESCRIPTION, "Show online help");
+            putValue(SHORT_DESCRIPTION, "Show online help");
             if (accelerator != null) {
-                putValue(Action.ACCELERATOR_KEY, accelerator);
+                putValue(ACCELERATOR_KEY, accelerator);
             }
 
-            putValue(Action.SMALL_ICON, UISupport.HELP_ICON);
+            putValue(SMALL_ICON, UISupport.HELP_ICON);
         }
 
         public void setUrl(String url) {
@@ -154,7 +150,7 @@ public class SwingXFormDialogBuilder extends XFormDialogBuilder {
 
         public void actionPerformed(ActionEvent e) {
             Integer mods = e.getModifiers();
-            String helpUrl = Tools.modifyUrl (url, mods);
+            String helpUrl = Tools.modifyUrl(url, mods);
             Tools.openURL(helpUrl);
         }
     }

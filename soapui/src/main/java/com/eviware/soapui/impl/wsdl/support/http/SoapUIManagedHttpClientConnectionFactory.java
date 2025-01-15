@@ -38,31 +38,27 @@ public class SoapUIManagedHttpClientConnectionFactory implements HttpConnectionF
     private final ContentLengthStrategy incomingContentStrategy;
     private final ContentLengthStrategy outgoingContentStrategy;
 
-
     public SoapUIManagedHttpClientConnectionFactory(
-            final HttpMessageWriterFactory<HttpRequest> requestWriterFactory,
-            final HttpMessageParserFactory<HttpResponse> responseParserFactory,
-            final ContentLengthStrategy incomingContentStrategy,
-            final ContentLengthStrategy outgoingContentStrategy) {
-        super();
-        this.requestWriterFactory = requestWriterFactory != null ? requestWriterFactory :
-                DefaultHttpRequestWriterFactory.INSTANCE;
-        this.responseParserFactory = responseParserFactory != null ? responseParserFactory :
-                DefaultHttpResponseParserFactory.INSTANCE;
-        this.incomingContentStrategy = incomingContentStrategy != null ? incomingContentStrategy :
-                LaxContentLengthStrategy.INSTANCE;
-        this.outgoingContentStrategy = outgoingContentStrategy != null ? outgoingContentStrategy :
-                StrictContentLengthStrategy.INSTANCE;
+        HttpMessageWriterFactory<HttpRequest> requestWriterFactory,
+        HttpMessageParserFactory<HttpResponse> responseParserFactory,
+        ContentLengthStrategy incomingContentStrategy,
+        ContentLengthStrategy outgoingContentStrategy
+    ) {
+        this.requestWriterFactory = requestWriterFactory != null ? requestWriterFactory : DefaultHttpRequestWriterFactory.INSTANCE;
+        this.responseParserFactory = responseParserFactory != null ? responseParserFactory : DefaultHttpResponseParserFactory.INSTANCE;
+        this.incomingContentStrategy = incomingContentStrategy != null ? incomingContentStrategy : LaxContentLengthStrategy.INSTANCE;
+        this.outgoingContentStrategy = outgoingContentStrategy != null ? outgoingContentStrategy : StrictContentLengthStrategy.INSTANCE;
     }
 
     public SoapUIManagedHttpClientConnectionFactory(
-            final HttpMessageWriterFactory<HttpRequest> requestWriterFactory,
-            final HttpMessageParserFactory<HttpResponse> responseParserFactory) {
+        HttpMessageWriterFactory<HttpRequest> requestWriterFactory, HttpMessageParserFactory<HttpResponse> responseParserFactory
+    ) {
         this(requestWriterFactory, responseParserFactory, null, null);
     }
 
     public SoapUIManagedHttpClientConnectionFactory(
-            final HttpMessageParserFactory<HttpResponse> responseParserFactory) {
+        HttpMessageParserFactory<HttpResponse> responseParserFactory
+    ) {
         this(null, responseParserFactory);
     }
 
@@ -71,15 +67,13 @@ public class SoapUIManagedHttpClientConnectionFactory implements HttpConnectionF
     }
 
     @Override
-    public ManagedHttpClientConnection create(final HttpRoute route, final ConnectionConfig config) {
-        final ConnectionConfig cconfig = config != null ? config : ConnectionConfig.DEFAULT;
+    public ManagedHttpClientConnection create(HttpRoute route, ConnectionConfig config) {
+        ConnectionConfig cconfig = config != null ? config : ConnectionConfig.DEFAULT;
         CharsetDecoder chardecoder = null;
         CharsetEncoder charencoder = null;
-        final Charset charset = cconfig.getCharset();
-        final CodingErrorAction malformedInputAction = cconfig.getMalformedInputAction() != null ?
-                cconfig.getMalformedInputAction() : CodingErrorAction.REPORT;
-        final CodingErrorAction unmappableInputAction = cconfig.getUnmappableInputAction() != null ?
-                cconfig.getUnmappableInputAction() : CodingErrorAction.REPORT;
+        Charset charset = cconfig.getCharset();
+        CodingErrorAction malformedInputAction = cconfig.getMalformedInputAction() != null ? cconfig.getMalformedInputAction() : CodingErrorAction.REPORT;
+        CodingErrorAction unmappableInputAction = cconfig.getUnmappableInputAction() != null ? cconfig.getUnmappableInputAction() : CodingErrorAction.REPORT;
         if (charset != null) {
             chardecoder = charset.newDecoder();
             chardecoder.onMalformedInput(malformedInputAction);
@@ -88,20 +82,21 @@ public class SoapUIManagedHttpClientConnectionFactory implements HttpConnectionF
             charencoder.onMalformedInput(malformedInputAction);
             charencoder.onUnmappableCharacter(unmappableInputAction);
         }
-        final String id = "http-outgoing-" + Long.toString(COUNTER.getAndIncrement());
+        String id = "http-outgoing-" + COUNTER.getAndIncrement();
         return new SoapUILoggingManagedHttpClientConnection(
-                id,
-                log,
-                headerlog,
-                wirelog,
-                cconfig.getBufferSize(),
-                cconfig.getFragmentSizeHint(),
-                chardecoder,
-                charencoder,
-                cconfig.getMessageConstraints(),
-                incomingContentStrategy,
-                outgoingContentStrategy,
-                requestWriterFactory,
-                responseParserFactory);
+            id,
+            log,
+            headerlog,
+            wirelog,
+            cconfig.getBufferSize(),
+            cconfig.getFragmentSizeHint(),
+            chardecoder,
+            charencoder,
+            cconfig.getMessageConstraints(),
+            incomingContentStrategy,
+            outgoingContentStrategy,
+            requestWriterFactory,
+            responseParserFactory
+        );
     }
 }

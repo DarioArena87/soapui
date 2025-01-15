@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.support;
@@ -52,8 +52,30 @@ public class TestRunComponentEnabler extends TestMonitorListenerAdapter {
         disable();
     }
 
+    public void loadTestFinished(LoadTestRunner runner) {
+        if (!SoapUI.getTestMonitor().hasRunningTest(testCase)) {
+            enable();
+        }
+    }
+
     public void securityTestStarted(SecurityTestRunner runner) {
         disable();
+    }
+
+    public void securityTestFinished(SecurityTestRunner runner) {
+        if (!SoapUI.getTestMonitor().hasRunningTest(testCase)) {
+            enable();
+        }
+    }
+
+    public void testCaseStarted(TestCaseRunner runner) {
+        disable();
+    }
+
+    public void testCaseFinished(TestCaseRunner runner) {
+        if (!SoapUI.getTestMonitor().hasRunningTest(testCase)) {
+            enable();
+        }
     }
 
     private void disable() {
@@ -73,28 +95,6 @@ public class TestRunComponentEnabler extends TestMonitorListenerAdapter {
             }
 
             states.clear();
-        }
-    }
-
-    public void loadTestFinished(LoadTestRunner runner) {
-        if (!SoapUI.getTestMonitor().hasRunningTest(testCase)) {
-            enable();
-        }
-    }
-
-    public void securityTestFinished(SecurityTestRunner runner) {
-        if (!SoapUI.getTestMonitor().hasRunningTest(testCase)) {
-            enable();
-        }
-    }
-
-    public void testCaseStarted(TestCaseRunner runner) {
-        disable();
-    }
-
-    public void testCaseFinished(TestCaseRunner runner) {
-        if (!SoapUI.getTestMonitor().hasRunningTest(testCase)) {
-            enable();
         }
     }
 

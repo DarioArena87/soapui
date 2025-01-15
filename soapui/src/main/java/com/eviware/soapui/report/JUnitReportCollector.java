@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.report;
@@ -53,13 +53,34 @@ import java.util.Set;
  */
 
 public class JUnitReportCollector implements TestRunListener, TestSuiteRunListener, ProjectRunListener {
+    protected boolean includeTestPropertiesInReport = false;
     HashMap<String, JUnitReport> reports;
     HashMap<TestCase, String> failures;
     HashMap<TestCase, Integer> errorCount;
-
-    protected boolean includeTestPropertiesInReport = false;
     private int maxErrors = 0;
 
+    /**
+     * Use this factory method to allow usage of an external reportCollecto; it
+     * checks for a soapui.junit.reportCollector system property that should
+     * specify a class derived from this JUnitReportCollector which will be used
+     * instead
+     *
+     * @param maxErrors
+     */
+
+    public static JUnitReportCollector createNew(int maxErrors) {
+        String className = System.getProperty("soapui.junit.reportCollector", null);
+        if (StringUtils.hasContent(className)) {
+            try {
+                return (JUnitReportCollector)Class.forName(className).getConstructor(Integer.class).newInstance(maxErrors);
+            }
+            catch (Exception e) {
+                System.err.println("Failed to create JUnitReportCollector class [" + className + "]; " + e);
+            }
+        }
+
+        return new JUnitReportCollector(maxErrors);
+    }
 
     public JUnitReportCollector() {
         this(0);
@@ -104,10 +125,29 @@ public class JUnitReportCollector implements TestRunListener, TestSuiteRunListen
     public String getReport() {
         Set<String> keys = reports.keySet();
         if (keys.size() > 0) {
-            String key = (String) keys.toArray()[0];
+            String key = (String)keys.toArray()[0];
             return reports.get(key).toString();
         }
         return "No reports..:";
+    }
+
+    protected HashMap<String, String> getTestPropertiesAsHashMap(TestModelItem testCase) {
+        HashMap<String, String> testProperties = new HashMap<>();
+        for (Map.Entry<String, TestProperty> stringTestPropertyEntry : testCase.getProperties().entrySet()) {
+            testProperties.put(stringTestPropertyEntry.getKey(), stringTestPropertyEntry.getValue().getValue());
+        }
+        return testProperties;
+    }
+
+    public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+        TestCase testCase = testRunner.getTestCase();
+        TestSuite testSuite = testCase.getTestSuite();
+        if (!reports.containsKey(testSuite.getName())) {
+            JUnitReport report = new JUnitReport();
+            report.setIncludeTestProperties(includeTestPropertiesInReport);
+            report.setTestSuiteName(testSuite.getProject().getName() + "." + testSuite.getName());
+            reports.put(testSuite.getName(), report);
+        }
     }
 
     public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
@@ -123,23 +163,20 @@ public class JUnitReportCollector implements TestRunListener, TestSuiteRunListen
             if (Status.FAILED == testRunner.getStatus()) {
                 String msg = "";
                 if (failures.containsKey(testCase)) {
-                    msg = failures.get(testCase).toString();
+                    msg = failures.get(testCase);
                 }
                 report.addTestCaseWithFailure(testCase.getName(), testRunner.getTimeTaken(), testRunner.getReason(), msg, testProperties);
             }
             if (Status.FINISHED == testRunner.getStatus()) {
                 report.addTestCase(testCase.getName(), testRunner.getTimeTaken(), testProperties);
             }
-
         }
     }
 
-    protected HashMap<String, String> getTestPropertiesAsHashMap(TestModelItem testCase) {
-        HashMap<String, String> testProperties = new HashMap<>();
-        for (Map.Entry<String, TestProperty> stringTestPropertyEntry : testCase.getProperties().entrySet()) {
-            testProperties.put(stringTestPropertyEntry.getKey(), stringTestPropertyEntry.getValue().getValue());
-        }
-        return testProperties;
+    public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+    }
+
+    public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
     }
 
     public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
@@ -165,14 +202,13 @@ public class JUnitReportCollector implements TestRunListener, TestSuiteRunListen
                 buf.append(failures.get(testCase));
             }
 
-            buf.append("<h3><b>").append(XmlUtils.entitize(result.getTestStep().getName()))
-                    .append(" Failed</b></h3><pre>");
+            buf.append("<h3><b>").append(XmlUtils.entitize(result.getTestStep().getName())).append(" Failed</b></h3><pre>");
             for (String message : result.getMessages()) {
                 if (message.toLowerCase().startsWith("url:")) {
                     String url = XmlUtils.entitize(message.substring(4).trim());
-                    buf.append("URL: <a target=\"new\" href=\"").append(url).append("\">").append(url)
-                            .append("</a>");
-                } else {
+                    buf.append("URL: <a target=\"new\" href=\"").append(url).append("\">").append(url).append("</a>");
+                }
+                else {
                     buf.append(message);
                 }
 
@@ -194,83 +230,43 @@ public class JUnitReportCollector implements TestRunListener, TestSuiteRunListen
         }
     }
 
-    public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-        TestCase testCase = testRunner.getTestCase();
-        TestSuite testSuite = testCase.getTestSuite();
-        if (!reports.containsKey(testSuite.getName())) {
-            JUnitReport report = new JUnitReport();
-            report.setIncludeTestProperties(this.includeTestPropertiesInReport);
-            report.setTestSuiteName(testSuite.getProject().getName() + "." + testSuite.getName());
-            reports.put(testSuite.getName(), report);
-        }
-    }
-
-    public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-    }
-
-    public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
-    }
-
     public void reset() {
         reports.clear();
         failures.clear();
         errorCount.clear();
     }
 
-    public void afterRun(TestSuiteRunner testRunner, TestSuiteRunContext runContext) {
-    }
-
-    public void afterTestCase(TestSuiteRunner testRunner, TestSuiteRunContext runContext, TestCaseRunner testCaseRunner) {
-        testCaseRunner.getTestCase().removeTestRunListener(this);
-    }
-
     public void beforeRun(TestSuiteRunner testRunner, TestSuiteRunContext runContext) {
+    }
+
+    public void afterRun(TestSuiteRunner testRunner, TestSuiteRunContext runContext) {
     }
 
     public void beforeTestCase(TestSuiteRunner testRunner, TestSuiteRunContext runContext, TestCase testCase) {
         testCase.addTestRunListener(this);
     }
 
-    public void afterRun(ProjectRunner testScenarioRunner, ProjectRunContext runContext) {
+    public void afterTestCase(TestSuiteRunner testRunner, TestSuiteRunContext runContext, TestCaseRunner testCaseRunner) {
+        testCaseRunner.getTestCase().removeTestRunListener(this);
     }
 
-    public void afterTestSuite(ProjectRunner testScenarioRunner, ProjectRunContext runContext,
-                               TestSuiteRunner testRunner) {
+    public void afterTestSuite(
+        ProjectRunner testScenarioRunner, ProjectRunContext runContext, TestSuiteRunner testRunner
+    ) {
         testRunner.getTestSuite().removeTestSuiteRunListener(this);
-    }
-
-    public void beforeRun(ProjectRunner testScenarioRunner, ProjectRunContext runContext) {
     }
 
     public void beforeTestSuite(ProjectRunner testScenarioRunner, ProjectRunContext runContext, TestSuite testSuite) {
         testSuite.addTestSuiteRunListener(this);
     }
 
-    /**
-     * Use this factory method to allow usage of an external reportCollecto; it
-     * checks for a soapui.junit.reportCollector system property that should
-     * specify a class derived from this JUnitReportCollector which will be used
-     * instead
-     *
-     * @param maxErrors
-     */
+    public void beforeRun(ProjectRunner testScenarioRunner, ProjectRunContext runContext) {
+    }
 
-    public static JUnitReportCollector createNew(int maxErrors) {
-        String className = System.getProperty("soapui.junit.reportCollector", null);
-        if (StringUtils.hasContent(className)) {
-            try {
-                return (JUnitReportCollector) Class.forName(className).getConstructor(Integer.class)
-                        .newInstance(maxErrors);
-            } catch (Exception e) {
-                System.err.println("Failed to create JUnitReportCollector class [" + className + "]; " + e.toString());
-            }
-        }
-
-        return new JUnitReportCollector(maxErrors);
+    public void afterRun(ProjectRunner testScenarioRunner, ProjectRunContext runContext) {
     }
 
     public void setIncludeTestPropertiesInReport(boolean includeTestPropertiesInReport) {
         this.includeTestPropertiesInReport = includeTestPropertiesInReport;
     }
-
 }

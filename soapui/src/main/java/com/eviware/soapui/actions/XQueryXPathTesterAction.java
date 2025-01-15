@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -161,9 +161,9 @@ public class XQueryXPathTesterAction extends AbstractAction {
 
     private class RunAction extends AbstractAction {
         public RunAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/submit_request.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Execute current query");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("alt ENTER"));
+            putValue(SMALL_ICON, UISupport.createImageIcon("/submit_request.gif"));
+            putValue(SHORT_DESCRIPTION, "Execute current query");
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("alt ENTER"));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -176,7 +176,8 @@ public class XQueryXPathTesterAction extends AbstractAction {
                 // xquery?
                 if (queryTabs.getSelectedIndex() == 0) {
                     objects = xmlObject.execQuery(xqueryArea.getText());
-                } else {
+                }
+                else {
                     objects = xmlObject.selectPath(xpathArea.getText());
                 }
 
@@ -192,11 +193,12 @@ public class XQueryXPathTesterAction extends AbstractAction {
 
                 resultArea.setText(result.toString());
                 statusLabel.setText("Expression returned " + objects.length + " hits");
-            } catch (Throwable e1) {
+            }
+            catch (Throwable e1) {
                 if (e1 instanceof RuntimeException) {
-                    e1 = ((RuntimeException) e1).getCause();
+                    e1 = e1.getCause();
                     if (e1 instanceof InvocationTargetException) {
-                        e1 = ((InvocationTargetException) e1).getTargetException();
+                        e1 = ((InvocationTargetException)e1).getTargetException();
                     }
                 }
 
@@ -207,8 +209,8 @@ public class XQueryXPathTesterAction extends AbstractAction {
 
     private class DeclareNSAction extends AbstractAction {
         public DeclareNSAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/declareNs.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Declares namespaces in current input in xpath expression");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/declareNs.gif"));
+            putValue(SHORT_DESCRIPTION, "Declares namespaces in current input in xpath expression");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -216,10 +218,10 @@ public class XQueryXPathTesterAction extends AbstractAction {
                 String namespaceDeclarations = XmlUtils.declareXPathNamespaces(inputArea.getText());
                 xpathArea.setText(namespaceDeclarations + xpathArea.getText());
                 xqueryArea.setText(namespaceDeclarations + xqueryArea.getText());
-            } catch (XmlException e1) {
+            }
+            catch (XmlException e1) {
                 SoapUI.logError(e1);
             }
         }
     }
-
 }

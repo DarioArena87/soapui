@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.support;
@@ -46,13 +46,14 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
     private StringToStringMap values;
     private RestParamsPropertyHolder methodParams;
     private List<String> sortedPropertyNames;
-    private RestRequest restRequest;
-    private Set<TestPropertyListener> listeners = new HashSet<TestPropertyListener>();
-    private Map<RestParamProperty, InternalRestParamProperty> wrappers = new HashMap<RestParamProperty, InternalRestParamProperty>();
+    private final RestRequest restRequest;
+    private final Set<TestPropertyListener> listeners = new HashSet<TestPropertyListener>();
+    private final Map<RestParamProperty, InternalRestParamProperty> wrappers = new HashMap<RestParamProperty, InternalRestParamProperty>();
     private String parameterBeingMoved;
 
-    public RestRequestParamsPropertyHolder(RestParamsPropertyHolder methodParams, RestRequest restRequest,
-                                           StringToStringMap values) {
+    public RestRequestParamsPropertyHolder(
+        RestParamsPropertyHolder methodParams, RestRequest restRequest, StringToStringMap values
+    ) {
         this.methodParams = methodParams;
         this.restRequest = restRequest;
         buildPropertyNameList();
@@ -69,7 +70,8 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             propertyNames.retainAll(methodParamNames);
             methodParamNames.removeAll(propertyNames);
             propertyNames.addAll(methodParamNames);
-        } else {
+        }
+        else {
             propertyNames = new ArrayList<String>(methodParamNames);
         }
         sortedPropertyNames = propertyNames;
@@ -90,12 +92,132 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
         wrappers.clear();
     }
 
+    public RestParamProperty getProperty(String name) {
+        if (!methodParams.hasProperty(name)) {
+            return null;
+        }
+        return getWrapper(methodParams.getProperty(name));
+    }
+
+    public RestParamProperty getPropertyAt(int index) {
+        if (methodParams.getPropertyCount() <= index) {
+            return null;
+        }
+        buildPropertyNameList();
+        String propertyName = sortedPropertyNames.get(index);
+        RestParamProperty propertyToWrap = methodParams.getProperty(propertyName);
+        return getWrapper(propertyToWrap);
+    }
+
+    public void resetValues() {
+        values.clear();
+    }
+
+    public int getPropertyIndex(String name) {
+        return sortedPropertyNames.indexOf(name);
+    }
+
+    public void saveTo(Properties props) {
+        int count = getPropertyCount();
+        for (int i = 0; i < count; i++) {
+            RestParamProperty p = getPropertyAt(i);
+            String name = p.getName();
+            String value = values.containsKey(name) ? values.get(name) : p.getValue();
+            if (value == null) {
+                value = "";
+            }
+
+            props.setProperty(name, value);
+        }
+    }
+
+    public PropertyExpansion[] getPropertyExpansions() {
+        return methodParams.getPropertyExpansions();
+    }
+
+    public String[] getPropertyNames() {
+        return sortedPropertyNames.toArray(new String[sortedPropertyNames.size()]);
+    }
+
+    public void setPropertyValue(String name, String value) {
+        if (value == null) {
+            values.remove(name);
+        }
+        else {
+            values.put(name, value);
+        }
+    }
+
+    public String getPropertyValue(String name) {
+        return values.containsKey(name) ? values.get(name) : methodParams.getPropertyValue(name);
+    }
+
+    public Map<String, TestProperty> getProperties() {
+        Map<String, TestProperty> map = methodParams.getProperties();
+        for (Entry<String, TestProperty> entry : map.entrySet()) {
+            map.put(entry.getKey(), getWrapper((RestParamProperty)entry.getValue()));
+        }
+        return map;
+    }
+
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeTestPropertyListener(TestPropertyListener listener) {
+        listeners.remove(listener);
+    }
+
+    public boolean hasProperty(String name) {
+        return methodParams.hasProperty(name);
+    }
+
+    public ModelItem getModelItem() {
+        return restRequest;
+    }
+
+    public int getPropertyCount() {
+        return methodParams.getPropertyCount();
+    }
+
+    public List<TestProperty> getPropertyList() {
+        List<TestProperty> propertyList = new ArrayList<TestProperty>();
+        for (InternalRestParamProperty internalRestParamProperty : wrappers.values()) {
+            propertyList.add(internalRestParamProperty);
+        }
+        return propertyList;
+    }
+
+    public String getPropertiesLabel() {
+        return methodParams.getPropertiesLabel();
+    }
+
+    public void setPropertiesLabel(String propertiesLabel) {
+        // methodParams.setPropertiesLabel(propertiesLabel);
+    }
+
     public RestParamProperty addProperty(String name) {
 
         RestParamProperty property = methodParams.addProperty(name);
         setParameterLocation(property, NewRestResourceActionBase.ParamLocation.RESOURCE);
         //setting the param location changes the parent of the property, hence need to get it again
         return getWrapper(methodParams.getProperty(name));
+    }
+
+    public RestParamProperty removeProperty(String propertyName) {
+        values.remove(propertyName);
+
+        RestParamProperty property = methodParams.removeProperty(propertyName);
+        sortedPropertyNames.remove(propertyName);
+        firePropertyRemoved(propertyName);
+        return property;
+    }
+
+    public RestParamProperty get(Object key) {
+        if (!methodParams.containsKey(key)) {
+            return null;
+        }
+        return getWrapper(methodParams.get(key));
     }
 
     public void addParameter(RestParamProperty prop) {
@@ -121,7 +243,8 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             if (newLocation == NewRestResourceActionBase.ParamLocation.METHOD) {
                 restRequest.getResource().removeProperty(parameterBeingMoved);
                 newParameter = restRequest.getRestMethod().addProperty(parameterBeingMoved);
-            } else {
+            }
+            else {
                 restRequest.getRestMethod().removeProperty(parameterBeingMoved);
                 newParameter = restRequest.getResource().addProperty(parameterBeingMoved);
             }
@@ -137,151 +260,10 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             sortedPropertyNames = copyOfSortedPropertyNames;
             firePropertyRemoved(parameterBeingMoved);
             firePropertyAdded(parameterBeingMoved);
-        } finally {
+        }
+        finally {
             parameterBeingMoved = null;
         }
-    }
-
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        listeners.add(listener);
-    }
-
-    public void clear() {
-        for (String key : getPropertyNames()) {
-            String oldValue = getPropertyValue(key);
-            values.put(key, "");
-            firePropertyValueChanged(key, oldValue, "");
-        }
-    }
-
-    public boolean containsKey(Object key) {
-        return methodParams.containsKey(key);
-    }
-
-    public boolean containsValue(Object value) {
-        return values.containsValue(value) || methodParams.containsValue(value);
-    }
-
-    public Set<Entry<String, TestProperty>> entrySet() {
-        Set<Entry<String, TestProperty>> entrySet = methodParams.entrySet();
-        for (Entry<String, TestProperty> entry : entrySet) {
-            entry.setValue(getWrapper((RestParamProperty) entry.getValue()));
-        }
-        return entrySet;
-    }
-
-    public RestParamProperty get(Object key) {
-        if (!methodParams.containsKey(key)) {
-            return null;
-        }
-        return getWrapper(methodParams.get(key));
-    }
-
-    public ModelItem getModelItem() {
-        return this.restRequest;
-    }
-
-    public Map<String, TestProperty> getProperties() {
-        Map<String, TestProperty> map = methodParams.getProperties();
-        for (Entry<String, TestProperty> entry : map.entrySet()) {
-            map.put(entry.getKey(), getWrapper((RestParamProperty) entry.getValue()));
-        }
-        return map;
-    }
-
-    public String getPropertiesLabel() {
-        return methodParams.getPropertiesLabel();
-    }
-
-    public RestParamProperty getProperty(String name) {
-        if (!methodParams.hasProperty(name)) {
-            return null;
-        }
-        return getWrapper(methodParams.getProperty(name));
-    }
-
-    public RestParamProperty getPropertyAt(int index) {
-        if (methodParams.getPropertyCount() <= index) {
-            return null;
-        }
-        buildPropertyNameList();
-        String propertyName = sortedPropertyNames.get(index);
-        RestParamProperty propertyToWrap = methodParams.getProperty(propertyName);
-        return getWrapper(propertyToWrap);
-    }
-
-    public int getPropertyCount() {
-        return methodParams.getPropertyCount();
-    }
-
-    public PropertyExpansion[] getPropertyExpansions() {
-        return methodParams.getPropertyExpansions();
-    }
-
-    public int getPropertyIndex(String name) {
-        return sortedPropertyNames.indexOf(name);
-    }
-
-    public String[] getPropertyNames() {
-        return sortedPropertyNames.toArray(new String[sortedPropertyNames.size()]);
-    }
-
-    public String getPropertyValue(String name) {
-        return values.containsKey(name) ? values.get(name) : methodParams.getPropertyValue(name);
-    }
-
-    public boolean hasProperty(String name) {
-        return methodParams.hasProperty(name);
-    }
-
-    public boolean isEmpty() {
-        return methodParams.isEmpty();
-    }
-
-    public Set<String> keySet() {
-        return new LinkedHashSet<String>(sortedPropertyNames);
-    }
-
-    public void moveProperty(String propertyName, int targetIndex) {
-        if (sortedPropertyNames.contains(propertyName)) {
-            int oldIndex = sortedPropertyNames.indexOf(propertyName);
-            String valueAtNewindex = sortedPropertyNames.get(targetIndex);
-            sortedPropertyNames.set(targetIndex, propertyName);
-            sortedPropertyNames.set(oldIndex, valueAtNewindex);
-            firePropertyMoved(propertyName, oldIndex, targetIndex);
-        }
-    }
-
-    public TestProperty put(String key, TestProperty value) {
-        if (value.getValue() != null) {
-            values.put(key, value.getValue());
-        } else {
-            values.remove(key);
-        }
-        return get(key);
-    }
-
-    public void putAll(Map<? extends String, ? extends TestProperty> m) {
-        for (Entry<? extends String, ? extends TestProperty> e : m.entrySet()) {
-            put(e.getKey(), e.getValue());
-        }
-    }
-
-    public TestProperty remove(Object key) {
-        return removeProperty((String) key);
-    }
-
-    public RestParamProperty removeProperty(String propertyName) {
-        values.remove(propertyName);
-
-        RestParamProperty property = methodParams.removeProperty(propertyName);
-        sortedPropertyNames.remove(propertyName);
-        firePropertyRemoved(propertyName);
-        return property;
-    }
-
-    public void removeTestPropertyListener(TestPropertyListener listener) {
-        listeners.remove(listener);
     }
 
     public boolean renameProperty(String name, String newName) {
@@ -292,7 +274,8 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
         boolean renamePerformed;
         if (parameter.getParamLocation() == NewRestResourceActionBase.ParamLocation.METHOD) {
             renamePerformed = methodParams.renameProperty(name, newName);
-        } else {
+        }
+        else {
             renamePerformed = restRequest.getResource().renameProperty(name, newName);
         }
         if (renamePerformed) {
@@ -311,8 +294,14 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
         return renamePerformed;
     }
 
-    public void resetValues() {
-        values.clear();
+    public void moveProperty(String propertyName, int targetIndex) {
+        if (sortedPropertyNames.contains(propertyName)) {
+            int oldIndex = sortedPropertyNames.indexOf(propertyName);
+            String valueAtNewindex = sortedPropertyNames.get(targetIndex);
+            sortedPropertyNames.set(targetIndex, propertyName);
+            sortedPropertyNames.set(oldIndex, valueAtNewindex);
+            firePropertyMoved(propertyName, oldIndex, targetIndex);
+        }
     }
 
     public void release() {
@@ -320,42 +309,68 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
         clearWrappers();
     }
 
-    public void saveTo(Properties props) {
-        int count = getPropertyCount();
-        for (int i = 0; i < count; i++) {
-            RestParamProperty p = getPropertyAt(i);
-            String name = p.getName();
-            String value = values.containsKey(name) ? values.get(name) : p.getValue();
-            if (value == null) {
-                value = "";
-            }
-
-            props.setProperty(name, value);
-        }
-    }
-
-    public void setPropertiesLabel(String propertiesLabel) {
-        // methodParams.setPropertiesLabel(propertiesLabel);
-    }
-
-    public void setPropertyValue(String name, String value) {
-        if (value == null) {
-            values.remove(name);
-        } else {
-            values.put(name, value);
-        }
-    }
-
     public int size() {
         return methodParams.size();
+    }
+
+    public boolean isEmpty() {
+        return methodParams.isEmpty();
+    }
+
+    public boolean containsKey(Object key) {
+        return methodParams.containsKey(key);
+    }
+
+    public boolean containsValue(Object value) {
+        return values.containsValue(value) || methodParams.containsValue(value);
+    }
+
+    public TestProperty put(String key, TestProperty value) {
+        if (value.getValue() != null) {
+            values.put(key, value.getValue());
+        }
+        else {
+            values.remove(key);
+        }
+        return get(key);
+    }
+
+    public TestProperty remove(Object key) {
+        return removeProperty((String)key);
+    }
+
+    public void putAll(Map<? extends String, ? extends TestProperty> m) {
+        for (Entry<? extends String, ? extends TestProperty> e : m.entrySet()) {
+            put(e.getKey(), e.getValue());
+        }
+    }
+
+    public void clear() {
+        for (String key : getPropertyNames()) {
+            String oldValue = getPropertyValue(key);
+            values.put(key, "");
+            firePropertyValueChanged(key, oldValue, "");
+        }
+    }
+
+    public Set<String> keySet() {
+        return new LinkedHashSet<String>(sortedPropertyNames);
     }
 
     public Collection<TestProperty> values() {
         List<TestProperty> ret = new ArrayList<TestProperty>();
         for (TestProperty p : methodParams.values()) {
-            ret.add(getWrapper((RestParamProperty) p));
+            ret.add(getWrapper((RestParamProperty)p));
         }
         return ret;
+    }
+
+    public Set<Entry<String, TestProperty>> entrySet() {
+        Set<Entry<String, TestProperty>> entrySet = methodParams.entrySet();
+        for (Entry<String, TestProperty> entry : entrySet) {
+            entry.setValue(getWrapper((RestParamProperty)entry.getValue()));
+        }
+        return entrySet;
     }
 
     private void firePropertyAdded(String name) {
@@ -420,10 +435,6 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
         firePropertyAdded(name);
     }
 
-    public void propertyMoved(String name, int oldIndex, int newIndex) {
-        firePropertyMoved(name, oldIndex, newIndex);
-    }
-
     public void propertyRemoved(String name) {
         if (isChangingLocationOfParameter(name)) {
             return;
@@ -437,7 +448,8 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
         if (values.containsKey(oldName)) {
             values.put(newName, values.get(oldName));
             values.remove(oldName);
-        } else {
+        }
+        else {
             if (sortedPropertyNames.contains(oldName)) {
                 sortedPropertyNames.set(sortedPropertyNames.indexOf(oldName), newName);
             }
@@ -450,6 +462,10 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             values.put(name, newValue);
             firePropertyValueChanged(name, oldValue, newValue);
         }
+    }
+
+    public void propertyMoved(String name, int oldIndex, int newIndex) {
+        firePropertyMoved(name, oldIndex, newIndex);
     }
 
     private boolean isChangingLocationOfParameter(String name) {
@@ -474,10 +490,6 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             propertySupport.addPropertyChangeListener(propertyName, listener);
         }
 
-        public boolean isDisableUrlEncoding() {
-            return overriddenProp.isDisableUrlEncoding();
-        }
-
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             propertySupport.removePropertyChangeListener(listener);
         }
@@ -486,32 +498,24 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             propertySupport.removePropertyChangeListener(propertyName, listener);
         }
 
+        public boolean isDisableUrlEncoding() {
+            return overriddenProp.isDisableUrlEncoding();
+        }
+
         public void setDisableUrlEncoding(boolean encode) {
             overriddenProp.setDisableUrlEncoding(encode);
-        }
-
-        public void setName(String name) {
-            overriddenProp.setName(name);
-        }
-
-        public String getDefaultValue() {
-            return overriddenProp.getDefaultValue();
-        }
-
-        public String getDescription() {
-            return overriddenProp.getDescription();
-        }
-
-        public ModelItem getModelItem() {
-            return restRequest;
         }
 
         public String getName() {
             return overriddenProp.getName();
         }
 
-        public QName getType() {
-            return overriddenProp.getType();
+        public void setName(String name) {
+            overriddenProp.setName(name);
+        }
+
+        public String getDescription() {
+            return overriddenProp.getDescription();
         }
 
         public String getValue() {
@@ -521,8 +525,28 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             return getDefaultValue();
         }
 
-        public boolean isReadOnly() {
-            return overriddenProp.isReadOnly();
+        public String getDefaultValue() {
+            return overriddenProp.getDefaultValue();
+        }
+
+        public void setDefaultValue(String default1) {
+            //overriddenProp.setDefaultValue(default1);
+        }
+
+        public String[] getOptions() {
+            return overriddenProp.getOptions();
+        }
+
+        public void setOptions(String[] arg0) {
+            overriddenProp.setOptions(arg0);
+        }
+
+        public boolean getRequired() {
+            return overriddenProp.getRequired();
+        }
+
+        public void setRequired(boolean arg0) {
+            overriddenProp.setRequired(arg0);
         }
 
         public void setValue(String value) {
@@ -533,38 +557,55 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
 
             if (value == null) {
                 values.remove(getName());
-            } else {
+            }
+            else {
                 values.put(getName(), value);
             }
             firePropertyValueChanged(getName(), oldValue, getValue());
         }
 
-        public String[] getOptions() {
-            return overriddenProp.getOptions();
+        public boolean isReadOnly() {
+            return overriddenProp.isReadOnly();
         }
 
-        public boolean getRequired() {
-            return overriddenProp.getRequired();
+        public QName getType() {
+            return overriddenProp.getType();
         }
 
-        public ParameterStyle getStyle() {
-            return overriddenProp.getStyle();
+        public ModelItem getModelItem() {
+            return restRequest;
         }
 
-        public void setDefaultValue(String default1) {
-            //overriddenProp.setDefaultValue(default1);
+        @Override
+        public boolean isRequestPart() {
+            return false;
+        }
+
+        @Override
+        public SchemaType getSchemaType() {
+            return overriddenProp.getSchemaType();
+        }
+
+        public void setType(QName arg0) {
+            overriddenProp.setType(arg0);
+        }
+
+        @Override
+        public String getPath() {
+            return overriddenProp.getPath();
+        }
+
+        @Override
+        public void setPath(String path) {
+            overriddenProp.setPath(path);
         }
 
         public void setDescription(String description) {
             overriddenProp.setDescription(description);
         }
 
-        public void setOptions(String[] arg0) {
-            overriddenProp.setOptions(arg0);
-        }
-
-        public void setRequired(boolean arg0) {
-            overriddenProp.setRequired(arg0);
+        public ParameterStyle getStyle() {
+            return overriddenProp.getStyle();
         }
 
         public void setStyle(ParameterStyle style) {
@@ -581,10 +622,6 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             overriddenProp.setParamLocation(paramLocation);
         }
 
-        public void setType(QName arg0) {
-            overriddenProp.setType(arg0);
-        }
-
         public void propertyChange(PropertyChangeEvent evt) {
             propertySupport.firePropertyChange(evt);
         }
@@ -594,35 +631,5 @@ public class RestRequestParamsPropertyHolder implements RestParamsPropertyHolder
             overriddenProp = null;
             propertySupport = null;
         }
-
-        @Override
-        public String getPath() {
-            return overriddenProp.getPath();
-        }
-
-        @Override
-        public void setPath(String path) {
-            overriddenProp.setPath(path);
-        }
-
-        @Override
-        public boolean isRequestPart() {
-            return false;
-        }
-
-        @Override
-        public SchemaType getSchemaType() {
-            return overriddenProp.getSchemaType();
-        }
-
     }
-
-    public List<TestProperty> getPropertyList() {
-        List<TestProperty> propertyList = new ArrayList<TestProperty>();
-        for (InternalRestParamProperty internalRestParamProperty : wrappers.values()) {
-            propertyList.add(internalRestParamProperty);
-        }
-        return propertyList;
-    }
-
 }

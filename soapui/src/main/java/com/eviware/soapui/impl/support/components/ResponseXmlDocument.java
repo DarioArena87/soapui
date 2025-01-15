@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support.components;
@@ -61,16 +61,11 @@ public class ResponseXmlDocument extends AbstractXmlDocument implements Property
                 settingResponse = true;
                 response.setResponseContent(documentContent.getContentAsString());
                 fireContentChanged();
-            } finally {
+            }
+            finally {
                 settingResponse = false;
             }
         }
-    }
-
-    @Override
-    public String getContentType() {
-        Response response = request.getResponse();
-        return response == null ? null : response.getContentType();
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
@@ -78,10 +73,13 @@ public class ResponseXmlDocument extends AbstractXmlDocument implements Property
             return;
         }
 
-        if (evt.getPropertyName().equals(WsdlRequest.RESPONSE_PROPERTY)
-                || evt.getPropertyName().equals(WsdlRequest.RESPONSE_CONTENT_PROPERTY)) {
+        if (evt.getPropertyName().equals(WsdlRequest.RESPONSE_PROPERTY) || evt.getPropertyName().equals(WsdlRequest.RESPONSE_CONTENT_PROPERTY)) {
             fireContentChanged();
         }
+    }
+
+    public void release() {
+        request.removePropertyChangeListener(this);
     }
 
     public SchemaTypeSystem getTypeSystem() {
@@ -89,13 +87,16 @@ public class ResponseXmlDocument extends AbstractXmlDocument implements Property
         WsdlContext wsdlContext = iface.getWsdlContext();
         try {
             return wsdlContext.getSchemaTypeSystem();
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             SoapUI.logError(e1);
             return XmlBeans.getBuiltinTypeSystem();
         }
     }
 
-    public void release() {
-        request.removePropertyChangeListener(this);
+    @Override
+    public String getContentType() {
+        Response response = request.getResponse();
+        return response == null ? null : response.getContentType();
     }
 }

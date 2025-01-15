@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions;
@@ -24,19 +24,19 @@ import com.eviware.soapui.model.testsuite.Assertable;
 import com.eviware.soapui.model.testsuite.TestAssertion;
 
 public interface TestAssertionFactory {
-    public boolean canAssert(Assertable assertable);
+    boolean canAssert(Assertable assertable);
 
-    public boolean canAssert(TestPropertyHolder modelItem, String property);
+    boolean canAssert(TestPropertyHolder modelItem, String property);
 
-    public TestAssertion buildAssertion(TestAssertionConfig config, Assertable assertable);
+    TestAssertion buildAssertion(TestAssertionConfig config, Assertable assertable);
 
-    public Class<? extends WsdlMessageAssertion> getAssertionClassType();
+    Class<? extends WsdlMessageAssertion> getAssertionClassType();
 
-    public String getAssertionId();
+    String getAssertionId();
 
-    public String getAssertionLabel();
+    String getAssertionLabel();
 
-    public AssertionListEntry getAssertionListEntry();
+    AssertionListEntry getAssertionListEntry();
 
-    public String getCategory();
+    String getCategory();
 }

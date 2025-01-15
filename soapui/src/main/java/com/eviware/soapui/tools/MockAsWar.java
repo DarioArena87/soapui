@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.tools;
@@ -52,35 +52,40 @@ public class MockAsWar {
     private static final String SOAPUI_HOME = "soapui.home";
     private static final String SOAPUI_BIN_FOLDER = "." + File.separator + "bin";
     private static final String SOAPUI_LIB_FOLDER = ".." + File.separator + "lib";
-
+    protected final String localEndpoint;
     protected File projectFile;
     protected File settingsFile;
     protected File warDir;
-    private File warFile;
     protected File webInf;
-    private File warLibDir;
     protected File soapUIDir;
-
     protected Logger log = LogManager.getLogger(MockAsWar.class);
-
-    private boolean includeExt;
     protected boolean includeActions;
     protected boolean includeListeners;
+    protected boolean enableWebUI;
+    private File warFile;
+    private File warLibDir;
+    private final boolean includeExt;
     private File actionsDir;
     private File listenersDir;
-    protected final String localEndpoint;
-    protected boolean enableWebUI;
+    private final WsdlProject project;
 
-    private WsdlProject project;
-
-    public MockAsWar(String projectPath, String settingsPath, String warDir, String warFile, boolean includeExt,
-                     boolean actions, boolean listeners, String localEndpoint, boolean enableWebUI, WsdlProject project) {
+    public MockAsWar(
+        String projectPath,
+        String settingsPath,
+        String warDir,
+        String warFile,
+        boolean includeExt,
+        boolean actions,
+        boolean listeners,
+        String localEndpoint,
+        boolean enableWebUI,
+        WsdlProject project
+    ) {
         this.project = project;
         this.localEndpoint = localEndpoint;
-        this.projectFile = new File(projectPath);
-        this.settingsFile = StringUtils.hasContent(settingsPath) ? new File(settingsPath) : null;
-        this.warDir = StringUtils.hasContent(warDir) ? new File(warDir) : new File(
-                System.getProperty("java.io.tmpdir"), "warasmock");
+        projectFile = new File(projectPath);
+        settingsFile = StringUtils.hasContent(settingsPath) ? new File(settingsPath) : null;
+        this.warDir = StringUtils.hasContent(warDir) ? new File(warDir) : new File(System.getProperty("java.io.tmpdir"), "warasmock");
         if (!this.warDir.exists()) {
             this.warDir.mkdirs();
         }
@@ -89,15 +94,14 @@ public class MockAsWar {
             this.warFile = new File(this.warDir, warFile);
         }
         this.includeExt = includeExt;
-        this.includeActions = actions;
-        this.includeListeners = listeners;
+        includeActions = actions;
+        includeListeners = listeners;
         this.enableWebUI = enableWebUI;
     }
 
     public void createMockAsWarArchive() {
 
-        XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog("Creating War File", 3,
-                "Building war file..", false);
+        XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog("Creating War File", 3, "Building war file..", false);
         WorkerAdapter warWorker = new WorkerAdapter() {
 
             public Object construct(XProgressMonitor monitor) {
@@ -119,10 +123,10 @@ public class MockAsWar {
         };
         try {
             progressDialog.run(warWorker);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-
     }
 
     private ArrayList<File> getAllFilesFrom(File dir) {
@@ -153,27 +157,24 @@ public class MockAsWar {
 
             createContent(content);
 
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(webInf,
-                    "web.xml"))));
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(webInf, "web.xml"))));
             out.write(content.toString());
             out.flush();
             out.close();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             log.error(e.getMessage(), e);
         }
     }
 
     protected void createContent(StringBuilder content) {
-        content.replace(content.indexOf(PROJECT_FILE_NAME),
-                content.indexOf(PROJECT_FILE_NAME) + PROJECT_FILE_NAME.length(), projectFile.getName());
+        content.replace(content.indexOf(PROJECT_FILE_NAME), content.indexOf(PROJECT_FILE_NAME) + PROJECT_FILE_NAME.length(), projectFile.getName());
 
-        content.replace(
-                content.indexOf(SOAPUI_SETTINGS),
-                content.indexOf(SOAPUI_SETTINGS) + SOAPUI_SETTINGS.length(),
-                settingsFile != null && settingsFile.exists() && settingsFile.isFile() ? "WEB-INF/soapui/"
-                        + settingsFile.getName() : "");
-        content.replace(content.indexOf(MOCKSERVICE_ENDPOINT), content.indexOf(MOCKSERVICE_ENDPOINT)
-                + MOCKSERVICE_ENDPOINT.length(), localEndpoint);
+        content.replace(content.indexOf(SOAPUI_SETTINGS),
+                        content.indexOf(SOAPUI_SETTINGS) + SOAPUI_SETTINGS.length(),
+                        settingsFile != null && settingsFile.exists() && settingsFile.isFile() ? "WEB-INF/soapui/" + settingsFile.getName() : ""
+        );
+        content.replace(content.indexOf(MOCKSERVICE_ENDPOINT), content.indexOf(MOCKSERVICE_ENDPOINT) + MOCKSERVICE_ENDPOINT.length(), localEndpoint);
 
         if (!includeActions) {
             String actionsString = "WEB-INF/actions";
@@ -181,15 +182,12 @@ public class MockAsWar {
         }
         if (!includeListeners) {
             String listenersString = "WEB-INF/listeners";
-            content.delete(content.indexOf(listenersString), content.indexOf(listenersString)
-                    + listenersString.length());
+            content.delete(content.indexOf(listenersString), content.indexOf(listenersString) + listenersString.length());
         }
         if (!enableWebUI) {
             String webUIEnabled = "<param-value>true</param-value>";
             String webUIDisabled = "<param-value>false</param-value>";
-            content.replace(content.indexOf(webUIEnabled),
-                    content.indexOf(webUIEnabled) + webUIEnabled.length(),
-                    webUIDisabled);
+            content.replace(content.indexOf(webUIEnabled), content.indexOf(webUIEnabled) + webUIEnabled.length(), webUIDisabled);
         }
     }
 
@@ -253,15 +251,17 @@ public class MockAsWar {
         FileOutputStream out = null;
         try {
             out = new FileOutputStream(new File(warDir, resource));
-            Tools.writeAll(out,
-                    SoapUI.class.getResourceAsStream("/com/eviware/soapui/resources/mockaswar/" + resource));
-        } catch (Exception e) {
+            Tools.writeAll(out, SoapUI.class.getResourceAsStream("/com/eviware/soapui/resources/mockaswar/" + resource));
+        }
+        catch (Exception e) {
             e.printStackTrace();
-        } finally {
+        }
+        finally {
             if (out != null) {
                 try {
                     out.close();
-                } catch (IOException ignore) {
+                }
+                catch (IOException ignore) {
                 }
             }
         }
@@ -273,7 +273,8 @@ public class MockAsWar {
             webInf = new File(warDir, "WEB-INF");
             if (!directoryIsUsable(webInf)) {
                 return false;
-            } else {
+            }
+            else {
                 clearDir(webInf);
                 warLibDir = new File(webInf, "lib");
 
@@ -304,7 +305,8 @@ public class MockAsWar {
 
                 return true;
             }
-        } else {
+        }
+        else {
             UISupport.showErrorMessage(warDir.getName() + " needs to be a directory!");
             return false;
         }
@@ -332,9 +334,19 @@ public class MockAsWar {
     }
 
     protected static class CaseInsensitiveFileFilter implements FileFilter {
-        protected static final ArrayList<String> excludes = Lists.newArrayList("servlet", "xulrunner", "Mozilla", "l2fprod", "tuxpack", "winpack", "ActiveQueryBuilder", "jxbrowser", "protection");
+        protected static final ArrayList<String> excludes = Lists.newArrayList(
+            "servlet",
+            "xulrunner",
+            "Mozilla",
+            "l2fprod",
+            "tuxpack",
+            "winpack",
+            "ActiveQueryBuilder",
+            "jxbrowser",
+            "protection"
+        );
 
-        public boolean accept(final File file) {
+        public boolean accept(File file) {
 
             boolean pathNameExcluded = FluentIterable.from(excludes).anyMatch(new Predicate<String>() {
                 @Override

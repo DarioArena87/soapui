@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface;
@@ -46,13 +46,12 @@ public class CloneInterfaceAction extends AbstractSoapUIAction<WsdlInterface> {
         List<String> asList = new ArrayList<String>(Arrays.asList(names));
         asList.remove(iface.getProject().getName());
 
-        String targetProjectName = UISupport.prompt("Select target Project for cloned Interface", "Clone Interface",
-                asList);
+        String targetProjectName = UISupport.prompt("Select target Project for cloned Interface", "Clone Interface", asList);
         if (targetProjectName == null) {
             return;
         }
 
-        WsdlProject targetProject = (WsdlProject) workspace.getProjectByName(targetProjectName);
+        WsdlProject targetProject = (WsdlProject)workspace.getProjectByName(targetProjectName);
         if (targetProject == null) {
             targetProjectName = UISupport.prompt("Enter name for new Project", "Clone TestSuite", "");
             if (targetProjectName == null) {
@@ -61,7 +60,8 @@ public class CloneInterfaceAction extends AbstractSoapUIAction<WsdlInterface> {
 
             try {
                 targetProject = workspace.createProject(targetProjectName, null);
-            } catch (SoapUIException e) {
+            }
+            catch (SoapUIException e) {
                 UISupport.showErrorMessage(e);
             }
 
@@ -70,10 +70,11 @@ public class CloneInterfaceAction extends AbstractSoapUIAction<WsdlInterface> {
             }
         }
 
-        WsdlInterface targetIface = (WsdlInterface) targetProject.getInterfaceByTechnicalId(iface.getTechnicalId());
+        WsdlInterface targetIface = (WsdlInterface)targetProject.getInterfaceByTechnicalId(iface.getTechnicalId());
         if (targetIface != null) {
             UISupport.showErrorMessage("Target Project already contains Interface for binding");
-        } else {
+        }
+        else {
             boolean importEndpoints = UISupport.confirm("Import endpoint defaults also?", getName());
             UISupport.select(targetProject.importInterface(iface, importEndpoints, true));
         }

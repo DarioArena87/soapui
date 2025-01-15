@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl;
@@ -31,10 +31,9 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractTestPropertyHolderWsdlModelItem<T extends ModelItemConfig> extends
-        AbstractWsdlModelItem<T> implements MutableTestPropertyHolder {
-    private XmlBeansPropertiesTestPropertyHolder propertyHolderSupport;
+public abstract class AbstractTestPropertyHolderWsdlModelItem<T extends ModelItemConfig> extends AbstractWsdlModelItem<T> implements MutableTestPropertyHolder {
     private final static Logger log = LogManager.getLogger(AbstractTestPropertyHolderWsdlModelItem.class);
+    private XmlBeansPropertiesTestPropertyHolder propertyHolderSupport;
 
     protected AbstractTestPropertyHolderWsdlModelItem(T config, ModelItem parent, String icon) {
         super(config, parent, icon);
@@ -43,7 +42,8 @@ public abstract class AbstractTestPropertyHolderWsdlModelItem<T extends ModelIte
     protected void setPropertiesConfig(PropertiesTypeConfig config) {
         if (propertyHolderSupport == null) {
             propertyHolderSupport = new XmlBeansPropertiesTestPropertyHolder(this, config);
-        } else {
+        }
+        else {
             propertyHolderSupport.resetPropertiesConfig(config);
         }
 
@@ -91,64 +91,64 @@ public abstract class AbstractTestPropertyHolderWsdlModelItem<T extends ModelIte
         return propertyHolderSupport.addProperty(name);
     }
 
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        propertyHolderSupport.addTestPropertyListener(listener);
-    }
-
-    public TestProperty getProperty(String name) {
-        return propertyHolderSupport == null ? null : propertyHolderSupport.getProperty(name);
-    }
-
-    public String[] getPropertyNames() {
-        return propertyHolderSupport.getPropertyNames();
-    }
-
-    public List<TestProperty> getPropertyList() {
-        return propertyHolderSupport.getPropertyList();
-    }
-
-    public String getPropertyValue(String name) {
-        return propertyHolderSupport == null ? null : propertyHolderSupport.getPropertyValue(name);
-    }
-
     public TestProperty removeProperty(String propertyName) {
         return propertyHolderSupport.removeProperty(propertyName);
-    }
-
-    public void removeTestPropertyListener(TestPropertyListener listener) {
-        propertyHolderSupport.removeTestPropertyListener(listener);
-    }
-
-    public void setPropertyValue(String name, String value) {
-        propertyHolderSupport.setPropertyValue(name, value);
     }
 
     public boolean renameProperty(String name, String newName) {
         return PropertyExpansionUtils.renameProperty(propertyHolderSupport.getProperty(name), newName, this) != null;
     }
 
+    public void moveProperty(String propertyName, int targetIndex) {
+        propertyHolderSupport.moveProperty(propertyName, targetIndex);
+    }
+
+    public String[] getPropertyNames() {
+        return propertyHolderSupport.getPropertyNames();
+    }
+
+    public void setPropertyValue(String name, String value) {
+        propertyHolderSupport.setPropertyValue(name, value);
+    }
+
+    public String getPropertyValue(String name) {
+        return propertyHolderSupport == null ? null : propertyHolderSupport.getPropertyValue(name);
+    }
+
+    public TestProperty getProperty(String name) {
+        return propertyHolderSupport == null ? null : propertyHolderSupport.getProperty(name);
+    }
+
     public Map<String, TestProperty> getProperties() {
         return propertyHolderSupport.getProperties();
+    }
+
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        propertyHolderSupport.addTestPropertyListener(listener);
+    }
+
+    public void removeTestPropertyListener(TestPropertyListener listener) {
+        propertyHolderSupport.removeTestPropertyListener(listener);
     }
 
     public boolean hasProperty(String name) {
         return propertyHolderSupport.hasProperty(name);
     }
 
-    public TestProperty getPropertyAt(int index) {
-        return propertyHolderSupport.getPropertyAt(index);
+    public ModelItem getModelItem() {
+        return this;
     }
 
     public int getPropertyCount() {
         return propertyHolderSupport.getPropertyCount();
     }
 
-    public void moveProperty(String propertyName, int targetIndex) {
-        propertyHolderSupport.moveProperty(propertyName, targetIndex);
+    public List<TestProperty> getPropertyList() {
+        return propertyHolderSupport.getPropertyList();
     }
 
-    public ModelItem getModelItem() {
-        return this;
+    public TestProperty getPropertyAt(int index) {
+        return propertyHolderSupport.getPropertyAt(index);
     }
 
     public String getPropertiesLabel() {

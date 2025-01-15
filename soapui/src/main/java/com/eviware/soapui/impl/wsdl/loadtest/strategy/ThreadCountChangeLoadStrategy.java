@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.strategy;
@@ -29,11 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.XmlObject;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -44,17 +40,15 @@ import javax.swing.event.ChangeListener;
  */
 
 public class ThreadCountChangeLoadStrategy extends AbstractLoadStrategy {
+    public static final String STRATEGY_TYPE = "Thread";
     private final static Logger log = LogManager.getLogger(ThreadCountChangeLoadStrategy.class);
-
     private static final int DEFAULT_END_THREAD_COUNT = 10;
     private static final int DEFAULT_START_THREAD_COUNT = 1;
-    public static final String STRATEGY_TYPE = "Thread";
-
     private int startThreadCount = DEFAULT_START_THREAD_COUNT;
     private int endThreadCount = DEFAULT_END_THREAD_COUNT;
 
     private JPanel configPanel;
-    private ComponentBag stateDependantComponents = new ComponentBag();
+    private final ComponentBag stateDependantComponents = new ComponentBag();
 
     private SpinnerNumberModel startThreadCountSpinnerNumberModel;
     private JSpinner startThreadCountSpinner;
@@ -76,39 +70,6 @@ public class ThreadCountChangeLoadStrategy extends AbstractLoadStrategy {
         builder.add("startThreadCount", startThreadCount);
         builder.add("endThreadCount", endThreadCount);
         return builder.finish();
-    }
-
-    public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        super.beforeLoadTest(loadTestRunner, context);
-        stateDependantComponents.setEnabled(false);
-
-        WsdlLoadTest wsdlLoadTest = ((WsdlLoadTest) loadTestRunner.getLoadTest());
-        wsdlLoadTest.setThreadCount(startThreadCount);
-    }
-
-    public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        stateDependantComponents.setEnabled(true);
-    }
-
-    public boolean allowThreadCountChangeDuringRun() {
-        return false;
-    }
-
-    @Override
-    public void recalculate(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        // calculate thread count
-        WsdlLoadTestRunner runner = (WsdlLoadTestRunner) loadTestRunner;
-        float progress = runner.getProgress();
-        if ((int) progress != -1) {
-            WsdlLoadTest wsdlLoadTest = ((WsdlLoadTest) loadTestRunner.getLoadTest());
-            synchronized (wsdlLoadTest) {
-                int newThreadCount = (int) (startThreadCount + (progress * (endThreadCount - startThreadCount) + 0.5));
-                if (newThreadCount != wsdlLoadTest.getThreadCount() && newThreadCount <= endThreadCount) {
-                    log.debug("Changing threadcount to " + newThreadCount + ", progress = " + progress);
-                    wsdlLoadTest.setThreadCount(newThreadCount);
-                }
-            }
-        }
     }
 
     public JComponent getConfigurationPanel() {
@@ -158,6 +119,47 @@ public class ThreadCountChangeLoadStrategy extends AbstractLoadStrategy {
         return configPanel;
     }
 
+    public boolean allowThreadCountChangeDuringRun() {
+        return false;
+    }
+
+    @Override
+    public void recalculate(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        // calculate thread count
+        WsdlLoadTestRunner runner = (WsdlLoadTestRunner)loadTestRunner;
+        float progress = runner.getProgress();
+        if ((int)progress != -1) {
+            WsdlLoadTest wsdlLoadTest = ((WsdlLoadTest)loadTestRunner.getLoadTest());
+            synchronized (wsdlLoadTest) {
+                int newThreadCount = (int)(startThreadCount + (progress * (endThreadCount - startThreadCount) + 0.5));
+                if (newThreadCount != wsdlLoadTest.getThreadCount() && newThreadCount <= endThreadCount) {
+                    log.debug("Changing threadcount to " + newThreadCount + ", progress = " + progress);
+                    wsdlLoadTest.setThreadCount(newThreadCount);
+                }
+            }
+        }
+    }
+
+    public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        super.beforeLoadTest(loadTestRunner, context);
+        stateDependantComponents.setEnabled(false);
+
+        WsdlLoadTest wsdlLoadTest = ((WsdlLoadTest)loadTestRunner.getLoadTest());
+        wsdlLoadTest.setThreadCount(startThreadCount);
+    }
+
+    public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        stateDependantComponents.setEnabled(true);
+    }
+
+    public int getStartThreadCount() {
+        return startThreadCount;
+    }
+
+    public int getEndThreadCount() {
+        return endThreadCount;
+    }
+
     /**
      * Factory for ThreadCountChangeLoadStrategy class
      *
@@ -177,13 +179,4 @@ public class ThreadCountChangeLoadStrategy extends AbstractLoadStrategy {
             return new ThreadCountChangeLoadStrategy(null, loadTest);
         }
     }
-
-    public int getStartThreadCount() {
-        return startThreadCount;
-    }
-
-    public int getEndThreadCount() {
-        return endThreadCount;
-    }
-
 }

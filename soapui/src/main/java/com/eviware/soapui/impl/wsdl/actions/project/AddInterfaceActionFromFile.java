@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.project;
@@ -39,8 +39,7 @@ public class AddInterfaceActionFromFile extends AbstractSoapUIAction<WsdlProject
     }
 
     public void perform(WsdlProject project, Object param) {
-        File file = UISupport.getFileDialogs().open(this, "Select WSDL file", ".wsdl", "WSDL Files (*.wsdl)",
-                ProjectDirProvider.getProjectFolder(project));
+        File file = UISupport.getFileDialogs().open(this, "Select WSDL file", ".wsdl", "WSDL Files (*.wsdl)", ProjectDirProvider.getProjectFolder(project));
         if (file == null) {
             return;
         }
@@ -51,18 +50,17 @@ public class AddInterfaceActionFromFile extends AbstractSoapUIAction<WsdlProject
         }
 
         try {
-            Boolean createRequests = UISupport.confirmOrCancel("Create default requests for all operations",
-                    "Import WSDL");
+            Boolean createRequests = UISupport.confirmOrCancel("Create default requests for all operations", "Import WSDL");
             if (createRequests == null) {
                 return;
             }
 
-            Interface[] ifaces = WsdlInterfaceFactory
-                    .importWsdl(project, file.toURI().toURL().toString(), createRequests);
+            Interface[] ifaces = WsdlInterfaceFactory.importWsdl(project, file.toURI().toURL().toString(), createRequests);
             if (ifaces.length > 0) {
                 UISupport.select(ifaces[0]);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             UISupport.showErrorMessage(ex.getMessage() + ":" + ex.getCause());
         }
     }

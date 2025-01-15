@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.mock;
@@ -30,24 +30,24 @@ import com.eviware.soapui.support.types.StringToStringsMap;
  */
 
 public interface MockResponse extends TestModelItem, Releasable {
-    public final static String RESPONSE_CONTENT_PROPERTY = MockResponse.class.getName() + "@responsecontent";
-    public final static String MTOM_NABLED_PROPERTY = MockResponse.class.getName() + "@mtom_enabled";
+    String RESPONSE_CONTENT_PROPERTY = MockResponse.class.getName() + "@responsecontent";
+    String MTOM_NABLED_PROPERTY = MockResponse.class.getName() + "@mtom_enabled";
 
-    public String getResponseContent();
+    String getResponseContent();
 
-    public void setResponseContent(String responseContent);
+    void setResponseContent(String responseContent);
 
-    public String getContentType();
+    String getContentType();
 
-    public String getEncoding();
+    String getEncoding();
 
-    public boolean isMtomEnabled();
+    boolean isMtomEnabled();
 
-    public Attachment[] getAttachments();
+    Attachment[] getAttachments();
 
-    public int getAttachmentCount();
+    int getAttachmentCount();
 
-    public MockOperation getMockOperation();
+    MockOperation getMockOperation();
 
     /**
      * Gets HTTP Headers for this response.
@@ -57,7 +57,7 @@ public interface MockResponse extends TestModelItem, Releasable {
      *
      * @return StringToStringsMap with all the headers.
      */
-    public StringToStringsMap getResponseHeaders();
+    StringToStringsMap getResponseHeaders();
 
     /**
      * Sets ALL the response headers for this mock response. The headers should be persisted along with
@@ -66,15 +66,22 @@ public interface MockResponse extends TestModelItem, Releasable {
      * @param headers a StringToStringsMap containing all the headers. A current version of persisted headers can be
      *                fetched with getResponseHeaders.
      */
-    public void setResponseHeaders(StringToStringsMap headers);
+    void setResponseHeaders(StringToStringsMap headers);
 
-    public MockResult getMockResult();
+    MockResult getMockResult();
 
-    public void evaluateScript(MockRequest request) throws Exception;
+    void evaluateScript(MockRequest request) throws Exception;
 
-    public String getScript();
+    String getScript();
 
-    public void setScript(String script);
+    void setScript(String script);
+
+    /**
+     * Gets the HTTP status for this response.
+     *
+     * @return a valid status code.
+     */
+    int getResponseHttpStatus();
 
     /**
      * Sets the HTTP status for this response. This should be a valid status code as documented in
@@ -82,16 +89,9 @@ public interface MockResponse extends TestModelItem, Releasable {
      *
      * @param httpStatus a valid status code.
      */
-    public void setResponseHttpStatus(int httpStatus);
+    void setResponseHttpStatus(int httpStatus);
 
-    /**
-     * Gets the HTTP status for this response.
-     *
-     * @return a valid status code.
-     */
-    public int getResponseHttpStatus();
-
-    public MockResult execute(MockRequest request, MockResult result) throws DispatchException;
+    MockResult execute(MockRequest request, MockResult result) throws DispatchException;
 
     String getScriptHelpUrl();
 }

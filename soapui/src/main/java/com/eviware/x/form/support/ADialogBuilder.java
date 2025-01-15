@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.form.support;
@@ -71,33 +71,25 @@ public class ADialogBuilder {
             if (fieldAnnotation != null) {
                 try {
                     addFormField(form, field, fieldAnnotation, messages);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        ActionList defaultActions = StringUtils.isBlank(formAnnotation.helpUrl()) ? builder.buildOkCancelActions() : builder
-                .buildOkCancelHelpActions(formAnnotation.helpUrl());
+        ActionList defaultActions = StringUtils.isBlank(formAnnotation.helpUrl()) ? builder.buildOkCancelActions() : builder.buildOkCancelHelpActions(formAnnotation.helpUrl());
 
         if (actions == null) {
             actions = defaultActions;
-        } else {
+        }
+        else {
             actions.addActions(defaultActions);
         }
 
-        XFormDialog dialog = builder.buildDialog(actions, messages.get(formAnnotation.description()),
-                UISupport.createImageIcon(formAnnotation.icon()));
+        XFormDialog dialog = builder.buildDialog(actions, messages.get(formAnnotation.description()), UISupport.createImageIcon(formAnnotation.icon()));
 
         return dialog;
-    }
-
-    private static XForm createForm(XFormDialogBuilder builder, FormLayout layout) {
-        if (layout == null) {
-            return builder.createForm("Basic");
-        } else {
-            return builder.createForm("Basic", layout);
-        }
     }
 
     /**
@@ -110,8 +102,9 @@ public class ADialogBuilder {
      * @param useDefaultOkCancel
      * @return
      */
-    public static XFormDialog buildDialog(Class<? extends Object> formClass, ActionList actions,
-                                          boolean useDefaultOkCancel) {
+    public static XFormDialog buildDialog(
+        Class<? extends Object> formClass, ActionList actions, boolean useDefaultOkCancel
+    ) {
 
         if (useDefaultOkCancel) {
             return buildDialog(formClass, actions);
@@ -131,23 +124,23 @@ public class ADialogBuilder {
             if (fieldAnnotation != null) {
                 try {
                     addFormField(form, field, fieldAnnotation, messages);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        ActionList defaultActions = StringUtils.isBlank(formAnnotation.helpUrl()) ? null : builder.buildHelpActions(formAnnotation
-                .helpUrl());
+        ActionList defaultActions = StringUtils.isBlank(formAnnotation.helpUrl()) ? null : builder.buildHelpActions(formAnnotation.helpUrl());
 
         if (actions == null) {
             actions = defaultActions;
-        } else {
+        }
+        else {
             // since there is only one action do it like this
             actions.insertAction(defaultActions.getActionAt(0), 0);
         }
-        XFormDialog dialog = builder.buildDialog(actions, messages.get(formAnnotation.description()),
-                UISupport.createImageIcon(formAnnotation.icon()));
+        XFormDialog dialog = builder.buildDialog(actions, messages.get(formAnnotation.description()), UISupport.createImageIcon(formAnnotation.icon()));
 
         return dialog;
     }
@@ -172,29 +165,30 @@ public class ADialogBuilder {
                 try {
                     Class<?> formClass = Class.forName(fieldAnnotation.description());
                     buildForm(builder, fieldAnnotation.name(), formClass, messages);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
             }
         }
 
-        ActionList defaultActions = StringUtils.isBlank(formAnnotation.helpUrl()) ? builder.buildOkCancelActions() : builder
-                .buildOkCancelHelpActions(formAnnotation.helpUrl());
+        ActionList defaultActions = StringUtils.isBlank(formAnnotation.helpUrl()) ? builder.buildOkCancelActions() : builder.buildOkCancelHelpActions(formAnnotation.helpUrl());
 
         if (actions == null) {
             actions = defaultActions;
-        } else {
+        }
+        else {
             actions.addActions(defaultActions);
         }
 
-        XFormDialog dialog = builder.buildDialog(actions, formAnnotation.description(),
-                UISupport.createImageIcon(formAnnotation.icon()));
+        XFormDialog dialog = builder.buildDialog(actions, formAnnotation.description(), UISupport.createImageIcon(formAnnotation.icon()));
 
         return dialog;
     }
 
-    public static XFormDialog buildTabbedDialogWithCustomActions(Class<? extends Object> tabbedFormClass,
-                                                                 ActionList actions) {
+    public static XFormDialog buildTabbedDialogWithCustomActions(
+        Class<? extends Object> tabbedFormClass, ActionList actions
+    ) {
         AForm formAnnotation = tabbedFormClass.getAnnotation(AForm.class);
         if (formAnnotation == null) {
             throw new RuntimeException("formClass is not annotated correctly..");
@@ -214,24 +208,24 @@ public class ADialogBuilder {
                 try {
                     Class<?> formClass = Class.forName(fieldAnnotation.description());
                     buildForm(builder, fieldAnnotation.name(), formClass, messages);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
             }
         }
 
-        ActionList defaultActions = StringUtils.isBlank(formAnnotation.helpUrl()) ? null : builder
-                .buildHelpActions(formAnnotation.helpUrl());
+        ActionList defaultActions = StringUtils.isBlank(formAnnotation.helpUrl()) ? null : builder.buildHelpActions(formAnnotation.helpUrl());
 
         if (actions == null) {
             actions = defaultActions;
-        } else {
+        }
+        else {
             defaultActions.addActions(actions);
             actions = defaultActions;
         }
 
-        XFormDialog dialog = builder.buildDialog(actions, formAnnotation.description(),
-                UISupport.createImageIcon(formAnnotation.icon()));
+        XFormDialog dialog = builder.buildDialog(actions, formAnnotation.description(), UISupport.createImageIcon(formAnnotation.icon()));
 
         return dialog;
     }
@@ -252,10 +246,18 @@ public class ADialogBuilder {
             }
         }
 
-        XFormDialog dialog = builder.buildWizard(formAnnotation.description(),
-                UISupport.createImageIcon(formAnnotation.icon()), formAnnotation.helpUrl());
+        XFormDialog dialog = builder.buildWizard(formAnnotation.description(), UISupport.createImageIcon(formAnnotation.icon()), formAnnotation.helpUrl());
 
         return dialog;
+    }
+
+    private static XForm createForm(XFormDialogBuilder builder, FormLayout layout) {
+        if (layout == null) {
+            return builder.createForm("Basic");
+        }
+        else {
+            return builder.createForm("Basic", layout);
+        }
     }
 
     private static void buildForm(XFormDialogBuilder builder, String name, Class<?> formClass, MessageSupport messages) {
@@ -265,15 +267,15 @@ public class ADialogBuilder {
             if (formFieldAnnotation != null) {
                 try {
                     addFormField(form, formField, formFieldAnnotation, messages);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
     }
 
-    private static void addFormField(XForm form, Field formField, AField fieldAnnotation, MessageSupport messages)
-            throws Exception {
+    private static void addFormField(XForm form, Field formField, AField fieldAnnotation, MessageSupport messages) throws Exception {
         AFieldType type = fieldAnnotation.type();
         String fieldName = fieldAnnotation.name();
         String name = messages.get(fieldName.length() == 0 ? formField.get(null).toString() : fieldName);
@@ -289,7 +291,7 @@ public class ADialogBuilder {
                 break;
             case INT:
                 field = form.addTextField(name, description, FieldType.TEXT);
-                ((XFormTextField) field).setWidth(10);
+                ((XFormTextField)field).setWidth(10);
                 break;
             case STRINGAREA:
                 field = form.addTextField(name, description, FieldType.TEXTAREA);

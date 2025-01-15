@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl;
@@ -40,7 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.SchemaGlobalElement;
 import org.apache.xmlbeans.SchemaType;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import javax.wsdl.BindingInput;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.BindingOutput;
@@ -73,13 +73,13 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
 
     public final static Logger log = LogManager.getLogger(WsdlOperation.class);
     public static final String ICON_NAME = "/operation.png";
-    private List<WsdlRequest> requests = new ArrayList<WsdlRequest>();
-    private WsdlInterface iface;
-    private ImageIcon oneWayIcon;
+    private final List<WsdlRequest> requests = new ArrayList<WsdlRequest>();
+    private final WsdlInterface iface;
+    private final ImageIcon oneWayIcon;
 
-    private ImageIcon notificationIcon;
+    private final ImageIcon notificationIcon;
 
-    private ImageIcon solicitResponseIcon;
+    private final ImageIcon solicitResponseIcon;
 
     public WsdlOperation(WsdlInterface iface, OperationConfig operationConfig) {
         super(operationConfig, iface, ICON_NAME);
@@ -104,28 +104,34 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         return action == null ? "" : action;
     }
 
-    public WsdlRequest getRequestAt(int index) {
-        return requests.get(index);
-    }
-
-    public WsdlRequest getRequestByName(String requestName) {
-        return (WsdlRequest) getWsdlModelItemByName(requests, requestName);
-    }
-
-    public int getRequestCount() {
-        return requests.size();
+    public void setAction(String soapAction) {
+        String old = getAction();
+        getConfig().setAction(soapAction);
+        notifyPropertyChanged(ACTION_PROPERTY, old, soapAction);
     }
 
     @Override
     public ImageIcon getIcon() {
         if (isOneWay()) {
             return oneWayIcon;
-        } else if (isSolicitResponse()) {
+        }
+        else if (isSolicitResponse()) {
             return solicitResponseIcon;
-        } else if (isNotification()) {
+        }
+        else if (isNotification()) {
             return notificationIcon;
-        } else {
+        }
+        else {
             return super.getIcon();
+        }
+    }
+
+    @Override
+    public void release() {
+        super.release();
+
+        for (WsdlRequest request : requests) {
+            request.release();
         }
     }
 
@@ -144,89 +150,6 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         return requestImpl;
     }
 
-    public WsdlInterface getInterface() {
-        return iface;
-    }
-
-    public void setAction(String soapAction) {
-        String old = getAction();
-        getConfig().setAction(soapAction);
-        notifyPropertyChanged(ACTION_PROPERTY, old, soapAction);
-    }
-
-    public String createRequest(boolean buildOptional) {
-        if (iface.getBindingName() == null) {
-            UISupport.showErrorMessage("Missing binding name, please try to refresh "
-                    + "Interface\nfor request generation to work correctly");
-            return null;
-        }
-
-        if (getBindingOperationName() == null) {
-            UISupport.showErrorMessage("Missing bindingOperation name, please try to refresh "
-                    + "Interface\nfor request generation to work correctly");
-            return null;
-        }
-
-        try {
-            SoapMessageBuilder builder = iface.getMessageBuilder();
-            BindingOperation bindingOperation = findBindingOperation(iface.getWsdlContext().getDefinition());
-
-            if (bindingOperation == null) {
-                UISupport.showErrorMessage("Failed to find bindingOperation, please try to refresh "
-                        + "Interface\nfor request generation to work correctly");
-                return null;
-            }
-
-            OperationType type = bindingOperation.getOperation().getStyle();
-            if (OperationType.ONE_WAY.equals(type) || OperationType.REQUEST_RESPONSE.equals(type)) {
-                return builder.buildSoapMessageFromInput(bindingOperation, buildOptional);
-            } else {
-                return builder.buildSoapMessageFromOutput(bindingOperation, buildOptional);
-            }
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return null;
-        }
-    }
-
-    public String createResponse(boolean buildOptional) {
-        if (isUnidirectional()) {
-            return null;
-        }
-
-        if (iface.getBindingName() == null) {
-            UISupport.showErrorMessage("Missing binding name, please try to refresh "
-                    + "Interface\nfor request generation to work correctly");
-            return null;
-        }
-
-        if (getBindingOperationName() == null) {
-            UISupport.showErrorMessage("Missing bindingOperation name, please try to refresh "
-                    + "Interface\nfor request generation to work correctly");
-            return null;
-        }
-
-        try {
-            SoapMessageBuilder builder = iface.getMessageBuilder();
-            BindingOperation bindingOperation = findBindingOperation(iface.getWsdlContext().getDefinition());
-
-            if (bindingOperation == null) {
-                UISupport.showErrorMessage("Failed to find bindingOperation, please try to refresh "
-                        + "Interface\nfor request generation to work correctly");
-                return null;
-            }
-
-            if (isRequestResponse()) {
-                return builder.buildSoapMessageFromOutput(bindingOperation, buildOptional);
-            } else {
-                return builder.buildSoapMessageFromInput(bindingOperation, buildOptional);
-            }
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return null;
-        }
-    }
-
     public BindingOperation findBindingOperation(Definition definition) {
         String bindingOperationName = getConfig().getBindingOperationName();
         return iface.findBindingOperation(definition, bindingOperationName, getInputName(), getOutputName());
@@ -238,7 +161,8 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
 
         try {
             (getInterface()).fireRequestRemoved(request);
-        } finally {
+        }
+        finally {
             request.release();
             getConfig().removeCall(ix);
         }
@@ -252,7 +176,8 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
             if (config.getIsOneWay()) {
                 config.setType(OperationTypesConfig.ONE_WAY);
                 return OperationType.ONE_WAY;
-            } else {
+            }
+            else {
                 config.setType(OperationTypesConfig.REQUEST_RESPONSE);
                 return OperationType.REQUEST_RESPONSE;
             }
@@ -261,11 +186,14 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         OperationTypesConfig.Enum type = config.getType();
         if (OperationTypesConfig.ONE_WAY.equals(type)) {
             return OperationType.ONE_WAY;
-        } else if (OperationTypesConfig.NOTIFICATION.equals(type)) {
+        }
+        else if (OperationTypesConfig.NOTIFICATION.equals(type)) {
             return OperationType.NOTIFICATION;
-        } else if (OperationTypesConfig.SOLICIT_RESPONSE.equals(type)) {
+        }
+        else if (OperationTypesConfig.SOLICIT_RESPONSE.equals(type)) {
             return OperationType.SOLICIT_RESPONSE;
-        } else {
+        }
+        else {
             return OperationType.REQUEST_RESPONSE;
         }
     }
@@ -276,14 +204,18 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
             if (config.isSetType()) {
                 config.unsetType();
             }
-        } else {
+        }
+        else {
             if (OperationType.ONE_WAY.equals(type)) {
                 config.setType(OperationTypesConfig.ONE_WAY);
-            } else if (OperationType.NOTIFICATION.equals(type)) {
+            }
+            else if (OperationType.NOTIFICATION.equals(type)) {
                 config.setType(OperationTypesConfig.NOTIFICATION);
-            } else if (OperationType.SOLICIT_RESPONSE.equals(type)) {
+            }
+            else if (OperationType.SOLICIT_RESPONSE.equals(type)) {
                 config.setType(OperationTypesConfig.SOLICIT_RESPONSE);
-            } else {
+            }
+            else {
                 config.setType(OperationTypesConfig.REQUEST_RESPONSE);
             }
         }
@@ -297,23 +229,13 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         getConfig().setBindingOperationName(name);
     }
 
-    public void setInputName(String name) {
-        getConfig().setInputName(name);
-    }
-
     public String getInputName() {
         String inputName = getConfig().getInputName();
         return inputName == null || inputName.trim().length() == 0 ? null : inputName;
     }
 
-    public void setOutputName(String name) {
-        if (name == null) {
-            if (getConfig().isSetOutputName()) {
-                getConfig().unsetOutputName();
-            }
-        } else {
-            getConfig().setOutputName(name);
-        }
+    public void setInputName(String name) {
+        getConfig().setInputName(name);
     }
 
     public String getOutputName() {
@@ -321,11 +243,23 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         return outputName == null || outputName.trim().length() == 0 ? null : outputName;
     }
 
+    public void setOutputName(String name) {
+        if (name == null) {
+            if (getConfig().isSetOutputName()) {
+                getConfig().unsetOutputName();
+            }
+        }
+        else {
+            getConfig().setOutputName(name);
+        }
+    }
+
     public String getAnonymous() {
         if (getConfig().getAnonymous() != null) {
             if (getConfig().getAnonymous().equals(AnonymousTypeConfig.PROHIBITED)) {
                 return AnonymousTypeConfig.PROHIBITED.toString();
-            } else if (getConfig().getAnonymous().equals(AnonymousTypeConfig.REQUIRED)) {
+            }
+            else if (getConfig().getAnonymous().equals(AnonymousTypeConfig.REQUIRED)) {
                 return AnonymousTypeConfig.REQUIRED.toString();
             }
         }
@@ -337,12 +271,13 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         // getConfig().setAnonymous(AnonymousTypeConfig.Enum.forString(arg0));
         if (anonymous.equals(AnonymousTypeConfig.REQUIRED.toString())) {
             getConfig().setAnonymous(AnonymousTypeConfig.REQUIRED);
-        } else if (anonymous.equals(AnonymousTypeConfig.PROHIBITED.toString())) {
+        }
+        else if (anonymous.equals(AnonymousTypeConfig.PROHIBITED.toString())) {
             getConfig().setAnonymous(AnonymousTypeConfig.PROHIBITED);
-        } else {
+        }
+        else {
             getConfig().setAnonymous(AnonymousTypeConfig.OPTIONAL);
         }
-
     }
 
     public boolean isOneWay() {
@@ -367,6 +302,223 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
 
     public boolean isBidirectional() {
         return !isUnidirectional();
+    }
+
+    public WsdlRequest getRequestAt(int index) {
+        return requests.get(index);
+    }
+
+    public WsdlRequest getRequestByName(String requestName) {
+        return (WsdlRequest)getWsdlModelItemByName(requests, requestName);
+    }
+
+    public List<Request> getRequestList() {
+        return new ArrayList<Request>(requests);
+    }
+
+    public int getRequestCount() {
+        return requests.size();
+    }
+
+    public MessagePart[] getDefaultRequestParts() {
+        try {
+            // init
+            List<MessagePart> result = new ArrayList<MessagePart>();
+            WsdlContext wsdlContext = getInterface().getWsdlContext();
+            BindingOperation bindingOperation = findBindingOperation(wsdlContext.getDefinition());
+
+            if (bindingOperation == null) {
+                return new MessagePart[0];
+            }
+
+            // header parts
+            BindingInput bindingInput = bindingOperation.getBindingInput();
+            if (bindingInput == null) {
+                return new MessagePart[0];
+            }
+
+            List<SoapHeader> headers = WsdlUtils.getSoapHeaders(bindingInput.getExtensibilityElements());
+
+            for (int i = 0; i < headers.size(); i++) {
+                SoapHeader header = headers.get(i);
+
+                Message message = wsdlContext.getDefinition().getMessage(header.getMessage());
+                if (message == null) {
+                    log.error("Missing message for header: " + header.getMessage());
+                    continue;
+                }
+
+                javax.wsdl.Part part = message.getPart(header.getPart());
+
+                if (part != null) {
+                    SchemaType schemaType = WsdlUtils.getSchemaTypeForPart(wsdlContext, part);
+                    SchemaGlobalElement schemaElement = WsdlUtils.getSchemaElementForPart(wsdlContext, part);
+                    if (schemaType != null) {
+                        result.add(new WsdlHeaderPart(part.getName(), schemaType, part.getElementName(), schemaElement));
+                    }
+                }
+                else {
+                    log.error("Missing part for header; " + header.getPart());
+                }
+            }
+
+            // content parts
+            javax.wsdl.Part[] parts = WsdlUtils.getInputParts(bindingOperation);
+
+            for (int i = 0; i < parts.length; i++) {
+                javax.wsdl.Part part = parts[i];
+
+                if (!WsdlUtils.isAttachmentInputPart(part, bindingOperation)) {
+                    SchemaType schemaType = WsdlUtils.getSchemaTypeForPart(wsdlContext, part);
+                    SchemaGlobalElement schemaElement = WsdlUtils.getSchemaElementForPart(wsdlContext, part);
+                    if (schemaType != null) {
+                        result.add(new WsdlContentPart(part.getName(), schemaType, part.getElementName(), schemaElement));
+                    }
+                }
+            }
+
+            return result.toArray(new MessagePart[result.size()]);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return new MessagePart[0];
+        }
+    }
+
+    public MessagePart[] getDefaultResponseParts() {
+        try {
+            // init
+            List<MessagePart> result = new ArrayList<MessagePart>();
+            WsdlContext wsdlContext = getInterface().getWsdlContext();
+            BindingOperation bindingOperation = findBindingOperation(wsdlContext.getDefinition());
+
+            if (bindingOperation == null) {
+                return new MessagePart[0];
+            }
+
+            // header parts
+            BindingOutput bindingOutput = bindingOperation.getBindingOutput();
+            if (bindingOutput == null) {
+                return new MessagePart[0];
+            }
+
+            List<SoapHeader> headers = WsdlUtils.getSoapHeaders(bindingOutput.getExtensibilityElements());
+
+            for (int i = 0; i < headers.size(); i++) {
+                SoapHeader header = headers.get(i);
+
+                Message message = wsdlContext.getDefinition().getMessage(header.getMessage());
+                if (message == null) {
+                    log.error("Missing message for header: " + header.getMessage());
+                    continue;
+                }
+
+                javax.wsdl.Part part = message.getPart(header.getPart());
+
+                if (part != null) {
+                    SchemaType schemaType = WsdlUtils.getSchemaTypeForPart(wsdlContext, part);
+                    SchemaGlobalElement schemaElement = WsdlUtils.getSchemaElementForPart(wsdlContext, part);
+                    if (schemaType != null) {
+                        result.add(new WsdlHeaderPart(part.getName(), schemaType, part.getElementName(), schemaElement));
+                    }
+                }
+                else {
+                    log.error("Missing part for header; " + header.getPart());
+                }
+            }
+
+            // content parts
+            javax.wsdl.Part[] parts = WsdlUtils.getOutputParts(bindingOperation);
+
+            for (int i = 0; i < parts.length; i++) {
+                javax.wsdl.Part part = parts[i];
+
+                if (!WsdlUtils.isAttachmentOutputPart(part, bindingOperation)) {
+                    SchemaType schemaType = WsdlUtils.getSchemaTypeForPart(wsdlContext, part);
+                    SchemaGlobalElement schemaElement = WsdlUtils.getSchemaElementForPart(wsdlContext, part);
+                    if (schemaType != null) {
+                        result.add(new WsdlContentPart(part.getName(), schemaType, part.getElementName(), schemaElement));
+                    }
+                }
+            }
+
+            return result.toArray(new MessagePart[result.size()]);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return new MessagePart[0];
+        }
+    }
+
+    public String createRequest(boolean buildOptional) {
+        if (iface.getBindingName() == null) {
+            UISupport.showErrorMessage("Missing binding name, please try to refresh " + "Interface\nfor request generation to work correctly");
+            return null;
+        }
+
+        if (getBindingOperationName() == null) {
+            UISupport.showErrorMessage("Missing bindingOperation name, please try to refresh " + "Interface\nfor request generation to work correctly");
+            return null;
+        }
+
+        try {
+            SoapMessageBuilder builder = iface.getMessageBuilder();
+            BindingOperation bindingOperation = findBindingOperation(iface.getWsdlContext().getDefinition());
+
+            if (bindingOperation == null) {
+                UISupport.showErrorMessage("Failed to find bindingOperation, please try to refresh " + "Interface\nfor request generation to work correctly");
+                return null;
+            }
+
+            OperationType type = bindingOperation.getOperation().getStyle();
+            if (OperationType.ONE_WAY.equals(type) || OperationType.REQUEST_RESPONSE.equals(type)) {
+                return builder.buildSoapMessageFromInput(bindingOperation, buildOptional);
+            }
+            else {
+                return builder.buildSoapMessageFromOutput(bindingOperation, buildOptional);
+            }
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return null;
+        }
+    }
+
+    public String createResponse(boolean buildOptional) {
+        if (isUnidirectional()) {
+            return null;
+        }
+
+        if (iface.getBindingName() == null) {
+            UISupport.showErrorMessage("Missing binding name, please try to refresh " + "Interface\nfor request generation to work correctly");
+            return null;
+        }
+
+        if (getBindingOperationName() == null) {
+            UISupport.showErrorMessage("Missing bindingOperation name, please try to refresh " + "Interface\nfor request generation to work correctly");
+            return null;
+        }
+
+        try {
+            SoapMessageBuilder builder = iface.getMessageBuilder();
+            BindingOperation bindingOperation = findBindingOperation(iface.getWsdlContext().getDefinition());
+
+            if (bindingOperation == null) {
+                UISupport.showErrorMessage("Failed to find bindingOperation, please try to refresh " + "Interface\nfor request generation to work correctly");
+                return null;
+            }
+
+            if (isRequestResponse()) {
+                return builder.buildSoapMessageFromOutput(bindingOperation, buildOptional);
+            }
+            else {
+                return builder.buildSoapMessageFromInput(bindingOperation, buildOptional);
+            }
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return null;
+        }
     }
 
     public void initFromBindingOperation(BindingOperation operation) {
@@ -398,8 +550,7 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         BindingInput bindingInput = operation.getBindingInput();
 
         if (bindingOutput != null) {
-            MIMEMultipartRelated multipartOutput = WsdlUtils.getExtensiblityElement(
-                    bindingOutput.getExtensibilityElements(), MIMEMultipartRelated.class);
+            MIMEMultipartRelated multipartOutput = WsdlUtils.getExtensiblityElement(bindingOutput.getExtensibilityElements(), MIMEMultipartRelated.class);
 
             getConfig().setReceivesAttachments(multipartOutput != null);
             if (multipartOutput != null) {
@@ -407,8 +558,7 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
                 Map<String, Part> partMap = new HashMap<String, Part>();
 
                 for (int c = 0; c < parts.size(); c++) {
-                    List<MIMEContent> contentParts = WsdlUtils.getExtensiblityElements(parts.get(c)
-                            .getExtensibilityElements(), MIMEContent.class);
+                    List<MIMEContent> contentParts = WsdlUtils.getExtensiblityElements(parts.get(c).getExtensibilityElements(), MIMEContent.class);
 
                     for (MIMEContent content : contentParts) {
                         Part part = partMap.get(content.getPart());
@@ -416,7 +566,8 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
                             if (!part.getContentTypeList().contains(content.getType())) {
                                 part.addContentType(content.getType());
                             }
-                        } else {
+                        }
+                        else {
                             if (!getConfig().isSetResponseParts()) {
                                 getConfig().addNewResponseParts();
                             }
@@ -433,8 +584,7 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         }
 
         if (bindingInput != null) {
-            MIMEMultipartRelated multipartInput = WsdlUtils.getExtensiblityElement(
-                    bindingInput.getExtensibilityElements(), MIMEMultipartRelated.class);
+            MIMEMultipartRelated multipartInput = WsdlUtils.getExtensiblityElement(bindingInput.getExtensibilityElements(), MIMEMultipartRelated.class);
 
             getConfig().setSendsAttachments(multipartInput != null);
             if (multipartInput != null) {
@@ -442,8 +592,7 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
                 Map<String, Part> partMap = new HashMap<String, Part>();
 
                 for (int c = 0; c < parts.size(); c++) {
-                    List<MIMEContent> contentParts = WsdlUtils.getExtensiblityElements(parts.get(c)
-                            .getExtensibilityElements(), MIMEContent.class);
+                    List<MIMEContent> contentParts = WsdlUtils.getExtensiblityElements(parts.get(c).getExtensibilityElements(), MIMEContent.class);
 
                     for (MIMEContent content : contentParts) {
                         Part part = partMap.get(content.getPart());
@@ -451,7 +600,8 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
                             if (!part.getContentTypeList().contains(content.getType())) {
                                 part.addContentType(content.getType());
                             }
-                        } else {
+                        }
+                        else {
                             if (!getConfig().isSetRequestParts()) {
                                 getConfig().addNewRequestParts();
                             }
@@ -494,7 +644,8 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
             }
 
             return new QName(ns, bindingOperation.getName());
-        } else {
+        }
+        else {
             Message message = bindingOperation.getOperation().getInput().getMessage();
             List<javax.wsdl.Part> parts = message.getOrderedParts(null);
             if (parts == null || parts.isEmpty()) {
@@ -504,13 +655,12 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
             int ix = 0;
             javax.wsdl.Part part = parts.get(0);
 
-            while (part != null
-                    && (WsdlUtils.isAttachmentInputPart(part, bindingOperation) || WsdlUtils.isHeaderInputPart(part,
-                    message, bindingOperation))) {
+            while (part != null && (WsdlUtils.isAttachmentInputPart(part, bindingOperation) || WsdlUtils.isHeaderInputPart(part, message, bindingOperation))) {
                 ix++;
                 if (ix < parts.size()) {
                     part = parts.get(ix);
-                } else {
+                }
+                else {
                     part = null;
                 }
             }
@@ -521,7 +671,8 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
 
             if (part.getElementName() != null) {
                 return part.getElementName();
-            } else {
+            }
+            else {
                 // return new QName( definition.getTargetNamespace(), part.getName()
                 // );
                 // changed to comply with soapmessagebuilder -> behaviour is not
@@ -543,14 +694,14 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         BindingOperation bindingOperation = findBindingOperation(definition);
         if (WsdlUtils.isRpc(definition, bindingOperation)) {
             BindingOutput bindingOutput = bindingOperation.getBindingOutput();
-            String ns = bindingOutput == null ? null : WsdlUtils.getSoapBodyNamespace(bindingOutput
-                    .getExtensibilityElements());
+            String ns = bindingOutput == null ? null : WsdlUtils.getSoapBodyNamespace(bindingOutput.getExtensibilityElements());
             if (ns == null) {
                 ns = WsdlUtils.getTargetNamespace(definition);
             }
 
             return new QName(ns, bindingOperation.getName() + "Response");
-        } else {
+        }
+        else {
             Message message = bindingOperation.getOperation().getOutput().getMessage();
             List<javax.wsdl.Part> parts = message.getOrderedParts(null);
             if (parts == null || parts.isEmpty()) {
@@ -560,13 +711,12 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
             int ix = 0;
             javax.wsdl.Part part = parts.get(0);
 
-            while (part != null
-                    && (WsdlUtils.isAttachmentOutputPart(part, bindingOperation) || WsdlUtils.isHeaderOutputPart(part,
-                    message, bindingOperation))) {
+            while (part != null && (WsdlUtils.isAttachmentOutputPart(part, bindingOperation) || WsdlUtils.isHeaderOutputPart(part, message, bindingOperation))) {
                 ix++;
                 if (ix < parts.size()) {
                     part = parts.get(ix);
-                } else {
+                }
+                else {
                     part = null;
                 }
             }
@@ -577,7 +727,8 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
 
             if (part.getElementName() != null) {
                 return part.getElementName();
-            } else {
+            }
+            else {
                 // return new QName( definition.getTargetNamespace(), part.getName()
                 // );
                 return new QName(part.getName());
@@ -600,11 +751,13 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
             }
 
             if (WsdlUtils.isRpc(definition, bindingOperation)) {
-                return WsdlOperation.STYLE_RPC;
-            } else {
-                return WsdlOperation.STYLE_DOCUMENT;
+                return STYLE_RPC;
             }
-        } catch (Exception e) {
+            else {
+                return STYLE_DOCUMENT;
+            }
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return "<error>";
         }
@@ -613,160 +766,25 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
     public String getType() {
         if (isOneWay()) {
             return ONE_WAY;
-        } else if (isNotification()) {
-            return NOTIFICATION;
-        } else if (isSolicitResponse()) {
-            return SOLICIT_RESPONSE;
-        } else {
-            return REQUEST_RESPONSE;
         }
-    }
-
-    @Override
-    public void release() {
-        super.release();
-
-        for (WsdlRequest request : requests) {
-            request.release();
+        else if (isNotification()) {
+            return NOTIFICATION;
+        }
+        else if (isSolicitResponse()) {
+            return SOLICIT_RESPONSE;
+        }
+        else {
+            return REQUEST_RESPONSE;
         }
     }
 
     public BindingOperation getBindingOperation() {
         try {
             return findBindingOperation(getInterface().getWsdlContext().getDefinition());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return null;
-        }
-    }
-
-    public List<Request> getRequestList() {
-        return new ArrayList<Request>(requests);
-    }
-
-    public MessagePart[] getDefaultRequestParts() {
-        try {
-            // init
-            List<MessagePart> result = new ArrayList<MessagePart>();
-            WsdlContext wsdlContext = getInterface().getWsdlContext();
-            BindingOperation bindingOperation = findBindingOperation(wsdlContext.getDefinition());
-
-            if (bindingOperation == null) {
-                return new MessagePart[0];
-            }
-
-            // header parts
-            BindingInput bindingInput = bindingOperation.getBindingInput();
-            if (bindingInput == null) {
-                return new MessagePart[0];
-            }
-
-            List<SoapHeader> headers = WsdlUtils.getSoapHeaders(bindingInput.getExtensibilityElements());
-
-            for (int i = 0; i < headers.size(); i++) {
-                SoapHeader header = headers.get(i);
-
-                Message message = wsdlContext.getDefinition().getMessage(header.getMessage());
-                if (message == null) {
-                    log.error("Missing message for header: " + header.getMessage());
-                    continue;
-                }
-
-                javax.wsdl.Part part = message.getPart(header.getPart());
-
-                if (part != null) {
-                    SchemaType schemaType = WsdlUtils.getSchemaTypeForPart(wsdlContext, part);
-                    SchemaGlobalElement schemaElement = WsdlUtils.getSchemaElementForPart(wsdlContext, part);
-                    if (schemaType != null) {
-                        result.add(new WsdlHeaderPart(part.getName(), schemaType, part.getElementName(), schemaElement));
-                    }
-                } else {
-                    log.error("Missing part for header; " + header.getPart());
-                }
-            }
-
-            // content parts
-            javax.wsdl.Part[] parts = WsdlUtils.getInputParts(bindingOperation);
-
-            for (int i = 0; i < parts.length; i++) {
-                javax.wsdl.Part part = parts[i];
-
-                if (!WsdlUtils.isAttachmentInputPart(part, bindingOperation)) {
-                    SchemaType schemaType = WsdlUtils.getSchemaTypeForPart(wsdlContext, part);
-                    SchemaGlobalElement schemaElement = WsdlUtils.getSchemaElementForPart(wsdlContext, part);
-                    if (schemaType != null) {
-                        result.add(new WsdlContentPart(part.getName(), schemaType, part.getElementName(), schemaElement));
-                    }
-                }
-            }
-
-            return result.toArray(new MessagePart[result.size()]);
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return new MessagePart[0];
-        }
-    }
-
-    public MessagePart[] getDefaultResponseParts() {
-        try {
-            // init
-            List<MessagePart> result = new ArrayList<MessagePart>();
-            WsdlContext wsdlContext = getInterface().getWsdlContext();
-            BindingOperation bindingOperation = findBindingOperation(wsdlContext.getDefinition());
-
-            if (bindingOperation == null) {
-                return new MessagePart[0];
-            }
-
-            // header parts
-            BindingOutput bindingOutput = bindingOperation.getBindingOutput();
-            if (bindingOutput == null) {
-                return new MessagePart[0];
-            }
-
-            List<SoapHeader> headers = WsdlUtils.getSoapHeaders(bindingOutput.getExtensibilityElements());
-
-            for (int i = 0; i < headers.size(); i++) {
-                SoapHeader header = headers.get(i);
-
-                Message message = wsdlContext.getDefinition().getMessage(header.getMessage());
-                if (message == null) {
-                    log.error("Missing message for header: " + header.getMessage());
-                    continue;
-                }
-
-                javax.wsdl.Part part = message.getPart(header.getPart());
-
-                if (part != null) {
-                    SchemaType schemaType = WsdlUtils.getSchemaTypeForPart(wsdlContext, part);
-                    SchemaGlobalElement schemaElement = WsdlUtils.getSchemaElementForPart(wsdlContext, part);
-                    if (schemaType != null) {
-                        result.add(new WsdlHeaderPart(part.getName(), schemaType, part.getElementName(), schemaElement));
-                    }
-                } else {
-                    log.error("Missing part for header; " + header.getPart());
-                }
-            }
-
-            // content parts
-            javax.wsdl.Part[] parts = WsdlUtils.getOutputParts(bindingOperation);
-
-            for (int i = 0; i < parts.length; i++) {
-                javax.wsdl.Part part = parts[i];
-
-                if (!WsdlUtils.isAttachmentOutputPart(part, bindingOperation)) {
-                    SchemaType schemaType = WsdlUtils.getSchemaTypeForPart(wsdlContext, part);
-                    SchemaGlobalElement schemaElement = WsdlUtils.getSchemaElementForPart(wsdlContext, part);
-                    if (schemaType != null) {
-                        result.add(new WsdlContentPart(part.getName(), schemaType, part.getElementName(), schemaElement));
-                    }
-                }
-            }
-
-            return result.toArray(new MessagePart[result.size()]);
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return new MessagePart[0];
         }
     }
 
@@ -776,10 +794,22 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
 
         List<FaultPart> result = new ArrayList<FaultPart>();
         for (Object key : bindingFaults.keySet()) {
-            result.add(new WsdlFaultPart((String) key));
+            result.add(new WsdlFaultPart((String)key));
         }
 
         return result.toArray(new FaultPart[result.size()]);
+    }
+
+    public List<? extends ModelItem> getChildren() {
+        return getRequestList();
+    }
+
+    public AttachmentEncoding getAttachmentEncoding(String part, boolean isRequest) {
+        return AttachmentUtils.getAttachmentEncoding(this, part, !isRequest);
+    }
+
+    public WsdlInterface getInterface() {
+        return iface;
     }
 
     private class WsdlFaultPart extends FaultPart {
@@ -793,24 +823,20 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         public javax.wsdl.Part[] getWsdlParts() {
             try {
                 return WsdlUtils.getFaultParts(getBindingOperation(), name);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.error(e.toString(), e);
             }
 
             return new javax.wsdl.Part[0];
         }
 
-        @Override
-        public QName getPartElementName() {
-            return null;
+        public String getName() {
+            return name;
         }
 
         public String getDescription() {
             return null;
-        }
-
-        public String getName() {
-            return name;
         }
 
         @Override
@@ -819,16 +845,13 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
         }
 
         @Override
+        public QName getPartElementName() {
+            return null;
+        }
+
+        @Override
         public SchemaGlobalElement getPartElement() {
             return null;
         }
-    }
-
-    public List<? extends ModelItem> getChildren() {
-        return getRequestList();
-    }
-
-    public AttachmentEncoding getAttachmentEncoding(String part, boolean isRequest) {
-        return AttachmentUtils.getAttachmentEncoding(this, part, !isRequest);
     }
 }

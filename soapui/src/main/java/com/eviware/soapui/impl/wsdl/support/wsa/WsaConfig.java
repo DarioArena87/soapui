@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wsa;
@@ -26,11 +26,9 @@ import java.beans.PropertyChangeSupport;
 
 public class WsaConfig implements PropertyChangeNotifier {
 
-    private WsaConfigConfig wsaConfig;
-
-    private PropertyChangeSupport propertyChangeSupport;
-
     private final WsaContainer container;
+    private WsaConfigConfig wsaConfig;
+    private final PropertyChangeSupport propertyChangeSupport;
 
     public WsaConfig(WsaConfigConfig wsaConfig, WsaContainer container) {
         this.wsaConfig = wsaConfig;
@@ -48,28 +46,70 @@ public class WsaConfig implements PropertyChangeNotifier {
         return wsaConfig.getAction();
     }
 
+    public void setAction(String arg0) {
+        String oldValue = getAction();
+        wsaConfig.setAction(arg0);
+        propertyChangeSupport.firePropertyChange("action", oldValue, arg0);
+    }
+
     public String getFaultTo() {
         return wsaConfig.getFaultTo();
+    }
+
+    public void setFaultTo(String arg0) {
+        String oldValue = getFaultTo();
+        wsaConfig.setFaultTo(arg0);
+        propertyChangeSupport.firePropertyChange("faultTo", oldValue, arg0);
     }
 
     public String getFrom() {
         return wsaConfig.getFrom();
     }
 
+    public void setFrom(String arg0) {
+        String oldValue = getFrom();
+        wsaConfig.setFrom(arg0);
+        propertyChangeSupport.firePropertyChange("from", oldValue, arg0);
+    }
+
     public String getTo() {
         return wsaConfig.getTo();
+    }
+
+    public void setTo(String arg0) {
+        String oldValue = getTo();
+        wsaConfig.setTo(arg0);
+        propertyChangeSupport.firePropertyChange("to", oldValue, arg0);
     }
 
     public String getRelationshipType() {
         return wsaConfig.getRelationshipType();
     }
 
+    public void setRelationshipType(String arg0) {
+        String oldValue = getRelationshipType();
+        wsaConfig.setRelationshipType(arg0);
+        propertyChangeSupport.firePropertyChange("relationshipType", oldValue, arg0);
+    }
+
     public String getRelatesTo() {
         return wsaConfig.getRelatesTo();
     }
 
+    public void setRelatesTo(String arg0) {
+        String oldValue = getRelatesTo();
+        wsaConfig.setRelatesTo(arg0);
+        propertyChangeSupport.firePropertyChange("relatesTo", oldValue, arg0);
+    }
+
     public String getMessageID() {
         return wsaConfig.getMessageID();
+    }
+
+    public void setMessageID(String arg0) {
+        String oldValue = getMessageID();
+        wsaConfig.setMessageID(arg0);
+        propertyChangeSupport.firePropertyChange("messageID", oldValue, arg0);
     }
 
     public boolean isGenerateMessageId() {
@@ -109,71 +149,14 @@ public class WsaConfig implements PropertyChangeNotifier {
         return wsaConfig.getReplyTo();
     }
 
-    public String getVersion() {
-        return wsaConfig.getVersion().toString();
-    }
-
-    public boolean isWsaEnabled() {
-        return container.isWsaEnabled();
-    }
-
-    public String getMustUnderstand() {
-        return wsaConfig.getMustUnderstand().toString();
-    }
-
-    public void setAction(String arg0) {
-        String oldValue = getAction();
-        wsaConfig.setAction(arg0);
-        propertyChangeSupport.firePropertyChange("action", oldValue, arg0);
-    }
-
-    public void setFaultTo(String arg0) {
-        String oldValue = getFaultTo();
-        wsaConfig.setFaultTo(arg0);
-        propertyChangeSupport.firePropertyChange("faultTo", oldValue, arg0);
-
-    }
-
-    public void setFrom(String arg0) {
-        String oldValue = getFrom();
-        wsaConfig.setFrom(arg0);
-        propertyChangeSupport.firePropertyChange("from", oldValue, arg0);
-    }
-
-    public void setTo(String arg0) {
-        String oldValue = getTo();
-        wsaConfig.setTo(arg0);
-        propertyChangeSupport.firePropertyChange("to", oldValue, arg0);
-    }
-
-    public void setRelationshipType(String arg0) {
-        String oldValue = getRelationshipType();
-        wsaConfig.setRelationshipType(arg0);
-        propertyChangeSupport.firePropertyChange("relationshipType", oldValue, arg0);
-    }
-
-    public void setRelatesTo(String arg0) {
-        String oldValue = getRelatesTo();
-        wsaConfig.setRelatesTo(arg0);
-        propertyChangeSupport.firePropertyChange("relatesTo", oldValue, arg0);
-    }
-
-    public void setMessageID(String arg0) {
-        String oldValue = getMessageID();
-        wsaConfig.setMessageID(arg0);
-        propertyChangeSupport.firePropertyChange("messageID", oldValue, arg0);
-    }
-
     public void setReplyTo(String arg0) {
         String oldValue = getReplyTo();
         wsaConfig.setReplyTo(arg0);
         propertyChangeSupport.firePropertyChange("replyTo", oldValue, arg0);
     }
 
-    public void setMustUnderstand(String arg0) {
-        String oldValue = getMustUnderstand();
-        wsaConfig.setMustUnderstand(MustUnderstandTypeConfig.Enum.forString(arg0));
-        propertyChangeSupport.firePropertyChange("mustUnderstand", oldValue, arg0);
+    public String getVersion() {
+        return wsaConfig.getVersion().toString();
     }
 
     public void setVersion(String arg0) {
@@ -182,18 +165,32 @@ public class WsaConfig implements PropertyChangeNotifier {
         propertyChangeSupport.firePropertyChange("version", oldValue, arg0);
     }
 
+    public boolean isWsaEnabled() {
+        return container.isWsaEnabled();
+    }
+
     public void setWsaEnabled(boolean arg0) {
         boolean oldValue = isWsaEnabled();
         container.setWsaEnabled(arg0);
         propertyChangeSupport.firePropertyChange("wsaEnabled", oldValue, arg0);
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
+    public String getMustUnderstand() {
+        return wsaConfig.getMustUnderstand().toString();
+    }
+
+    public void setMustUnderstand(String arg0) {
+        String oldValue = getMustUnderstand();
+        wsaConfig.setMustUnderstand(MustUnderstandTypeConfig.Enum.forString(arg0));
+        propertyChangeSupport.firePropertyChange("mustUnderstand", oldValue, arg0);
     }
 
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -231,5 +228,4 @@ public class WsaConfig implements PropertyChangeNotifier {
         wsaConfig.setReplyToRefParams(arg0);
         propertyChangeSupport.firePropertyChange("replyToRefParams", oldValue, arg0);
     }
-
 }

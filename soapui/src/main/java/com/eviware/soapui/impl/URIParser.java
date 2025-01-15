@@ -1,21 +1,20 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl;
-
 
 /**
  * URIParser should parse the URI based on ths standard syntax components referred
@@ -32,7 +31,7 @@ public interface URIParser {
      *
      * @return scheme of a the URI
      */
-    public String getScheme();
+    String getScheme();
 
     /**
      * This method returns the decoded authority component of the URI.
@@ -47,13 +46,12 @@ public interface URIParser {
      *
      * @return decoded path of the URI or empty space if there is no path in the URI
      */
-    public String getResourcePath();
+    String getResourcePath();
 
     /**
      * This method returns the decoded query of the URI.
      *
      * @return decoded query of the URI or empty space if there is no query in the URI
      */
-    public String getQuery();
-
+    String getQuery();
 }

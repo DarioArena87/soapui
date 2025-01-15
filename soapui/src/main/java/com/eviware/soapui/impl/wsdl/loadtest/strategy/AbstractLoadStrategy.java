@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.strategy;
@@ -26,7 +26,7 @@ import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.model.testsuite.TestStepResult;
 import org.apache.xmlbeans.XmlObject;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -37,26 +37,14 @@ import java.beans.PropertyChangeSupport;
  */
 
 public abstract class AbstractLoadStrategy implements LoadStrategy {
-    private PropertyChangeSupport propertyChangeSupport;
     private final String type;
     private final WsdlLoadTest loadTest;
+    private final PropertyChangeSupport propertyChangeSupport;
 
     public AbstractLoadStrategy(String type, WsdlLoadTest loadTest) {
         this.type = type;
         this.loadTest = loadTest;
         propertyChangeSupport = new PropertyChangeSupport(this);
-    }
-
-    public XmlObject getConfig() {
-        return null;
-    }
-
-    public JComponent getConfigurationPanel() {
-        return null;
-    }
-
-    public String getType() {
-        return type;
     }
 
     public WsdlLoadTest getLoadTest() {
@@ -71,49 +59,64 @@ public abstract class AbstractLoadStrategy implements LoadStrategy {
         propertyChangeSupport.removePropertyChangeListener(CONFIGURATION_PROPERTY, listener);
     }
 
-    public void notifyConfigurationChanged() {
-        propertyChangeSupport.firePropertyChange(CONFIGURATION_PROPERTY, null, null);
+    public XmlObject getConfig() {
+        return null;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public JComponent getConfigurationPanel() {
+        return null;
+    }
+
+    public void updateConfig(XmlObject config) {
     }
 
     public boolean allowThreadCountChangeDuringRun() {
         return true;
     }
 
-    public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+    public void recalculate(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
     }
 
-    public void afterTestCase(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                              TestCaseRunContext runContext) {
-    }
-
-    public void afterTestStep(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                              TestCaseRunContext runContext, TestStepResult testStepResult) {
+    public void notifyConfigurationChanged() {
+        propertyChangeSupport.firePropertyChange(CONFIGURATION_PROPERTY, null, null);
     }
 
     public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        if (getLoadTest().getLimitType() == LoadTestLimitTypesConfig.COUNT
-                && getLoadTest().getTestLimit() < getLoadTest().getThreadCount()) {
+        if (getLoadTest().getLimitType() == LoadTestLimitTypesConfig.COUNT && getLoadTest().getTestLimit() < getLoadTest().getThreadCount()) {
             getLoadTest().setThreadCount(getLoadTest().getTestLimit());
         }
-    }
-
-    public void beforeTestCase(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                               TestCaseRunContext runContext) {
-    }
-
-    public void beforeTestStep(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                               TestCaseRunContext runContext, TestStep testStep) {
     }
 
     public void loadTestStarted(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
     }
 
+    public void beforeTestCase(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+    ) {
+    }
+
+    public void beforeTestStep(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep
+    ) {
+    }
+
+    public void afterTestStep(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult testStepResult
+    ) {
+    }
+
+    public void afterTestCase(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+    ) {
+    }
+
     public void loadTestStopped(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
     }
 
-    public void recalculate(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-    }
-
-    public void updateConfig(XmlObject config) {
+    public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
     }
 }

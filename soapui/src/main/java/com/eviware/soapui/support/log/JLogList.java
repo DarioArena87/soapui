@@ -71,15 +71,15 @@ import java.util.concurrent.TimeUnit;
 
 public class JLogList extends JPanel {
     private static final String INTERNAL_LOG_NAME = "InternalLog";
-    private long maxRows = 1000;
-    private JList logList;
     private final LogListModel model;
-    private List<Logger> loggers = new ArrayList<Logger>();
-    private InternalLogAppender internalLogAppender = new InternalLogAppender();
-    private boolean tailing = true;
-    private BlockingQueue<Object> linesToAdd = new LinkedBlockingQueue<Object>();
-    private JCheckBoxMenuItem enableMenuItem;
     private final String title;
+    private long maxRows = 1000;
+    private final JList logList;
+    private final List<Logger> loggers = new ArrayList<Logger>();
+    private final InternalLogAppender internalLogAppender = new InternalLogAppender();
+    private boolean tailing = true;
+    private final BlockingQueue<Object> linesToAdd = new LinkedBlockingQueue<Object>();
+    private final JCheckBoxMenuItem enableMenuItem;
 
     public JLogList(String title) {
         super(new BorderLayout());
@@ -119,7 +119,8 @@ public class JLogList extends JPanel {
 
         try {
             maxRows = Long.parseLong(SoapUI.getSettings().getString("JLogList#" + title, "1000"));
-        } catch (NumberFormatException ignore) {
+        }
+        catch (NumberFormatException ignore) {
         }
     }
 
@@ -145,7 +146,7 @@ public class JLogList extends JPanel {
         }
 
         if (line instanceof LogEvent) {
-            LogEvent ev = (LogEvent) line;
+            LogEvent ev = (LogEvent)line;
             LoggingEventWrapper eventWrapper = new LoggingEventWrapper(ev);
             appendTimeStampBeforeRequestOrResponseLine(eventWrapper);
             linesToAdd.add(eventWrapper);
@@ -160,7 +161,8 @@ public class JLogList extends JPanel {
                     linesToAdd.add("   " + st.nextElement());
                 }
             }
-        } else {
+        }
+        else {
             linesToAdd.add(line);
         }
         model.ensureUpdateIsStarted();
@@ -171,7 +173,8 @@ public class JLogList extends JPanel {
             if (Logging.HTTP_CLIENT_WIRE_LOG_TIMESTAMP_MARKER_OUTGOING.equals(eventWrapper.loggingEvent.getMarker())) {
                 appendMessageSeparator();
                 linesToAdd.add(formatTimestamp(eventWrapper.loggingEvent.getTimeMillis()) + ": " + eventWrapper.getLevel() + ": http-outgoing >> ");
-            } else if (Logging.HTTP_CLIENT_WIRE_LOG_TIMESTAMP_MARKER_INCOMING.equals(eventWrapper.loggingEvent.getMarker())) {
+            }
+            else if (Logging.HTTP_CLIENT_WIRE_LOG_TIMESTAMP_MARKER_INCOMING.equals(eventWrapper.loggingEvent.getMarker())) {
                 appendMessageSeparator();
                 linesToAdd.add(formatTimestamp(eventWrapper.loggingEvent.getTimeMillis()) + ": " + eventWrapper.getLevel() + ": http-incoming << ");
             }
@@ -184,18 +187,87 @@ public class JLogList extends JPanel {
         }
     }
 
-    private static String formatTimestamp(long timeStamp) {
-        return String.valueOf(new Date(timeStamp));
-    }
-
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
         logList.setEnabled(enabled);
         enableMenuItem.setSelected(enabled);
     }
 
+    public void addLogger(String loggerName, boolean addAppender) {
+        Logger logger = LogManager.getLogger(loggerName);
+        if (addAppender) {
+            Logging.addAppender(loggerName, internalLogAppender);
+        }
+
+        loggers.add(logger);
+    }
+
+    public Logger[] getLoggers() {
+        return loggers.toArray(new Logger[loggers.size()]);
+    }
+
+    public void setLevel(Level level) {
+        for (Logger logger : loggers) {
+            Configurator.setLevel(logger.getName(), level);
+        }
+    }
+
+    public Logger getLogger(String loggerName) {
+        for (Logger logger : loggers) {
+            if (logger.getName().equals(loggerName)) {
+                return logger;
+            }
+        }
+
+        return null;
+    }
+
+    public boolean monitors(String loggerName) {
+        for (Logger logger : loggers) {
+            if (loggerName.startsWith(logger.getName())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void removeLogger(String loggerName) {
+        for (Logger logger : loggers) {
+            if (loggerName.equals(logger.getName())) {
+                Logging.removeAppender(loggerName, internalLogAppender);
+            }
+        }
+    }
+
+    public void saveToFile(File file) {
+        try {
+            PrintWriter writer = new PrintWriter(file);
+            for (int c = 0; c < model.getSize(); c++) {
+                writer.println(model.getElementAt(c));
+            }
+
+            writer.close();
+        }
+        catch (Exception e) {
+            UISupport.showErrorMessage(e);
+        }
+    }
+
+    public boolean isTailing() {
+        return tailing;
+    }
+
+    public void setTailing(boolean tail) {
+        tailing = tail;
+    }
+
+    private static String formatTimestamp(long timeStamp) {
+        return String.valueOf(new Date(timeStamp));
+    }
+
     private static class LogAreaCellRenderer extends DefaultListCellRenderer {
-        private Map<Level, Color> levelColors = new HashMap<Level, Color>();
+        private final Map<Level, Color> levelColors = new HashMap<Level, Color>();
 
         private LogAreaCellRenderer() {
             levelColors.put(Level.ERROR, new Color(192, 0, 0));
@@ -204,12 +276,13 @@ public class JLogList extends JPanel {
             levelColors.put(Level.DEBUG, new Color(0, 0, 128));
         }
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
-            JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
+            JLabel component = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
             if (value instanceof LoggingEventWrapper) {
-                LoggingEventWrapper eventWrapper = (LoggingEventWrapper) value;
+                LoggingEventWrapper eventWrapper = (LoggingEventWrapper)value;
 
                 if (!isSelected && levelColors.containsKey(eventWrapper.getLevel())) {
                     component.setForeground(levelColors.get(eventWrapper.getLevel()));
@@ -243,7 +316,8 @@ public class JLogList extends JPanel {
             if (str == null) {
                 if (loggingEvent.getLoggerName().equals(Logging.HTTP_CLIENT_WIRE_LOG_CATEGORY)) {
                     str = loggingEvent.getMessage().toString();
-                } else {
+                }
+                else {
                     StringBuilder builder = new StringBuilder();
                     builder.append(new Date(loggingEvent.getTimeMillis()));
                     builder.append(':').append(loggingEvent.getLevel()).append(':').append(loggingEvent.getMessage());
@@ -253,35 +327,6 @@ public class JLogList extends JPanel {
 
             return str;
         }
-    }
-
-    public void addLogger(String loggerName, boolean addAppender) {
-        Logger logger = LogManager.getLogger(loggerName);
-        if (addAppender) {
-            Logging.addAppender(loggerName, internalLogAppender);
-        }
-
-        loggers.add(logger);
-    }
-
-    public Logger[] getLoggers() {
-        return loggers.toArray(new Logger[loggers.size()]);
-    }
-
-    public void setLevel(Level level) {
-        for (Logger logger : loggers) {
-            Configurator.setLevel(logger.getName(), level);
-        }
-    }
-
-    public Logger getLogger(String loggerName) {
-        for (Logger logger : loggers) {
-            if (logger.getName().equals(loggerName)) {
-                return logger;
-            }
-        }
-
-        return null;
     }
 
     private class InternalLogAppender extends AbstractAppender {
@@ -300,45 +345,6 @@ public class JLogList extends JPanel {
         public boolean requiresLayout() {
             return false;
         }
-    }
-
-    public boolean monitors(String loggerName) {
-        for (Logger logger : loggers) {
-            if (loggerName.startsWith(logger.getName())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public void removeLogger(String loggerName) {
-        for (Logger logger : loggers) {
-            if (loggerName.equals(logger.getName())) {
-                Logging.removeAppender(loggerName, internalLogAppender);
-            }
-        }
-    }
-
-    public void saveToFile(File file) {
-        try {
-            PrintWriter writer = new PrintWriter(file);
-            for (int c = 0; c < model.getSize(); c++) {
-                writer.println(model.getElementAt(c));
-            }
-
-            writer.close();
-        } catch (Exception e) {
-            UISupport.showErrorMessage(e);
-        }
-    }
-
-    public boolean isTailing() {
-        return tailing;
-    }
-
-    public void setTailing(boolean tail) {
-        this.tailing = tail;
     }
 
 	/*
@@ -361,13 +367,13 @@ public class JLogList extends JPanel {
         }
 
         public void actionPerformed(ActionEvent e) {
-            String val = UISupport.prompt("Set maximum number of log rows to keep", "Set Max Rows",
-                    String.valueOf(maxRows));
+            String val = UISupport.prompt("Set maximum number of log rows to keep", "Set Max Rows", String.valueOf(maxRows));
             if (val != null) {
                 try {
                     maxRows = Long.parseLong(val);
                     SoapUI.getSettings().setString("JLogList#" + title, val);
-                } catch (NumberFormatException e1) {
+                }
+                catch (NumberFormatException e1) {
                     UISupport.beep();
                 }
             }
@@ -407,7 +413,8 @@ public class JLogList extends JPanel {
                     buf.append(logList.getModel().getElementAt(c).toString());
                     buf.append("\r\n");
                 }
-            } else {
+            }
+            else {
                 for (int selectedIndex : selectedIndices) {
                     buf.append(logList.getModel().getElementAt(selectedIndex).toString());
                     buf.append("\r\n");
@@ -438,7 +445,7 @@ public class JLogList extends JPanel {
     @SuppressWarnings("unchecked")
     private final class LogListModel extends AbstractListModel {
         private final List<Object> lines = Collections.synchronizedList(new TreeList());
-        private ListUpdater updater = new ListUpdater();
+        private final ListUpdater updater = new ListUpdater();
 
         public int getSize() {
             return lines.size();
@@ -449,7 +456,7 @@ public class JLogList extends JPanel {
         }
 
         public void clear() {
-            final int size = lines.size();
+            int size = lines.size();
             if (size == 0) {
                 return;
             }
@@ -485,11 +492,13 @@ public class JLogList extends JPanel {
                             int oldSize = lines.size();
                             lines.addAll(linesToAddNow);
                             updateJList(oldSize);
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e) {
                             SoapUI.logError(e);
                         }
                     }
-                } finally {
+                }
+                finally {
                     synchronized (this) {
                         updating = false;
                         if (!linesToAdd.isEmpty()) {
@@ -510,19 +519,19 @@ public class JLogList extends JPanel {
             private Object getNextLine() {
                 try {
                     return linesToAdd.poll(500, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e) {
                     //shouldn't really happen
                     return null;
                 }
             }
 
-
-            private void updateJList(final int oldSize) {
+            private void updateJList(int oldSize) {
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         public void run() {
                             fireIntervalAdded(LogListModel.this, oldSize, lines.size() - 1);
-                            int linesToRemove = lines.size() - ((int) maxRows);
+                            int linesToRemove = lines.size() - ((int)maxRows);
                             if (linesToRemove > 0) {
                                 for (int i = 0; i < linesToRemove; i++) {
                                     lines.remove(0);
@@ -534,9 +543,11 @@ public class JLogList extends JPanel {
                             }
                         }
                     });
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e) {
                     e.printStackTrace();
-                } catch (InvocationTargetException e) {
+                }
+                catch (InvocationTargetException e) {
                     e.printStackTrace();
                 }
             }

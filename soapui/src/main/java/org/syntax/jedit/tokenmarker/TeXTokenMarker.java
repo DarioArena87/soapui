@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
@@ -27,7 +27,7 @@ import javax.swing.text.Segment;
 public class TeXTokenMarker extends TokenMarker {
     // public members
     public static final byte BDFORMULA = Token.INTERNAL_FIRST;
-    public static final byte EDFORMULA = (byte) (Token.INTERNAL_FIRST + 1);
+    public static final byte EDFORMULA = (byte)(Token.INTERNAL_FIRST + 1);
 
     public byte markTokensImpl(byte token, Segment line, int lineIndex) {
         char[] array = line.array;
@@ -47,7 +47,8 @@ public class TeXTokenMarker extends TokenMarker {
             // the command ends before the non-alpha char.
             if (Character.isLetter(c)) {
                 backslash = false;
-            } else {
+            }
+            else {
                 if (backslash) {
                     // \<non alpha>
                     // we skip over this character,
@@ -62,7 +63,8 @@ public class TeXTokenMarker extends TokenMarker {
                         token = Token.NULL;
                     }
                     continue;
-                } else {
+                }
+                else {
                     // \blah<non alpha>
                     // we leave the character in
                     // the stream, and it's not
@@ -102,12 +104,14 @@ public class TeXTokenMarker extends TokenMarker {
                         token = Token.KEYWORD2;
                         addToken(i - lastOffset, Token.NULL);
                         lastOffset = i;
-                    } else if (token == Token.KEYWORD1) // \...$
+                    }
+                    else if (token == Token.KEYWORD1) // \...$
                     {
                         token = Token.KEYWORD2;
                         addToken(i - lastOffset, Token.KEYWORD1);
                         lastOffset = i;
-                    } else if (token == Token.KEYWORD2) // $$aaa
+                    }
+                    else if (token == Token.KEYWORD2) // $$aaa
                     {
                         if (i - lastOffset == 1 && array[i - 1] == '$') {
                             token = BDFORMULA;
@@ -116,10 +120,12 @@ public class TeXTokenMarker extends TokenMarker {
                         token = Token.NULL;
                         addToken(i1 - lastOffset, Token.KEYWORD2);
                         lastOffset = i1;
-                    } else if (token == BDFORMULA) // $$aaa$
+                    }
+                    else if (token == BDFORMULA) // $$aaa$
                     {
                         token = EDFORMULA;
-                    } else if (token == EDFORMULA) // $$aaa$$
+                    }
+                    else if (token == EDFORMULA) // $$aaa$$
                     {
                         token = Token.NULL;
                         addToken(i1 - lastOffset, Token.KEYWORD2);

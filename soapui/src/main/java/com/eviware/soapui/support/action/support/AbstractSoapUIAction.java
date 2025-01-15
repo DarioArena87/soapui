@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.action.support;
@@ -29,7 +29,7 @@ import java.beans.PropertyChangeSupport;
  */
 
 public abstract class AbstractSoapUIAction<T extends ModelItem> implements SoapUIAction<T> {
-    private PropertyChangeSupport propertySupport;
+    private final PropertyChangeSupport propertySupport;
     private String name;
     private String description;
     private boolean enabled = true;
@@ -57,8 +57,16 @@ public abstract class AbstractSoapUIAction<T extends ModelItem> implements SoapU
         return id;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 
     public void setEnabled(boolean enabled) {
@@ -72,20 +80,12 @@ public abstract class AbstractSoapUIAction<T extends ModelItem> implements SoapU
         propertySupport.firePropertyChange(ENABLED_PROPERTY, oldEnabled, enabled);
     }
 
-    public boolean applies(T target) {
-        return true;
-    }
-
     public boolean isDefault() {
         return false;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
+    public boolean applies(T target) {
+        return true;
     }
 
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support;
@@ -43,11 +43,10 @@ import java.util.List;
  * @author dragica.soldo
  */
 
-public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends WsdlTestRunContext> extends
-        AbstractTestRunner<T, T2> implements TestCaseRunner {
+public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends WsdlTestRunContext> extends AbstractTestRunner<T, T2> implements TestCaseRunner {
     private TestRunListener[] testRunListeners = new TestRunListener[0];
     @SuppressWarnings("unchecked")
-    private List<TestStepResult> testStepResults = Collections.synchronizedList(new TreeList());
+    private final List<TestStepResult> testStepResults = Collections.synchronizedList(new TreeList());
     private int gotoStepIndex;
     private int resultCount;
     private int initCount;
@@ -83,6 +82,19 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
         }
     }
 
+    public long getTimeTaken() {
+        if (isRunning()) {
+            return System.currentTimeMillis() - getStartTime();
+        }
+        long sum = 0;
+        for (TestStepResult testStepResult : testStepResults) {
+            if (testStepResult != null) {
+                sum += testStepResult.getTimeTaken();
+            }
+        }
+        return sum;
+    }
+
     public void internalRun(T2 runContext) throws Exception {
         WsdlTestCase testCase = getTestCase();
 
@@ -94,7 +106,8 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
             if (!(runContext.getProperty(SubmitContext.HTTP_STATE_PROPERTY) instanceof BasicHttpContext)) {
                 runContext.setProperty(SubmitContext.HTTP_STATE_PROPERTY, HttpClientSupport.createEmptyContext());
             }
-        } else {
+        }
+        else {
             runContext.setProperty(SubmitContext.HTTP_STATE_PROPERTY, null);
         }
 
@@ -124,10 +137,11 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
 
             try {
                 testStep.prepare(this, runContext);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 setStatus(Status.FAILED);
                 SoapUI.logError(e);
-                throw new Exception("Failed to prepare testStep [" + testStep.getName() + "]; " + e.toString());
+                throw new Exception("Failed to prepare testStep [" + testStep.getName() + "]; " + e);
             }
         }
 
@@ -144,19 +158,6 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
         preserveContext(getRunContext());
     }
 
-    protected abstract void failTestRunnableOnErrors(T2 runContext);
-
-    /**
-     * Runs current testStep , returns index of the next step to be run and -2 in
-     * case execution should break if canceled
-     *
-     * @param runContext
-     * @param currentStepIndex
-     * @return
-     * @throws Exception
-     */
-    protected abstract int runCurrentTestStep(T2 runContext, int currentStepIndex) throws Exception;
-
     protected void internalFinally(T2 runContext) {
         WsdlTestCase testCase = getTestCase();
 
@@ -169,7 +170,8 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
 
         try {
             runTearDownScripts(runContext);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
@@ -177,6 +179,19 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
 
         clear(runContext);
     }
+
+    protected abstract void failTestRunnableOnErrors(T2 runContext);
+
+    /**
+     * Runs current testStep , returns index of the next step to be run and -2 in
+     * case execution should break if canceled
+     *
+     * @param runContext
+     * @param currentStepIndex
+     * @return
+     * @throws Exception
+     */
+    protected abstract int runCurrentTestStep(T2 runContext, int currentStepIndex) throws Exception;
 
     protected void runSetupScripts(T2 runContext) throws Exception {
         getTestCase().runSetupScript(runContext, this);
@@ -193,11 +208,6 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
 
     protected void fillInTestRunnableListeners() {
         testRunListeners = getTestCase().getTestRunListeners();
-
-    }
-
-    public TestStepResult runTestStepByName(String name) {
-        return runTestStep(getTestCase().getTestStepByName(name), true, true);
     }
 
     public TestStepResult runTestStep(TestStep testStep) {
@@ -228,8 +238,7 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
         // discard?
         // if( discard && stepResult.getStatus() == TestStepStatus.OK &&
         // getTestRunnable().getDiscardOkResults()
-        if (discard && stepResult.getStatus() != TestStepStatus.FAILED && getTestCase().getDiscardOkResults()
-                && !stepResult.isDiscarded()) {
+        if (discard && stepResult.getStatus() != TestStepStatus.FAILED && getTestCase().getDiscardOkResults() && !stepResult.isDiscarded()) {
             stepResult.discard();
         }
 
@@ -238,7 +247,8 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
             if (getTestCase().getFailOnError()) {
                 setError(stepResult.getError());
                 fail("Cancelling due to failed test step");
-            } else {
+            }
+            else {
                 getRunContext().setProperty(TestCaseRunner.Status.class.getName(), TestCaseRunner.Status.FAILED);
             }
         }
@@ -247,7 +257,7 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
     }
 
     protected boolean runBeforeSteps(TestStep testStep) {
-        if (testRunListeners == null || testRunListeners.length == 0) {
+        if (testRunListeners == null) {
             return true;
         }
         for (TestRunListener testRunListener : testRunListeners) {
@@ -282,11 +292,11 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
                 if (Arrays.asList(getTestCase().getTestRunListeners()).contains(testRunListeners[i])) {
                     testRunListeners[i].afterRun(this, getRunContext());
                 }
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 SoapUI.logError(t);
             }
         }
-
     }
 
     protected void notifyBeforeRun() {
@@ -299,42 +309,40 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
                 if (Arrays.asList(getTestCase().getTestRunListeners()).contains(testRunListeners[i])) {
                     testRunListeners[i].beforeRun(this, getRunContext());
                 }
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 SoapUI.logError(t);
             }
         }
-
     }
 
     public abstract WsdlTestCase getTestCase();
-
-    public long getTimeTaken() {
-        if(isRunning()){
-            return System.currentTimeMillis() - getStartTime();
-        }
-        long sum = 0;
-        for (TestStepResult testStepResult : testStepResults) {
-            if (testStepResult != null) {
-                sum += testStepResult.getTimeTaken();
-            }
-        }
-        return sum;
-    }
 
     public List<TestStepResult> getResults() {
         return testStepResults;
     }
 
-    public void setResultCount(int resultCount) {
-        this.resultCount = resultCount;
+    public void gotoStep(int index) {
+        gotoStepIndex = index;
+    }
+
+    public void gotoStepByName(String stepName) {
+        TestStep testStep = getTestCase().getTestStepByName(stepName);
+        if (testStep != null) {
+            gotoStep(getTestCase().getIndexOfTestStep(testStep));
+        }
+    }
+
+    public TestStepResult runTestStepByName(String name) {
+        return runTestStep(getTestCase().getTestStepByName(name), true, true);
     }
 
     public int getResultCount() {
         return resultCount;
     }
 
-    public void gotoStep(int index) {
-        gotoStepIndex = index;
+    public void setResultCount(int resultCount) {
+        this.resultCount = resultCount;
     }
 
     public void enforceMaxResults(long maxResults) {
@@ -344,13 +352,6 @@ public abstract class AbstractTestCaseRunner<T extends TestRunnable, T2 extends 
 
         while (testStepResults.size() > maxResults) {
             testStepResults.remove(0);
-        }
-    }
-
-    public void gotoStepByName(String stepName) {
-        TestStep testStep = getTestCase().getTestStepByName(stepName);
-        if (testStep != null) {
-            gotoStep(getTestCase().getIndexOfTestStep(testStep));
         }
     }
 }

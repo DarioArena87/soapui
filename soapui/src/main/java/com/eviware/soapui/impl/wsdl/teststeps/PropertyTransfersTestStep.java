@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -35,7 +35,7 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.swing.ActionList;
 import com.eviware.soapui.support.resolver.ResolveContext;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +52,7 @@ public class PropertyTransfersTestStep extends WsdlTestStepWithProperties implem
     public static final String TRANSFERS = PropertyTransfersTestStep.class.getName() + "@transfers";
     private PropertyTransfersStepConfig transferStepConfig;
     private boolean canceled;
-    private List<PropertyTransfer> transfers = new ArrayList<PropertyTransfer>();
+    private final List<PropertyTransfer> transfers = new ArrayList<PropertyTransfer>();
     private ImageIcon failedIcon;
     private ImageIcon okIcon;
 
@@ -66,37 +66,8 @@ public class PropertyTransfersTestStep extends WsdlTestStepWithProperties implem
         }
     }
 
-    @Override
-    public void afterLoad() {
-        TestStepConfig config = getConfig();
-
-        if (config.getConfig() != null) {
-            transferStepConfig = (PropertyTransfersStepConfig) config.getConfig().changeType(
-                    PropertyTransfersStepConfig.type);
-            for (int c = 0; c < transferStepConfig.sizeOfTransfersArray(); c++) {
-                transfers.add(new PropertyTransfer(this, transferStepConfig.getTransfersArray(c)));
-            }
-        } else {
-            transferStepConfig = (PropertyTransfersStepConfig) config.addNewConfig().changeType(
-                    PropertyTransfersStepConfig.type);
-        }
-
-        super.afterLoad();
-    }
-
     public PropertyTransfersStepConfig getTransferConfig() {
         return transferStepConfig;
-    }
-
-    @Override
-    public void resetConfigOnMove(TestStepConfig config) {
-        super.resetConfigOnMove(config);
-
-        transferStepConfig = (PropertyTransfersStepConfig) config.getConfig().changeType(
-                PropertyTransfersStepConfig.type);
-        for (int c = 0; c < transferStepConfig.sizeOfTransfersArray(); c++) {
-            transfers.get(c).setConfigOnMove(transferStepConfig.getTransfersArray(c));
-        }
     }
 
     public TestStepResult run(TestCaseRunner runner, TestCaseRunContext context) {
@@ -128,7 +99,8 @@ public class PropertyTransfersTestStep extends WsdlTestStepWithProperties implem
                     result.addMessage("Performed transfer [" + name + "]");
                     result.addTransferResult(valueTransfer, values);
                 }
-            } catch (PropertyTransferException e) {
+            }
+            catch (PropertyTransferException e) {
                 result.addMessage("Error performing transfer [" + valueTransfer.getName() + "] - " + e.getMessage());
                 result.addTransferResult(valueTransfer, new String[]{e.getMessage()});
 
@@ -162,6 +134,16 @@ public class PropertyTransfersTestStep extends WsdlTestStepWithProperties implem
         return canceled;
     }
 
+    @Override
+    public void resetConfigOnMove(TestStepConfig config) {
+        super.resetConfigOnMove(config);
+
+        transferStepConfig = (PropertyTransfersStepConfig)config.getConfig().changeType(PropertyTransfersStepConfig.type);
+        for (int c = 0; c < transferStepConfig.sizeOfTransfersArray(); c++) {
+            transfers.get(c).setConfigOnMove(transferStepConfig.getTransfersArray(c));
+        }
+    }
+
     public int getTransferCount() {
         return transfers.size();
     }
@@ -182,7 +164,7 @@ public class PropertyTransfersTestStep extends WsdlTestStepWithProperties implem
     }
 
     public void removeTransferAt(int index) {
-        final PropertyTransfer removed = transfers.remove(index);
+        PropertyTransfer removed = transfers.remove(index);
         fireIndexedPropertyChange(TRANSFERS, index, removed, null);
         removed.release();
         transferStepConfig.removeTransfers(index);
@@ -205,73 +187,30 @@ public class PropertyTransfersTestStep extends WsdlTestStepWithProperties implem
         }
     }
 
-    public class PropertyTransferResult extends WsdlTestStepResult {
-        private List<PropertyTransferConfig> transfers = new ArrayList<PropertyTransferConfig>();
-        private List<String[]> values = new ArrayList<String[]>();
-        private boolean addedAction;
+    @Override
+    public void resolve(ResolveContext<?> context) {
+        super.resolve(context);
 
-        public PropertyTransferResult() {
-            super(PropertyTransfersTestStep.this);
+        for (PropertyTransfer pTransfer : transfers) {
+            pTransfer.resolve(context, this);
         }
+    }
 
-        public void addTransferResult(PropertyTransfer transfer, String[] values) {
-            // save a copy, so we dont mirror changes
-            transfers.add((PropertyTransferConfig) transfer.getConfig().copy());
-            this.values.add(values);
-        }
+    @Override
+    public void afterLoad() {
+        TestStepConfig config = getConfig();
 
-        @Override
-        public ActionList getActions() {
-            if (!addedAction) {
-                addAction(new ShowTransferValuesResultsAction(this), true);
-                addedAction = true;
-            }
-
-            return super.getActions();
-        }
-
-        public int getTransferCount() {
-            return transfers == null ? 0 : transfers.size();
-        }
-
-        public PropertyTransferConfig getTransferAt(int index) {
-            return transfers == null ? null : transfers.get(index);
-        }
-
-        public String[] getTransferredValuesAt(int index) {
-            return values == null ? null : values.get(index);
-        }
-
-        @Override
-        public void discard() {
-            super.discard();
-
-            transfers = null;
-            values = null;
-        }
-
-        @Override
-        public void writeTo(PrintWriter writer) {
-            super.writeTo(writer);
-
-            if (!isDiscarded()) {
-                writer.println("----------------------------------------------------");
-                for (int c = 0; c < transfers.size(); c++) {
-                    PropertyTransferConfig transfer = transfers.get(c);
-                    writer.println(transfer.getName() + " transferred [" + Arrays.toString(values.get(c)) + "] from ["
-                            + transfer.getSourceStep() + "." + transfer.getSourceType() + "] to [" + transfer.getTargetStep()
-                            + "." + transfer.getTargetType() + "]");
-                    if (transfer.getSourcePath() != null) {
-                        writer.println("------------ source path -------------");
-                        writer.println(transfer.getSourcePath());
-                    }
-                    if (transfer.getTargetPath() != null) {
-                        writer.println("------------ target path -------------");
-                        writer.println(transfer.getTargetPath());
-                    }
-                }
+        if (config.getConfig() != null) {
+            transferStepConfig = (PropertyTransfersStepConfig)config.getConfig().changeType(PropertyTransfersStepConfig.type);
+            for (int c = 0; c < transferStepConfig.sizeOfTransfersArray(); c++) {
+                transfers.add(new PropertyTransfer(this, transferStepConfig.getTransfersArray(c)));
             }
         }
+        else {
+            transferStepConfig = (PropertyTransfersStepConfig)config.addNewConfig().changeType(PropertyTransfersStepConfig.type);
+        }
+
+        super.afterLoad();
     }
 
     public PropertyTransfer getTransferByName(String name) {
@@ -306,26 +245,102 @@ public class PropertyTransfersTestStep extends WsdlTestStepWithProperties implem
 
         for (PropertyTransfer transfer : transfers) {
             if (StringUtils.hasContent(transfer.getSourcePath())) {
-                result.add(new XPathReferenceImpl("Source path for " + transfer.getName() + " PropertyTransfer in "
-                        + getName(), transfer.getSourceProperty(), transfer, "sourcePath"));
+                result.add(new XPathReferenceImpl(
+                    "Source path for " + transfer.getName() + " PropertyTransfer in " + getName(),
+                    transfer.getSourceProperty(),
+                    transfer,
+                    "sourcePath"
+                ));
             }
 
             if (StringUtils.hasContent(transfer.getTargetPath())) {
-                result.add(new XPathReferenceImpl("Target path for " + transfer.getName() + " PropertyTransfer in "
-                        + getName(), transfer.getTargetProperty(), transfer, "targetPath"));
+                result.add(new XPathReferenceImpl(
+                    "Target path for " + transfer.getName() + " PropertyTransfer in " + getName(),
+                    transfer.getTargetProperty(),
+                    transfer,
+                    "targetPath"
+                ));
             }
         }
 
         return result.toArray(new XPathReference[result.size()]);
     }
 
-    @Override
-    public void resolve(ResolveContext<?> context) {
-        super.resolve(context);
+    public class PropertyTransferResult extends WsdlTestStepResult {
+        private List<PropertyTransferConfig> transfers = new ArrayList<PropertyTransferConfig>();
+        private List<String[]> values = new ArrayList<String[]>();
+        private boolean addedAction;
 
-        for (PropertyTransfer pTransfer : transfers) {
-            pTransfer.resolve(context, this);
+        public PropertyTransferResult() {
+            super(PropertyTransfersTestStep.this);
+        }
 
+        public void addTransferResult(PropertyTransfer transfer, String[] values) {
+            // save a copy, so we dont mirror changes
+            transfers.add((PropertyTransferConfig)transfer.getConfig().copy());
+            this.values.add(values);
+        }
+
+        @Override
+        public ActionList getActions() {
+            if (!addedAction) {
+                addAction(new ShowTransferValuesResultsAction(this), true);
+                addedAction = true;
+            }
+
+            return super.getActions();
+        }
+
+        @Override
+        public void writeTo(PrintWriter writer) {
+            super.writeTo(writer);
+
+            if (!isDiscarded()) {
+                writer.println("----------------------------------------------------");
+                for (int c = 0; c < transfers.size(); c++) {
+                    PropertyTransferConfig transfer = transfers.get(c);
+                    writer.println(transfer.getName() +
+                                   " transferred [" +
+                                   Arrays.toString(values.get(c)) +
+                                   "] from [" +
+                                   transfer.getSourceStep() +
+                                   "." +
+                                   transfer.getSourceType() +
+                                   "] to [" +
+                                   transfer.getTargetStep() +
+                                   "." +
+                                   transfer.getTargetType() +
+                                   "]");
+                    if (transfer.getSourcePath() != null) {
+                        writer.println("------------ source path -------------");
+                        writer.println(transfer.getSourcePath());
+                    }
+                    if (transfer.getTargetPath() != null) {
+                        writer.println("------------ target path -------------");
+                        writer.println(transfer.getTargetPath());
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void discard() {
+            super.discard();
+
+            transfers = null;
+            values = null;
+        }
+
+        public int getTransferCount() {
+            return transfers == null ? 0 : transfers.size();
+        }
+
+        public PropertyTransferConfig getTransferAt(int index) {
+            return transfers == null ? null : transfers.get(index);
+        }
+
+        public String[] getTransferredValuesAt(int index) {
+            return values == null ? null : values.get(index);
         }
     }
 }

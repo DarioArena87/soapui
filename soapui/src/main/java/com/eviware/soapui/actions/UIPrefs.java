@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -59,18 +59,13 @@ public class UIPrefs implements Prefs {
     public static final String WRAP_RAW_MESSAGES = "Wrap content in Raw Message Viewers";
     public static final String DISABLE_TOOLTIPS = "Disable Tooltips";
     public static final String DISABLE_ANALYTICS = "Disable Usage Statistics";
-
-    private SimpleForm editorForm;
     private final String title;
+    private SimpleForm editorForm;
     private JCheckBox backupCheckBox;
     private JTextField backupFolder;
 
     public UIPrefs(String title) {
         this.title = title;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     public SimpleForm getForm() {
@@ -87,21 +82,18 @@ public class UIPrefs implements Prefs {
 
             editorForm.appendCheckBox(AUTOSAVE_ONEXIT, "Save all projects on exit", true);
             backupCheckBox = editorForm.appendCheckBox(CREATE_BACKUP, "Backup project files before they are saved", true);
-            backupFolder = editorForm.appendTextField(BACKUP_FOLDER,
-                    "Folder to backup to (can be both relative or absolute)");
+            backupFolder = editorForm.appendTextField(BACKUP_FOLDER, "Folder to backup to (can be both relative or absolute)");
             backupCheckBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     backupFolder.setEnabled(backupCheckBox.isSelected());
                 }
             });
 
-            editorForm.appendTextField(AUTOSAVE_INTERVAL,
-                    "Sets the autosave interval in minutes (0 means autosave is off)");
+            editorForm.appendTextField(AUTOSAVE_INTERVAL, "Sets the autosave interval in minutes (0 means autosave is off)");
 
             if (SoapUI.isStandalone()) {
                 editorForm.appendSeparator();
-                editorForm.appendComboBox(DESKTOP_TYPE, DesktopRegistry.getInstance().getNames(),
-                        "Select the type of desktop to use");
+                editorForm.appendComboBox(DESKTOP_TYPE, DesktopRegistry.getInstance().getNames(), "Select the type of desktop to use");
                 editorForm.appendCheckBox(MRU_PANEL_SELECTOR, "Show most recently used panel on close (requires restart)", true);
                 JCheckBox cb = editorForm.appendCheckBox(NATIVE_LAF, "Use native Look & Feel (requires restart)", true);
                 if (UISupport.isMac()) {
@@ -121,8 +113,7 @@ public class UIPrefs implements Prefs {
             editorForm.appendSeparator();
             editorForm.appendCheckBox(LINEBREAK, "Normalize line-breaks when saving project", false);
             editorForm.appendSeparator();
-            editorForm.appendTextField(GC_INTERVAL,
-                    "Sets the Garbage Collector interval in seconds (0 means garbage collection is only performed by JRE)");
+            editorForm.appendTextField(GC_INTERVAL, "Sets the Garbage Collector interval in seconds (0 means garbage collection is only performed by JRE)");
             editorForm.appendSeparator();
             editorForm.appendTextField(RAW_RESPONSE_MESSAGE_SIZE, "Sets the size of raw response message to show.");
             editorForm.appendTextField(RAW_REQUEST_MESSAGE_SIZE, "Sets the size of raw request message to show.");
@@ -131,6 +122,11 @@ public class UIPrefs implements Prefs {
         }
 
         return editorForm;
+    }
+
+    public void setFormValues(Settings settings) {
+        editorForm.setValues(getValues(settings));
+        backupFolder.setEnabled(settings.getBoolean(UISettings.CREATE_BACKUP));
     }
 
     public void getFormValues(Settings settings) {
@@ -177,11 +173,6 @@ public class UIPrefs implements Prefs {
         SoapUI.initGCTimer();
     }
 
-    public void setFormValues(Settings settings) {
-        editorForm.setValues(getValues(settings));
-        backupFolder.setEnabled(settings.getBoolean(UISettings.CREATE_BACKUP));
-    }
-
     public StringToStringMap getValues(Settings settings) {
         StringToStringMap values = new StringToStringMap();
         values.put(CLOSE_PROJECTS, settings.getBoolean(UISettings.CLOSE_PROJECTS));
@@ -215,5 +206,9 @@ public class UIPrefs implements Prefs {
         values.put(DISABLE_ANALYTICS, settings.getBoolean(UISettings.DISABLE_ANALYTICS));
 
         return values;
+    }
+
+    public String getTitle() {
+        return title;
     }
 }

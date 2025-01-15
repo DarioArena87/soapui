@@ -18,16 +18,12 @@ package com.eviware.soapui.support.components;
 
 import com.eviware.soapui.impl.rest.actions.oauth.BrowserListener;
 
-import java.awt.Component;
+import java.awt.*;
 
 /**
  * @author joel.jonsson
  */
 public interface WebViewBasedBrowserComponent {
-    public enum PopupStrategy {
-        INTERNAL_BROWSER_NEW_WINDOW, INTERNAL_BROWSER_REUSE_WINDOW, EXTERNAL_BROWSER, DISABLED
-    }
-
     Component getComponent();
 
     void navigate(String url);
@@ -60,5 +56,12 @@ public interface WebViewBasedBrowserComponent {
     default PagePropertyMapper getPagePropertyMapper() {
         return (name, newValue) -> {
         };
+    }
+
+    enum PopupStrategy {
+        INTERNAL_BROWSER_NEW_WINDOW,
+        INTERNAL_BROWSER_REUSE_WINDOW,
+        EXTERNAL_BROWSER,
+        DISABLED
     }
 }

@@ -37,16 +37,30 @@ public class GoogleOAuth1ClientFacade implements OAuth1ClientFacade {
             OAuth1Parameters parameters = new OAuth1Parameters(profile);
             OAuthParameterValidator.validate(parameters);
             extractAccessToken(parameters);
-        } catch (MalformedURLException | URISyntaxException e) {
+        }
+        catch (MalformedURLException | URISyntaxException e) {
             SoapUI.logError(e, messages.get("GoogleOAuth1ClientFacade.Error.WrongURL"));
             throw new OAuth1Exception(e);
         }
     }
 
-    private void extractAccessToken(final OAuth1Parameters parameters) throws URISyntaxException,
-            MalformedURLException, OAuth1Exception {
+    @Override
+    public void applyAccessToken(OAuth1Profile profile, HttpRequestBase request, String requestContent) {
+        AccessTokenPositionConfig.Enum i = profile.getAccessTokenPosition();
+        if (i == AccessTokenPositionConfig.QUERY) {
+            appendAccessTokenToQuery(profile, request);
+        }
+        else if (i == AccessTokenPositionConfig.HEADER) {
+            appendAccessTokenToHeader(profile, request);
+        }
+        else {
+            assert false;
+        }
+    }
+
+    private void extractAccessToken(OAuth1Parameters parameters) throws URISyntaxException, MalformedURLException, OAuth1Exception {
         tokenSecret = null;
-        final UserBrowserFacade browserFacade = getBrowserFacade();
+        UserBrowserFacade browserFacade = getBrowserFacade();
         browserFacade.addBrowserListener(new BrowserListenerAdapter() {
             @Override
             public void locationChanged(String newLocation) {
@@ -91,7 +105,8 @@ public class GoogleOAuth1ClientFacade implements OAuth1ClientFacade {
         OAuthCredentialsResponse response = null;
         try {
             response = temporaryTokenGetter.execute();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new OAuth1Exception(e);
         }
 
@@ -121,7 +136,8 @@ public class GoogleOAuth1ClientFacade implements OAuth1ClientFacade {
                     browserFacade.close();
                 }
                 parameters.setTokenSecretInProfile(response.tokenSecret);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 SoapUI.logError(e);
             }
         }
@@ -134,22 +150,9 @@ public class GoogleOAuth1ClientFacade implements OAuth1ClientFacade {
         return signer;
     }
 
-
     protected UserBrowserFacade getBrowserFacade() {
         WebViewUserBrowserFacade result = new WebViewUserBrowserFacade();
         return result;
-    }
-
-    @Override
-    public void applyAccessToken(OAuth1Profile profile, HttpRequestBase request, String requestContent) {
-        AccessTokenPositionConfig.Enum i = profile.getAccessTokenPosition();
-        if (i == AccessTokenPositionConfig.QUERY) {
-            appendAccessTokenToQuery(profile, request);
-        } else if (i == AccessTokenPositionConfig.HEADER) {
-            appendAccessTokenToHeader(profile, request);
-        } else {
-            assert false;
-        }
     }
 
     private void appendAccessTokenToQuery(OAuth1Profile profile, HttpRequestBase request) {
@@ -159,9 +162,9 @@ public class GoogleOAuth1ClientFacade implements OAuth1ClientFacade {
         String requestQueryString = oldUri.getQuery() != null ? oldUri.getQuery() + "&" + queryString : queryString;
 
         try {
-            request.setURI(URIUtils.createURI(oldUri.getScheme(), oldUri.getHost(), oldUri.getPort(),
-                    oldUri.getRawPath(), requestQueryString, oldUri.getFragment()));
-        } catch (URISyntaxException e) {
+            request.setURI(URIUtils.createURI(oldUri.getScheme(), oldUri.getHost(), oldUri.getPort(), oldUri.getRawPath(), requestQueryString, oldUri.getFragment()));
+        }
+        catch (URISyntaxException e) {
             SoapUI.logError(e);
         }
     }
@@ -201,7 +204,8 @@ public class GoogleOAuth1ClientFacade implements OAuth1ClientFacade {
         oAuthParameters.computeTimestamp();
         try {
             oAuthParameters.computeSignature(request.getMethod(), new GenericUrl(request.getURI()));
-        } catch (GeneralSecurityException e) {
+        }
+        catch (GeneralSecurityException e) {
             SoapUI.logError(e);
         }
         return oAuthParameters;

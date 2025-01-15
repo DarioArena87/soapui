@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.project;
@@ -45,9 +45,8 @@ import java.io.File;
 
 public class AddWadlAction extends AbstractSoapUIAction<WsdlProject> {
     public static final String SOAPUI_ACTION_ID = "NewWsdlProjectAction";
-    private XFormDialog dialog;
-
     public static final MessageSupport messages = MessageSupport.getMessages(AddWadlAction.class);
+    private XFormDialog dialog;
 
     public AddWadlAction() {
         super(messages.get("Title"), messages.get("Description"));
@@ -75,7 +74,8 @@ public class AddWadlAction extends AbstractSoapUIAction<WsdlProject> {
                     }
                     break;
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 UISupport.showErrorMessage(ex);
             }
         }
@@ -90,19 +90,20 @@ public class AddWadlAction extends AbstractSoapUIAction<WsdlProject> {
                     dialog.getFormField(Form.GENERATETESTSUITE).setEnabled(newValue.trim().length() > 0);
                 }
             });
-        } else {
+        }
+        else {
             dialog.setValue(Form.INITIALWSDL, "");
             dialog.getFormField(Form.GENERATETESTSUITE).setEnabled(false);
         }
     }
 
     private RestService importWadl(WsdlProject project, String url) {
-        RestService restService = (RestService) project
-                .addNewInterface(project.getName(), RestServiceFactory.REST_TYPE);
+        RestService restService = (RestService)project.addNewInterface(project.getName(), RestServiceFactory.REST_TYPE);
         UISupport.select(restService);
         try {
             new WadlImporter(restService).initFromWadl(url);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e);
         }
 
@@ -112,9 +113,9 @@ public class AddWadlAction extends AbstractSoapUIAction<WsdlProject> {
     @AForm(name = "Form.Title", description = "Form.Description", helpUrl = HelpUrls.NEWPROJECT_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
     public interface Form {
         @AField(description = "Form.InitialWadl.Description", type = AFieldType.FILE)
-        public final static String INITIALWSDL = messages.get("Form.InitialWadl.Label");
+        String INITIALWSDL = messages.get("Form.InitialWadl.Label");
 
         @AField(description = "Form.GenerateTestSuite.Description", type = AFieldType.BOOLEAN, enabled = false)
-        public final static String GENERATETESTSUITE = messages.get("Form.GenerateTestSuite.Label");
+        String GENERATETESTSUITE = messages.get("Form.GenerateTestSuite.Label");
     }
 }

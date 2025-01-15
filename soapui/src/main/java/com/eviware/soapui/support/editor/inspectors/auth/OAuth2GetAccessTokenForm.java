@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.auth;
@@ -28,21 +28,9 @@ import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.value.AbstractValueModel;
 
 import javax.annotation.Nonnull;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.Border;
-import java.awt.Color;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -58,22 +46,16 @@ public class OAuth2GetAccessTokenForm implements OAuth2AccessTokenStatusChangeLi
     public static final String SCOPE_TITLE = "Scope";
     public static final String OAUTH_2_FLOW_COMBO_BOX_NAME = "OAuth2Flow";
     public static final String ACCESS_TOKEN_FORM_DIALOG_NAME = "getAccessTokenFormDialog";
-
+    static final ImageIcon DEFAULT_ICON = null;
     private static final String GET_ACCESS_TOKEN_BUTTON_NAME = "getAccessTokenButtonName";
     private static final String ACCESS_TOKEN_FORM_DIALOG_TITLE = "Get Access Token";
     private static final String AUTOMATION_BUTTON_TITLE = "Automation...";
-
     private static final String GET_ACCESS_TOKEN_FORM_LAYOUT = "7dlu:none,left:pref,10dlu,left:pref,10dlu,left:MAX(112dlu;pref),7dlu";
-
     private static final int BOARDER_SPACING = 15;
     private static final int NORMAL_SPACING = 10;
     private static final int GROUP_SPACING = 20;
-
     private static final Color CARD_BORDER_COLOR = new Color(121, 121, 121);
-
-    static final ImageIcon DEFAULT_ICON = null;
-
-    private OAuth2Profile profile;
+    private final OAuth2Profile profile;
     private JLabel accessTokenStatusText;
     private OAuth2AccessTokenStatusChangeManager statusChangeManager;
     private JDialog accessTokenDialog;
@@ -131,25 +113,29 @@ public class OAuth2GetAccessTokenForm implements OAuth2AccessTokenStatusChangeLi
 
         accessTokenForm.addSpace(GROUP_SPACING);
 
-        final JTextField resOwnerPassTextField = accessTokenForm.appendTextField(OAuth2Profile.RESOURCE_OWNER_LOGIN_PROPERTY, RESOURCE_OWNER_LOGIN, "");
-        resOwnerPassTextField.setVisible(oauth2FlowComboBox.getSelectedItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())));
+        JTextField resOwnerPassTextField = accessTokenForm.appendTextField(OAuth2Profile.RESOURCE_OWNER_LOGIN_PROPERTY, RESOURCE_OWNER_LOGIN, "");
+        resOwnerPassTextField.setVisible(oauth2FlowComboBox.getSelectedItem()
+                                                           .equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())));
 
-        final JTextField resOwnerNameTextField = accessTokenForm.appendTextField(OAuth2Profile.RESOURCE_OWNER_PASSWORD_PROPERTY, RESOURCE_OWNER_PASSWORD, "");
-        resOwnerNameTextField.setVisible(oauth2FlowComboBox.getSelectedItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())));
+        JTextField resOwnerNameTextField = accessTokenForm.appendTextField(OAuth2Profile.RESOURCE_OWNER_PASSWORD_PROPERTY, RESOURCE_OWNER_PASSWORD, "");
+        resOwnerNameTextField.setVisible(oauth2FlowComboBox.getSelectedItem()
+                                                           .equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())));
 
         accessTokenForm.appendTextField(OAuth2Profile.CLIENT_ID_PROPERTY, CLIENT_ID_TITLE, "");
-        final JTextField clientSecretField = appendClientSecretField(accessTokenForm, getOAuth2FlowValueModel(accessTokenForm));
+        JTextField clientSecretField = appendClientSecretField(accessTokenForm, getOAuth2FlowValueModel(accessTokenForm));
 
         accessTokenForm.addSpace(GROUP_SPACING);
 
-        final JTextField authUriTextField = accessTokenForm.appendTextField(OAuth2Profile.AUTHORIZATION_URI_PROPERTY, AUTHORIZATION_URI_TITLE, "");
-        authUriTextField.setVisible(!oauth2FlowComboBox.getSelectedItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())) &&
-                !oauth2FlowComboBox.getSelectedItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.CLIENT_CREDENTIALS_GRANT.toString())));
-        final JTextField accessTokenUriField = appendAccessTokenUriField(accessTokenForm, getOAuth2FlowValueModel(accessTokenForm));
+        JTextField authUriTextField = accessTokenForm.appendTextField(OAuth2Profile.AUTHORIZATION_URI_PROPERTY, AUTHORIZATION_URI_TITLE, "");
+        authUriTextField.setVisible(!oauth2FlowComboBox.getSelectedItem()
+                                                       .equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())) &&
+                                    !oauth2FlowComboBox.getSelectedItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.CLIENT_CREDENTIALS_GRANT.toString())));
+        JTextField accessTokenUriField = appendAccessTokenUriField(accessTokenForm, getOAuth2FlowValueModel(accessTokenForm));
 
-        final JTextField redirectUriTextField = accessTokenForm.appendTextField(OAuth2Profile.REDIRECT_URI_PROPERTY, REDIRECT_URI_TITLE, "");
-        redirectUriTextField.setVisible(!oauth2FlowComboBox.getSelectedItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())) &&
-                !oauth2FlowComboBox.getSelectedItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.CLIENT_CREDENTIALS_GRANT.toString())));
+        JTextField redirectUriTextField = accessTokenForm.appendTextField(OAuth2Profile.REDIRECT_URI_PROPERTY, REDIRECT_URI_TITLE, "");
+        redirectUriTextField.setVisible(!oauth2FlowComboBox.getSelectedItem()
+                                                           .equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())) &&
+                                        !oauth2FlowComboBox.getSelectedItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.CLIENT_CREDENTIALS_GRANT.toString())));
 
         accessTokenForm.addSpace(GROUP_SPACING);
 
@@ -173,9 +159,9 @@ public class OAuth2GetAccessTokenForm implements OAuth2AccessTokenStatusChangeLi
                     clientSecretField.setVisible(!e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.IMPLICIT_GRANT.toString())));
                     accessTokenUriField.setVisible(!e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.IMPLICIT_GRANT.toString())));
                     authUriTextField.setVisible(!e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())) &&
-                            !e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.CLIENT_CREDENTIALS_GRANT.toString())));
+                                                !e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.CLIENT_CREDENTIALS_GRANT.toString())));
                     redirectUriTextField.setVisible(!e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())) &&
-                            !e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.CLIENT_CREDENTIALS_GRANT.toString())));
+                                                    !e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.CLIENT_CREDENTIALS_GRANT.toString())));
                     resOwnerNameTextField.setVisible(e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())));
                     resOwnerPassTextField.setVisible(e.getItem().equals(OAuth2Profile.OAuth2Flow.valueOf(OAuth2FlowConfig.RESOURCE_OWNER_PASSWORD_CREDENTIALS.toString())));
 
@@ -203,7 +189,7 @@ public class OAuth2GetAccessTokenForm implements OAuth2AccessTokenStatusChangeLi
     }
 
     private JTextField appendClientSecretField(SimpleBindingForm accessTokenForm, AbstractValueModel valueModel) {
-        final JTextField clientSecretField = accessTokenForm.appendTextField(OAuth2Profile.CLIENT_SECRET_PROPERTY, CLIENT_SECRET_TITLE, "");
+        JTextField clientSecretField = accessTokenForm.appendTextField(OAuth2Profile.CLIENT_SECRET_PROPERTY, CLIENT_SECRET_TITLE, "");
         if (valueModel.getValue() == OAuth2Profile.OAuth2Flow.IMPLICIT_GRANT) {
             clientSecretField.setVisible(false);
         }
@@ -211,7 +197,7 @@ public class OAuth2GetAccessTokenForm implements OAuth2AccessTokenStatusChangeLi
     }
 
     private JTextField appendAccessTokenUriField(SimpleBindingForm accessTokenForm, AbstractValueModel valueModel) {
-        final JTextField accessTokenUriField = accessTokenForm.appendTextField(OAuth2Profile.ACCESS_TOKEN_URI_PROPERTY, ACCESS_TOKEN_URI_TITLE, "");
+        JTextField accessTokenUriField = accessTokenForm.appendTextField(OAuth2Profile.ACCESS_TOKEN_URI_PROPERTY, ACCESS_TOKEN_URI_TITLE, "");
         if (valueModel.getValue() == OAuth2Profile.OAuth2Flow.IMPLICIT_GRANT) {
             accessTokenUriField.setVisible(false);
         }
@@ -230,7 +216,7 @@ public class OAuth2GetAccessTokenForm implements OAuth2AccessTokenStatusChangeLi
     }
 
     private JDialog createGetAccessTokenDialog(JPanel accessTokenFormPanel) {
-        final JDialog accessTokenFormDialog = new JDialog();
+        JDialog accessTokenFormDialog = new JDialog();
         accessTokenFormDialog.setName(ACCESS_TOKEN_FORM_DIALOG_NAME);
         accessTokenFormDialog.setTitle(ACCESS_TOKEN_FORM_DIALOG_TITLE);
         accessTokenFormDialog.setIconImages(SoapUI.getFrameIcons());
@@ -244,7 +230,8 @@ public class OAuth2GetAccessTokenForm implements OAuth2AccessTokenStatusChangeLi
         // There are no auth profile selected
         if (status == null) {
             setDefaultFeedback();
-        } else {
+        }
+        else {
             switch (status) {
                 case WAITING_FOR_AUTHORIZATION:
                 case RECEIVED_AUTHORIZATION_CODE:
@@ -289,12 +276,11 @@ public class OAuth2GetAccessTokenForm implements OAuth2AccessTokenStatusChangeLi
         }
     }
 
-
     private class EditAutomationScriptsAction extends AbstractAction {
         private final OAuth2Profile profile;
 
         public EditAutomationScriptsAction(OAuth2Profile profile) {
-            putValue(Action.NAME, AUTOMATION_BUTTON_TITLE);
+            putValue(NAME, AUTOMATION_BUTTON_TITLE);
             this.profile = profile;
         }
 

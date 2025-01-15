@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -46,19 +46,27 @@ public class EditorPrefs implements Prefs {
     public static final String AUTO_VALIDATE_RESPONSE = "Validate Responses";
     public static final String XML_LINE_NUMBERS = "XML Line Numbers";
     public static final String GROOVY_LINE_NUMBERS = "Groovy Line Numbers";
-
+    private final String title;
     private JTextField editorFontTextField;
     private SimpleForm editorForm;
-    private final String title;
     private JCheckBox abortCheckBox;
     private JCheckBox autoValidateCheckBox;
 
-    public EditorPrefs(String title) {
-        this.title = title;
+    public static String encodeFont(Font font) {
+        String editorFont = font.getFontName() + " ";
+        if (font.isBold()) {
+            editorFont += "bold ";
+        }
+        if (font.isItalic()) {
+            editorFont += "italic ";
+        }
+        editorFont += font.getSize();
+
+        return editorFont;
     }
 
-    public String getTitle() {
-        return title;
+    public EditorPrefs(String title) {
+        this.title = title;
     }
 
     public SimpleForm getForm() {
@@ -70,8 +78,7 @@ public class EditorPrefs implements Prefs {
             builder.addRelatedGap();
             builder.addFixed(new JButton(new AbstractAction("Select Font..") {
                 public void actionPerformed(ActionEvent e) {
-                    Font font = JFontChooser.showDialog(UISupport.getMainFrame(), "Select XML Editor Font",
-                            Font.decode(editorFontTextField.getText()));
+                    Font font = JFontChooser.showDialog(UISupport.getMainFrame(), "Select XML Editor Font", Font.decode(editorFontTextField.getText()));
 
                     if (font != null) {
                         editorFontTextField.setText(encodeFont(font));
@@ -90,8 +97,7 @@ public class EditorPrefs implements Prefs {
             editorForm.appendCheckBox(START_WITH_REQUEST_TABS, "Defaults the Request editor to the tabbed layout", true);
             editorForm.appendSeparator();
 
-            autoValidateCheckBox = editorForm.appendCheckBox(AUTO_VALIDATE_REQUEST,
-                    "Always validate request messages before they are sent", true);
+            autoValidateCheckBox = editorForm.appendCheckBox(AUTO_VALIDATE_REQUEST, "Always validate request messages before they are sent", true);
             abortCheckBox = editorForm.appendCheckBox(ABORT_ON_INVALID_REQUEST, "Abort invalid requests", true);
             editorForm.appendCheckBox(AUTO_VALIDATE_RESPONSE, "Always validate response messages", true);
 
@@ -104,6 +110,13 @@ public class EditorPrefs implements Prefs {
         }
 
         return editorForm;
+    }
+
+    public void setFormValues(Settings settings) {
+        editorFontTextField.setText(encodeFont(UISupport.getEditorFont()));
+        editorForm.setValues(getValues(settings));
+
+        abortCheckBox.setEnabled(settings.getBoolean(UISettings.AUTO_VALIDATE_REQUEST));
     }
 
     public void getFormValues(Settings settings) {
@@ -126,26 +139,6 @@ public class EditorPrefs implements Prefs {
         settings.setBoolean(UISettings.SHOW_GROOVY_LINE_NUMBERS, values.getBoolean(GROOVY_LINE_NUMBERS));
     }
 
-    public static String encodeFont(Font font) {
-        String editorFont = font.getFontName() + " ";
-        if (font.isBold()) {
-            editorFont += "bold ";
-        }
-        if (font.isItalic()) {
-            editorFont += "italic ";
-        }
-        editorFont += font.getSize();
-
-        return editorFont;
-    }
-
-    public void setFormValues(Settings settings) {
-        editorFontTextField.setText(encodeFont(UISupport.getEditorFont()));
-        editorForm.setValues(getValues(settings));
-
-        abortCheckBox.setEnabled(settings.getBoolean(UISettings.AUTO_VALIDATE_REQUEST));
-    }
-
     public StringToStringMap getValues(Settings settings) {
         StringToStringMap values = new StringToStringMap();
         values.put(NO_RESIZE_REQUEST_EDITOR, settings.getBoolean(UISettings.NO_RESIZE_REQUEST_EDITOR));
@@ -157,5 +150,9 @@ public class EditorPrefs implements Prefs {
         values.put(GROOVY_LINE_NUMBERS, settings.getBoolean(UISettings.SHOW_GROOVY_LINE_NUMBERS));
 
         return values;
+    }
+
+    public String getTitle() {
+        return title;
     }
 }

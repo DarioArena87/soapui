@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.boundary.enumeration;
@@ -24,12 +24,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class EnumerationValues {
-    private String type;
-    private List<String> valuesList = new ArrayList<String>();
-
-    public EnumerationValues(String type) {
-        this.type = type;
-    }
+    private final String type;
+    private final List<String> valuesList = new ArrayList<String>();
 
     public static int maxLengthStringSize(Collection<String> values) {
         int max = 0;
@@ -53,6 +49,10 @@ public class EnumerationValues {
         return null;
     }
 
+    public EnumerationValues(String type) {
+        this.type = type;
+    }
+
     public String getType() {
         return type;
     }
@@ -64,5 +64,4 @@ public class EnumerationValues {
     public List<String> getValuesList() {
         return valuesList;
     }
-
 }

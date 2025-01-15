@@ -76,12 +76,14 @@ public class ExtendedLockMethod extends HttpLockMethod implements ExtendedEntity
         return httpMethodSupport.getResponseContentType();
     }
 
-    @Override
-    public void setDumpFile(String dumpFile) {
-        httpMethodSupport.setDumpFile(dumpFile);
+    public String getDumpFile() {
+        return httpMethodSupport.getDumpFile();
     }
 
     @Override
+    public void setDumpFile(String dumpFile) {
+        httpMethodSupport.setDumpFile(dumpFile);
+    }    @Override
     public void setFailed(Throwable t) {
         httpMethodSupport.setFailed(t);
     }
@@ -136,14 +138,15 @@ public class ExtendedLockMethod extends HttpLockMethod implements ExtendedEntity
         byte[] rawdata = getResponseBody();
         if (rawdata != null) {
             return EncodingUtil.getString(rawdata, getResponseCharSet());
-        } else {
+        }
+        else {
             return null;
         }
     }
 
     @Override
     public HttpEntity getRequestEntity() {
-        return super.getEntity();
+        return getEntity();
     }
 
     @Override
@@ -171,8 +174,6 @@ public class ExtendedLockMethod extends HttpLockMethod implements ExtendedEntity
         return getURI().toURL();
     }
 
-    public String getDumpFile() {
-        return httpMethodSupport.getDumpFile();
-    }
+
 }
 

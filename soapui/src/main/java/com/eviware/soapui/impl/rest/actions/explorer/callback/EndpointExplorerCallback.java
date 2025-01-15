@@ -33,12 +33,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,22 +53,20 @@ public class EndpointExplorerCallback {
     private static final String URL_PROPERTY = "url";
     private static final String PAYLOAD_PROPERTY = "payload";
     private static final String HEADERS_PROPERTY = "headers";
-
+    private static final String UNKNOWN_HOST_EXCEPTION_RESPONSE_TEXT = "<missing raw response data>";
     private final WebViewBasedBrowserComponent browserComponent;
-
     private boolean requestCreated = false;
 
-    public EndpointExplorerCallback(WebViewBasedBrowserComponent browserComponent){
+    public EndpointExplorerCallback(WebViewBasedBrowserComponent browserComponent) {
         this.browserComponent = browserComponent;
     }
-
-    private static final String UNKNOWN_HOST_EXCEPTION_RESPONSE_TEXT = "<missing raw response data>";
 
     public RestURIParser getUrlParser(String url) {
         if (StringUtils.hasContent(url)) {
             try {
                 return new RestURIParserImpl(url);
-            } catch (MalformedURLException e) {
+            }
+            catch (MalformedURLException e) {
                 SoapUI.logError(e);
                 return null;
             }
@@ -79,7 +78,8 @@ public class EndpointExplorerCallback {
         JSONObject request;
         try {
             request = new JSONObject(json);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SoapUI.logError(e);
             return;
         }
@@ -95,19 +95,14 @@ public class EndpointExplorerCallback {
             @Override
             public void run() {
                 HashMap<String, Object> context = new HashMap<>();
-                context.put("URLs", Arrays.asList(url));
-                context.put("Methods", Arrays.asList(method));
-                context.put("InspectionData", Arrays.asList(inspectionData));
+                context.put("URLs", Collections.singletonList(url));
+                context.put("Methods", Collections.singletonList(method));
+                context.put("InspectionData", Collections.singletonList(inspectionData));
                 SaveRequestAction saveRequestAction = new SaveRequestAction(context);
                 requestCreated = saveRequestAction.showNewRestRequestDialog();
                 browserComponent.executeJavaScript(String.format("window.closeHandler(%s)", requestCreated));
             }
         });
-    }
-
-    private static String sendRequest(HttpUriRequest httpUriRequest) throws IOException {
-        HttpResponse response = HttpClientSupport.getHttpClient().execute(httpUriRequest);
-        return getResponseAsString(response);
     }
 
     public String sendRequest(String json) {
@@ -123,7 +118,8 @@ public class EndpointExplorerCallback {
             method = extractMethod(request);
             headersMap = extractHeaders(request);
             payload = extractPayload(request);
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             SoapUI.logError(e);
         }
 
@@ -184,14 +180,16 @@ public class EndpointExplorerCallback {
                 default:
                     return "Unsupported method";
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             if (e instanceof UnknownHostException) {
                 return UNKNOWN_HOST_EXCEPTION_RESPONSE_TEXT;
             }
             if (StringUtils.hasContent(e.getMessage())) {
                 return e.getMessage();
-            } else {
+            }
+            else {
                 return e.getCause().getMessage();
             }
         }
@@ -222,7 +220,8 @@ public class EndpointExplorerCallback {
             if (request.getString(URL_PROPERTY) != null) {
                 return request.getString(URL_PROPERTY);
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             return "";
         }
         return "";
@@ -233,7 +232,8 @@ public class EndpointExplorerCallback {
             if (request.getString(METHOD_PROPERTY) != null) {
                 return request.getString(METHOD_PROPERTY);
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             return "";
         }
         return "";
@@ -244,34 +244,11 @@ public class EndpointExplorerCallback {
             if (request.getString(PAYLOAD_PROPERTY) != null) {
                 return request.getString(PAYLOAD_PROPERTY);
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             return "";
         }
         return "";
-    }
-
-    private static String getResponseAsString(HttpResponse response) {
-        StringBuilder builder = new StringBuilder();
-        builder.append(response.getStatusLine().toString());
-        try {
-            builder.append(StringUtils.fixLineSeparator("\r\n"));
-        } catch (UnsupportedEncodingException e) {
-            SoapUI.logError(e);
-        }
-        for (Header header : response.getAllHeaders()) {
-            builder.append(header.getName());
-            builder.append("=");
-            builder.append(header.getValue());
-            builder.append("\r\n");
-        }
-        builder.append("\r\n");
-        if (response.getEntity() != null) {
-            try {
-                builder.append(EntityUtils.toString(response.getEntity()));
-            } catch (IOException ignore) {
-            }
-        }
-        return builder.toString();
     }
 
     private HashMap extractHeaders(JSONObject request) {
@@ -280,15 +257,16 @@ public class EndpointExplorerCallback {
             if (request.getJSONArray(HEADERS_PROPERTY) != null) {
                 JSONArray headersArray = request.getJSONArray(HEADERS_PROPERTY);
                 for (int i = 0; i < headersArray.length(); i++) {
-                    JSONArray headerGroup = (JSONArray) headersArray.get(i);
-                    String headerName = (String) headerGroup.get(0);
+                    JSONArray headerGroup = (JSONArray)headersArray.get(i);
+                    String headerName = (String)headerGroup.get(0);
                     if (StringUtils.hasContent(headerName)) {
-                        String headerValue = (String) headerGroup.get(1);
+                        String headerValue = (String)headerGroup.get(1);
                         headersMap.put(headerName, headerValue);
                     }
                 }
             }
-        } catch (JSONException e) {
+        }
+        catch (JSONException e) {
             return headersMap;
         }
         return headersMap;
@@ -305,5 +283,36 @@ public class EndpointExplorerCallback {
     private void setHeadersAndPayload(HttpEntityEnclosingRequestBase request, Map<String, String> headersMap, String payload) {
         setHeaders(request, headersMap);
         request.setEntity(new ByteArrayEntity(payload.getBytes()));
+    }
+
+    private static String sendRequest(HttpUriRequest httpUriRequest) throws IOException {
+        HttpResponse response = HttpClientSupport.getHttpClient().execute(httpUriRequest);
+        return getResponseAsString(response);
+    }
+
+    private static String getResponseAsString(HttpResponse response) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(response.getStatusLine().toString());
+        try {
+            builder.append(StringUtils.fixLineSeparator("\r\n"));
+        }
+        catch (UnsupportedEncodingException e) {
+            SoapUI.logError(e);
+        }
+        for (Header header : response.getAllHeaders()) {
+            builder.append(header.getName());
+            builder.append("=");
+            builder.append(header.getValue());
+            builder.append("\r\n");
+        }
+        builder.append("\r\n");
+        if (response.getEntity() != null) {
+            try {
+                builder.append(EntityUtils.toString(response.getEntity()));
+            }
+            catch (IOException ignore) {
+            }
+        }
+        return builder.toString();
     }
 }

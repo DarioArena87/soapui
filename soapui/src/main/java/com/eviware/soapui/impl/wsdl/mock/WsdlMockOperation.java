@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock;
@@ -39,7 +39,7 @@ import com.eviware.soapui.support.UISupport;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
@@ -52,15 +52,13 @@ import java.util.List;
  */
 
 public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig, WsdlMockResponse> {
-    @SuppressWarnings("unused")
-    private final static Logger log = LogManager.getLogger(WsdlMockOperation.class);
-
     public final static String OPERATION_PROPERTY = WsdlMockOperation.class.getName() + "@operation";
     public static final String ICON_NAME = "/mockOperation.gif";
-
+    @SuppressWarnings("unused")
+    private final static Logger log = LogManager.getLogger(WsdlMockOperation.class);
     private WsdlOperation operation;
-    private InterfaceListener interfaceListener = new InternalInterfaceListener();
-    private ProjectListener projectListener = new InternalProjectListener();
+    private final InterfaceListener interfaceListener = new InternalInterfaceListener();
+    private final ProjectListener projectListener = new InternalProjectListener();
     private ImageIcon oneWayIcon;
     private ImageIcon notificationIcon;
     private ImageIcon solicitResponseIcon;
@@ -71,15 +69,16 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
         Interface iface = mockService.getProject().getInterfaceByName(config.getInterface());
         if (iface == null) {
             SoapUI.log.warn("Missing interface [" + config.getInterface() + "] for MockOperation in project");
-        } else {
-            operation = (WsdlOperation) iface.getOperationByName(config.getOperation());
+        }
+        else {
+            operation = (WsdlOperation)iface.getOperationByName(config.getOperation());
         }
 
         List<MockResponseConfig> responseConfigs = config.getResponseList();
         for (MockResponseConfig responseConfig : responseConfigs) {
             WsdlMockResponse wsdlMockResponse = new WsdlMockResponse(this, responseConfig);
             wsdlMockResponse.addPropertyChangeListener(this);
-            super.addMockResponse(wsdlMockResponse);
+            addMockResponse(wsdlMockResponse);
         }
 
         setupConfig(config);
@@ -106,12 +105,26 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
         addListeners();
     }
 
+    @Override
+    public void removeResponseFromConfig(int index) {
+        getConfig().removeResponse(index);
+    }
+
+    @Override
+    public MockOperationDispatcher setDispatchStyle(String dispatchStyle) {
+        if (!getConfig().isSetDispatchConfig()) {
+            getConfig().addNewDispatchConfig();
+        }
+
+        return super.setDispatchStyle(dispatchStyle);
+    }
+
     private void addListeners() {
         Operation operation = getOperation();
         if (operation != null) {
             operation.getInterface().getProject().addProjectListener(projectListener);
             operation.getInterface().addInterfaceListener(interfaceListener);
-            operation.getInterface().addPropertyChangeListener(WsdlInterface.NAME_PROPERTY, this);
+            operation.getInterface().addPropertyChangeListener(NAME_PROPERTY, this);
         }
     }
 
@@ -126,9 +139,11 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
         if (operation != null) {
             if (isOneWay()) {
                 return oneWayIcon;
-            } else if (isNotification()) {
+            }
+            else if (isNotification()) {
                 return notificationIcon;
-            } else if (isSolicitResponse()) {
+            }
+            else if (isSolicitResponse()) {
                 return solicitResponseIcon;
             }
         }
@@ -136,8 +151,33 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
         return super.getIcon();
     }
 
+    @Override
+    public void release() {
+        super.release();
+
+        if (getDispatcher() != null) {
+            getDispatcher().release();
+        }
+
+        for (MockResponse response : getMockResponses()) {
+            response.removePropertyChangeListener(this);
+            response.release();
+        }
+
+        if (operation != null) {
+            operation.getInterface().getProject().removeProjectListener(projectListener);
+            operation.getInterface().removeInterfaceListener(interfaceListener);
+            operation.getInterface().removePropertyChangeListener(NAME_PROPERTY, this);
+        }
+    }
+
     public WsdlMockService getMockService() {
-        return (WsdlMockService) getParent();
+        return (WsdlMockService)getParent();
+    }
+
+    @Override
+    public MockResponse addNewMockResponse(String name) {
+        return addNewMockResponse(name, true);
     }
 
     public WsdlOperation getOperation() {
@@ -149,15 +189,27 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
         return HelpUrls.MOCKOPERATION_SCRIPTDISPATCH_HELP_URL;
     }
 
-    @Override
-    public MockResponse addNewMockResponse(String name) {
-        return this.addNewMockResponse(name, true);
+    public void setOperation(WsdlOperation operation) {
+        WsdlOperation oldOperation = getOperation();
+
+        if (operation == null) {
+            getConfig().unsetInterface();
+            getConfig().unsetOperation();
+        }
+        else {
+            getConfig().setInterface(operation.getInterface().getName());
+            getConfig().setOperation(operation.getName());
+        }
+
+        this.operation = operation;
+
+        notifyPropertyChanged(OPERATION_PROPERTY, oldOperation, operation);
     }
 
     public WsdlMockResponse addNewMockResponse(MockResponseConfig responseConfig) {
         WsdlMockResponse mockResponse = new WsdlMockResponse(this, responseConfig);
 
-        super.addMockResponse(mockResponse);
+        addMockResponse(mockResponse);
         if (getMockResponseCount() == 1) {
             setDefaultResponse(mockResponse.getName());
         }
@@ -177,10 +229,8 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
         responseConfig.addNewResponseContent();
 
         if (createResponse && getOperation() != null && getOperation().isBidirectional()) {
-            boolean createOptional = SoapUI.getSettings().getBoolean(
-                    WsdlSettings.XML_GENERATION_ALWAYS_INCLUDE_OPTIONAL_ELEMENTS);
-            CompressedStringSupport.setString(responseConfig.getResponseContent(),
-                    getOperation().createResponse(createOptional));
+            boolean createOptional = SoapUI.getSettings().getBoolean(WsdlSettings.XML_GENERATION_ALWAYS_INCLUDE_OPTIONAL_ELEMENTS);
+            CompressedStringSupport.setString(responseConfig.getResponseContent(), getOperation().createResponse(createOptional));
         }
 
         return addNewMockResponse(responseConfig);
@@ -197,7 +247,7 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
             }
 
             result.setMockOperation(this);
-            WsdlMockResponse response = (WsdlMockResponse) getDispatcher().selectMockResponse(request, result);
+            WsdlMockResponse response = (WsdlMockResponse)getDispatcher().selectMockResponse(request, result);
             if (response == null) {
                 response = getMockResponseByName(getDefaultResponse());
             }
@@ -210,41 +260,14 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
             response.execute(request, result);
 
             return result;
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             if (e instanceof DispatchException) {
-                throw (DispatchException) e;
-            } else {
+                throw (DispatchException)e;
+            }
+            else {
                 throw new DispatchException(e);
             }
-        }
-    }
-
-    @Override
-    public MockOperationDispatcher setDispatchStyle(String dispatchStyle) {
-        if (!getConfig().isSetDispatchConfig()) {
-            getConfig().addNewDispatchConfig();
-        }
-
-        return super.setDispatchStyle(dispatchStyle);
-    }
-
-    @Override
-    public void release() {
-        super.release();
-
-        if (getDispatcher() != null) {
-            getDispatcher().release();
-        }
-
-        for (MockResponse response : getMockResponses()) {
-            response.removePropertyChangeListener(this);
-            response.release();
-        }
-
-        if (operation != null) {
-            operation.getInterface().getProject().removeProjectListener(projectListener);
-            operation.getInterface().removeInterfaceListener(interfaceListener);
-            operation.getInterface().removePropertyChangeListener(WsdlInterface.NAME_PROPERTY, this);
         }
     }
 
@@ -254,50 +277,63 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
     }
 
     public void propertyChange(PropertyChangeEvent arg0) {
-        if (arg0.getPropertyName().equals(WsdlMockResponse.NAME_PROPERTY)) {
+        if (arg0.getPropertyName().equals(NAME_PROPERTY)) {
             if (arg0.getOldValue().equals(getDefaultResponse())) {
                 setDefaultResponse(arg0.getNewValue().toString());
             }
-        } else if (arg0.getPropertyName().equals(WsdlInterface.NAME_PROPERTY)) {
+        }
+        else if (arg0.getPropertyName().equals(NAME_PROPERTY)) {
             getConfig().setInterface(arg0.getNewValue().toString());
         }
     }
 
-    public void setOperation(WsdlOperation operation) {
-        WsdlOperation oldOperation = getOperation();
-
-        if (operation == null) {
-            getConfig().unsetInterface();
-            getConfig().unsetOperation();
-        } else {
-            getConfig().setInterface(operation.getInterface().getName());
-            getConfig().setOperation(operation.getName());
-        }
-
-        this.operation = operation;
-
-        notifyPropertyChanged(OPERATION_PROPERTY, oldOperation, operation);
+    public boolean isOneWay() {
+        return operation != null && operation.isOneWay();
     }
 
-    @Override
-    public void removeResponseFromConfig(int index) {
-        getConfig().removeResponse(index);
+    public boolean isNotification() {
+        return operation != null && operation.isNotification();
+    }
+
+    public boolean isSolicitResponse() {
+        return operation != null && operation.isSolicitResponse();
+    }
+
+    public boolean isUnidirectional() {
+        return operation != null && operation.isUnidirectional();
+    }
+
+    public boolean isBidirectional() {
+        return !isUnidirectional();
+    }
+
+    public List<? extends ModelItem> getChildren() {
+        return getMockResponses();
+    }
+
+    public void exportMockOperation(File file) {
+        try {
+            getConfig().newCursor().save(file);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class InternalInterfaceListener extends InterfaceListenerAdapter {
-        @Override
-        public void operationUpdated(Operation operation) {
-            // such wow - works? equals?
-            if (operation == WsdlMockOperation.this.operation) {
-                getConfig().setOperation(operation.getName());
-            }
-        }
-
         @Override
         public void operationRemoved(Operation operation) {
             // such wow - works? equals?
             if (operation == WsdlMockOperation.this.operation) {
                 getMockService().removeMockOperation(WsdlMockOperation.this);
+            }
+        }
+
+        @Override
+        public void operationUpdated(Operation operation) {
+            // such wow - works? equals?
+            if (operation == WsdlMockOperation.this.operation) {
+                getConfig().setOperation(operation.getName());
             }
         }
     }
@@ -317,38 +353,4 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
             }
         }
     }
-
-    public boolean isOneWay() {
-        return operation == null ? false : operation.isOneWay();
-    }
-
-    public boolean isNotification() {
-        return operation == null ? false : operation.isNotification();
-    }
-
-    public boolean isSolicitResponse() {
-        return operation == null ? false : operation.isSolicitResponse();
-    }
-
-    public boolean isUnidirectional() {
-        return operation == null ? false : operation.isUnidirectional();
-    }
-
-    public boolean isBidirectional() {
-        return !isUnidirectional();
-    }
-
-    public List<? extends ModelItem> getChildren() {
-        return getMockResponses();
-    }
-
-    public void exportMockOperation(File file) {
-        try {
-            this.getConfig().newCursor().save(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 }

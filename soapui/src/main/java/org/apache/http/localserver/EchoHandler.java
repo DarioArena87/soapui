@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -41,9 +41,6 @@
 
 package org.apache.http.localserver;
 
-import java.io.IOException;
-import java.util.Locale;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
@@ -55,6 +52,9 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.apache.http.util.EntityUtils;
+
+import java.io.IOException;
+import java.util.Locale;
 
 /**
  * A handler that echos the incoming request entity.
@@ -76,8 +76,7 @@ public class EchoHandler implements HttpRequestHandler {
      * @throws HttpException in case of a problem
      * @throws IOException   in case of an IO problem
      */
-    public void handle(final HttpRequest request, final HttpResponse response, final HttpContext context)
-            throws HttpException, IOException {
+    public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
 
         String method = request.getRequestLine().getMethod().toUpperCase(Locale.ENGLISH);
         if (!"GET".equals(method) && !"POST".equals(method) && !"PUT".equals(method)) {
@@ -86,7 +85,7 @@ public class EchoHandler implements HttpRequestHandler {
 
         HttpEntity entity = null;
         if (request instanceof HttpEntityEnclosingRequest) {
-            entity = ((HttpEntityEnclosingRequest) request).getEntity();
+            entity = ((HttpEntityEnclosingRequest)request).getEntity();
         }
 
         // For some reason, just putting the incoming entity into
@@ -94,7 +93,8 @@ public class EchoHandler implements HttpRequestHandler {
         byte[] data;
         if (entity == null) {
             data = new byte[0];
-        } else {
+        }
+        else {
             data = EntityUtils.toByteArray(entity);
         }
 
@@ -106,7 +106,5 @@ public class EchoHandler implements HttpRequestHandler {
 
         response.setStatusCode(HttpStatus.SC_OK);
         response.setEntity(entity);
-
     } // handle
-
 } // class EchoHandler

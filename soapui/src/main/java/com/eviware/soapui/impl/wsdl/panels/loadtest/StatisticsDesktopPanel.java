@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.loadtest;
@@ -26,20 +26,8 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.ui.support.DefaultDesktopPanel;
 
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -52,12 +40,12 @@ import java.beans.PropertyChangeListener;
  */
 
 public class StatisticsDesktopPanel extends DefaultDesktopPanel {
-    private JPanel panel;
     private final WsdlLoadTest loadTest;
+    private JPanel panel;
     private JStatisticsGraph statisticsGraph;
     private JButton exportButton;
     private SelectStepComboBoxModel selectStepComboBoxModel;
-    private InternalPropertyChangeListener propertyChangeListener = new InternalPropertyChangeListener();
+    private final InternalPropertyChangeListener propertyChangeListener = new InternalPropertyChangeListener();
     private JComboBox resolutionCombo;
 
     public StatisticsDesktopPanel(WsdlLoadTest loadTest) {
@@ -111,7 +99,8 @@ public class StatisticsDesktopPanel extends DefaultDesktopPanel {
                     if (resolution != statisticsGraph.getResolution()) {
                         statisticsGraph.setResolution(resolution);
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex) {
                     long resolution = statisticsGraph.getResolution();
                     resolutionCombo.setSelectedItem(resolution == 0 ? "data" : String.valueOf(resolution));
                 }
@@ -127,8 +116,30 @@ public class StatisticsDesktopPanel extends DefaultDesktopPanel {
         return selectStepCombo;
     }
 
+    public boolean onClose(boolean canCancel) {
+        selectStepComboBoxModel.release();
+        loadTest.removePropertyChangeListener(propertyChangeListener);
+        statisticsGraph.release();
+
+        return super.onClose(canCancel);
+    }
+
     public JComponent getComponent() {
         return panel;
+    }
+
+    private final static class TestStepCellRenderer extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
+            JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof TestStep) {
+                label.setText(((TestStep)value).getName());
+            }
+
+            return label;
+        }
     }
 
     private final class InternalPropertyChangeListener implements PropertyChangeListener {
@@ -141,13 +152,15 @@ public class StatisticsDesktopPanel extends DefaultDesktopPanel {
 
     private class SelectStepComboBoxModel extends AbstractListModel implements ComboBoxModel {
         private TestStep selectedStep;
-        private InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
+        private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
 
         public SelectStepComboBoxModel() {
             loadTest.getTestCase().getTestSuite().addTestSuiteListener(testSuiteListener);
         }
 
-        public void setSelectedItem(Object anItem) {
+        public int getSize() {
+            return loadTest.getTestCase().getTestStepCount() + 1;
+        }        public void setSelectedItem(Object anItem) {
             if (anItem == selectedStep) {
                 return;
             }
@@ -157,22 +170,20 @@ public class StatisticsDesktopPanel extends DefaultDesktopPanel {
             }
 
             if (anItem instanceof TestStep) {
-                selectedStep = (TestStep) anItem;
+                selectedStep = (TestStep)anItem;
             }
 
             statisticsGraph.setTestStep(selectedStep);
         }
 
-        public Object getSelectedItem() {
+        public Object getElementAt(int index) {
+            return index == getSize() - 1 ? "Total" : loadTest.getTestCase().getTestStepAt(index);
+        }        public Object getSelectedItem() {
             return selectedStep == null ? "Total" : selectedStep;
         }
 
-        public int getSize() {
-            return loadTest.getTestCase().getTestStepCount() + 1;
-        }
-
-        public Object getElementAt(int index) {
-            return index == getSize() - 1 ? "Total" : loadTest.getTestCase().getTestStepAt(index);
+        public void release() {
+            loadTest.getTestCase().getTestSuite().removeTestSuiteListener(testSuiteListener);
         }
 
         private final class InternalTestSuiteListener extends TestSuiteListenerAdapter {
@@ -194,29 +205,8 @@ public class StatisticsDesktopPanel extends DefaultDesktopPanel {
             }
         }
 
-        public void release() {
-            loadTest.getTestCase().getTestSuite().removeTestSuiteListener(testSuiteListener);
-        }
-    }
 
-    private final static class TestStepCellRenderer extends DefaultListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
-            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-            if (value instanceof TestStep) {
-                label.setText(((TestStep) value).getName());
-            }
 
-            return label;
-        }
-    }
-
-    public boolean onClose(boolean canCancel) {
-        selectStepComboBoxModel.release();
-        loadTest.removePropertyChangeListener(propertyChangeListener);
-        statisticsGraph.release();
-
-        return super.onClose(canCancel);
     }
 }

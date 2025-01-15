@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.jms.property;
@@ -25,33 +25,30 @@ import com.eviware.soapui.support.editor.views.xml.raw.RawXmlEditorFactory;
 import com.eviware.soapui.support.editor.xml.XmlDocument;
 import com.eviware.soapui.support.swing.JTableFactory;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 public class JMSPropertyInspector extends AbstractXmlInspector implements PropertyChangeListener {
-    private StringToStringMapTableModel headersTableModel;
     private final JMSPropertyInspectorModel model;
+    public boolean changing;
+    private StringToStringMapTableModel headersTableModel;
     private JTable headersTable;
     private JPanel panel;
     private JButton removeButton;
-    public boolean changing;
 
     protected JMSPropertyInspector(JMSPropertyInspectorModel model) {
         super("JMS Properties (" + (model.getJMSProperties() == null ? "0" : model.getJMSProperties().size()) + ")",
-                "Additional JMS Property for this message", true, JMSPropertyInspectorFactory.INSPECTOR_ID);
+              "Additional JMS Property for this message",
+              true,
+              JMSPropertyInspectorFactory.INSPECTOR_ID
+        );
 
         this.model = model;
 
@@ -64,13 +61,11 @@ public class JMSPropertyInspector extends AbstractXmlInspector implements Proper
             return panel;
         }
 
-        headersTableModel = new StringToStringMapTableModel(model.getJMSProperties(), "Key", "Value",
-                !model.isReadOnly());
+        headersTableModel = new StringToStringMapTableModel(model.getJMSProperties(), "Key", "Value", !model.isReadOnly());
         headersTableModel.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent arg0) {
                 model.setJMSProperties(headersTableModel.getData());
-                setTitle("JMS Property (" + (model.getJMSProperties() == null ? "0" : model.getJMSProperties().size())
-                        + ")");
+                setTitle("JMS Property (" + (model.getJMSProperties() == null ? "0" : model.getJMSProperties().size()) + ")");
             }
         });
 
@@ -102,7 +97,8 @@ public class JMSPropertyInspector extends AbstractXmlInspector implements Proper
 
             if (headersTable.getRowCount() > 0) {
                 headersTable.setRowSelectionInterval(0, 0);
-            } else {
+            }
+            else {
                 removeButton.setEnabled(false);
             }
         }
@@ -121,6 +117,11 @@ public class JMSPropertyInspector extends AbstractXmlInspector implements Proper
         model.removePropertyChangeListener(this);
     }
 
+    @Override
+    public boolean isEnabledFor(EditorView<XmlDocument> view) {
+        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (!changing) {
             headersTableModel.setData(model.getJMSProperties());
@@ -129,9 +130,8 @@ public class JMSPropertyInspector extends AbstractXmlInspector implements Proper
 
     private final class RemoveAction extends AbstractAction {
         private RemoveAction() {
-            super();
-            putValue(AbstractAction.SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(AbstractAction.SHORT_DESCRIPTION, "Removes the selected custom JMS Property from this message");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
+            putValue(SHORT_DESCRIPTION, "Removes the selected custom JMS Property from this message");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -146,9 +146,8 @@ public class JMSPropertyInspector extends AbstractXmlInspector implements Proper
 
     private final class AddAction extends AbstractAction {
         private AddAction() {
-            super();
-            putValue(AbstractAction.SMALL_ICON, UISupport.createImageIcon("/add.png"));
-            putValue(AbstractAction.SHORT_DESCRIPTION, "Adds a custom JMS Property to this message");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds a custom JMS Property to this message");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -174,10 +173,5 @@ public class JMSPropertyInspector extends AbstractXmlInspector implements Proper
                 changing = false;
             }
         }
-    }
-
-    @Override
-    public boolean isEnabledFor(EditorView<XmlDocument> view) {
-        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
     }
 }

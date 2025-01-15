@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.mock;
@@ -41,10 +41,6 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
     public final static String ICON_NAME = "/rest_virt.png";
     public static final String STRING_ID = "REST";
 
-    public String getStringID() {
-        return STRING_ID;
-    }
-
     public RestMockService(Project project, RESTMockServiceConfig config) {
         super(config, project, ICON_NAME);
 
@@ -59,12 +55,6 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
         }
 
         setPropertiesConfig(config.getProperties());
-
-    }
-
-    @Override
-    public String getIconName() {
-        return ICON_NAME;
     }
 
     @Override
@@ -78,13 +68,11 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
     }
 
     public RestMockAction addNewMockAction(RestRequest restRequest) {
-        RestMockAction mockAction = addEmptyMockAction(restRequest.getMethod(),
-                RestUtils.getExpandedPath(restRequest.getPath(), restRequest.getParams(), restRequest));
+        RestMockAction mockAction = addEmptyMockAction(restRequest.getMethod(), RestUtils.getExpandedPath(restRequest.getPath(), restRequest.getParams(), restRequest));
         mockAction.setResource(restRequest.getResource());
 
         return mockAction;
     }
-
 
     public RestMockAction addEmptyMockAction(HttpMethod method, String path) {
         RESTMockActionConfig config = getConfig().addNewRestMockAction();
@@ -102,7 +90,6 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
 
         return restMockAction;
     }
-
 
     public MockOperation findOrCreateNewOperation(RestRequest restRequest) {
         String expandedPath = RestUtils.getExpandedPath(restRequest.getPath(), restRequest.getParams(), restRequest);
@@ -129,8 +116,8 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
         MockOperation bestMatchedOperation = null;
 
         for (MockOperation operation : getMockOperationList()) {
-            String operationPath = ((RestMockAction) operation).getResourcePath();
-            HttpMethod operationVerb = ((RestMockAction) operation).getMethod();
+            String operationPath = ((RestMockAction)operation).getResourcePath();
+            HttpMethod operationVerb = ((RestMockAction)operation).getMethod();
 
             boolean matchesPath = operationPath.equals(pathToFind);
             boolean matchesVerb = verbToFind == operationVerb;
@@ -138,7 +125,8 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
 
             if (matchesPath && matchesVerb) {
                 return operation;
-            } else if (includePartialMatch && matchesPathPartially && matchesVerb) {
+            }
+            else if (includePartialMatch && matchesPathPartially && matchesVerb) {
                 bestMatchedOperation = getBestMatchedOperation(bestMatchedOperation, operation, operationPath);
             }
         }
@@ -149,7 +137,7 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
     private MockOperation getBestMatchedOperation(MockOperation currentBestMatchedOperation, MockOperation operation, String operationPath) {
         MockOperation bestMatchedOperation = currentBestMatchedOperation;
 
-        if (bestMatchedOperation == null || foundBetterMatch((RestMockAction) bestMatchedOperation, operationPath)) {
+        if (bestMatchedOperation == null || foundBetterMatch((RestMockAction)bestMatchedOperation, operationPath)) {
             bestMatchedOperation = operation;
         }
         return bestMatchedOperation;
@@ -160,12 +148,21 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
     }
 
     public boolean canIAddAMockOperation(RestMockAction mockOperation) {
-        return this.getConfig().getRestMockActionList().contains(mockOperation.getConfig());
+        return getConfig().getRestMockActionList().contains(mockOperation.getConfig());
+    }
+
+    @Override
+    public String getIconName() {
+        return ICON_NAME;
     }
 
     @Override
     public MockOperation addNewMockOperation(Operation operation) {
-        return addNewMockOperationsFromResource((RestResource) operation).get(0);
+        return addNewMockOperationsFromResource((RestResource)operation).get(0);
+    }
+
+    public String getStringID() {
+        return STRING_ID;
     }
 
     public List<MockOperation> addNewMockOperationsFromResource(RestResource restResource) {
@@ -195,5 +192,4 @@ public class RestMockService extends AbstractMockService<RestMockAction, RESTMoc
     public String getHelpUrl() {
         return HelpUrls.REST_MOCKSERVICE_HELP_URL;
     }
-
 }

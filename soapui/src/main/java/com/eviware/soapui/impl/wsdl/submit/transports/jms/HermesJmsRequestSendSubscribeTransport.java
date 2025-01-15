@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.jms;
@@ -39,10 +39,8 @@ public class HermesJmsRequestSendSubscribeTransport extends HermesJmsRequestTran
         JMSConnectionHolder jmsConnectionHolderQueue = null;
         try {
             init(submitContext, request);
-            String clientIDString = StringUtils.hasContent(clientID) ? clientID : jmsEndpoint.getSessionName() + "-"
-                    + jmsEndpoint.getReceive();
-            jmsConnectionHolderTopic = new JMSConnectionHolder(jmsEndpoint, hermes, true, clientIDString, username,
-                    password);
+            String clientIDString = StringUtils.hasContent(clientID) ? clientID : jmsEndpoint.getSessionName() + "-" + jmsEndpoint.getReceive();
+            jmsConnectionHolderTopic = new JMSConnectionHolder(jmsEndpoint, hermes, true, clientIDString, username, password);
             jmsConnectionHolderQueue = new JMSConnectionHolder(jmsEndpoint, hermes, false, null, username, password);
             // session
             topicSession = jmsConnectionHolderTopic.getSession();
@@ -50,19 +48,20 @@ public class HermesJmsRequestSendSubscribeTransport extends HermesJmsRequestTran
 
             Queue queueSend = jmsConnectionHolderQueue.getQueue(jmsConnectionHolderQueue.getJmsEndpoint().getSend());
 
-            Topic topicSubscribe = jmsConnectionHolderTopic.getTopic(jmsConnectionHolderTopic.getJmsEndpoint()
-                    .getReceive());
+            Topic topicSubscribe = jmsConnectionHolderTopic.getTopic(jmsConnectionHolderTopic.getJmsEndpoint().getReceive());
             topicDurableSubsriber = createDurableSubscription(submitContext, topicSession, jmsConnectionHolderTopic);
 
-            Message textMessageSend = messageSend(submitContext, request, queueSession,
-                    jmsConnectionHolderQueue.getHermes(), queueSend, topicSubscribe);
+            Message textMessageSend = messageSend(submitContext, request, queueSession, jmsConnectionHolderQueue.getHermes(), queueSend, topicSubscribe);
 
             return makeResponse(submitContext, request, timeStarted, textMessageSend, topicDurableSubsriber);
-        } catch (JMSException jmse) {
+        }
+        catch (JMSException jmse) {
             return errorResponse(submitContext, request, timeStarted, jmse);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
-        } finally {
+        }
+        finally {
             if (topicDurableSubsriber != null) {
                 topicDurableSubsriber.close();
             }
@@ -72,10 +71,8 @@ public class HermesJmsRequestSendSubscribeTransport extends HermesJmsRequestTran
             if (jmsConnectionHolderTopic != null) {
                 jmsConnectionHolderTopic.closeAll();
             }
-            closeSessionAndConnection(jmsConnectionHolderQueue != null ? jmsConnectionHolderQueue.getConnection() : null,
-                    queueSession);
-            closeSessionAndConnection(jmsConnectionHolderTopic != null ? jmsConnectionHolderTopic.getConnection() : null,
-                    topicSession);
+            closeSessionAndConnection(jmsConnectionHolderQueue != null ? jmsConnectionHolderQueue.getConnection() : null, queueSession);
+            closeSessionAndConnection(jmsConnectionHolderTopic != null ? jmsConnectionHolderTopic.getConnection() : null, topicSession);
         }
         return null;
     }

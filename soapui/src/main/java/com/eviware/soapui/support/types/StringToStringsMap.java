@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.types;
@@ -33,8 +33,49 @@ import java.util.Map;
 public class StringToStringsMap extends HashMap<String, List<String>> {
     private boolean equalsOnThis;
 
+    public static StringToStringsMap fromXml(String value) {
+        if (value == null || value.trim().length() == 0 || value.equals("<xml-fragment/>")) {
+            return new StringToStringsMap();
+        }
+
+        try {
+            StringToStringMapConfig nsMapping = StringToStringMapConfig.Factory.parse(value);
+
+            return fromXml(nsMapping);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+
+        return new StringToStringsMap();
+    }
+
+    public static StringToStringsMap fromXml(StringToStringMapConfig nsMapping) {
+        StringToStringsMap result = new StringToStringsMap();
+        for (StringToStringMapConfig.Entry entry : nsMapping.getEntryList()) {
+            result.add(entry.getKey(), entry.getValue());
+        }
+        return result;
+    }
+
+    public static StringToStringsMap fromHttpHeader(String value) {
+        StringToStringsMap result = new StringToStringsMap();
+
+        int ix = value.indexOf(';');
+        while (ix > 0) {
+            extractNVPair(value.substring(0, ix), result);
+            value = value.substring(ix + 1);
+            ix = value.indexOf(';');
+        }
+
+        if (value.length() > 2) {
+            extractNVPair(value, result);
+        }
+
+        return result;
+    }
+
     public StringToStringsMap() {
-        super();
     }
 
     public StringToStringsMap(int initialCapacity, float loadFactor) {
@@ -50,7 +91,6 @@ public class StringToStringsMap extends HashMap<String, List<String>> {
     }
 
     public StringToStringsMap(StringToStringMap map) {
-        super();
 
         for (String key : map.keySet()) {
             put(key, map.get(key));
@@ -80,30 +120,6 @@ public class StringToStringsMap extends HashMap<String, List<String>> {
         return xmlConfig.toString();
     }
 
-    public static StringToStringsMap fromXml(String value) {
-        if (value == null || value.trim().length() == 0 || value.equals("<xml-fragment/>")) {
-            return new StringToStringsMap();
-        }
-
-        try {
-            StringToStringMapConfig nsMapping = StringToStringMapConfig.Factory.parse(value);
-
-            return fromXml(nsMapping);
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
-
-        return new StringToStringsMap();
-    }
-
-    public static StringToStringsMap fromXml(StringToStringMapConfig nsMapping) {
-        StringToStringsMap result = new StringToStringsMap();
-        for (StringToStringMapConfig.Entry entry : nsMapping.getEntryList()) {
-            result.add(entry.getKey(), entry.getValue());
-        }
-        return result;
-    }
-
     public boolean hasValues(String key) {
         return containsKey(key) && get(key).size() > 0;
     }
@@ -120,36 +136,6 @@ public class StringToStringsMap extends HashMap<String, List<String>> {
         get(key).add(string);
     }
 
-    public static StringToStringsMap fromHttpHeader(String value) {
-        StringToStringsMap result = new StringToStringsMap();
-
-        int ix = value.indexOf(';');
-        while (ix > 0) {
-            extractNVPair(value.substring(0, ix), result);
-            value = value.substring(ix + 1);
-            ix = value.indexOf(';');
-        }
-
-        if (value.length() > 2) {
-            extractNVPair(value, result);
-        }
-
-        return result;
-    }
-
-    private static void extractNVPair(String value, StringToStringsMap result) {
-        int ix;
-        ix = value.indexOf('=');
-        if (ix != -1) {
-            String str = value.substring(ix + 1).trim();
-            if (str.startsWith("\"") && str.endsWith("\"")) {
-                str = str.substring(1, str.length() - 1);
-            }
-
-            result.add(value.substring(0, ix).trim(), str);
-        }
-    }
-
     public void setEqualsOnThis(boolean equalsOnThis) {
         this.equalsOnThis = equalsOnThis;
     }
@@ -157,6 +143,18 @@ public class StringToStringsMap extends HashMap<String, List<String>> {
     @Override
     public boolean equals(Object o) {
         return equalsOnThis ? this == o : super.equals(o);
+    }
+
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+
+        for (String key : keySet()) {
+            for (String value : get(key)) {
+                result.append(key).append(" : ").append(value).append("\r\n");
+            }
+        }
+
+        return result.toString();
     }
 
     public String[] getKeys() {
@@ -184,7 +182,6 @@ public class StringToStringsMap extends HashMap<String, List<String>> {
         }
 
         return value.get(0);
-
     }
 
     public String getCaseInsensitive(String key, String defaultValue) {
@@ -194,7 +191,6 @@ public class StringToStringsMap extends HashMap<String, List<String>> {
             }
         }
         return defaultValue;
-
     }
 
     public StringToStringMap toStringToStringMap() {
@@ -204,7 +200,8 @@ public class StringToStringsMap extends HashMap<String, List<String>> {
             List<String> list = get(key);
             if (list.size() == 1) {
                 result.put(key, list.get(0));
-            } else {
+            }
+            else {
                 result.put(key, list.toString());
             }
         }
@@ -243,15 +240,16 @@ public class StringToStringsMap extends HashMap<String, List<String>> {
         return result;
     }
 
-    public String toString() {
-        StringBuilder result = new StringBuilder();
-
-        for (String key : keySet()) {
-            for (String value : get(key)) {
-                result.append(key).append(" : ").append(value).append("\r\n");
+    private static void extractNVPair(String value, StringToStringsMap result) {
+        int ix;
+        ix = value.indexOf('=');
+        if (ix != -1) {
+            String str = value.substring(ix + 1).trim();
+            if (str.startsWith("\"") && str.endsWith("\"")) {
+                str = str.substring(1, str.length() - 1);
             }
-        }
 
-        return result.toString();
+            result.add(value.substring(0, ix).trim(), str);
+        }
     }
 }

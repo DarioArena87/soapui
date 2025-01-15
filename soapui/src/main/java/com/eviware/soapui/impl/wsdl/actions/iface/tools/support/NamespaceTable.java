@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.support;
@@ -24,12 +24,9 @@ import com.eviware.soapui.support.types.StringToStringMap;
 import com.eviware.x.form.XForm.ToolkitType;
 import com.eviware.x.impl.swing.AbstractSwingXFormField;
 
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,10 +38,10 @@ import java.util.List;
  */
 
 public class NamespaceTable extends AbstractSwingXFormField<JPanel> {
-    private JTable table;
-    private JScrollPane scrollPane;
     private final WsdlInterface iface;
-    private NamespaceTableModel namespaceTableModel;
+    private final JTable table;
+    private final JScrollPane scrollPane;
+    private final NamespaceTableModel namespaceTableModel;
     private boolean returnEmpty;
 
     public NamespaceTable(WsdlInterface iface) {
@@ -72,40 +69,34 @@ public class NamespaceTable extends AbstractSwingXFormField<JPanel> {
         return getComponent();
     }
 
-    public void setValue(String value) {
-        namespaceTableModel.setMappings(StringToStringMap.fromXml(value));
-    }
-
     public String getValue() {
         return namespaceTableModel.getMappings().toXml();
     }
 
+    public void setValue(String value) {
+        namespaceTableModel.setMappings(StringToStringMap.fromXml(value));
+    }
+
+    @Override
+    public boolean isMultiRow() {
+        return true;
+    }
+
     private class NamespaceTableModel extends AbstractTableModel {
-        private List<String> namespaces = new ArrayList<String>();
-        private List<String> packages;
+        private final List<String> namespaces = new ArrayList<String>();
+        private final List<String> packages;
 
         public NamespaceTableModel() {
             try {
                 if (iface != null) {
                     namespaces.addAll(iface.getWsdlContext().getInterfaceDefinition().getDefinedNamespaces());
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
 
             packages = new ArrayList<String>(Arrays.asList(new String[namespaces.size()]));
-        }
-
-        public void setMappings(StringToStringMap mapping) {
-            for (int c = 0; c < namespaces.size(); c++) {
-                if (mapping.containsKey(namespaces.get(c))) {
-                    packages.set(c, mapping.get(namespaces.get(c)));
-                } else {
-                    packages.set(c, "");
-                }
-            }
-
-            fireTableDataChanged();
         }
 
         public int getRowCount() {
@@ -116,12 +107,21 @@ public class NamespaceTable extends AbstractSwingXFormField<JPanel> {
             return 2;
         }
 
-        public Class<?> getColumnClass(int columnIndex) {
-            return String.class;
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            if (columnIndex == 0) {
+                return namespaces.get(rowIndex);
+            }
+            else {
+                return packages.get(rowIndex);
+            }
         }
 
         public String getColumnName(int column) {
             return column == 0 ? "Namespace" : "Package";
+        }
+
+        public Class<?> getColumnClass(int columnIndex) {
+            return String.class;
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -131,14 +131,6 @@ public class NamespaceTable extends AbstractSwingXFormField<JPanel> {
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             if (columnIndex == 1) {
                 packages.set(rowIndex, aValue.toString());
-            }
-        }
-
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            if (columnIndex == 0) {
-                return namespaces.get(rowIndex);
-            } else {
-                return packages.get(rowIndex);
             }
         }
 
@@ -153,10 +145,18 @@ public class NamespaceTable extends AbstractSwingXFormField<JPanel> {
 
             return result;
         }
-    }
 
-    @Override
-    public boolean isMultiRow() {
-        return true;
+        public void setMappings(StringToStringMap mapping) {
+            for (int c = 0; c < namespaces.size(); c++) {
+                if (mapping.containsKey(namespaces.get(c))) {
+                    packages.set(c, mapping.get(namespaces.get(c)));
+                }
+                else {
+                    packages.set(c, "");
+                }
+            }
+
+            fireTableDataChanged();
+        }
     }
 }

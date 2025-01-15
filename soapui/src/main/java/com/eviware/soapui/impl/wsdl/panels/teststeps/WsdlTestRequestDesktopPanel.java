@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps;
@@ -45,9 +45,7 @@ import com.eviware.soapui.support.components.JInspectorPanelFactory;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.log.JLogList;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.ListModel;
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.util.Date;
 
@@ -59,15 +57,15 @@ import java.util.Date;
  */
 
 public class WsdlTestRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel<WsdlTestRequestStep, WsdlTestRequest> {
-    private JLogList logArea;
-    private InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
-    private JButton addAssertionButton;
     protected boolean updatingRequest;
+    private JLogList logArea;
+    private final InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
+    private JButton addAssertionButton;
     private AssertionsPanel assertionsPanel;
     private JInspectorPanel inspectorPanel;
     private JComponentInspector<?> assertionInspector;
     private JComponentInspector<?> logInspector;
-    private InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
+    private final InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
     private long startTime;
 
     public WsdlTestRequestDesktopPanel(WsdlTestRequestStep requestStep) {
@@ -100,26 +98,13 @@ public class WsdlTestRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel
         };
     }
 
-    public void setContent(JComponent content) {
-        inspectorPanel.setContentComponent(content);
-    }
-
-    public void removeContent(JComponent content) {
-        inspectorPanel.setContentComponent(null);
-    }
-
-    protected String getHelpUrl() {
-        return HelpUrls.TESTREQUESTEDITOR_HELP_URL;
-    }
-
     protected JComponent buildContent() {
         JComponent component = super.buildContent();
 
         inspectorPanel = JInspectorPanelFactory.build(component);
         assertionsPanel = buildAssertionsPanel();
 
-        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions ("
-                + getModelItem().getAssertionCount() + ")", "Assertions for this Request", true);
+        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions (" + getModelItem().getAssertionCount() + ")", "Assertions for this Request", true);
 
         inspectorPanel.addInspector(assertionInspector);
 
@@ -131,6 +116,58 @@ public class WsdlTestRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel
         updateStatusIcon();
 
         return inspectorPanel.getComponent();
+    }
+
+    protected JComponent buildToolbar() {
+        addAssertionButton = createActionButton(new AddAssertionAction(getRequest()), true);
+        return super.buildToolbar();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+
+        if (evt.getPropertyName().equals(WsdlTestRequest.STATUS_PROPERTY)) {
+            updateStatusIcon();
+        }
+    }
+
+    protected String getHelpUrl() {
+        return HelpUrls.TESTREQUESTEDITOR_HELP_URL;
+    }
+
+    protected void logMessages(String message, String infoMessage) {
+        super.logMessages(message, infoMessage);
+        logArea.addLine(DateUtil.formatFull(new Date(startTime)) + " - " + message);
+    }
+
+    public boolean onClose(boolean canCancel) {
+        if (super.onClose(canCancel)) {
+            assertionsPanel.release();
+            inspectorPanel.release();
+            SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
+            getModelItem().getTestRequest().removeAssertionsListener(assertionsListener);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean dependsOn(ModelItem modelItem) {
+        return modelItem == getRequest() ||
+               modelItem == getModelItem() ||
+               modelItem == getRequest().getOperation() ||
+               modelItem == getRequest().getOperation().getInterface() ||
+               modelItem == getRequest().getOperation().getInterface().getProject() ||
+               modelItem == getModelItem().getTestCase() ||
+               modelItem == getModelItem().getTestCase().getTestSuite();
+    }
+
+    public void setContent(JComponent content) {
+        inspectorPanel.setContentComponent(content);
+    }
+
+    public void removeContent(JComponent content) {
+        inspectorPanel.setContentComponent(null);
     }
 
     private void updateStatusIcon() {
@@ -153,36 +190,44 @@ public class WsdlTestRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel
         }
     }
 
-    protected JComponent buildToolbar() {
-        addAssertionButton = createActionButton(new AddAssertionAction(getRequest()), true);
-        return super.buildToolbar();
-    }
-
     protected void insertButtons(JXToolBar toolbar) {
         toolbar.add(addAssertionButton);
         super.insertButtons(toolbar);
     }
 
     public void setEnabled(boolean enabled) {
-        if (enabled == true) {
-            enabled = !SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem().getTestCase())
-                    && !SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase());
+        if (enabled) {
+            enabled = !SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem().getTestCase()) && !SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase());
         }
 
         super.setEnabled(enabled);
         addAssertionButton.setEnabled(enabled);
         assertionsPanel.setEnabled(enabled);
 
-        if (SoapUI.getTestMonitor().hasRunningLoadTest(getRequest().getTestCase())
-                || SoapUI.getTestMonitor().hasRunningSecurityTest(getRequest().getTestCase())) {
+        if (SoapUI.getTestMonitor().hasRunningLoadTest(getRequest().getTestCase()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getRequest().getTestCase())) {
             getRequest().removeSubmitListener(this);
-        } else {
+        }
+        else {
             getRequest().addSubmitListener(this);
         }
     }
 
     protected Submit doSubmit() throws SubmitException {
         return getRequest().submit(new WsdlTestRunContext(getModelItem()), true);
+    }
+
+    public boolean beforeSubmit(Submit submit, SubmitContext context) {
+        boolean result = super.beforeSubmit(submit, context);
+        startTime = System.currentTimeMillis();
+        return result;
+    }
+
+    @Override
+    public void afterSubmit(Submit submit, SubmitContext context) {
+        super.afterSubmit(submit, context);
+        if (!isHasClosed()) {
+            updateStatusIcon();
+        }
     }
 
     private final class InternalAssertionsListener implements AssertionsListener {
@@ -199,56 +244,14 @@ public class WsdlTestRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel
         }
     }
 
-    public boolean beforeSubmit(Submit submit, SubmitContext context) {
-        boolean result = super.beforeSubmit(submit, context);
-        startTime = System.currentTimeMillis();
-        return result;
-    }
-
-    protected void logMessages(String message, String infoMessage) {
-        super.logMessages(message, infoMessage);
-        logArea.addLine(DateUtil.formatFull(new Date(startTime)) + " - " + message);
-    }
-
-    @Override
-    public void afterSubmit(Submit submit, SubmitContext context) {
-        super.afterSubmit(submit, context);
-        if (!isHasClosed()) {
-            updateStatusIcon();
-        }
-    }
-
-    public boolean onClose(boolean canCancel) {
-        if (super.onClose(canCancel)) {
-            assertionsPanel.release();
-            inspectorPanel.release();
-            SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
-            getModelItem().getTestRequest().removeAssertionsListener(assertionsListener);
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == getRequest() || modelItem == getModelItem() || modelItem == getRequest().getOperation()
-                || modelItem == getRequest().getOperation().getInterface()
-                || modelItem == getRequest().getOperation().getInterface().getProject()
-                || modelItem == getModelItem().getTestCase() || modelItem == getModelItem().getTestCase().getTestSuite();
-    }
-
     private class InternalTestMonitorListener extends TestMonitorListenerAdapter {
-        public void loadTestFinished(LoadTestRunner runner) {
-            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
-        }
-
         public void loadTestStarted(LoadTestRunner runner) {
             if (runner.getLoadTest().getTestCase() == getModelItem().getTestCase()) {
                 setEnabled(false);
             }
         }
 
-        public void securityTestFinished(SecurityTestRunner runner) {
+        public void loadTestFinished(LoadTestRunner runner) {
             setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
 
@@ -258,7 +261,7 @@ public class WsdlTestRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel
             }
         }
 
-        public void testCaseFinished(TestCaseRunner runner) {
+        public void securityTestFinished(SecurityTestRunner runner) {
             setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
 
@@ -267,13 +270,9 @@ public class WsdlTestRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel
                 setEnabled(false);
             }
         }
-    }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        super.propertyChange(evt);
-
-        if (evt.getPropertyName().equals(WsdlTestRequest.STATUS_PROPERTY)) {
-            updateStatusIcon();
+        public void testCaseFinished(TestCaseRunner runner) {
+            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
     }
 }

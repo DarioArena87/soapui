@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree;
@@ -43,10 +43,10 @@ import java.util.Set;
  */
 
 public class SoapUITreeModel implements TreeModel {
-    private Set<TreeModelListener> listeners = new HashSet<TreeModelListener>();
-    private SoapUITreeNode workspaceNode;
     private final static Logger logger = LogManager.getLogger(SoapUITreeModel.class);
-    private Map<ModelItem, SoapUITreeNode> modelItemMap = new HashMap<ModelItem, SoapUITreeNode>();
+    private final Set<TreeModelListener> listeners = new HashSet<TreeModelListener>();
+    private final SoapUITreeNode workspaceNode;
+    private final Map<ModelItem, SoapUITreeNode> modelItemMap = new HashMap<ModelItem, SoapUITreeNode>();
     private boolean showProperties = false;
 
     public SoapUITreeModel(Workspace workspace) {
@@ -59,24 +59,24 @@ public class SoapUITreeModel implements TreeModel {
     }
 
     public Object getChild(Object parent, int index) {
-        SoapUITreeNode treeNode = (SoapUITreeNode) parent;
+        SoapUITreeNode treeNode = (SoapUITreeNode)parent;
         return treeNode.getChildNode(index);
     }
 
     public int getChildCount(Object parent) {
-        SoapUITreeNode treeNode = (SoapUITreeNode) parent;
+        SoapUITreeNode treeNode = (SoapUITreeNode)parent;
         return treeNode.getChildCount();
     }
 
     @Override
     public boolean isLeaf(Object node) {
-        SoapUITreeNode treeNode = (SoapUITreeNode) node;
+        SoapUITreeNode treeNode = (SoapUITreeNode)node;
         return treeNode.isLeaf();
     }
 
     @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
-        SoapUITreeNode treeNode = (SoapUITreeNode) path.getLastPathComponent();
+        SoapUITreeNode treeNode = (SoapUITreeNode)path.getLastPathComponent();
         if (treeNode.valueChanged(newValue)) {
             // not implemented.. need to expose setName in ModelItem
         }
@@ -84,7 +84,7 @@ public class SoapUITreeModel implements TreeModel {
 
     @Override
     public int getIndexOfChild(Object parent, Object child) {
-        SoapUITreeNode treeNode = (SoapUITreeNode) parent;
+        SoapUITreeNode treeNode = (SoapUITreeNode)parent;
         return treeNode.getIndexOfChild(child);
     }
 
@@ -105,7 +105,8 @@ public class SoapUITreeModel implements TreeModel {
     public void unmapModelItem(ModelItem modelItem) {
         if (modelItemMap.containsKey(modelItem)) {
             modelItemMap.remove(modelItem);
-        } else {
+        }
+        else {
             logger.error("Failed to unmap model item [" + modelItem.getName() + "]");
             Thread.dumpStack();
         }
@@ -169,8 +170,7 @@ public class SoapUITreeModel implements TreeModel {
         int ix = parent.getIndexOfChild(treeNode);
 
         if (ix == -1) {
-            if ((!(treeNode instanceof PropertyTreeNode) && !(treeNode instanceof PropertiesTreeNode))
-                    || isShowProperties()) {
+            if ((!(treeNode instanceof PropertyTreeNode) && !(treeNode instanceof PropertiesTreeNode)) || isShowProperties()) {
                 logger.error("Changed node [" + treeNode + "] not found in parent [" + parent + "]");
             }
 
@@ -178,8 +178,7 @@ public class SoapUITreeModel implements TreeModel {
         }
 
         if (!(treeNode instanceof PropertyTreeNode) || showProperties) {
-            notifyNodesChanged(new TreeModelEvent(this, getPath(parent), new int[]{ix},
-                    new Object[]{parent.getChildNode(ix)}));
+            notifyNodesChanged(new TreeModelEvent(this, getPath(parent), new int[]{ix}, new Object[]{parent.getChildNode(ix)}));
         }
     }
 
@@ -195,8 +194,7 @@ public class SoapUITreeModel implements TreeModel {
         mapModelItem(treeNode);
 
         if (!(treeNode instanceof PropertyTreeNode) || showProperties) {
-            notifyNodesInserted(new TreeModelEvent(this, getPath(parent), new int[]{ix},
-                    new Object[]{parent.getChildNode(ix)}));
+            notifyNodesInserted(new TreeModelEvent(this, getPath(parent), new int[]{ix}, new Object[]{parent.getChildNode(ix)}));
         }
     }
 
@@ -214,8 +212,7 @@ public class SoapUITreeModel implements TreeModel {
         }
 
         if (!(treeNode instanceof PropertyTreeNode) || showProperties) {
-            notifyNodesRemoved(new TreeModelEvent(this, getPath(parent), new int[]{ix},
-                    new Object[]{parent.getChildNode(ix)}));
+            notifyNodesRemoved(new TreeModelEvent(this, getPath(parent), new int[]{ix}, new Object[]{parent.getChildNode(ix)}));
         }
 
         if (release) {

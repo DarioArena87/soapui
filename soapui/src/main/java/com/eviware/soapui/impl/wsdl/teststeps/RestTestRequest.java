@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -39,26 +39,25 @@ import com.eviware.soapui.monitor.TestMonitor;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.resolver.ResolveContext;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class RestTestRequest extends RestRequest implements RestTestRequestInterface {
+    private final boolean forLoadTest;
     private ImageIcon validRequestIcon;
     private ImageIcon failedRequestIcon;
     private ImageIcon disabledRequestIcon;
     private ImageIcon unknownRequestIcon;
-
-    private RestTestRequestStep testStep;
-
+    private final RestTestRequestStep testStep;
     private AssertionsSupport assertionsSupport;
     private RestResponseMessageExchange messageExchange;
-    private final boolean forLoadTest;
     private PropertyChangeNotifier notifier;
 
-    public RestTestRequest(RestMethod method, RestRequestConfig callConfig, RestTestRequestStep testStep,
-                           boolean forLoadTest) {
+    public RestTestRequest(
+        RestMethod method, RestRequestConfig callConfig, RestTestRequestStep testStep, boolean forLoadTest
+    ) {
         super(method, callConfig, forLoadTest);
         this.forLoadTest = forLoadTest;
 
@@ -77,8 +76,60 @@ public class RestTestRequest extends RestRequest implements RestTestRequestInter
         return getTestStep();
     }
 
-    public WsdlTestCase getTestCase() {
-        return testStep.getTestCase();
+    public RestResource getResource() {
+        return getRestMethod().getResource();
+    }
+
+    public void setRestMethod(RestMethod restMethod) {
+        RestMethod old = getRestMethod();
+
+        if (old != null) {
+            old.getResource().removePropertyChangeListener(this);
+        }
+
+        super.setRestMethod(restMethod);
+
+        restMethod.getResource().addPropertyChangeListener(this);
+        notifyPropertyChanged("restMethod", old, restMethod);
+    }
+
+    /**
+     * Called when a test request is moved into a test case
+     */
+
+    public void updateConfig(RestRequestConfig request) {
+        super.updateConfig(request);
+
+        assertionsSupport.refresh();
+    }
+
+    public void setPath(String fullPath) {
+        super.setPath(fullPath);
+
+        if (getOperation() == null) {
+            setEndpoint(fullPath);
+        }
+    }
+
+    @Override
+    public void release() {
+        super.release();
+        assertionsSupport.release();
+
+        if (getRestMethod() != null) {
+            getRestMethod().getResource().removePropertyChangeListener(this);
+        }
+
+        messageExchange = null;
+    }
+
+    @Override
+    public RestResource getOperation() {
+        return testStep != null ? testStep.getResource() : null;
+    }
+
+    public ModelItem getModelItem() {
+        return testStep;
     }
 
     protected void initIcons() {
@@ -94,10 +145,6 @@ public class RestTestRequest extends RestRequest implements RestTestRequestInter
 
     private void initAssertions() {
         assertionsSupport = new AssertionsSupport(testStep, new AssertableConfig() {
-            public TestAssertionConfig addNewAssertion() {
-                return getConfig().addNewAssertion();
-            }
-
             public List<TestAssertionConfig> getAssertionList() {
                 return getConfig().getAssertionList();
             }
@@ -106,26 +153,16 @@ public class RestTestRequest extends RestRequest implements RestTestRequestInter
                 getConfig().removeAssertion(ix);
             }
 
+            public TestAssertionConfig addNewAssertion() {
+                return getConfig().addNewAssertion();
+            }
+
             public TestAssertionConfig insertAssertion(TestAssertionConfig source, int ix) {
                 TestAssertionConfig conf = getConfig().insertNewAssertion(ix);
                 conf.set(source);
                 return conf;
             }
-
         });
-    }
-
-    public int getAssertionCount() {
-        return assertionsSupport.getAssertionCount();
-    }
-
-    public WsdlMessageAssertion getAssertionAt(int c) {
-        return assertionsSupport.getAssertionAt(c);
-    }
-
-    public void setResponse(HttpResponse response, SubmitContext context) {
-        super.setResponse(response, context);
-        assertResponse(context);
     }
 
     public void assertResponse(SubmitContext context) {
@@ -143,6 +180,212 @@ public class RestTestRequest extends RestRequest implements RestTestRequestInter
         }
 
         notifier.notifyChange();
+    }
+
+    public String getResponseContentAsString() {
+        return getResponse() == null ? null : getResponse().getContentAsString();
+    }
+
+    public WsdlTestCase getTestCase() {
+        return testStep.getTestCase();
+    }
+
+    public WsdlMessageAssertion addAssertion(String assertionLabel) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+
+        try {
+            WsdlMessageAssertion assertion = assertionsSupport.addWsdlAssertion(assertionLabel);
+            if (assertion == null) {
+                return null;
+            }
+
+            if (getResponse() != null) {
+                assertion.assertResponse(new RestResponseMessageExchange(this), new WsdlTestRunContext(testStep));
+                notifier.notifyChange();
+            }
+
+            return assertion;
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return null;
+        }
+    }
+
+    public void addAssertionsListener(AssertionsListener listener) {
+        assertionsSupport.addAssertionsListener(listener);
+    }
+
+    public int getAssertionCount() {
+        return assertionsSupport.getAssertionCount();
+    }
+
+    public WsdlMessageAssertion getAssertionAt(int c) {
+        return assertionsSupport.getAssertionAt(c);
+    }
+
+    public void removeAssertionsListener(AssertionsListener listener) {
+        assertionsSupport.removeAssertionsListener(listener);
+    }
+
+    public void removeAssertion(TestAssertion assertion) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+
+        try {
+            assertionsSupport.removeAssertion((WsdlMessageAssertion)assertion);
+        }
+        finally {
+            ((WsdlMessageAssertion)assertion).release();
+            notifier.notifyChange();
+        }
+    }
+
+    public AssertionStatus getAssertionStatus() {
+        if (messageExchange == null || getAssertionCount() == 0) {
+            return AssertionStatus.UNKNOWN;
+        }
+
+        for (int c = 0; c < getAssertionCount(); c++) {
+            if (getAssertionAt(c).getStatus() == AssertionStatus.FAILED) {
+                return AssertionStatus.FAILED;
+            }
+        }
+        return AssertionStatus.VALID;
+    }
+
+    public String getAssertableContentAsXml() {
+        return getResponseContentAsXml();
+    }
+
+    public String getAssertableContent() {
+        return getResponseContentAsString();
+    }
+
+    public String getDefaultAssertableContent() {
+        return "";
+    }
+
+    public AssertableType getAssertableType() {
+        return AssertableType.RESPONSE;
+    }
+
+    public List<TestAssertion> getAssertionList() {
+        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
+    }
+
+    public WsdlMessageAssertion getAssertionByName(String name) {
+        return assertionsSupport.getAssertionByName(name);
+    }
+
+    public RestService getInterface() {
+        return getOperation() == null ? null : getOperation().getInterface();
+    }
+
+    public TestAssertion cloneAssertion(TestAssertion source, String name) {
+        return assertionsSupport.cloneAssertion(source, name);
+    }
+
+    public Map<String, TestAssertion> getAssertions() {
+        return assertionsSupport.getAssertions();
+    }
+
+    public TestAssertion moveAssertion(int ix, int offset) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+        WsdlMessageAssertion assertion = getAssertionAt(ix);
+        try {
+            return assertionsSupport.moveAssertion(ix, offset);
+        }
+        finally {
+            assertion.release();
+            notifier.notifyChange();
+        }
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        if (forLoadTest || getIconAnimator() == null) {
+            return null;
+        }
+
+        TestMonitor testMonitor = SoapUI.getTestMonitor();
+        if (testMonitor != null && (testMonitor.hasRunningLoadTest(getTestStep().getTestCase()) || testMonitor.hasRunningSecurityTest(getTestStep().getTestCase()))) {
+            return disabledRequestIcon;
+        }
+
+        ImageIcon icon = getIconAnimator().getIcon();
+        if (icon == getIconAnimator().getBaseIcon()) {
+            AssertionStatus status = getAssertionStatus();
+            if (status == AssertionStatus.VALID) {
+                return validRequestIcon;
+            }
+            else if (status == AssertionStatus.FAILED) {
+                return failedRequestIcon;
+            }
+            else if (status == AssertionStatus.UNKNOWN) {
+                return unknownRequestIcon;
+            }
+        }
+
+        return icon;
+    }
+
+    public void setResponse(HttpResponse response, SubmitContext context) {
+        super.setResponse(response, context);
+        assertResponse(context);
+    }
+
+    public void resolve(ResolveContext<?> context) {
+        super.resolve(context);
+        assertionsSupport.resolve(context);
+    }
+
+    public WsdlMessageAssertion importAssertion(
+        WsdlMessageAssertion source, boolean overwrite, boolean createCopy, String newName
+    ) {
+        return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
+    }
+
+    public String getRestMethodName() {
+        return getRestMethod().getName();
+    }
+
+    public String getServiceName() {
+        return testStep != null ? testStep.getService() : null;
+    }
+
+    public RestTestRequestStep getTestStep() {
+        return testStep;
+    }
+
+    public boolean isDiscardResponse() {
+        return getSettings().getBoolean("discardResponse");
+    }
+
+    public void setDiscardResponse(boolean discardResponse) {
+        getSettings().setBoolean("discardResponse", discardResponse);
+    }
+
+    protected static class TestRequestIconAnimator extends RequestIconAnimator<RestTestRequest> {
+        public TestRequestIconAnimator(RestTestRequestInterface modelItem) {
+            super((RestTestRequest)modelItem, "/rest_request.gif", "/exec_rest_request.gif", 4);
+        }
+
+        @Override
+        public boolean beforeSubmit(Submit submit, SubmitContext context) {
+            if (SoapUI.getTestMonitor() != null &&
+                (SoapUI.getTestMonitor().hasRunningLoadTest(getTarget().getTestCase()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getTarget().getTestCase()))) {
+                return true;
+            }
+
+            return super.beforeSubmit(submit, context);
+        }
+
+        @Override
+        public void afterSubmit(Submit submit, SubmitContext context) {
+            if (submit.getRequest() == getTarget()) {
+                stop();
+            }
+        }
     }
 
     private class PropertyChangeNotifier {
@@ -170,248 +413,4 @@ public class RestTestRequest extends RestRequest implements RestTestRequestInter
             oldIcon = newIcon;
         }
     }
-
-    public WsdlMessageAssertion addAssertion(String assertionLabel) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
-
-        try {
-            WsdlMessageAssertion assertion = assertionsSupport.addWsdlAssertion(assertionLabel);
-            if (assertion == null) {
-                return null;
-            }
-
-            if (getResponse() != null) {
-                assertion.assertResponse(new RestResponseMessageExchange(this), new WsdlTestRunContext(testStep));
-                notifier.notifyChange();
-            }
-
-            return assertion;
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return null;
-        }
-    }
-
-    public void removeAssertion(TestAssertion assertion) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
-
-        try {
-            assertionsSupport.removeAssertion((WsdlMessageAssertion) assertion);
-
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
-            notifier.notifyChange();
-        }
-    }
-
-    public TestAssertion moveAssertion(int ix, int offset) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
-        WsdlMessageAssertion assertion = getAssertionAt(ix);
-        try {
-            return assertionsSupport.moveAssertion(ix, offset);
-        } finally {
-            assertion.release();
-            notifier.notifyChange();
-        }
-    }
-
-    public AssertionStatus getAssertionStatus() {
-        if (messageExchange == null || getAssertionCount() == 0) {
-            return AssertionStatus.UNKNOWN;
-        }
-
-        for (int c = 0; c < getAssertionCount(); c++) {
-            if (getAssertionAt(c).getStatus() == AssertionStatus.FAILED) {
-                return AssertionStatus.FAILED;
-            }
-        }
-        return AssertionStatus.VALID;
-    }
-
-    @Override
-    public ImageIcon getIcon() {
-        if (forLoadTest || getIconAnimator() == null) {
-            return null;
-        }
-
-        TestMonitor testMonitor = SoapUI.getTestMonitor();
-        if (testMonitor != null
-                && (testMonitor.hasRunningLoadTest(getTestStep().getTestCase()) || testMonitor
-                .hasRunningSecurityTest(getTestStep().getTestCase()))) {
-            return disabledRequestIcon;
-        }
-
-        ImageIcon icon = getIconAnimator().getIcon();
-        if (icon == getIconAnimator().getBaseIcon()) {
-            AssertionStatus status = getAssertionStatus();
-            if (status == AssertionStatus.VALID) {
-                return validRequestIcon;
-            } else if (status == AssertionStatus.FAILED) {
-                return failedRequestIcon;
-            } else if (status == AssertionStatus.UNKNOWN) {
-                return unknownRequestIcon;
-            }
-        }
-
-        return icon;
-    }
-
-    public void addAssertionsListener(AssertionsListener listener) {
-        assertionsSupport.addAssertionsListener(listener);
-    }
-
-    public void removeAssertionsListener(AssertionsListener listener) {
-        assertionsSupport.removeAssertionsListener(listener);
-    }
-
-    /**
-     * Called when a test request is moved into a test case
-     */
-
-    public void updateConfig(RestRequestConfig request) {
-        super.updateConfig(request);
-
-        assertionsSupport.refresh();
-    }
-
-    @Override
-    public void release() {
-        super.release();
-        assertionsSupport.release();
-
-        if (getRestMethod() != null) {
-            getRestMethod().getResource().removePropertyChangeListener(this);
-        }
-
-        messageExchange = null;
-    }
-
-    public String getAssertableContentAsXml() {
-        return getResponseContentAsXml();
-    }
-
-    public String getAssertableContent() {
-        return getResponseContentAsString();
-    }
-
-    public RestTestRequestStep getTestStep() {
-        return testStep;
-    }
-
-    public RestService getInterface() {
-        return getOperation() == null ? null : getOperation().getInterface();
-    }
-
-    @Override
-    public RestResource getOperation() {
-        return testStep != null ? testStep.getResource() : null;
-    }
-
-    protected static class TestRequestIconAnimator extends RequestIconAnimator<RestTestRequest> {
-        public TestRequestIconAnimator(RestTestRequestInterface modelItem) {
-            super((RestTestRequest) modelItem, "/rest_request.gif", "/exec_rest_request.gif", 4);
-        }
-
-        @Override
-        public boolean beforeSubmit(Submit submit, SubmitContext context) {
-            if (SoapUI.getTestMonitor() != null
-                    && (SoapUI.getTestMonitor().hasRunningLoadTest(getTarget().getTestCase()) || SoapUI.getTestMonitor()
-                    .hasRunningSecurityTest(getTarget().getTestCase()))) {
-                return true;
-            }
-
-            return super.beforeSubmit(submit, context);
-        }
-
-        @Override
-        public void afterSubmit(Submit submit, SubmitContext context) {
-            if (submit.getRequest() == getTarget()) {
-                stop();
-            }
-        }
-    }
-
-    public AssertableType getAssertableType() {
-        return AssertableType.RESPONSE;
-    }
-
-    public TestAssertion cloneAssertion(TestAssertion source, String name) {
-        return assertionsSupport.cloneAssertion(source, name);
-    }
-
-    public WsdlMessageAssertion importAssertion(WsdlMessageAssertion source, boolean overwrite, boolean createCopy,
-                                                String newName) {
-        return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
-    }
-
-    public List<TestAssertion> getAssertionList() {
-        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
-    }
-
-    public WsdlMessageAssertion getAssertionByName(String name) {
-        return assertionsSupport.getAssertionByName(name);
-    }
-
-    public ModelItem getModelItem() {
-        return testStep;
-    }
-
-    public Map<String, TestAssertion> getAssertions() {
-        return assertionsSupport.getAssertions();
-    }
-
-    public String getDefaultAssertableContent() {
-        return "";
-    }
-
-    public String getResponseContentAsString() {
-        return getResponse() == null ? null : getResponse().getContentAsString();
-    }
-
-    public void setPath(String fullPath) {
-        super.setPath(fullPath);
-
-        if (getOperation() == null) {
-            setEndpoint(fullPath);
-        }
-    }
-
-    public void setRestMethod(RestMethod restMethod) {
-        RestMethod old = this.getRestMethod();
-
-        if (old != null) {
-            old.getResource().removePropertyChangeListener(this);
-        }
-
-        super.setRestMethod(restMethod);
-
-        restMethod.getResource().addPropertyChangeListener(this);
-        notifyPropertyChanged("restMethod", old, restMethod);
-    }
-
-    public RestResource getResource() {
-        return getRestMethod().getResource();
-    }
-
-    public String getRestMethodName() {
-        return getRestMethod().getName();
-    }
-
-    public void resolve(ResolveContext<?> context) {
-        super.resolve(context);
-        assertionsSupport.resolve(context);
-    }
-
-    public String getServiceName() {
-        return testStep != null ? testStep.getService() : null;
-    }
-
-    public boolean isDiscardResponse() {
-        return getSettings().getBoolean("discardResponse");
-    }
-
-    public void setDiscardResponse(boolean discardResponse) {
-        getSettings().setBoolean("discardResponse", discardResponse);
-    }
-
 }

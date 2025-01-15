@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.ui.desktop;
@@ -19,7 +19,7 @@ package com.eviware.soapui.ui.desktop;
 import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.support.action.swing.ActionList;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 
 /**
  * null-desktop used when running from command-line, etc
@@ -28,15 +28,22 @@ import javax.swing.JComponent;
  */
 
 public class NullDesktop implements SoapUIDesktop {
+    public boolean closeDesktopPanel(DesktopPanel desktopPanel) {
+        return false;
+    }
+
+    public boolean hasDesktopPanel(ModelItem modelItem) {
+        return false;
+    }
+
     public void addDesktopListener(DesktopListener listener) {
     }
 
-    public boolean closeAll() {
-        return false;
+    public void removeDesktopListener(DesktopListener listener) {
     }
 
-    public boolean closeDesktopPanel(DesktopPanel desktopPanel) {
-        return false;
+    public DesktopPanel showDesktopPanel(ModelItem modelItem) {
+        return null;
     }
 
     public boolean closeDesktopPanel(ModelItem modelItem) {
@@ -47,7 +54,7 @@ public class NullDesktop implements SoapUIDesktop {
         return null;
     }
 
-    public JComponent getDesktopComponent() {
+    public DesktopPanel[] getDesktopPanels() {
         return null;
     }
 
@@ -55,15 +62,28 @@ public class NullDesktop implements SoapUIDesktop {
         return null;
     }
 
-    public DesktopPanel[] getDesktopPanels() {
+    public DesktopPanel showDesktopPanel(DesktopPanel desktopPanel) {
         return null;
     }
 
-    public boolean hasDesktopPanel(ModelItem modelItem) {
+    public JComponent getDesktopComponent() {
+        return null;
+    }
+
+    public void transferTo(SoapUIDesktop newDesktop) {
+    }
+
+    public boolean closeAll() {
         return false;
     }
 
+    public void release() {
+    }
+
     public void init() {
+    }
+
+    public void minimize(DesktopPanel desktopPanel) {
     }
 
     public void maximize(DesktopPanel dp) {
@@ -72,25 +92,5 @@ public class NullDesktop implements SoapUIDesktop {
     @Override
     public void showInspector(JComponent component) {
 
-    }
-
-    public void minimize(DesktopPanel desktopPanel) {
-    }
-
-    public void release() {
-    }
-
-    public void removeDesktopListener(DesktopListener listener) {
-    }
-
-    public DesktopPanel showDesktopPanel(ModelItem modelItem) {
-        return null;
-    }
-
-    public DesktopPanel showDesktopPanel(DesktopPanel desktopPanel) {
-        return null;
-    }
-
-    public void transferTo(SoapUIDesktop newDesktop) {
     }
 }

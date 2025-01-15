@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.support;
@@ -48,17 +48,26 @@ public class MockTestRunContext extends AbstractSubmitContext<ModelItem> impleme
         return testStep;
     }
 
-    @Override
-    public void setProperty(String name, Object value) {
-        super.setProperty(name, value, getTestCase());
-    }
-
     public int getCurrentStepIndex() {
         return testStep == null ? -1 : testStep.getTestCase().getIndexOfTestStep(testStep);
     }
 
     public TestCaseRunner getTestRunner() {
         return mockTestRunner;
+    }
+
+    public TestCase getTestCase() {
+        return testStep == null ? null : testStep.getTestCase();
+    }
+
+    public Object getProperty(String testStepName, String propertyName) {
+        TestStep ts = testStep == null ? null : testStep.getTestCase().getTestStepByName(testStepName);
+        return ts == null ? null : ts.getPropertyValue(propertyName);
+    }
+
+    @Override
+    public void setProperty(String name, Object value) {
+        setProperty(name, value, getTestCase());
     }
 
     @Override
@@ -100,16 +109,7 @@ public class MockTestRunContext extends AbstractSubmitContext<ModelItem> impleme
     }
 
     public Object getProperty(String name) {
-        return getProperty(name, testStep, testStep == null ? null : (WsdlTestCase) testStep.getTestCase());
-    }
-
-    public Object getProperty(String testStepName, String propertyName) {
-        TestStep ts = testStep == null ? null : testStep.getTestCase().getTestStepByName(testStepName);
-        return ts == null ? null : ts.getPropertyValue(propertyName);
-    }
-
-    public TestCase getTestCase() {
-        return testStep == null ? null : testStep.getTestCase();
+        return getProperty(name, testStep, testStep == null ? null : testStep.getTestCase());
     }
 
     public Settings getSettings() {

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.monitor.jettyproxy;
@@ -45,6 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.List;
@@ -59,16 +60,17 @@ public class TunnelServlet extends ProxyServlet {
         super(project, listenerCallBack);
 
         if (!sslEndpoint.startsWith("https")) {
-            this.prot = "http://";
+            prot = "http://";
         }
         int prefix = sslEndpoint.indexOf("://");
         int c = sslEndpoint.indexOf(prefix, ':');
         if (c > 0) {
-            this.sslPort = Integer.parseInt(sslEndpoint.substring(c + 1));
-            this.sslEndPoint = sslEndpoint.substring(prefix, c);
-        } else {
+            sslPort = Integer.parseInt(sslEndpoint.substring(c + 1));
+            sslEndPoint = sslEndpoint.substring(prefix, c);
+        }
+        else {
             if (prefix > 0) {
-                this.sslEndPoint = sslEndpoint.substring(prefix + 3);
+                sslEndPoint = sslEndpoint.substring(prefix + 3);
             }
         }
     }
@@ -76,7 +78,7 @@ public class TunnelServlet extends ProxyServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         this.config = config;
-        this.context = config.getServletContext();
+        context = config.getServletContext();
     }
 
     public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
@@ -89,10 +91,11 @@ public class TunnelServlet extends ProxyServlet {
 
         // for this create ui server and port, properties.
         InetSocketAddress inetAddress = new InetSocketAddress(sslEndPoint, sslPort);
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletRequest httpRequest = (HttpServletRequest)request;
         if (httpRequest.getMethod().equals("GET")) {
             postMethod = new ExtendedGetMethod();
-        } else {
+        }
+        else {
             postMethod = new ExtendedPostMethod();
         }
 
@@ -100,7 +103,7 @@ public class TunnelServlet extends ProxyServlet {
         capturedData.setRequestHost(httpRequest.getRemoteHost());
         capturedData.setRequestHeader(httpRequest);
         capturedData.setHttpRequestParameters(httpRequest);
-        capturedData.setTargetURL(this.prot + inetAddress.getHostName());
+        capturedData.setTargetURL(prot + inetAddress.getHostName());
 
         CaptureInputStream capture = new CaptureInputStream(httpRequest.getInputStream());
 
@@ -108,7 +111,7 @@ public class TunnelServlet extends ProxyServlet {
         // copy headers
         Enumeration<?> headerNames = httpRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            String hdr = (String) headerNames.nextElement();
+            String hdr = (String)headerNames.nextElement();
             String lhdr = hdr.toLowerCase();
 
             if ("content-length".equals(lhdr)) {
@@ -124,7 +127,7 @@ public class TunnelServlet extends ProxyServlet {
             if ("host".equals(lhdr)) {
                 Enumeration<?> vals = httpRequest.getHeaders(hdr);
                 while (vals.hasMoreElements()) {
-                    String val = (String) vals.nextElement();
+                    String val = (String)vals.nextElement();
                     if (val.startsWith("127.0.0.1")) {
                         postMethod.addHeader(hdr, sslEndPoint);
                     }
@@ -134,7 +137,7 @@ public class TunnelServlet extends ProxyServlet {
 
             Enumeration<?> vals = httpRequest.getHeaders(hdr);
             while (vals.hasMoreElements()) {
-                String val = (String) vals.nextElement();
+                String val = (String)vals.nextElement();
                 if (val != null) {
                     postMethod.addHeader(hdr, val);
                 }
@@ -144,35 +147,38 @@ public class TunnelServlet extends ProxyServlet {
         if (postMethod instanceof ExtendedPostMethod) {
             InputStreamEntity entity = new InputStreamEntity(capture, contentLength);
             entity.setContentType(request.getContentType());
-            ((ExtendedPostMethod) postMethod).setEntity(entity);
+            ((ExtendedPostMethod)postMethod).setEntity(entity);
         }
 
-        java.net.URI uri = null;
+        URI uri = null;
         try {
-            uri = new java.net.URI(this.prot + sslEndPoint);
-        } catch (URISyntaxException e) {
+            uri = new URI(prot + sslEndPoint);
+        }
+        catch (URISyntaxException e) {
             SoapUI.logError(e);
         }
 
-        postMethod.getParams().setParameter(
-                SoapUIHttpRoute.SOAPUI_SSL_CONFIG,
-                settings.getString(SecurityTabForm.SSLTUNNEL_KEYSTOREPATH, "") + " "
-                        + settings.getString(SecurityTabForm.SSLTUNNEL_KEYSTOREPASSWORD, ""));
+        postMethod.getParams().setParameter(SoapUIHttpRoute.SOAPUI_SSL_CONFIG,
+                                            settings.getString(SecurityTabForm.SSLTUNNEL_KEYSTOREPATH, "") +
+                                            " " +
+                                            settings.getString(SecurityTabForm.SSLTUNNEL_KEYSTOREPASSWORD, "")
+        );
 
         setProtocolversion(postMethod, request.getProtocol());
 
         String path = null;
         if (!sslEndPoint.contains("/")) {
             path = "/";
-        } else {
-            path = sslEndPoint.substring(sslEndPoint.indexOf("/"), sslEndPoint.length());
+        }
+        else {
+            path = sslEndPoint.substring(sslEndPoint.indexOf("/"));
         }
 
         if (uri != null) {
             try {
-                postMethod.setURI(URIUtils.createURI(uri.getScheme(), uri.getHost(), uri.getPort(), path, uri.getQuery(),
-                        uri.getFragment()));
-            } catch (URISyntaxException e) {
+                postMethod.setURI(URIUtils.createURI(uri.getScheme(), uri.getHost(), uri.getPort(), path, uri.getQuery(), uri.getFragment()));
+            }
+            catch (URISyntaxException e) {
                 SoapUI.logError(e);
             }
         }
@@ -184,7 +190,8 @@ public class TunnelServlet extends ProxyServlet {
                 httpState = new BasicHttpContext();
             }
             HttpClientSupport.execute(postMethod, httpState);
-        } else {
+        }
+        else {
             HttpClientSupport.execute(postMethod);
         }
         capturedData.stopCapture();
@@ -193,19 +200,17 @@ public class TunnelServlet extends ProxyServlet {
         capturedData.setRawResponseBody(postMethod.getResponseBody());
         capturedData.setResponseHeader(postMethod.getHttpResponse());
         capturedData.setRawRequestData(getRequestToBytes(request.toString(), postMethod, capture));
-        capturedData.setRawResponseData(getResponseToBytes(response.toString(), postMethod,
-                capturedData.getRawResponseBody()));
+        capturedData.setRawResponseData(getResponseToBytes(response.toString(), postMethod, capturedData.getRawResponseBody()));
 
         listenerCallBack.fireAfterProxy(project, request, response, postMethod, capturedData);
 
         StringToStringsMap responseHeaders = capturedData.getResponseHeaders();
         // copy headers to response
-        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+        HttpServletResponse httpServletResponse = (HttpServletResponse)response;
         for (Map.Entry<String, List<String>> headerEntry : responseHeaders.entrySet()) {
             for (String header : headerEntry.getValue()) {
                 httpServletResponse.addHeader(headerEntry.getKey(), header);
             }
-
         }
 
         IO.copy(new ByteArrayInputStream(capturedData.getRawResponseBody()), httpServletResponse.getOutputStream());
@@ -213,9 +218,7 @@ public class TunnelServlet extends ProxyServlet {
         synchronized (this) {
             listenerCallBack.fireAddMessageExchange(capturedData);
         }
-
     }
-
 
     private byte[] getResponseToBytes(String footer, ExtendedHttpMethod postMethod, byte[] res) {
         String response = footer;
@@ -244,5 +247,4 @@ public class TunnelServlet extends ProxyServlet {
 
         return request.getBytes();
     }
-
 }

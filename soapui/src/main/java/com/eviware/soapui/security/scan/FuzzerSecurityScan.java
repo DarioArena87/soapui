@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.scan;
@@ -35,7 +35,7 @@ import com.eviware.soapui.support.xml.XmlObjectTreeModel.XmlTreeNode;
 import com.eviware.x.impl.swing.JFormDialog;
 import org.apache.commons.lang.RandomStringUtils;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 
 public class FuzzerSecurityScan extends AbstractSecurityScanWithProperties {
 
@@ -54,8 +54,9 @@ public class FuzzerSecurityScan extends AbstractSecurityScanWithProperties {
         super(testStep, config, parent, icon);
         if (config.getConfig() == null || !(config.getConfig() instanceof FuzzerScanConfig)) {
             initConfig();
-        } else {
-            fuzzerScanConfig = (FuzzerScanConfig) getConfig().getConfig();
+        }
+        else {
+            fuzzerScanConfig = (FuzzerScanConfig)getConfig().getConfig();
         }
 
         getExecutionStrategy().setStrategy(StrategyTypeConfig.ALL_AT_ONCE);
@@ -64,10 +65,32 @@ public class FuzzerSecurityScan extends AbstractSecurityScanWithProperties {
 
     private void initConfig() {
         getConfig().setConfig(FuzzerScanConfig.Factory.newInstance());
-        fuzzerScanConfig = (FuzzerScanConfig) getConfig().getConfig();
+        fuzzerScanConfig = (FuzzerScanConfig)getConfig().getConfig();
         fuzzerScanConfig.setMinimal(DEFAULT_MINIMAL);
         fuzzerScanConfig.setMaximal(DEFAULT_MAXIMAL);
         fuzzerScanConfig.setNumberOfRequest(DEFAULT_NUMBER_OF_REQUESTS);
+    }
+
+    private String fuzzedValue() {
+        int count = (int)(Math.random() * (maximal + 1 - minimal)) + minimal;
+        return RandomStringUtils.randomAlphanumeric(count);
+    }
+
+    private void updateRequestProperty(TestStep testStep, String propertyName, String propertyValue) {
+        testStep.getProperty(propertyName).setValue(propertyValue);
+    }
+
+    @Override
+    public void release() {
+        if (dialog != null) {
+            dialog.release();
+        }
+
+        super.release();
+    }
+
+    protected void clear() {
+        numberOfRequests = null;
     }
 
     @Override
@@ -87,27 +110,17 @@ public class FuzzerSecurityScan extends AbstractSecurityScanWithProperties {
                         parameters.put(scp.getLabel(), fuzzed);
                     }
                     updateRequestProperty(testStep, scp.getName(), model.getXmlObject().toString());
-
-                } else {
+                }
+                else {
                     String fuzzed = fuzzedValue();
                     parameters.put(scp.getLabel(), fuzzed);
                     updateRequestProperty(testStep, scp.getName(), fuzzed);
                 }
             }
 
-            MessageExchange message = (MessageExchange) testStep.run((TestCaseRunner) runner, context);
+            MessageExchange message = (MessageExchange)testStep.run((TestCaseRunner)runner, context);
             createMessageExchange(parameters, message, context);
         }
-    }
-
-    private String fuzzedValue() {
-        int count = (int) (Math.random() * (maximal + 1 - minimal)) + minimal;
-        return RandomStringUtils.randomAlphanumeric(count);
-    }
-
-    private void updateRequestProperty(TestStep testStep, String propertyName, String propertyValue) {
-        testStep.getProperty(propertyName).setValue(propertyValue);
-
     }
 
     @Override
@@ -121,35 +134,25 @@ public class FuzzerSecurityScan extends AbstractSecurityScanWithProperties {
         if (numberOfRequests > 0) {
             numberOfRequests--;
             return true;
-        } else {
+        }
+        else {
             numberOfRequests = null;
             return false;
         }
     }
 
     @Override
-    public JComponent getAdvancedSettingsPanel() {
-        FuzzerScanAdvancedConfigPanel configPanel = new FuzzerScanAdvancedConfigPanel(fuzzerScanConfig);
-        dialog = configPanel.getDialog();
-        return dialog.getPanel();
-    }
-
-    @Override
-    public void release() {
-        if (dialog != null) {
-            dialog.release();
-        }
-
-        super.release();
-    }
-
-    @Override
-    public String getConfigDescription() {
-        return "Configuration for Fuzzing Security Scan";
+    public String getType() {
+        return TYPE;
     }
 
     @Override
     public String getConfigName() {
+        return "Configuration for Fuzzing Security Scan";
+    }
+
+    @Override
+    public String getConfigDescription() {
         return "Configuration for Fuzzing Security Scan";
     }
 
@@ -160,12 +163,9 @@ public class FuzzerSecurityScan extends AbstractSecurityScanWithProperties {
     }
 
     @Override
-    public String getType() {
-        return TYPE;
+    public JComponent getAdvancedSettingsPanel() {
+        FuzzerScanAdvancedConfigPanel configPanel = new FuzzerScanAdvancedConfigPanel(fuzzerScanConfig);
+        dialog = configPanel.getDialog();
+        return dialog.getPanel();
     }
-
-    protected void clear() {
-        numberOfRequests = null;
-    }
-
 }

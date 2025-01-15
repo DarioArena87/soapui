@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.views.html;
@@ -28,19 +28,15 @@ import com.eviware.soapui.support.components.WebViewBasedBrowserComponentFactory
 import com.eviware.soapui.support.editor.EditorLocation;
 import com.eviware.soapui.support.editor.views.AbstractXmlEditorView;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 @SuppressWarnings("unchecked")
 public class HttpHtmlResponseView extends AbstractXmlEditorView<HttpResponseDocument> implements PropertyChangeListener {
     private HttpRequestInterface<?> httpRequest;
-    private JPanel panel = new JPanel(new BorderLayout());
+    private final JPanel panel = new JPanel(new BorderLayout());
     private WebViewBasedBrowserComponent browser;
     private MessageExchangeModelItem messageExchangeModelItem;
     private boolean initialized = false;
@@ -53,6 +49,14 @@ public class HttpHtmlResponseView extends AbstractXmlEditorView<HttpResponseDocu
 
     public JComponent getComponent() {
         return panel;
+    }
+
+    public void setEditable(boolean enabled) {
+    }
+
+    @Override
+    public int getSupportScoreForContentType(String contentType) {
+        return contentType.toLowerCase().endsWith("html") ? 2 : 0;
     }
 
     @Override
@@ -68,20 +72,6 @@ public class HttpHtmlResponseView extends AbstractXmlEditorView<HttpResponseDocu
         return activated;
     }
 
-    private void ensureComponentIsInitialized() {
-        if (!initialized) {
-            if (SoapUI.isBrowserDisabled()) {
-                panel.add(new JLabel("Browser component is disabled."));
-            } else {
-                browser = WebViewBasedBrowserComponentFactory.createBrowserComponent(false);
-                Component component = browser.getComponent();
-                component.setMinimumSize(new Dimension(100, 100));
-                panel.add(component, BorderLayout.CENTER);
-            }
-            initialized = true;
-        }
-    }
-
     @Override
     public boolean deactivate() {
         boolean deactivated = super.deactivate();
@@ -89,6 +79,14 @@ public class HttpHtmlResponseView extends AbstractXmlEditorView<HttpResponseDocu
             browser.setContent("");
         }
         return deactivated;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(AbstractHttpRequestInterface.RESPONSE_PROPERTY)) {
+            if (browser != null) {
+                setEditorContent(((HttpResponse)evt.getNewValue()));
+            }
+        }
     }
 
     @Override
@@ -101,12 +99,28 @@ public class HttpHtmlResponseView extends AbstractXmlEditorView<HttpResponseDocu
 
         if (messageExchangeModelItem != null) {
             messageExchangeModelItem.removePropertyChangeListener(this);
-        } else {
+        }
+        else {
             httpRequest.removePropertyChangeListener(this);
         }
 
         httpRequest = null;
         messageExchangeModelItem = null;
+    }
+
+    private void ensureComponentIsInitialized() {
+        if (!initialized) {
+            if (SoapUI.isBrowserDisabled()) {
+                panel.add(new JLabel("Browser component is disabled."));
+            }
+            else {
+                browser = WebViewBasedBrowserComponentFactory.createBrowserComponent(false);
+                Component component = browser.getComponent();
+                component.setMinimumSize(new Dimension(100, 100));
+                panel.add(component, BorderLayout.CENTER);
+            }
+            initialized = true;
+        }
     }
 
     protected void setEditorContent(HttpResponse httpResponse) {
@@ -117,44 +131,29 @@ public class HttpHtmlResponseView extends AbstractXmlEditorView<HttpResponseDocu
         if (content != null) {
             String contentType = httpResponse.getContentType();
 
-            if (contentType != null && isSupportedContentType(contentType)) {
+            if (isSupportedContentType(contentType)) {
                 try {
                     browser.setContent(content, contentType);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e, "Could not display response from " + httpResponse.getURL() + " as HTML");
                 }
-            } else {
+            }
+            else {
                 browser.setContent("unsupported content-type [" + contentType + "]");
             }
-        } else {
+        }
+        else {
             browser.setContent("<missing content>");
         }
     }
 
-
     private boolean isSupportedContentType(String contentType) {
-        return contentType != null && (contentType.trim().toLowerCase().startsWith("text") ||
-                contentType.trim().toLowerCase().startsWith("image"));
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(AbstractHttpRequestInterface.RESPONSE_PROPERTY)) {
-            if (browser != null) {
-                setEditorContent(((HttpResponse) evt.getNewValue()));
-            }
-        }
+        return contentType != null && (contentType.trim().toLowerCase().startsWith("text") || contentType.trim().toLowerCase().startsWith("image"));
     }
 
     public boolean saveDocument(boolean validate) {
         return false;
-    }
-
-    public void setEditable(boolean enabled) {
-    }
-
-    @Override
-    public int getSupportScoreForContentType(String contentType ) {
-        return contentType.toLowerCase().endsWith("html")? 2: 0;
     }
 
     public HttpRequestInterface<?> getHttpRequest() {

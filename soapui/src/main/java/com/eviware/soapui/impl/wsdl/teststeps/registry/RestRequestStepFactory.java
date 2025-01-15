@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.registry;
@@ -52,23 +52,6 @@ public class RestRequestStepFactory extends WsdlTestStepFactory {
     // private XFormDialog dialog;
     // private StringToStringMap dialogValues = new StringToStringMap();
 
-    public RestRequestStepFactory() {
-        super(RESTREQUEST_TYPE, "REST Request", "Submits a REST-style Request and validates its response",
-                "/rest_request_step.png");
-    }
-
-    public static class ItemDeletedException extends Exception {
-
-    }
-
-    public WsdlTestStep buildTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
-        try {
-            return new RestTestRequestStep(testCase, config, forLoadTest);
-        } catch (ItemDeletedException e) {
-            return null;
-        }
-    }
-
     public static TestStepConfig createConfig(RestRequest request, String stepName) {
         request.beforeSave(); //SOAP-1098
         RestRequestStepConfig requestStepConfig = RestRequestStepConfig.Factory.newInstance();
@@ -85,6 +68,19 @@ public class RestRequestStepFactory extends WsdlTestStepFactory {
         return testStep;
     }
 
+    public RestRequestStepFactory() {
+        super(RESTREQUEST_TYPE, "REST Request", "Submits a REST-style Request and validates its response", "/rest_request_step.png");
+    }
+
+    public WsdlTestStep buildTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
+        try {
+            return new RestTestRequestStep(testCase, config, forLoadTest);
+        }
+        catch (ItemDeletedException e) {
+            return null;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public TestStepConfig createNewTestStep(WsdlTestCase testCase, String name) {
         // build list of available interfaces / restResources
@@ -95,7 +91,7 @@ public class RestRequestStepFactory extends WsdlTestStepFactory {
         for (int c = 0; c < project.getInterfaceCount(); c++) {
             Interface iface = project.getInterfaceAt(c);
             if (iface instanceof RestService) {
-                List<RestResource> resources = ((RestService) iface).getAllResources();
+                List<RestResource> resources = ((RestService)iface).getAllResources();
 
                 for (RestResource resource : resources) {
                     // options.add( iface.getName() + " -> " + resource.getPath() );
@@ -134,12 +130,31 @@ public class RestRequestStepFactory extends WsdlTestStepFactory {
                 // if( dialog.getReturnValue() != XFormDialog.OK_OPTION )
                 // return null;
 
-                return tuple.getValue2() == null ? createNewTestStep(tuple.getValue1(), name) : createConfig(
-                        tuple.getValue2(), name);
+                return tuple.getValue2() == null ? createNewTestStep(tuple.getValue1(), name) : createConfig(tuple.getValue2(), name);
             }
         }
 
         return null;
+    }
+
+    public boolean canCreate() {
+        return true;
+    }
+
+    @Override
+    public boolean canAddTestStepToTestCase(WsdlTestCase testCase) {
+        for (Interface iface : testCase.getTestSuite().getProject().getInterfaceList()) {
+            if (iface instanceof RestService) {
+                for (RestResource resource : ((RestService)iface).getAllResources()) {
+                    if (resource.getRestMethodCount() > 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        UISupport.showErrorMessage("Missing REST Methods in Project");
+        return false;
     }
 
     public TestStepConfig createNewTestStep(RestMethod restMethod, String name) {
@@ -178,10 +193,6 @@ public class RestRequestStepFactory extends WsdlTestStepFactory {
         return testStepConfig;
     }
 
-    public boolean canCreate() {
-        return true;
-    }
-
     public TestStepConfig createConfig(WsdlMonitorMessageExchange me, String stepName) {
         RestRequestConfig testRequestConfig = RestRequestConfig.Factory.newInstance();
 
@@ -215,20 +226,7 @@ public class RestRequestStepFactory extends WsdlTestStepFactory {
     // UISupport.OPTIONS_ICON );
     // }
 
-    @Override
-    public boolean canAddTestStepToTestCase(WsdlTestCase testCase) {
-        for (Interface iface : testCase.getTestSuite().getProject().getInterfaceList()) {
-            if (iface instanceof RestService) {
-                for (RestResource resource : ((RestService) iface).getAllResources()) {
-                    if (resource.getRestMethodCount() > 0) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        UISupport.showErrorMessage("Missing REST Methods in Project");
-        return false;
+    public static class ItemDeletedException extends Exception {
 
     }
 }

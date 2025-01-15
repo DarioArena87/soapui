@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -58,7 +58,7 @@ import com.eviware.soapui.support.types.StringToStringsMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -72,37 +72,34 @@ import static com.eviware.soapui.impl.wsdl.teststeps.Script.SCRIPT_PROPERTY;
  * @author nebojsa.tasic
  */
 
-public class AMFRequestTestStep extends WsdlTestStepWithProperties implements Assertable, MutableTestPropertyHolder,
-        PropertyChangeListener, SamplerTestStep {
-    @SuppressWarnings("unused")
-    private final static Logger log = LogManager.getLogger(WsdlTestRequestStep.class);
-    protected AMFRequestTestStepConfig amfRequestTestStepConfig;
+public class AMFRequestTestStep extends WsdlTestStepWithProperties implements Assertable, MutableTestPropertyHolder, PropertyChangeListener, SamplerTestStep {
     public final static String amfREQUEST = AMFRequestTestStep.class.getName() + "@amfrequest";
     public static final String STATUS_PROPERTY = WsdlTestRequest.class.getName() + "@status";
     public static final String RESPONSE_PROPERTY = "response";
     public static final String REQUEST_PROPERTY = "request";
     public static final String HTTP_HEADERS_PROPERTY = AMFRequest.class.getName() + "@request-headers";
     public static final String AMF_HEADERS_PROPERTY = AMFRequest.class.getName() + "@amfrequest-amfheaders";
+    @SuppressWarnings("unused")
+    private final static Logger log = LogManager.getLogger(WsdlTestRequestStep.class);
+    protected AMFRequestTestStepConfig amfRequestTestStepConfig;
     private AMFSubmit submit;
 
-    private SoapUIScriptEngine scriptEngine;
+    private final SoapUIScriptEngine scriptEngine;
     private AssertionsSupport assertionsSupport;
     private PropertyChangeNotifier notifier;
-    private XmlBeansPropertiesTestPropertyHolder propertyHolderSupport;
+    private final XmlBeansPropertiesTestPropertyHolder propertyHolderSupport;
 
-    private AMFRequest amfRequest;
+    private final AMFRequest amfRequest;
 
     public AMFRequestTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
 
         super(testCase, config, true, forLoadTest);
 
         if (getConfig().getConfig() != null) {
-            amfRequestTestStepConfig = (AMFRequestTestStepConfig) getConfig().getConfig().changeType(
-                    AMFRequestTestStepConfig.type);
-
-        } else {
-            amfRequestTestStepConfig = (AMFRequestTestStepConfig) getConfig().addNewConfig().changeType(
-                    AMFRequestTestStepConfig.type);
+            amfRequestTestStepConfig = (AMFRequestTestStepConfig)getConfig().getConfig().changeType(AMFRequestTestStepConfig.type);
+        }
+        else {
+            amfRequestTestStepConfig = (AMFRequestTestStepConfig)getConfig().addNewConfig().changeType(AMFRequestTestStepConfig.type);
         }
 
         if (amfRequestTestStepConfig.getProperties() == null) {
@@ -121,42 +118,26 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         if (forLoadTest && !isDisabled()) {
             try {
                 scriptEngine.compile();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
     }
 
     private void addResponseAsXmlVirtualProperty() {
-        TestStepBeanProperty responseProperty = new TestStepBeanProperty(WsdlTestStepWithProperties.RESPONSE_AS_XML,
-                false, amfRequest, "responseContent", this) {
+        TestStepBeanProperty responseProperty = new TestStepBeanProperty(RESPONSE_AS_XML, false, amfRequest, "responseContent", this) {
             @Override
             public String getDefaultValue() {
                 return "";
             }
-
         };
 
-        propertyHolderSupport.addVirtualProperty(WsdlTestStepWithProperties.RESPONSE_AS_XML, responseProperty);
+        propertyHolderSupport.addVirtualProperty(RESPONSE_AS_XML, responseProperty);
     }
 
     public AMFRequestTestStepConfig getAMFRequestTestStepConfig() {
         return amfRequestTestStepConfig;
-    }
-
-    @Override
-    public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
-        beforeSave();
-
-        TestStepConfig config = (TestStepConfig) getConfig().copy();
-        AMFRequestTestStep result = (AMFRequestTestStep) targetTestCase.addTestStep(config);
-
-        return result;
-    }
-
-    @Override
-    public void release() {
-        super.release();
     }
 
     public TestStepResult run(TestCaseRunner runner, TestCaseRunContext runContext) {
@@ -177,12 +158,14 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
                     testStepResult.addMessage(submit.getError().toString());
 
                     amfRequest.setResponse(null);
-                } else if (response == null) {
+                }
+                else if (response == null) {
                     testStepResult.setStatus(TestStepStatus.FAILED);
                     testStepResult.addMessage("Request is missing response");
 
                     amfRequest.setResponse(null);
-                } else {
+                }
+                else {
                     runContext.setProperty(AssertedXPathsContainer.ASSERTEDXPATHSCONTAINER_PROPERTY, testStepResult);
                     amfRequest.setResponse(response);
 
@@ -203,23 +186,27 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
 
                     testStepResult.setResponse(response, testStepResult.getStatus() != TestStepStatus.FAILED);
                 }
-            } else {
+            }
+            else {
                 testStepResult.setStatus(TestStepStatus.CANCELED);
                 testStepResult.addMessage("Request was canceled");
             }
 
             if (response != null) {
                 testStepResult.setRequestContent(response.getRequestContent());
-            } else {
+            }
+            else {
                 testStepResult.setRequestContent(amfRequest.getRequestContent());
             }
 
             testStepResult.stopTimer();
-        } catch (SubmitException e) {
+        }
+        catch (SubmitException e) {
             testStepResult.setStatus(TestStepStatus.FAILED);
             testStepResult.addMessage("SubmitException: " + e);
             testStepResult.stopTimer();
-        } finally {
+        }
+        finally {
             submit = null;
         }
 
@@ -232,7 +219,8 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
                     testStepResult.setStatus(TestStepStatus.FAILED);
                     if (getAssertionCount() == 0) {
                         testStepResult.addMessage("Invalid/empty response");
-                    } else {
+                    }
+                    else {
                         for (int c = 0; c < getAssertionCount(); c++) {
                             TestAssertion assertion = getAssertionAt(c);
                             AssertionError[] errors = assertion.getErrors();
@@ -271,16 +259,30 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         return true;
     }
 
+    public void resetConfigOnMove(TestStepConfig config) {
+        super.resetConfigOnMove(config);
+        amfRequestTestStepConfig = (AMFRequestTestStepConfig)config.getConfig().changeType(AMFRequestTestStepConfig.type);
+        propertyHolderSupport.resetPropertiesConfig(amfRequestTestStepConfig.getProperties());
+        // addResponseAsXmlVirtualProperty();
+        assertionsSupport.refresh();
+    }
+
+    @Override
+    public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
+        beforeSave();
+
+        TestStepConfig config = (TestStepConfig)getConfig().copy();
+        AMFRequestTestStep result = (AMFRequestTestStep)targetTestCase.addTestStep(config);
+
+        return result;
+    }
+
     public String getDefaultSourcePropertyName() {
         return "Response";
     }
 
     private void initAssertions() {
         assertionsSupport = new AssertionsSupport(this, new AssertableConfig() {
-
-            public TestAssertionConfig addNewAssertion() {
-                return getAMFRequestTestStepConfig().addNewAssertion();
-            }
 
             public List<TestAssertionConfig> getAssertionList() {
                 return getAMFRequestTestStepConfig().getAssertionList();
@@ -290,38 +292,16 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
                 getAMFRequestTestStepConfig().removeAssertion(ix);
             }
 
+            public TestAssertionConfig addNewAssertion() {
+                return getAMFRequestTestStepConfig().addNewAssertion();
+            }
+
             public TestAssertionConfig insertAssertion(TestAssertionConfig source, int ix) {
                 TestAssertionConfig conf = getAMFRequestTestStepConfig().insertNewAssertion(ix);
                 conf.set(source);
                 return conf;
             }
         });
-    }
-
-    private class PropertyChangeNotifier {
-        private AssertionStatus oldStatus;
-        private ImageIcon oldIcon;
-
-        public PropertyChangeNotifier() {
-            oldStatus = getAssertionStatus();
-            oldIcon = getIcon();
-        }
-
-        public void notifyChange() {
-            AssertionStatus newStatus = getAssertionStatus();
-            ImageIcon newIcon = getIcon();
-
-            if (oldStatus != newStatus) {
-                notifyPropertyChanged(STATUS_PROPERTY, oldStatus, newStatus);
-            }
-
-            if (oldIcon != newIcon) {
-                notifyPropertyChanged(ICON_PROPERTY, oldIcon, getIcon());
-            }
-
-            oldStatus = newStatus;
-            oldIcon = newIcon;
-        }
     }
 
     public TestAssertion addAssertion(String assertionLabel) {
@@ -334,13 +314,13 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
             }
 
             if (getAMFRequest().getResponse() != null) {
-                assertion.assertResponse(new AMFMessageExchange(this, getAMFRequest().getResponse()),
-                        new WsdlTestRunContext(this));
+                assertion.assertResponse(new AMFMessageExchange(this, getAMFRequest().getResponse()), new WsdlTestRunContext(this));
                 notifier.notifyChange();
             }
 
             return assertion;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return null;
         }
@@ -350,8 +330,32 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         assertionsSupport.addAssertionsListener(listener);
     }
 
-    public TestAssertion cloneAssertion(TestAssertion source, String name) {
-        return assertionsSupport.cloneAssertion(source, name);
+    public int getAssertionCount() {
+        return assertionsSupport.getAssertionCount();
+    }
+
+    public TestAssertion getAssertionAt(int c) {
+        return assertionsSupport.getAssertionAt(c);
+    }
+
+    public void removeAssertionsListener(AssertionsListener listener) {
+        assertionsSupport.removeAssertionsListener(listener);
+    }
+
+    public void removeAssertion(TestAssertion assertion) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+
+        try {
+            assertionsSupport.removeAssertion((WsdlMessageAssertion)assertion);
+        }
+        finally {
+            ((WsdlMessageAssertion)assertion).release();
+            notifier.notifyChange();
+        }
+    }
+
+    public AssertionStatus getAssertionStatus() {
+        return amfRequest.getAssertionStatus();
     }
 
     public String getAssertableContentAsXml() {
@@ -362,58 +366,36 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         return getAMFRequest().getResponse() == null ? null : getAMFRequest().getResponse().getContentAsString();
     }
 
-    public WsdlMessageAssertion importAssertion(WsdlMessageAssertion source, boolean overwrite, boolean createCopy,
-                                                String newName) {
-        return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
+    public String getDefaultAssertableContent() {
+        return null;
     }
 
     public AssertableType getAssertableType() {
         return AssertableType.RESPONSE;
     }
 
-    public TestAssertion getAssertionAt(int c) {
-        return assertionsSupport.getAssertionAt(c);
+    public List<TestAssertion> getAssertionList() {
+        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
     }
 
     public TestAssertion getAssertionByName(String name) {
         return assertionsSupport.getAssertionByName(name);
     }
 
-    public int getAssertionCount() {
-        return assertionsSupport.getAssertionCount();
-    }
-
-    public List<TestAssertion> getAssertionList() {
-        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
-    }
-
-    public void propertyChange(PropertyChangeEvent arg0) {
-        if (arg0.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY)
-                || arg0.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
-            if (getAMFRequest().getResponse() != null) {
-                assertResponse(new WsdlTestRunContext(this));
-            }
-        }
-    }
-
-    public Map<String, TestAssertion> getAssertions() {
-        return assertionsSupport.getAssertions();
-    }
-
-    public String getDefaultAssertableContent() {
-        return null;
-    }
-
-    public AssertionStatus getAssertionStatus() {
-        return amfRequest.getAssertionStatus();
-    }
-
-    public ImageIcon getIcon() {
-        return amfRequest.getIcon();
+    public TestStep getTestStep() {
+        return this;
     }
 
     public Interface getInterface() {
         return null;
+    }
+
+    public TestAssertion cloneAssertion(TestAssertion source, String name) {
+        return assertionsSupport.cloneAssertion(source, name);
+    }
+
+    public Map<String, TestAssertion> getAssertions() {
+        return assertionsSupport.getAssertions();
     }
 
     public TestAssertion moveAssertion(int ix, int offset) {
@@ -421,26 +403,34 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         TestAssertion assertion = getAssertionAt(ix);
         try {
             return assertionsSupport.moveAssertion(ix, offset);
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
+        }
+        finally {
+            ((WsdlMessageAssertion)assertion).release();
             notifier.notifyChange();
         }
     }
 
-    public void removeAssertion(TestAssertion assertion) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+    public WsdlMessageAssertion importAssertion(
+        WsdlMessageAssertion source, boolean overwrite, boolean createCopy, String newName
+    ) {
+        return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
+    }
 
-        try {
-            assertionsSupport.removeAssertion((WsdlMessageAssertion) assertion);
-
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
-            notifier.notifyChange();
+    public void propertyChange(PropertyChangeEvent arg0) {
+        if (arg0.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY) || arg0.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
+            if (getAMFRequest().getResponse() != null) {
+                assertResponse(new WsdlTestRunContext(this));
+            }
         }
     }
 
-    public void removeAssertionsListener(AssertionsListener listener) {
-        assertionsSupport.removeAssertionsListener(listener);
+    public ImageIcon getIcon() {
+        return amfRequest.getIcon();
+    }
+
+    @Override
+    public void release() {
+        super.release();
     }
 
     public void assertResponse(SubmitContext context) {
@@ -457,7 +447,8 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
             }
 
             notifier.notifyChange();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -474,10 +465,9 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         return PropertyExpansionUtils.renameProperty(propertyHolderSupport.getProperty(name), newName, getTestCase()) != null;
     }
 
-    // FIXME Remove the overridden methods in TestPropertyHolder
     @Override
-    public Map<String, TestProperty> getProperties() {
-        return propertyHolderSupport.getProperties();
+    public String[] getPropertyNames() {
+        return propertyHolderSupport.getPropertyNames();
     }
 
     @Override
@@ -486,29 +476,13 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
     }
 
     @Override
-    public TestProperty getPropertyAt(int index) {
-        return propertyHolderSupport.getPropertyAt(index);
-    }
-
-    @Override
-    public int getPropertyCount() {
-        return propertyHolderSupport.getPropertyCount();
-    }
-
-
-    @Override
-    public List<TestProperty> getPropertyList() {
-        return propertyHolderSupport.getPropertyList();
-    }
-
-    @Override
-    public String[] getPropertyNames() {
-        return propertyHolderSupport.getPropertyNames();
-    }
-
-    @Override
     public String getPropertyValue(String name) {
         return propertyHolderSupport.getPropertyValue(name);
+    }
+
+    @Override
+    public void setPropertyValue(String name, String value) {
+        propertyHolderSupport.setPropertyValue(name, value);
     }
 
     @Override
@@ -521,23 +495,39 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         propertyHolderSupport.removeTestPropertyListener(listener);
     }
 
+    // FIXME Remove the overridden methods in TestPropertyHolder
+    @Override
+    public Map<String, TestProperty> getProperties() {
+        return propertyHolderSupport.getProperties();
+    }
+
     @Override
     public boolean hasProperty(String name) {
         return propertyHolderSupport.hasProperty(name);
     }
 
     @Override
-    public void setPropertyValue(String name, String value) {
-        propertyHolderSupport.setPropertyValue(name, value);
+    public TestProperty getPropertyAt(int index) {
+        return propertyHolderSupport.getPropertyAt(index);
     }
 
-    public void setPropertyValue(String name, Object value) {
-        setPropertyValue(name, String.valueOf(value));
+    @Override
+    public int getPropertyCount() {
+        return propertyHolderSupport.getPropertyCount();
+    }
+
+    @Override
+    public List<TestProperty> getPropertyList() {
+        return propertyHolderSupport.getPropertyList();
     }
 
     @Override
     public void moveProperty(String propertyName, int targetIndex) {
         propertyHolderSupport.moveProperty(propertyName, targetIndex);
+    }
+
+    public void setPropertyValue(String name, Object value) {
+        setPropertyValue(name, String.valueOf(value));
     }
 
     public AMFRequest getAMFRequest() {
@@ -593,11 +583,15 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         amfRequest.setEndpoint(PropertyExpander.expandProperties(submitContext, getEndpoint()));
         amfRequest.setScript(getScript());
         amfRequest.setPropertyNames(getPropertyNames());
-        amfRequest.setPropertyMap((HashMap<String, TestProperty>) getProperties());
+        amfRequest.setPropertyMap((HashMap<String, TestProperty>)getProperties());
         amfRequest.setHttpHeaders(getHttpHeaders());
         amfRequest.setAmfHeadersString(getAmfHeaders());
 
         return amfRequest.executeAmfScript(submitContext);
+    }
+
+    public StringToStringsMap getHttpHeaders() {
+        return StringToStringsMap.fromXml(getSettings().getString(HTTP_HEADERS_PROPERTY, null));
     }
 
     public void setHttpHeaders(StringToStringsMap httpHeaders) {
@@ -606,8 +600,8 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         notifyPropertyChanged(HTTP_HEADERS_PROPERTY, old, httpHeaders);
     }
 
-    public StringToStringsMap getHttpHeaders() {
-        return StringToStringsMap.fromXml(getSettings().getString(HTTP_HEADERS_PROPERTY, null));
+    public StringToStringMap getAmfHeaders() {
+        return StringToStringMap.fromXml(getSettings().getString(AMF_HEADERS_PROPERTY, null));
     }
 
     public void setAmfHeaders(StringToStringMap amfHeaders) {
@@ -616,25 +610,8 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
         notifyPropertyChanged(AMF_HEADERS_PROPERTY, old, amfHeaders);
     }
 
-    public StringToStringMap getAmfHeaders() {
-        return StringToStringMap.fromXml(getSettings().getString(AMF_HEADERS_PROPERTY, null));
-    }
-
-    public void resetConfigOnMove(TestStepConfig config) {
-        super.resetConfigOnMove(config);
-        amfRequestTestStepConfig = (AMFRequestTestStepConfig) config.getConfig().changeType(
-                AMFRequestTestStepConfig.type);
-        propertyHolderSupport.resetPropertiesConfig(amfRequestTestStepConfig.getProperties());
-        // addResponseAsXmlVirtualProperty();
-        assertionsSupport.refresh();
-    }
-
     public XmlBeansPropertiesTestPropertyHolder getPropertyHolderSupport() {
         return propertyHolderSupport;
-    }
-
-    public TestStep getTestStep() {
-        return this;
     }
 
     public boolean isDiscardResponse() {
@@ -647,5 +624,31 @@ public class AMFRequestTestStep extends WsdlTestStepWithProperties implements As
 
     public TestRequest getTestRequest() {
         return amfRequest;
+    }
+
+    private class PropertyChangeNotifier {
+        private AssertionStatus oldStatus;
+        private ImageIcon oldIcon;
+
+        public PropertyChangeNotifier() {
+            oldStatus = getAssertionStatus();
+            oldIcon = getIcon();
+        }
+
+        public void notifyChange() {
+            AssertionStatus newStatus = getAssertionStatus();
+            ImageIcon newIcon = getIcon();
+
+            if (oldStatus != newStatus) {
+                notifyPropertyChanged(STATUS_PROPERTY, oldStatus, newStatus);
+            }
+
+            if (oldIcon != newIcon) {
+                notifyPropertyChanged(ICON_PROPERTY, oldIcon, getIcon());
+            }
+
+            oldStatus = newStatus;
+            oldIcon = newIcon;
+        }
     }
 }

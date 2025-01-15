@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps.amf;
@@ -34,30 +34,28 @@ import java.util.concurrent.Future;
 
 public class AMFSubmit implements Submit, Runnable {
     public static final String AMF_CONNECTION = "AMF_CONNECTION";
-    private volatile Future<?> future;
-    private SubmitContext context;
-    private Status status;
-    private SubmitListener[] listeners;
-    private Exception error;
-    private long timestamp;
     private final AMFRequest request;
+    private volatile Future<?> future;
+    private final SubmitContext context;
+    private Status status;
+    private final SubmitListener[] listeners;
+    private Exception error;
+    private final long timestamp;
     private AMFResponse response;
     private AMFCredentials credentials;
 
     public AMFSubmit(AMFRequest request, SubmitContext submitContext, boolean async) {
         this.request = request;
-        this.context = submitContext;
+        context = submitContext;
 
         List<SubmitListener> regListeners = SoapUI.getListenerRegistry().getListeners(SubmitListener.class);
 
         SubmitListener[] submitListeners = request.getSubmitListeners();
-        this.listeners = new SubmitListener[submitListeners.length + regListeners.size()];
-        for (int c = 0; c < submitListeners.length; c++) {
-            this.listeners[c] = submitListeners[c];
-        }
+        listeners = new SubmitListener[submitListeners.length + regListeners.size()];
+        System.arraycopy(submitListeners, 0, listeners, 0, submitListeners.length);
 
         for (int c = 0; c < regListeners.size(); c++) {
-            this.listeners[submitListeners.length + c] = regListeners.get(c);
+            listeners[submitListeners.length + c] = regListeners.get(c);
         }
 
         error = null;
@@ -66,43 +64,10 @@ public class AMFSubmit implements Submit, Runnable {
 
         if (async) {
             future = SoapUI.getThreadPool().submit(this);
-        } else {
+        }
+        else {
             run();
         }
-    }
-
-    public void cancel() {
-        if (status == Status.CANCELED) {
-            return;
-        }
-
-        SoapUI.log.info("Canceling request..");
-
-        status = Status.CANCELED;
-
-        for (int i = 0; i < listeners.length; i++) {
-            try {
-                listeners[i].afterSubmit(this, context);
-            } catch (Throwable e) {
-                SoapUI.logError(e);
-            }
-        }
-    }
-
-    public Status waitUntilFinished() {
-        if (future != null) {
-            if (!future.isDone()) {
-                try {
-                    future.get();
-                } catch (Exception e) {
-                    SoapUI.logError(e);
-                }
-            }
-        } else {
-            throw new RuntimeException("cannot wait on null future");
-        }
-
-        return getStatus();
     }
 
     public void run() {
@@ -122,16 +87,19 @@ public class AMFSubmit implements Submit, Runnable {
             if (status != Status.CANCELED && status != Status.ERROR) {
                 status = Status.FINISHED;
             }
-        } catch (Exception e) {
-            UISupport.showErrorMessage("There's been an error in executing query " + e.toString());
+        }
+        catch (Exception e) {
+            UISupport.showErrorMessage("There's been an error in executing query " + e);
             error = e;
-        } finally {
+        }
+        finally {
 
             if (status != Status.CANCELED) {
                 for (int i = 0; i < listeners.length; i++) {
                     try {
                         listeners[i].afterSubmit(this, context);
-                    } catch (Throwable e) {
+                    }
+                    catch (Throwable e) {
                         SoapUI.logError(e);
                     }
                 }
@@ -144,10 +112,10 @@ public class AMFSubmit implements Submit, Runnable {
             response = new AMFResponse(request, context, responseContent);
             response.setTimestamp(timestamp);
             response.setTimeTaken(System.currentTimeMillis() - timestamp);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
-
     }
 
     private Object executeAmfCall(AMFRequest amfRequest) throws ClientStatusException, ServerStatusException {
@@ -159,34 +127,38 @@ public class AMFSubmit implements Submit, Runnable {
             Object result = amfConnection.call(context, amfRequest.getAmfCall(), amfRequest.argumentsToArray());
 
             return result;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             error = e;
             status = Status.ERROR;
-        } finally {
+        }
+        finally {
             amfRequest.clearArguments();
             if (context.getModelItem() instanceof AMFRequestTestStep) {
                 if (credentials != null && credentials.isLoggedIn()) {
                     credentials.logout();
                     credentials = null;
-                } else {
+                }
+                else {
                     amfConnection.close();
                 }
             }
         }
         return null;
-
     }
 
     private SoapUIAMFConnection getConnection(AMFRequest amfRequest) throws Exception {
         SoapUIAMFConnection amfConnection = null;
         if (isAuthorisationEnabled(amfRequest) && (context.getModelItem() instanceof WsdlTestCase)) {
-            if ((amfConnection = (SoapUIAMFConnection) context.getProperty(AMF_CONNECTION)) != null) {
+            if ((amfConnection = (SoapUIAMFConnection)context.getProperty(AMF_CONNECTION)) != null) {
                 return amfConnection;
-            } else {
+            }
+            else {
                 throw new Exception("amf session connection error! ");
             }
-        } else if (isAuthorisationEnabled(amfRequest) && (context.getModelItem() instanceof AMFRequestTestStep)) {
+        }
+        else if (isAuthorisationEnabled(amfRequest) && (context.getModelItem() instanceof AMFRequestTestStep)) {
             String endpoint = context.expand(getTestCaseConfig(amfRequest).getAmfEndpoint());
             String username = context.expand(getTestCaseConfig(amfRequest).getAmfLogin());
             String password = context.expand(getTestCaseConfig(amfRequest).getAmfPassword());
@@ -194,14 +166,16 @@ public class AMFSubmit implements Submit, Runnable {
             if (StringUtils.hasContent(endpoint) && StringUtils.hasContent(username)) {
                 credentials = new AMFCredentials(endpoint, username, password, context);
                 amfConnection = credentials.login();
-            } else {
+            }
+            else {
                 amfConnection = new SoapUIAMFConnection();
                 amfConnection.connect(context.expand(amfRequest.getEndpoint()));
             }
 
             context.setProperty(AMF_CONNECTION, amfConnection);
             return amfConnection;
-        } else {
+        }
+        else {
             amfConnection = new SoapUIAMFConnection();
             amfConnection.connect(context.expand(amfRequest.getEndpoint()));
             return amfConnection;
@@ -232,16 +206,12 @@ public class AMFSubmit implements Submit, Runnable {
             for (String key : amfRequest.getAmfHeaders().keySet()) {
                 Object data = amfRequest.getAmfHeaders().get(key);
                 if (data instanceof String) {
-                    data = context.expand((String) data);
+                    data = context.expand((String)data);
                 }
 
                 amfConnection.addAmfHeader(key, data);
             }
         }
-    }
-
-    public Exception getError() {
-        return error;
     }
 
     public AMFRequest getRequest() {
@@ -252,8 +222,48 @@ public class AMFSubmit implements Submit, Runnable {
         return response;
     }
 
+    public Status waitUntilFinished() {
+        if (future != null) {
+            if (!future.isDone()) {
+                try {
+                    future.get();
+                }
+                catch (Exception e) {
+                    SoapUI.logError(e);
+                }
+            }
+        }
+        else {
+            throw new RuntimeException("cannot wait on null future");
+        }
+
+        return getStatus();
+    }
+
+    public void cancel() {
+        if (status == Status.CANCELED) {
+            return;
+        }
+
+        SoapUI.log.info("Canceling request..");
+
+        status = Status.CANCELED;
+
+        for (int i = 0; i < listeners.length; i++) {
+            try {
+                listeners[i].afterSubmit(this, context);
+            }
+            catch (Throwable e) {
+                SoapUI.logError(e);
+            }
+        }
+    }
+
     public Status getStatus() {
         return status;
     }
 
+    public Exception getError() {
+        return error;
+    }
 }

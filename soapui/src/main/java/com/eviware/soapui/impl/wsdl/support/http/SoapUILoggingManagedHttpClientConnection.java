@@ -17,7 +17,6 @@ import java.net.Socket;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
-
 /*
  * Provide SoapUIWire to log HTTP messages in ReadyAPI HTTP log
  * */
@@ -27,89 +26,99 @@ public class SoapUILoggingManagedHttpClientConnection extends DefaultManagedHttp
     private final SoapUIWire wire;
 
     public SoapUILoggingManagedHttpClientConnection(
-            final String id,
-            final Logger log,
-            final Logger headerlog,
-            final Logger wirelog,
-            final int buffersize,
-            final int fragmentSizeHint,
-            final CharsetDecoder chardecoder,
-            final CharsetEncoder charencoder,
-            final MessageConstraints constraints,
-            final ContentLengthStrategy incomingContentStrategy,
-            final ContentLengthStrategy outgoingContentStrategy,
-            final HttpMessageWriterFactory<HttpRequest> requestWriterFactory,
-            final HttpMessageParserFactory<HttpResponse> responseParserFactory) {
-        super(id, buffersize, fragmentSizeHint, chardecoder, charencoder, constraints, incomingContentStrategy,
-                outgoingContentStrategy, requestWriterFactory, responseParserFactory);
+        String id,
+        Logger log,
+        Logger headerlog,
+        Logger wirelog,
+        int buffersize,
+        int fragmentSizeHint,
+        CharsetDecoder chardecoder,
+        CharsetEncoder charencoder,
+        MessageConstraints constraints,
+        ContentLengthStrategy incomingContentStrategy,
+        ContentLengthStrategy outgoingContentStrategy,
+        HttpMessageWriterFactory<HttpRequest> requestWriterFactory,
+        HttpMessageParserFactory<HttpResponse> responseParserFactory
+    ) {
+        super(id,
+              buffersize,
+              fragmentSizeHint,
+              chardecoder,
+              charencoder,
+              constraints,
+              incomingContentStrategy,
+              outgoingContentStrategy,
+              requestWriterFactory,
+              responseParserFactory
+        );
         this.log = log;
         this.headerlog = headerlog;
-        this.wire = new SoapUIWire(wirelog);
+        wire = new SoapUIWire(wirelog);
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+        if (log.isDebugEnabled()) {
+            log.debug(getId() + ": Shutdown connection");
+        }
+        super.shutdown();
+    }
+
+    @Override
+    protected InputStream getSocketInputStream(Socket socket) throws IOException {
+        InputStream in = super.getSocketInputStream(socket);
+        if (wire.enabled()) {
+            in = new SoapUILoggingInputStream(in, wire);
+        }
+        return in;
+    }
+
+    @Override
+    protected OutputStream getSocketOutputStream(Socket socket) throws IOException {
+        OutputStream out = super.getSocketOutputStream(socket);
+        if (wire.enabled()) {
+            out = new SoapUILoggingOutputStream(out, wire);
+        }
+        return out;
+    }
+
+    @Override
+    public void setSocketTimeout(int timeout) {
+        if (log.isDebugEnabled()) {
+            log.debug(getId() + ": set socket timeout to " + timeout);
+        }
+        super.setSocketTimeout(timeout);
     }
 
     @Override
     public void close() throws IOException {
 
-        if (super.isOpen()) {
-            if (this.log.isDebugEnabled()) {
-                this.log.debug(getId() + ": Close connection");
+        if (isOpen()) {
+            if (log.isDebugEnabled()) {
+                log.debug(getId() + ": Close connection");
             }
             super.close();
         }
     }
 
     @Override
-    public void setSocketTimeout(final int timeout) {
-        if (this.log.isDebugEnabled()) {
-            this.log.debug(getId() + ": set socket timeout to " + timeout);
-        }
-        super.setSocketTimeout(timeout);
-    }
-
-    @Override
-    public void shutdown() throws IOException {
-        if (this.log.isDebugEnabled()) {
-            this.log.debug(getId() + ": Shutdown connection");
-        }
-        super.shutdown();
-    }
-
-    @Override
-    protected InputStream getSocketInputStream(final Socket socket) throws IOException {
-        InputStream in = super.getSocketInputStream(socket);
-        if (this.wire.enabled()) {
-            in = new SoapUILoggingInputStream(in, this.wire);
-        }
-        return in;
-    }
-
-    @Override
-    protected OutputStream getSocketOutputStream(final Socket socket) throws IOException {
-        OutputStream out = super.getSocketOutputStream(socket);
-        if (this.wire.enabled()) {
-            out = new SoapUILoggingOutputStream(out, this.wire);
-        }
-        return out;
-    }
-
-    @Override
-    protected void onResponseReceived(final HttpResponse response) {
-        if (response != null && this.headerlog.isDebugEnabled()) {
-            this.headerlog.debug(getId() + " << " + response.getStatusLine().toString());
-            final Header[] headers = response.getAllHeaders();
-            for (final Header header : headers) {
-                this.headerlog.debug(getId() + " << " + header.toString());
+    protected void onResponseReceived(HttpResponse response) {
+        if (response != null && headerlog.isDebugEnabled()) {
+            headerlog.debug(getId() + " << " + response.getStatusLine().toString());
+            Header[] headers = response.getAllHeaders();
+            for (Header header : headers) {
+                headerlog.debug(getId() + " << " + header.toString());
             }
         }
     }
 
     @Override
-    protected void onRequestSubmitted(final HttpRequest request) {
-        if (request != null && this.headerlog.isDebugEnabled()) {
-            this.headerlog.debug(getId() + " >> " + request.getRequestLine().toString());
-            final Header[] headers = request.getAllHeaders();
-            for (final Header header : headers) {
-                this.headerlog.debug(getId() + " >> " + header.toString());
+    protected void onRequestSubmitted(HttpRequest request) {
+        if (request != null && headerlog.isDebugEnabled()) {
+            headerlog.debug(getId() + " >> " + request.getRequestLine().toString());
+            Header[] headers = request.getAllHeaders();
+            for (Header header : headers) {
+                headerlog.debug(getId() + " >> " + header.toString());
             }
         }
     }

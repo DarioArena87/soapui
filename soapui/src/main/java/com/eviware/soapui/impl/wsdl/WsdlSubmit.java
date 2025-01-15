@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl;
@@ -38,25 +38,23 @@ import java.util.concurrent.Future;
 
 public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> implements Runnable, Submit {
     private final static Logger logger = LogManager.getLogger(WsdlSubmit.class);
-    private T request;
-    private SubmitListener[] listeners;
+    private final T request;
+    private final SubmitListener[] listeners;
     private Status status;
     private Exception error;
     private Response response;
     private volatile Future<?> future;
     private SubmitContext submitContext;
-    private RequestTransport transport;
+    private final RequestTransport transport;
 
     public WsdlSubmit(T wsdlRequest, SubmitListener[] listeners, RequestTransport transport) {
-        this.request = wsdlRequest;
+        request = wsdlRequest;
         this.transport = transport;
 
         List<SubmitListener> regListeners = SoapUI.getListenerRegistry().getListeners(SubmitListener.class);
 
         this.listeners = new SubmitListener[listeners.length + regListeners.size()];
-        for (int c = 0; c < listeners.length; c++) {
-            this.listeners[c] = listeners[c];
-        }
+        System.arraycopy(listeners, 0, this.listeners, 0, listeners.length);
 
         for (int c = 0; c < regListeners.size(); c++) {
             this.listeners[listeners.length + c] = regListeners.get(c);
@@ -76,31 +74,18 @@ public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> impleme
 
         if (async) {
             future = SoapUI.getThreadPool().submit(this);
-        } else {
+        }
+        else {
             run();
         }
-    }
-
-    public void cancel() {
-        if (status == Status.CANCELED) {
-            return;
-        }
-
-        logger.info("Canceling request...");
-        if (status == Status.RUNNING) {
-            transport.abortRequest(submitContext);
-        }
-
-        status = Status.CANCELED;
-
-        notifyListenersAfterSubmit();
     }
 
     private void notifyListenersAfterSubmit() {
         for (SubmitListener listener : listeners) {
             try {
                 listener.afterSubmit(this, submitContext);
-            } catch (Throwable e) { //NOSONAR
+            }
+            catch (Throwable e) { //NOSONAR
                 SoapUI.logError(e);
             }
         }
@@ -125,13 +110,14 @@ public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> impleme
 
             if (response != null) {
                 if (response.getTimeTaken() == 0) {
-                    logger.warn("Request took 0 in thread " + Thread.currentThread().getId() + ", response length = "
-                            + response.getContentLength());
+                    logger.warn("Request took 0 in thread " + Thread.currentThread().getId() + ", response length = " + response.getContentLength());
                 }
-            } else {
+            }
+            else {
                 logger.warn("Request does not have a response");
             }
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             error = e1;
 
             if (status != Status.CANCELED) {
@@ -140,9 +126,10 @@ public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> impleme
                 SoapUI.logError(e1);
             }
             if (response == null) {
-                response = (Response) submitContext.getProperty(BaseHttpRequestTransport.RESPONSE);
+                response = (Response)submitContext.getProperty(BaseHttpRequestTransport.RESPONSE);
             }
-        } finally {
+        }
+        finally {
             if (status != Status.CANCELED) {
                 notifyListenersAfterSubmit();
             }
@@ -157,7 +144,8 @@ public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> impleme
                     System.err.println("listener cancelled submit...");
                     return true;
                 }
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 SoapUI.logError(e, "Error in SubmitListener");
             }
         }
@@ -168,12 +156,8 @@ public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> impleme
         return request;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public Exception getError() {
-        return error;
+    public Response getResponse() {
+        return response;
     }
 
     public synchronized Status waitUntilFinished() {
@@ -181,18 +165,39 @@ public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> impleme
             if (!future.isDone()) {
                 try {
                     future.get();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
             }
-        } else {
+        }
+        else {
             throw new RuntimeException("cannot wait on null future");
         }
 
         return getStatus();
     }
 
-    public Response getResponse() {
-        return response;
+    public void cancel() {
+        if (status == Status.CANCELED) {
+            return;
+        }
+
+        logger.info("Canceling request...");
+        if (status == Status.RUNNING) {
+            transport.abortRequest(submitContext);
+        }
+
+        status = Status.CANCELED;
+
+        notifyListenersAfterSubmit();
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public Exception getError() {
+        return error;
     }
 }

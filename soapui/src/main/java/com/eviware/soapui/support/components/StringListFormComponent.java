@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -39,14 +39,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StringListFormComponent extends JPanel implements JFormComponent, ActionListener {
-    private DefaultListModel listModel;
+    private final DefaultListModel listModel;
     private String defaultValue = null;
     private JButton addButton;
     private JButton removeButton;
-    private JList list;
-    private JButton editButton;
-    private Box buttonBox;
-    private List<JButton> buttons = new ArrayList<JButton>();
+    private final JList list;
+    private final JButton editButton;
+    private final Box buttonBox;
+    private final List<JButton> buttons = new ArrayList<JButton>();
 
     public StringListFormComponent(String tooltip) {
         this(tooltip, false, null);
@@ -113,6 +113,11 @@ public class StringListFormComponent extends JPanel implements JFormComponent, A
         }
     }
 
+    public String getValue() {
+        StringList result = new StringList(listModel.toArray());
+        return result.toXml();
+    }
+
     public void setValue(String value) {
         String[] oldData = getData();
         listModel.clear();
@@ -128,14 +133,10 @@ public class StringListFormComponent extends JPanel implements JFormComponent, A
             }
 
             firePropertyChange("data", oldData, getData());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
-    }
-
-    public String getValue() {
-        StringList result = new StringList(listModel.toArray());
-        return result.toXml();
     }
 
     public JList getList() {
@@ -151,7 +152,8 @@ public class StringListFormComponent extends JPanel implements JFormComponent, A
                 listModel.addElement(value);
                 firePropertyChange("options", oldData, getData());
             }
-        } else {
+        }
+        else {
             int selectedIndex = list.getSelectedIndex();
 
             if (e.getSource() == removeButton && selectedIndex != -1) {
@@ -160,8 +162,9 @@ public class StringListFormComponent extends JPanel implements JFormComponent, A
                     listModel.remove(selectedIndex);
                     firePropertyChange("options", oldData, getData());
                 }
-            } else if (e.getSource() == editButton && selectedIndex != -1) {
-                String elm = (String) listModel.getElementAt(selectedIndex);
+            }
+            else if (e.getSource() == editButton && selectedIndex != -1) {
+                String elm = (String)listModel.getElementAt(selectedIndex);
                 String value = UISupport.prompt("Specify value", "Edit..", elm);
 
                 if (value != null) {
@@ -182,7 +185,7 @@ public class StringListFormComponent extends JPanel implements JFormComponent, A
     public String[] getData() {
         String[] result = new String[listModel.size()];
         for (int c = 0; c < result.length; c++) {
-            result[c] = (String) listModel.get(c);
+            result[c] = (String)listModel.get(c);
         }
 
         return result;

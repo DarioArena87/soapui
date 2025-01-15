@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support;
@@ -69,9 +69,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMockResponseConfig>
-        extends AbstractWsdlModelItem<MockResponseConfigType>
-        implements MockResponse, MutableWsdlAttachmentContainer, PropertyExpansionContainer, TestPropertyHolder {
+public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMockResponseConfig> extends AbstractWsdlModelItem<MockResponseConfigType> implements MockResponse, MutableWsdlAttachmentContainer, PropertyExpansionContainer, TestPropertyHolder {
     public static final String AUTO_RESPONSE_COMPRESSION = "<auto>";
     public static final String NO_RESPONSE_COMPRESSION = "<none>";
     private MapTestPropertyHolder propertyHolder;
@@ -79,7 +77,6 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
     private String responseContent;
     private MockResult mockResult;
     private ScriptEnginePool scriptEnginePool;
-
 
     public AbstractMockResponse(MockResponseConfigType config, MockOperation operation, String icon) {
         super(config, operation, icon);
@@ -91,7 +88,6 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
         if (!config.isSetHttpResponseStatus()) {
             config.setHttpResponseStatus("" + HttpStatus.SC_OK);
         }
-
     }
 
     @Override
@@ -101,6 +97,12 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
         if (scriptEnginePool != null) {
             scriptEnginePool.setScript(getScript());
         }
+    }
+
+    @Override
+    public void release() {
+        super.release();
+        scriptEnginePool.release();
     }
 
     public String getResponseContent() {
@@ -128,10 +130,8 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
         notifyPropertyChanged(RESPONSE_CONTENT_PROPERTY, oldContent, responseContent);
     }
 
-    private void setConfigResponseContent(String responseContent) {
-        CompressedStringConfig compressedResponseContent = CompressedStringConfig.Factory.newInstance();
-        compressedResponseContent.setStringValue(responseContent);
-        getConfig().setResponseContent(compressedResponseContent);
+    public String getEncoding() {
+        return getConfig().getEncoding();
     }
 
     public StringToStringsMap getResponseHeaders() {
@@ -142,44 +142,42 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
         }
 
         return result;
-    }
-
-    public void setResponseHttpStatus(int httpStatus) {
+    }    public void setResponseHttpStatus(int httpStatus) {
         getConfig().setHttpResponseStatus("" + httpStatus);
     }
 
-    public int getResponseHttpStatus() {
+    public void setResponseHeaders(StringToStringsMap headers) {
+        StringToStringsMap oldHeaders = getResponseHeaders();
+
+        getConfig().setHeaderArray(new HeaderConfig[0]);
+
+        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
+            for (String value : header.getValue()) {
+                HeaderConfig headerConfig = getConfig().addNewHeader();
+                headerConfig.setName(header.getKey());
+                headerConfig.setValue(value);
+            }
+        }
+
+        notifyPropertyChanged(WsdlMockResponse.HEADERS_PROPERTY, oldHeaders, headers);
+    }    public int getResponseHttpStatus() {
 
         if (getConfig().getHttpResponseStatus() != null) {
             return Integer.valueOf(getConfig().getHttpResponseStatus());
-
-        } else {
+        }
+        else {
             return HttpStatus.SC_OK;
         }
-    }
-
-    public String getResponseCompression() {
-        if (getConfig().isSetCompression()) {
-            return getConfig().getCompression();
-        } else {
-            return AUTO_RESPONSE_COMPRESSION;
-        }
-    }
-
-    public void setMockResult(MockResult mockResult) {
-        MockResult oldResult = this.mockResult;
-        this.mockResult = mockResult;
-        notifyPropertyChanged(mockresultProperty(), oldResult, mockResult);
     }
 
     public MockResult getMockResult() {
         return mockResult;
     }
 
-    protected abstract String mockresultProperty();
-
-    public String getScript() {
-        return getConfig().isSetScript() ? getConfig().getScript().getStringValue() : null;
+    public void setMockResult(MockResult mockResult) {
+        MockResult oldResult = this.mockResult;
+        this.mockResult = mockResult;
+        notifyPropertyChanged(mockresultProperty(), oldResult, mockResult);
     }
 
     public void evaluateScript(MockRequest request) throws Exception {
@@ -190,8 +188,7 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
 
         MockService mockService = getMockOperation().getMockService();
         MockRunner mockRunner = mockService.getMockRunner();
-        MockRunContext context =
-                mockRunner == null ? new WsdlMockRunContext(mockService, null) : mockRunner.getMockContext();
+        MockRunContext context = mockRunner == null ? new WsdlMockRunContext(mockService, null) : mockRunner.getMockContext();
 
         context.setMockResponse(this);
 
@@ -206,11 +203,17 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
             scriptEngine.setVariable("log", SoapUI.ensureGroovyLog());
 
             scriptEngine.run();
-        } catch (RuntimeException e) {
+        }
+        catch (RuntimeException e) {
             throw new Exception(e.getMessage(), e);
-        } finally {
+        }
+        finally {
             scriptEnginePool.returnScriptEngine(scriptEngine);
         }
+    }
+
+    public String getScript() {
+        return getConfig().isSetScript() ? getConfig().getScript().getStringValue() : null;
     }
 
     public void setScript(String script) {
@@ -225,13 +228,26 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
         }
     }
 
-    @Override
-    public void release() {
-        super.release();
-        scriptEnginePool.release();
+    public void setEncoding(String encoding) {
+        getConfig().setEncoding(encoding);
     }
 
-    public MockResult execute(MockRequest request, MockResult result) throws DispatchException {
+    private void setConfigResponseContent(String responseContent) {
+        CompressedStringConfig compressedResponseContent = CompressedStringConfig.Factory.newInstance();
+        compressedResponseContent.setStringValue(responseContent);
+        getConfig().setResponseContent(compressedResponseContent);
+    }
+
+    public String getResponseCompression() {
+        if (getConfig().isSetCompression()) {
+            return getConfig().getCompression();
+        }
+        else {
+            return AUTO_RESPONSE_COMPRESSION;
+        }
+    }
+
+    protected abstract String mockresultProperty();    public MockResult execute(MockRequest request, MockResult result) throws DispatchException {
         try {
             getProperty("Request").setValue(request.getRequestContent());
 
@@ -252,8 +268,8 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
             context.setMockResponse(this);
 
             // casting below cause WsdlMockRunContext is both a MockRunContext AND a Map<String,Object>
-            context.putAll((WsdlMockRunContext) request.getContext());
-            context.putAll((WsdlMockRunContext) request.getRequestContext());
+            context.putAll((WsdlMockRunContext)request.getContext());
+            context.putAll((WsdlMockRunContext)request.getRequestContext());
 
             StringToStringsMap responseHeaders = getResponseHeaders();
             for (Map.Entry<String, List<String>> headerEntry : responseHeaders.entrySet()) {
@@ -275,7 +291,8 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
             setMockResult(result);
 
             return result;
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             SoapUI.logError(e);
             throw new DispatchException(e);
         }
@@ -296,13 +313,12 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
                 throw new IllegalStateException("Missing WsdlOperation for mock response");
             }
 
-
             // preprocess only if neccessary
             if (isMtomEnabled() || isInlineFilesEnabled() || getAttachmentCount() > 0) {
                 try {
                     mp = new MimeMultipart();
 
-                    WsdlOperation wsdlOperation = ((WsdlOperation) operation);
+                    WsdlOperation wsdlOperation = ((WsdlOperation)operation);
                     MessageXmlObject requestXmlObject = createMessageXmlObject(responseContent, wsdlOperation);
                     MessageXmlPart[] requestParts = requestXmlObject.getMessageParts();
                     for (MessageXmlPart requestPart : requestParts) {
@@ -311,7 +327,8 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
                         }
                     }
                     responseContent = requestXmlObject.getMessageContent();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
             }
@@ -343,20 +360,21 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
             }
 
             String acceptEncoding = result.getMockRequest().getRequestHeaders().get("Accept-Encoding", "");
-            if (AUTO_RESPONSE_COMPRESSION.equals(responseCompression) && acceptEncoding != null
-                    && acceptEncoding.toUpperCase().contains("GZIP")) {
+            if (AUTO_RESPONSE_COMPRESSION.equals(responseCompression) && acceptEncoding != null && acceptEncoding.toUpperCase().contains("GZIP")) {
                 if (!headerExists("Content-Encoding", "gzip", result)) {
                     result.addHeader("Content-Encoding", "gzip");
                 }
                 outData.write(CompressionSupport.compress(CompressionSupport.ALG_GZIP, content));
-            } else if (AUTO_RESPONSE_COMPRESSION.equals(responseCompression) && acceptEncoding != null
-                    && acceptEncoding.toUpperCase().contains("DEFLATE")) {
+            }
+            else if (AUTO_RESPONSE_COMPRESSION.equals(responseCompression) && acceptEncoding != null && acceptEncoding.toUpperCase().contains("DEFLATE")) {
                 result.addHeader("Content-Encoding", "deflate");
                 outData.write(CompressionSupport.compress(CompressionSupport.ALG_DEFLATE, content));
-            } else {
+            }
+            else {
                 outData.write(content);
             }
-        } else // won't get here if rest at the moment...
+        }
+        else // won't get here if rest at the moment...
         {
             // make sure..
             if (mp == null) {
@@ -373,8 +391,7 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
             MimeMessage message = new MimeMessage(AttachmentUtils.JAVAMAIL_SESSION);
             message.setContent(mp);
             message.saveChanges();
-            MimeMessageMockResponseEntity mimeMessageRequestEntity
-                    = new MimeMessageMockResponseEntity(message, isXOP, this);
+            MimeMessageMockResponseEntity mimeMessageRequestEntity = new MimeMessageMockResponseEntity(message, isXOP, this);
 
             result.addHeader("Content-Type", mimeMessageRequestEntity.getContentType().getValue());
             result.addHeader("MIME-Version", "1.0");
@@ -384,8 +401,7 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
         if (outData.size() > 0) {
             byte[] data = outData.toByteArray();
 
-            if (responseCompression.equals(CompressionSupport.ALG_DEFLATE)
-                    || responseCompression.equals(CompressionSupport.ALG_GZIP)) {
+            if (responseCompression.equals(CompressionSupport.ALG_DEFLATE) || responseCompression.equals(CompressionSupport.ALG_GZIP)) {
                 result.addHeader("Content-Encoding", responseCompression);
                 data = CompressionSupport.compress(responseCompression, data);
             }
@@ -394,7 +410,6 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
             }
             result.writeRawResponseData(data);
         }
-
 
         return responseContent;
     }
@@ -430,22 +445,6 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
 
     protected abstract String removeEmptyContent(String responseContent);
 
-    public void setResponseHeaders(StringToStringsMap headers) {
-        StringToStringsMap oldHeaders = getResponseHeaders();
-
-        getConfig().setHeaderArray(new HeaderConfig[0]);
-
-        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
-            for (String value : header.getValue()) {
-                HeaderConfig headerConfig = getConfig().addNewHeader();
-                headerConfig.setName(header.getKey());
-                headerConfig.setValue(value);
-            }
-        }
-
-        notifyPropertyChanged(WsdlMockResponse.HEADERS_PROPERTY, oldHeaders, headers);
-    }
-
     protected abstract String executeSpecifics(MockRequest request, String responseContent, WsdlMockRunContext context) throws IOException, WSSecurityException;
 
     public boolean isEntitizeProperties() {
@@ -458,45 +457,40 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
 
     public abstract boolean isStripWhitespaces();
 
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        propertyHolder.addTestPropertyListener(listener);
-    }
-
-    public ModelItem getModelItem() {
-        return propertyHolder.getModelItem();
-    }
-
-    public Map<String, TestProperty> getProperties() {
-        return propertyHolder.getProperties();
-    }
-
-    public TestProperty getProperty(String name) {
-        return propertyHolder.getProperty(name);
-    }
-
     public String[] getPropertyNames() {
         return propertyHolder.getPropertyNames();
-    }
-
-    public String getPropertyValue(String name) {
-        return propertyHolder.getPropertyValue(name);
-    }
-
-    public boolean hasProperty(String name) {
-        return propertyHolder.hasProperty(name);
-    }
-
-    public void removeTestPropertyListener(TestPropertyListener listener) {
-        propertyHolder.removeTestPropertyListener(listener);
     }
 
     public void setPropertyValue(String name, String value) {
         propertyHolder.setPropertyValue(name, value);
     }
 
+    public String getPropertyValue(String name) {
+        return propertyHolder.getPropertyValue(name);
+    }
 
-    public TestProperty getPropertyAt(int index) {
-        return propertyHolder.getPropertyAt(index);
+    public TestProperty getProperty(String name) {
+        return propertyHolder.getProperty(name);
+    }
+
+    public Map<String, TestProperty> getProperties() {
+        return propertyHolder.getProperties();
+    }
+
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        propertyHolder.addTestPropertyListener(listener);
+    }
+
+    public void removeTestPropertyListener(TestPropertyListener listener) {
+        propertyHolder.removeTestPropertyListener(listener);
+    }
+
+    public boolean hasProperty(String name) {
+        return propertyHolder.hasProperty(name);
+    }
+
+    public ModelItem getModelItem() {
+        return propertyHolder.getModelItem();
     }
 
     public int getPropertyCount() {
@@ -507,11 +501,13 @@ public abstract class AbstractMockResponse<MockResponseConfigType extends BaseMo
         return propertyHolder.getPropertyList();
     }
 
-    public String getEncoding() {
-        return getConfig().getEncoding();
+    public TestProperty getPropertyAt(int index) {
+        return propertyHolder.getPropertyAt(index);
     }
 
-    public void setEncoding(String encoding) {
-        getConfig().setEncoding(encoding);
-    }
+
+
+
+
+
 }

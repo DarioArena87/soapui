@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes;
@@ -37,8 +37,8 @@ import java.util.List;
  */
 
 public class InterfaceTreeNode extends AbstractModelItemTreeNode<Interface> {
-    private InternalInterfaceListener interfaceListener;
-    private List<SoapUITreeNode> operationNodes = new ArrayList<SoapUITreeNode>();
+    private final InternalInterfaceListener interfaceListener;
+    private final List<SoapUITreeNode> operationNodes = new ArrayList<SoapUITreeNode>();
 
     public InterfaceTreeNode(Interface iface, SoapUITreeModel treeModel) {
         super(iface, iface.getProject(), treeModel);
@@ -53,6 +53,22 @@ public class InterfaceTreeNode extends AbstractModelItemTreeNode<Interface> {
         treeModel.mapModelItems(operationNodes);
     }
 
+    public Interface getInterface() {
+        return getModelItem();
+    }
+
+    public int getChildCount() {
+        return operationNodes.size();
+    }
+
+    public SoapUITreeNode getChildNode(int index) {
+        return operationNodes.get(index);
+    }
+
+    public int getIndexOfChild(Object child) {
+        return operationNodes.indexOf(child);
+    }
+
     public void release() {
         super.release();
 
@@ -63,51 +79,15 @@ public class InterfaceTreeNode extends AbstractModelItemTreeNode<Interface> {
         }
     }
 
-    public Interface getInterface() {
-        return (Interface) getModelItem();
-    }
-
-    public int getChildCount() {
-        return operationNodes.size();
-    }
-
-    public int getIndexOfChild(Object child) {
-        return operationNodes.indexOf(child);
-    }
-
-    public SoapUITreeNode getChildNode(int index) {
-        return operationNodes.get(index);
-    }
-
     private class InternalInterfaceListener implements InterfaceListener {
-        public void requestAdded(final Request request) {
-            UISupport.invokeAndWaitIfNotInEDT(new Runnable() {
-                @Override
-                public void run() {
-                    SoapUITreeNode operationTreeNode = getTreeModel().getTreeNode(request.getOperation());
-                    if (operationTreeNode != null && operationTreeNode instanceof OperationTreeNode) {
-                        ((OperationTreeNode) operationTreeNode).requestAdded(request);
-                    }
-                }
-            });
-        }
-
-        public void requestRemoved(Request request) {
-            SoapUITreeNode operationTreeNode = getTreeModel().getTreeNode(request.getOperation());
-            if (operationTreeNode != null && operationTreeNode instanceof OperationTreeNode) {
-                ((OperationTreeNode) operationTreeNode).requestRemoved(request);
-            }
-        }
-
-        public void operationAdded(final Operation operation) {
+        public void operationAdded(Operation operation) {
             UISupport.invokeAndWaitIfNotInEDT(new Runnable() {
                 @Override
                 public void run() {
                     if (operation instanceof RestResource) {
-                        RestResource restResource = (RestResource) operation;
+                        RestResource restResource = (RestResource)operation;
                         if (restResource.getParentResource() != null) {
-                            RestResourceTreeNode treeNode = (RestResourceTreeNode) getTreeModel().getTreeNode(
-                                    restResource.getParentResource());
+                            RestResourceTreeNode treeNode = (RestResourceTreeNode)getTreeModel().getTreeNode(restResource.getParentResource());
                             treeNode.addChildResource(restResource);
                             return;
                         }
@@ -126,17 +106,38 @@ public class InterfaceTreeNode extends AbstractModelItemTreeNode<Interface> {
             if (operationNodes.contains(treeNode)) {
                 getTreeModel().notifyNodeRemoved(treeNode);
                 operationNodes.remove(treeNode);
-            } else if (treeNode instanceof RestResourceTreeNode) {
+            }
+            else if (treeNode instanceof RestResourceTreeNode) {
                 SoapUITreeNode parentNode = treeNode.getParentTreeNode();
                 if (parentNode instanceof RestResourceTreeNode) {
-                    ((RestResourceTreeNode) parentNode).removeChildResource((RestResourceTreeNode) treeNode);
+                    ((RestResourceTreeNode)parentNode).removeChildResource((RestResourceTreeNode)treeNode);
                 }
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing unknown operation");
             }
         }
 
         public void operationUpdated(Operation operation) {
+        }
+
+        public void requestAdded(Request request) {
+            UISupport.invokeAndWaitIfNotInEDT(new Runnable() {
+                @Override
+                public void run() {
+                    SoapUITreeNode operationTreeNode = getTreeModel().getTreeNode(request.getOperation());
+                    if (operationTreeNode != null && operationTreeNode instanceof OperationTreeNode) {
+                        ((OperationTreeNode)operationTreeNode).requestAdded(request);
+                    }
+                }
+            });
+        }
+
+        public void requestRemoved(Request request) {
+            SoapUITreeNode operationTreeNode = getTreeModel().getTreeNode(request.getOperation());
+            if (operationTreeNode != null && operationTreeNode instanceof OperationTreeNode) {
+                ((OperationTreeNode)operationTreeNode).requestRemoved(request);
+            }
         }
     }
 }

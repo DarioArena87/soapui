@@ -23,21 +23,19 @@ import com.eviware.soapui.support.components.WebViewBasedBrowserComponentFactory
 import com.eviware.soapui.ui.starterpage.StarterPageButtonCallback;
 import com.eviware.soapui.ui.support.DefaultDesktopPanel;
 
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 
 public class URLDesktopPanel extends DefaultDesktopPanel {
-    private WebViewBasedBrowserComponent browser;
+    private final WebViewBasedBrowserComponent browser;
     private boolean closed;
     private String lastBackupUrl = null;
 
-    public URLDesktopPanel(String title, String description, String url, String backupUrl) throws InterruptedException,
-            InvocationTargetException {
+    public URLDesktopPanel(String title, String description, String url, String backupUrl) throws InterruptedException, InvocationTargetException {
         super(title, description, new JPanel(new BorderLayout()));
 
-        JPanel panel = (JPanel) getComponent();
+        JPanel panel = (JPanel)getComponent();
 
         browser = WebViewBasedBrowserComponentFactory.createBrowserComponent(false, WebViewBasedBrowserComponent.PopupStrategy.EXTERNAL_BROWSER);
         browser.addJavaScriptEventHandler(StarterPageButtonCallback.CALLBACK, new StarterPageButtonCallback(SoapUI.getWorkspace()));
@@ -54,7 +52,8 @@ public class URLDesktopPanel extends DefaultDesktopPanel {
         lastBackupUrl = errorUrl;
         if (async) {
             SwingUtilities.invokeLater(new Navigator(url, errorUrl));
-        } else {
+        }
+        else {
             browser.navigate(url);
         }
     }
@@ -86,5 +85,4 @@ public class URLDesktopPanel extends DefaultDesktopPanel {
             browser.navigate(url, backupUrl);
         }
     }
-
 }

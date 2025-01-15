@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.gsoap;
@@ -44,7 +44,7 @@ import java.util.List;
 
 /*
  * http://www.cs.fsu.edu/~engelen/soap.html
- * 
+ *
  * Option Description -a generate indexed struct names for local elements with
  * anonymous types -c generate C source code -d use DOM to populate xs:any and
  * xsd:anyType elements -e don't qualify enum names This option is for backward
@@ -66,9 +66,9 @@ import java.util.List;
  */
 
 public class GSoapAction extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "GSoapAction";
     // private static final String WSDL2H_PATH = "path";
     private static final String WSDL2H_OUTPUT = "file";
-
     // WSDL2H settings
     private static final String GENERATE_INDEXED_STRUCT = "generate indexed struct names";
     private static final String GENERATE_C_SOURCE = "generate C source code";
@@ -90,7 +90,6 @@ public class GSoapAction extends AbstractToolsAction<Interface> {
     private static final String WRAP_RESPONSE_STRUCT = "wrap response in struct";
     private static final String NO_ANY = "don't generate _XML any/anyAttribute";
     private static final String TYPEDEF_SYNONYMS = "generate typedef synonyms for structs and enums";
-
     // SOAPCPP2 settings
     private static final String SOAP_11 = "generate SOAP 1.1 bindings";
     private static final String SOAP_12 = "generate SOAP 1.2 bindings";
@@ -110,10 +109,8 @@ public class GSoapAction extends AbstractToolsAction<Interface> {
     private static final String XSI_TYPED = "generate code for fully xsi:type typed SOAP/XML messaging";
     private static final String NO_GEN_WSDL_SCHEMA = "don't generate WSDL and schema files";
     private static final String NO_GEN_SAMPLE_XML = "don't generate sample XML message files";
-
     private static final String WSDL2H = "run wsdl2h";
     private static final String SOAPCPP2 = "run soapcpp2";
-    public static final String SOAPUI_ACTION_ID = "GSoapAction";
 
     public GSoapAction() {
         super("GSoap Artifacts", "Generates GSoap artifacts using wsdl2h and soap2cpp");
@@ -150,16 +147,13 @@ public class GSoapAction extends AbstractToolsAction<Interface> {
         wsdl2hAdvForm.addTextField(PATH, "use path to find files", XForm.FieldType.PROJECT_FOLDER);
         wsdl2hAdvForm.addCheckBox(INCLUDE_LICENSE_INFORMATION, null);
         wsdl2hAdvForm.addCheckBox(USE_XSD_H, null);
-        wsdl2hAdvForm.addTextField(BASE_NAMESPACE_PREFIX_INSTEAD_OF_NS,
-                "use name as the base namespace prefix name instead of ns", XForm.FieldType.TEXT);
-        wsdl2hAdvForm.addTextField(BASE_NAMESPACE_PREFIX_FOR_SERVICE_NS,
-                "use name as the base namespace prefix name for service namespaces", XForm.FieldType.TEXT);
+        wsdl2hAdvForm.addTextField(BASE_NAMESPACE_PREFIX_INSTEAD_OF_NS, "use name as the base namespace prefix name instead of ns", XForm.FieldType.TEXT);
+        wsdl2hAdvForm.addTextField(BASE_NAMESPACE_PREFIX_FOR_SERVICE_NS, "use name as the base namespace prefix name for service namespaces", XForm.FieldType.TEXT);
 
         wsdl2hAdvForm.addCheckBox(POLYMORPHIC_TYPES, null);
         wsdl2hAdvForm.addTextField(PROXY_HOST_PORT, "connect via proxy host and port (host:port)", XForm.FieldType.TEXT);
         wsdl2hAdvForm.addCheckBox(NO_STL, null);
-        wsdl2hAdvForm.addTextField(TYPE_MAP_FILE, "use type map file instead of the default file typemap.dat",
-                XForm.FieldType.PROJECT_FILE);
+        wsdl2hAdvForm.addTextField(TYPE_MAP_FILE, "use type map file instead of the default file typemap.dat", XForm.FieldType.PROJECT_FILE);
         wsdl2hAdvForm.addCheckBox(NO_UNIONS, null);
         wsdl2hAdvForm.addCheckBox(VERBOSE, null);
         wsdl2hAdvForm.addCheckBox(WRAP_RESPONSE_STRUCT, null);
@@ -180,14 +174,12 @@ public class GSoapAction extends AbstractToolsAction<Interface> {
         soapcpp2AdvForm.addCheckBox(GENERATE_LINKABLE_MODULES, null);
         soapcpp2AdvForm.addCheckBox(GENERATE_MATLAB_CODE, null);
         soapcpp2AdvForm.addCheckBox(SERVICE_NAME, null);
-        soapcpp2AdvForm.addTextField(NAME_PREFIX, "save files with new prefix name instead of 'soap'",
-                XForm.FieldType.TEXT);
+        soapcpp2AdvForm.addTextField(NAME_PREFIX, "save files with new prefix name instead of 'soap'", XForm.FieldType.TEXT);
         soapcpp2AdvForm.addCheckBox(XSI_TYPED, null);
         soapcpp2AdvForm.addCheckBox(NO_GEN_WSDL_SCHEMA, null);
         soapcpp2AdvForm.addCheckBox(NO_GEN_SAMPLE_XML, null);
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.GSOAP_HELP_URL, modelItem),
-                "Specify arguments for GSoap wsdl2h and soap2cpp", UISupport.TOOL_ICON);
+        return builder.buildDialog(buildDefaultActions(HelpUrls.GSOAP_HELP_URL, modelItem), "Specify arguments for GSoap wsdl2h and soap2cpp", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {
@@ -219,9 +211,9 @@ public class GSoapAction extends AbstractToolsAction<Interface> {
 
         if (builders.isEmpty()) {
             UISupport.showErrorMessage("Nothing to run!");
-        } else {
-            toolHost.run(new ProcessToolRunner(builders.toArray(new ProcessBuilder[builders.size()]), "GSoap",
-                    modelItem));
+        }
+        else {
+            toolHost.run(new ProcessToolRunner(builders.toArray(new ProcessBuilder[builders.size()]), "GSoap", modelItem));
         }
     }
 
@@ -229,7 +221,7 @@ public class GSoapAction extends AbstractToolsAction<Interface> {
         String gsoapDir = SoapUI.getSettings().getString(ToolsSettings.GSOAP_LOCATION, null);
         ArgumentBuilder builder = new ArgumentBuilder(values);
         builder.startScript(gsoapDir + File.separator + "wsdl2h", "", "");
-        builder.addArgs(new String[]{"-v"});
+        builder.addArgs("-v");
 
         values.put(WSDL2H_OUTPUT, Tools.getFilename(values.get(WSDL2H_OUTPUT)));
 
@@ -263,7 +255,7 @@ public class GSoapAction extends AbstractToolsAction<Interface> {
         String gsoapDir = SoapUI.getSettings().getString(ToolsSettings.GSOAP_LOCATION, null);
         ArgumentBuilder builder = new ArgumentBuilder(values);
         builder.startScript(gsoapDir + File.separator + "soapcpp2", "", "");
-        builder.addArgs(new String[]{"-Iimport", values.get(WSDL2H_OUTPUT)});
+        builder.addArgs("-Iimport", values.get(WSDL2H_OUTPUT));
 
         builder.addBoolean(SOAP_11, "-1");
         builder.addBoolean(SOAP_12, "-2");

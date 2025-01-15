@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.scripting.groovy;
@@ -33,12 +33,12 @@ import org.codehaus.groovy.control.CompilerConfiguration;
  */
 
 public class SoapUIGroovyScriptEngine implements SoapUIScriptEngine {
-    private GroovyClassLoader classLoader;
+    protected ScriptSaver saver = new ScriptSaver();
+    private final GroovyClassLoader classLoader;
     private GroovyShell shell;
     private Binding binding;
     private Script script;
     private String scriptText;
-    protected ScriptSaver saver = new ScriptSaver();
 
     public SoapUIGroovyScriptEngine(ClassLoader parentClassLoader) {
         classLoader = new GroovyClassLoader(parentClassLoader);
@@ -47,53 +47,6 @@ public class SoapUIGroovyScriptEngine implements SoapUIScriptEngine {
         config.setDebug(true);
         config.setVerbose(true);
         shell = new GroovyShell(classLoader, binding, config);
-    }
-
-    protected class ScriptSaver {
-        private String text = null;
-        private boolean locked = false;
-
-        public synchronized void save(String scriptText) {
-            if (locked) {
-                text = scriptText;
-            } else {
-                synchronizedSetScript(scriptText);
-            }
-        }
-
-        public synchronized void lockSave() {
-            locked = true;
-        }
-
-        public synchronized void unlockSave() {
-            if (text != null) {
-                synchronizedSetScript(text);
-                text = null;
-            }
-            locked = false;
-        }
-    }
-
-    public synchronized Object run() throws Exception {
-        saver.lockSave();
-        SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
-        try {
-
-            if (StringUtils.isNullOrEmpty(scriptText)) {
-                return null;
-            }
-
-            if (script == null) {
-                compile();
-            }
-
-            Object result = script.run();
-
-            return result;
-        } finally {
-            state.restore();
-            saver.unlockSave();
-        }
     }
 
     protected synchronized void synchronizedSetScript(String scriptText) {
@@ -115,12 +68,6 @@ public class SoapUIGroovyScriptEngine implements SoapUIScriptEngine {
         this.scriptText = scriptText;
     }
 
-    public synchronized void setScript(String scriptText) {
-        if (scriptText != null && !scriptText.equals(this.scriptText)) {
-            saver.save(scriptText);
-        }
-    }
-
     protected synchronized void reset() {
         saver.lockSave();
 
@@ -129,15 +76,21 @@ public class SoapUIGroovyScriptEngine implements SoapUIScriptEngine {
         saver.unlockSave();
     }
 
-    public synchronized void compile() throws Exception {
-        if (script == null) {
-            SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
-            try {
-                script = shell.parse(scriptText);
-                script.setBinding(binding);
-            } finally {
-                state.restore();
-            }
+    protected Binding getBinding() {
+        return binding;
+    }
+
+    protected GroovyClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    protected Script getScript() {
+        return script;
+    }
+
+    public synchronized void setScript(String scriptText) {
+        if (scriptText != null && !scriptText.equals(this.scriptText)) {
+            saver.save(scriptText);
         }
     }
 
@@ -148,6 +101,29 @@ public class SoapUIGroovyScriptEngine implements SoapUIScriptEngine {
     public synchronized void clearVariables() {
         if (binding != null) {
             binding.getVariables().clear();
+        }
+    }
+
+    public synchronized Object run() throws Exception {
+        saver.lockSave();
+        SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
+        try {
+
+            if (StringUtils.isNullOrEmpty(scriptText)) {
+                return null;
+            }
+
+            if (script == null) {
+                compile();
+            }
+
+            Object result = script.run();
+
+            return result;
+        }
+        finally {
+            state.restore();
+            saver.unlockSave();
         }
     }
 
@@ -165,16 +141,17 @@ public class SoapUIGroovyScriptEngine implements SoapUIScriptEngine {
         }
     }
 
-    protected Binding getBinding() {
-        return binding;
-    }
-
-    protected GroovyClassLoader getClassLoader() {
-        return classLoader;
-    }
-
-    protected Script getScript() {
-        return script;
+    public synchronized void compile() throws Exception {
+        if (script == null) {
+            SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
+            try {
+                script = shell.parse(scriptText);
+                script.setBinding(binding);
+            }
+            finally {
+                state.restore();
+            }
+        }
     }
 
     protected String getScriptText() {
@@ -183,5 +160,31 @@ public class SoapUIGroovyScriptEngine implements SoapUIScriptEngine {
 
     protected GroovyShell getShell() {
         return shell;
+    }
+
+    protected class ScriptSaver {
+        private String text = null;
+        private boolean locked = false;
+
+        public synchronized void save(String scriptText) {
+            if (locked) {
+                text = scriptText;
+            }
+            else {
+                synchronizedSetScript(scriptText);
+            }
+        }
+
+        public synchronized void lockSave() {
+            locked = true;
+        }
+
+        public synchronized void unlockSave() {
+            if (text != null) {
+                synchronizedSetScript(text);
+                text = null;
+            }
+            locked = false;
+        }
     }
 }

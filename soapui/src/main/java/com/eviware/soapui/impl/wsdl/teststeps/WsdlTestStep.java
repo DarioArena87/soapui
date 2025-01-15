@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -71,6 +71,51 @@ abstract public class WsdlTestStep extends AbstractWsdlModelItem<TestStepConfig>
         return testCase;
     }
 
+    public void prepare(TestCaseRunner testRunner, TestCaseRunContext testRunContext) throws Exception {
+    }
+
+    public void finish(TestCaseRunner testRunner, TestCaseRunContext testRunContext) {
+    }
+
+    public boolean cancel() {
+        return false;
+    }
+
+    public boolean isDisabled() {
+        return getConfig().getDisabled();
+    }
+
+    public String getLabel() {
+        String name = getName();
+        if (isDisabled()) {
+            return name + " (disabled)";
+        }
+        else {
+            return name;
+        }
+    }
+
+    public void setDisabled(boolean disabled) {
+        String oldLabel = getLabel();
+
+        boolean oldDisabled = isDisabled();
+        if (oldDisabled == disabled) {
+            return;
+        }
+
+        if (disabled) {
+            getConfig().setDisabled(disabled);
+        }
+        else if (getConfig().isSetDisabled()) {
+            getConfig().unsetDisabled();
+        }
+
+        notifyPropertyChanged(DISABLED_PROPERTY, oldDisabled, disabled);
+
+        String label = getLabel();
+        notifyPropertyChanged(LABEL_PROPERTY, oldLabel, label);
+    }
+
     /**
      * Called from WsdlTestCase when moving a teststep due to no move
      * functionality in xmlbeans generated arrays.
@@ -81,19 +126,6 @@ abstract public class WsdlTestStep extends AbstractWsdlModelItem<TestStepConfig>
 
     public void resetConfigOnMove(TestStepConfig config) {
         setConfig(config);
-    }
-
-    public boolean cancel() {
-        return false;
-    }
-
-    public String getLabel() {
-        String name = getName();
-        if (isDisabled()) {
-            return name + " (disabled)";
-        } else {
-            return name;
-        }
     }
 
     @Override
@@ -108,13 +140,11 @@ abstract public class WsdlTestStep extends AbstractWsdlModelItem<TestStepConfig>
             List<MutablePropertyExpansion> result = new ArrayList<MutablePropertyExpansion>();
             List<MutablePropertyExpansion> properties = new ArrayList<MutablePropertyExpansion>();
 
-            PropertyExpansion[] propertyExpansions = PropertyExpansionUtils.getPropertyExpansions(getTestCase(), true,
-                    true);
+            PropertyExpansion[] propertyExpansions = PropertyExpansionUtils.getPropertyExpansions(getTestCase(), true, true);
             for (PropertyExpansion pe : propertyExpansions) {
-                MutablePropertyExpansion mpe = (MutablePropertyExpansion) pe;
+                MutablePropertyExpansion mpe = (MutablePropertyExpansion)pe;
                 ModelItem modelItem = mpe.getProperty().getModelItem();
-                if (modelItem == this
-                        || ((modelItem instanceof WsdlTestRequest && ((WsdlTestRequest) modelItem).getTestStep() == this))) {
+                if (modelItem == this || ((modelItem instanceof WsdlTestRequest && ((WsdlTestRequest)modelItem).getTestStep() == this))) {
                     properties.add(mpe);
                 }
             }
@@ -131,11 +161,13 @@ abstract public class WsdlTestStep extends AbstractWsdlModelItem<TestStepConfig>
                 try {
                     mpe.update();
                     result.add(mpe);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        } finally {
+        }
+        finally {
             UISupport.resetCursor();
         }
     }
@@ -156,45 +188,15 @@ abstract public class WsdlTestStep extends AbstractWsdlModelItem<TestStepConfig>
 
     public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
         beforeSave();
-        TestStepConfig newConfig = (TestStepConfig) getConfig().copy();
+        TestStepConfig newConfig = (TestStepConfig)getConfig().copy();
         newConfig.setName(name);
         WsdlTestStep result = targetTestCase.addTestStep(newConfig);
         ModelSupport.createNewIds(result);
         return result;
     }
 
-    public void finish(TestCaseRunner testRunner, TestCaseRunContext testRunContext) {
-    }
-
-    public void prepare(TestCaseRunner testRunner, TestCaseRunContext testRunContext) throws Exception {
-    }
-
     public Collection<Interface> getRequiredInterfaces() {
         return new ArrayList<Interface>();
-    }
-
-    public boolean isDisabled() {
-        return getConfig().getDisabled();
-    }
-
-    public void setDisabled(boolean disabled) {
-        String oldLabel = getLabel();
-
-        boolean oldDisabled = isDisabled();
-        if (oldDisabled == disabled) {
-            return;
-        }
-
-        if (disabled) {
-            getConfig().setDisabled(disabled);
-        } else if (getConfig().isSetDisabled()) {
-            getConfig().unsetDisabled();
-        }
-
-        notifyPropertyChanged(DISABLED_PROPERTY, oldDisabled, disabled);
-
-        String label = getLabel();
-        notifyPropertyChanged(LABEL_PROPERTY, oldLabel, label);
     }
 
     public ModelItem getModelItem() {

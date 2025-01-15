@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.plugins.auto.factories;
@@ -33,8 +33,8 @@ import java.lang.reflect.Method;
  */
 public class AutoResponseEditorViewFactory extends AbstractSoapUIFactory<EditorView<?>> implements ResponseEditorViewFactory {
     private final Class<? extends ModelItem> targetClass;
-    private Class<EditorView> editorViewClass;
-    private String viewId;
+    private final Class<EditorView> editorViewClass;
+    private final String viewId;
 
     public AutoResponseEditorViewFactory(PluginResponseEditorView annotation, Class<EditorView> editorViewClass) {
         super(EditorViewFactory.class);
@@ -52,15 +52,17 @@ public class AutoResponseEditorViewFactory extends AbstractSoapUIFactory<EditorV
     public EditorView<?> createResponseEditorView(Editor<?> editor, ModelItem modelItem) {
 
         try {
-            if( targetClass.isAssignableFrom( modelItem.getClass() ) ) {
+            if (targetClass.isAssignableFrom(modelItem.getClass())) {
                 try {
                     Method appliesMethod = editorViewClass.getMethod("applies", targetClass);
                     if (appliesMethod != null) {
                         Object applies = appliesMethod.invoke(null, modelItem);
-                        if (!Boolean.valueOf(String.valueOf(applies)))
+                        if (!Boolean.valueOf(String.valueOf(applies))) {
                             return null;
+                        }
                     }
-                } catch (NoSuchMethodException e) {
+                }
+                catch (NoSuchMethodException e) {
                     // this is ok - ignore
                 }
 
@@ -68,7 +70,8 @@ public class AutoResponseEditorViewFactory extends AbstractSoapUIFactory<EditorV
                 EditorView editorView = constructor.newInstance(editor, modelItem);
                 return PluginProxies.proxyIfApplicable(editorView);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 

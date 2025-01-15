@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface;
@@ -52,8 +52,8 @@ public class AddJMSEndpointAction extends AbstractSoapUIAction<AbstractInterface
     private static final String HERMES_CONFIG = "Hermes Config";
     private static final String SEND = "Send/Publish destination";
     private static final String RECEIVE = "Receive/Subscribe destination";
-    private XForm mainForm;
     List<Destination> destinationNameList;
+    private XForm mainForm;
 
     public AddJMSEndpointAction() {
         super("Add JMS endpoint", "Wizard for creating JMS endpoint");
@@ -108,11 +108,12 @@ public class AddJMSEndpointAction extends AbstractSoapUIAction<AbstractInterface
                 while (sessions.hasMore()) {
                     NameClassPair pair = sessions.next();
                     if (pair.getClassName().equals(HERMES_IMPL_CLASS_NAME)) {
-                        hermesList.add((Hermes) ctx.lookup(pair.getName()));
+                        hermesList.add((Hermes)ctx.lookup(pair.getName()));
                     }
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             SoapUI.log.warn("no HermesJMS context!");
         }
@@ -135,22 +136,23 @@ public class AddJMSEndpointAction extends AbstractSoapUIAction<AbstractInterface
         Context ctx = null;
         try {
             ctx = getHermesContext(iface, hermesConfigPath);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.log.info("no hermes context");
         }
         Hermes hermes = null;
         try {
             if (sessionOptions != null && sessionOptions.length > 0) {
-                hermes = (Hermes) ctx.lookup(sessionOptions[0]);
+                hermes = (Hermes)ctx.lookup(sessionOptions[0]);
             }
 
             if (hermes != null) {
                 updateDestinations(hermes);
             }
-        } catch (NamingException e) {
+        }
+        catch (NamingException e) {
             SoapUI.logError(e);
         }
-
     }
 
     private void updateDestinations(Hermes hermes) {
@@ -161,16 +163,14 @@ public class AddJMSEndpointAction extends AbstractSoapUIAction<AbstractInterface
         mainForm.setOptions(RECEIVE, destinationNameList.toArray());
     }
 
-    private Context getHermesContext(AbstractInterface<?> iface, String hermesConfigPath)
-            throws MalformedURLException, NamingException, IOException {
+    private Context getHermesContext(AbstractInterface<?> iface, String hermesConfigPath) throws NamingException, IOException {
         WsdlProject project = iface.getProject();
         HermesUtils.flushHermesCache();
         Context ctx = HermesUtils.hermesContext(project, hermesConfigPath);
         return ctx;
-
     }
 
-    protected XFormDialog buildDialog(final AbstractInterface<?> iface) {
+    protected XFormDialog buildDialog(AbstractInterface<?> iface) {
         if (iface == null) {
             return null;
         }
@@ -178,59 +178,59 @@ public class AddJMSEndpointAction extends AbstractSoapUIAction<AbstractInterface
         XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Add JMS endpoint");
 
         mainForm = builder.createForm("Basic");
-        mainForm.addTextField(HERMES_CONFIG, "choose folder where hermes-config.xml is", XForm.FieldType.FOLDER)
-                .addFormFieldListener(new XFormFieldListener() {
-                    public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
-                        if (!"".equals(newValue)) {
-                            Hermes hermes = null;
-                            try {
-                                Context ctx = getHermesContext(iface, newValue);
-                                iface.getProject().setHermesConfig(newValue);
-                                String[] sessions = getSessionOptions(iface, newValue);
-                                mainForm.setOptions(SESSION, sessions);
-                                if (sessions != null && sessions.length > 0) {
-                                    hermes = (Hermes) ctx.lookup(sessions[0]);
-                                }
-                            } catch (Exception e) {
-                                SoapUI.logError(e);
-                            }
-                            if (hermes != null) {
-                                updateDestinations(hermes);
-                            } else {
-                                mainForm.setOptions(SESSION, new String[]{});
-                                mainForm.setOptions(SEND, new String[]{});
-                                mainForm.setOptions(RECEIVE, new String[]{});
-                            }
+        mainForm.addTextField(HERMES_CONFIG, "choose folder where hermes-config.xml is", XForm.FieldType.FOLDER).addFormFieldListener(new XFormFieldListener() {
+            public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
+                if (!"".equals(newValue)) {
+                    Hermes hermes = null;
+                    try {
+                        Context ctx = getHermesContext(iface, newValue);
+                        iface.getProject().setHermesConfig(newValue);
+                        String[] sessions = getSessionOptions(iface, newValue);
+                        mainForm.setOptions(SESSION, sessions);
+                        if (sessions != null && sessions.length > 0) {
+                            hermes = (Hermes)ctx.lookup(sessions[0]);
                         }
                     }
-                });
-        mainForm.addComboBox(SESSION, new String[]{}, "Session name from HermesJMS").addFormFieldListener(
-                new XFormFieldListener() {
-
-                    public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
-                        String hermesConfigPath = mainForm.getComponent(HERMES_CONFIG).getValue();
-
-                        Hermes hermes = null;
-                        try {
-                            Context ctx = getHermesContext(iface, hermesConfigPath);
-                            hermes = (Hermes) ctx.lookup(newValue);
-                        } catch (Exception e) {
-                            SoapUI.logError(e);
-                        }
-                        if (hermes != null) {
-                            updateDestinations(hermes);
-                        } else {
-                            mainForm.setOptions(SEND, new String[]{});
-                            mainForm.setOptions(RECEIVE, new String[]{});
-                        }
+                    catch (Exception e) {
+                        SoapUI.logError(e);
                     }
+                    if (hermes != null) {
+                        updateDestinations(hermes);
+                    }
+                    else {
+                        mainForm.setOptions(SESSION, new String[]{});
+                        mainForm.setOptions(SEND, new String[]{});
+                        mainForm.setOptions(RECEIVE, new String[]{});
+                    }
+                }
+            }
+        });
+        mainForm.addComboBox(SESSION, new String[]{}, "Session name from HermesJMS").addFormFieldListener(new XFormFieldListener() {
 
-                });
+            public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
+                String hermesConfigPath = mainForm.getComponent(HERMES_CONFIG).getValue();
+
+                Hermes hermes = null;
+                try {
+                    Context ctx = getHermesContext(iface, hermesConfigPath);
+                    hermes = (Hermes)ctx.lookup(newValue);
+                }
+                catch (Exception e) {
+                    SoapUI.logError(e);
+                }
+                if (hermes != null) {
+                    updateDestinations(hermes);
+                }
+                else {
+                    mainForm.setOptions(SEND, new String[]{});
+                    mainForm.setOptions(RECEIVE, new String[]{});
+                }
+            }
+        });
         mainForm.addComboBox(SEND, new String[]{}, "Queue/Topic  sending/publishing");
         mainForm.addComboBox(RECEIVE, new String[]{}, "Queue/Topic  receive/subscribe");
 
-        return builder.buildDialog(builder.buildOkCancelActions(), "create JMS endpoint by selecting proper values",
-                null);
+        return builder.buildDialog(builder.buildOkCancelActions(), "create JMS endpoint by selecting proper values", null);
     }
 
     private void extractDestinations(Hermes hermes, List<Destination> destinationList) {
@@ -243,36 +243,37 @@ public class AddJMSEndpointAction extends AbstractSoapUIAction<AbstractInterface
                     Object dest = hermesDestinations.next();
                     Field nameField = cl.getDeclaredField("name");
                     nameField.setAccessible(true);
-                    String name = (String) nameField.get(dest);
+                    String name = (String)nameField.get(dest);
                     Field domainField = cl.getDeclaredField("domain");
                     domainField.setAccessible(true);
-                    Integer domain = (Integer) domainField.get(dest);
+                    Integer domain = (Integer)domainField.get(dest);
                     Destination temp = new Destination(name, Domain.getDomain(domain));
                     destinationList.add(temp);
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
 
     private class Destination {
+        private final String destinationName;
+        private final Domain domain;
         public Destination(String destinationName, Domain domain) {
             this.domain = domain;
             if (destinationName.equals(JMSEndpoint.JMS_EMPTY_DESTIONATION) || destinationName.equals("")) {
                 this.destinationName = destinationName;
-            } else {
+            }
+            else {
                 if (domain.equals(Domain.QUEUE)) {
                     this.destinationName = JMSEndpoint.QUEUE_ENDPOINT_PREFIX + destinationName;
-                } else {
+                }
+                else {
                     this.destinationName = JMSEndpoint.TOPIC_ENDPOINT_PREFIX + destinationName;
                 }
             }
-
         }
-
-        private String destinationName;
-        private Domain domain;
 
         public String getDestinationName() {
             return destinationName;
@@ -283,9 +284,7 @@ public class AddJMSEndpointAction extends AbstractSoapUIAction<AbstractInterface
         }
 
         public String toString() {
-            return this.getDestinationName().replace(JMSEndpoint.QUEUE_ENDPOINT_PREFIX, "")
-                    .replace(JMSEndpoint.TOPIC_ENDPOINT_PREFIX, "");
+            return getDestinationName().replace(JMSEndpoint.QUEUE_ENDPOINT_PREFIX, "").replace(JMSEndpoint.TOPIC_ENDPOINT_PREFIX, "");
         }
     }
-
 }

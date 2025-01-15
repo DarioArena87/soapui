@@ -12,26 +12,29 @@ public class JavaFXTools {
      * @param action
      */
     public static void runAndWait(Runnable action) {
-        if (action == null)
+        if (action == null) {
             throw new NullPointerException("action");
+        }
 
         if (Platform.isFxApplicationThread()) {
             action.run();
             return;
         }
 
-        final CountDownLatch doneLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(1);
         Platform.runLater(() -> {
             try {
                 action.run();
-            } finally {
+            }
+            finally {
                 doneLatch.countDown();
             }
         });
 
         try {
             doneLatch.await();
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             // ignore exception
         }
     }

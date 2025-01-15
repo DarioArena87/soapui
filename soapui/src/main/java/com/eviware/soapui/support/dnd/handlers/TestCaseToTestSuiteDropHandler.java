@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.dnd.handlers;
@@ -26,6 +26,80 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class TestCaseToTestSuiteDropHandler extends AbstractAfterModelItemDropHandler<WsdlTestCase, WsdlTestSuite> {
+    public static WsdlTestCase copyTestCase(WsdlTestCase testCase, WsdlTestSuite target, int position) {
+        String name = UISupport.prompt("Specify name of copied TestCase", "Copy TestCase", "Copy of " + testCase.getName());
+        if (name == null) {
+            return null;
+        }
+
+        if (testCase.getTestSuite() == target) {
+            return target.importTestCase(testCase, name, position, true, true, true);
+        }
+        else if (testCase.getTestSuite().getProject() == target.getProject()) {
+            return target.importTestCase(testCase, name, position, true, true, true);
+        }
+        else {
+            Set<Interface> requiredInterfaces = new HashSet<Interface>();
+
+            // get required interfaces
+            for (int y = 0; y < testCase.getTestStepCount(); y++) {
+                WsdlTestStep testStep = testCase.getTestStepAt(y);
+                requiredInterfaces.addAll(testStep.getRequiredInterfaces());
+            }
+
+            if (DragAndDropSupport.importRequiredInterfaces(target.getProject(), requiredInterfaces, "Copy TestCase")) {
+                return target.importTestCase(testCase, name, position, true, true, true);
+            }
+        }
+
+        return null;
+    }
+
+    public static WsdlTestCase moveTestCase(WsdlTestCase testCase, WsdlTestSuite target, int position) {
+        if (testCase.getTestSuite() == target) {
+            int ix = target.getIndexOfTestCase(testCase);
+
+            if (position == -1) {
+                target.moveTestCase(ix, target.getTestCaseCount() - ix);
+            }
+            else if (ix >= 0 && position != ix) {
+                int offset = position - ix;
+                if (offset > 0) {
+                    offset--;
+                }
+                target.moveTestCase(ix, offset);
+            }
+        }
+        else if (testCase.getTestSuite().getProject() == target.getProject()) {
+            if (UISupport.confirm("Move TestCase [" + testCase.getName() + "] to TestSuite [" + target.getName() + "]", "Move TestCase")) {
+                WsdlTestCase importedTestCase = target.importTestCase(testCase, testCase.getName(), position, true, true, false);
+                if (importedTestCase != null) {
+                    testCase.getTestSuite().removeTestCase(testCase);
+                    return importedTestCase;
+                }
+            }
+        }
+        else if (UISupport.confirm("Move TestCase [" + testCase.getName() + "] to TestSuite [" + target.getName() + "]", "Move TestCase")) {
+            Set<Interface> requiredInterfaces = new HashSet<Interface>();
+
+            // get required interfaces
+            for (int y = 0; y < testCase.getTestStepCount(); y++) {
+                WsdlTestStep testStep = testCase.getTestStepAt(y);
+                requiredInterfaces.addAll(testStep.getRequiredInterfaces());
+            }
+
+            if (DragAndDropSupport.importRequiredInterfaces(target.getProject(), requiredInterfaces, "Move TestCase")) {
+                WsdlTestCase importedTestCase = target.importTestCase(testCase, testCase.getName(), position, true, true, false);
+                if (importedTestCase != null) {
+                    testCase.getTestSuite().removeTestCase(testCase);
+                    return importedTestCase;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public TestCaseToTestSuiteDropHandler() {
         super(WsdlTestCase.class, WsdlTestSuite.class);
     }
@@ -50,34 +124,6 @@ public class TestCaseToTestSuiteDropHandler extends AbstractAfterModelItemDropHa
         return testCase != null;
     }
 
-    public static WsdlTestCase copyTestCase(WsdlTestCase testCase, WsdlTestSuite target, int position) {
-        String name = UISupport.prompt("Specify name of copied TestCase", "Copy TestCase",
-                "Copy of " + testCase.getName());
-        if (name == null) {
-            return null;
-        }
-
-        if (testCase.getTestSuite() == target) {
-            return target.importTestCase(testCase, name, position, true, true, true);
-        } else if (testCase.getTestSuite().getProject() == target.getProject()) {
-            return target.importTestCase(testCase, name, position, true, true, true);
-        } else {
-            Set<Interface> requiredInterfaces = new HashSet<Interface>();
-
-            // get required interfaces
-            for (int y = 0; y < testCase.getTestStepCount(); y++) {
-                WsdlTestStep testStep = testCase.getTestStepAt(y);
-                requiredInterfaces.addAll(testStep.getRequiredInterfaces());
-            }
-
-            if (DragAndDropSupport.importRequiredInterfaces(target.getProject(), requiredInterfaces, "Copy TestCase")) {
-                return target.importTestCase(testCase, name, position, true, true, true);
-            }
-        }
-
-        return null;
-    }
-
     @Override
     boolean moveAfter(WsdlTestCase source, WsdlTestSuite target) {
         WsdlTestCase testCase = moveTestCase(source, target, 0);
@@ -86,52 +132,6 @@ public class TestCaseToTestSuiteDropHandler extends AbstractAfterModelItemDropHa
         }
 
         return testCase != null;
-    }
-
-    public static WsdlTestCase moveTestCase(WsdlTestCase testCase, WsdlTestSuite target, int position) {
-        if (testCase.getTestSuite() == target) {
-            int ix = target.getIndexOfTestCase(testCase);
-
-            if (position == -1) {
-                target.moveTestCase(ix, target.getTestCaseCount() - ix);
-            } else if (ix >= 0 && position != ix) {
-                int offset = position - ix;
-                if (offset > 0) {
-                    offset--;
-                }
-                target.moveTestCase(ix, offset);
-            }
-        } else if (testCase.getTestSuite().getProject() == target.getProject()) {
-            if (UISupport.confirm("Move TestCase [" + testCase.getName() + "] to TestSuite [" + target.getName() + "]",
-                    "Move TestCase")) {
-                WsdlTestCase importedTestCase = target.importTestCase(testCase, testCase.getName(), position, true, true,
-                        false);
-                if (importedTestCase != null) {
-                    testCase.getTestSuite().removeTestCase(testCase);
-                    return importedTestCase;
-                }
-            }
-        } else if (UISupport.confirm("Move TestCase [" + testCase.getName() + "] to TestSuite [" + target.getName() + "]",
-                "Move TestCase")) {
-            Set<Interface> requiredInterfaces = new HashSet<Interface>();
-
-            // get required interfaces
-            for (int y = 0; y < testCase.getTestStepCount(); y++) {
-                WsdlTestStep testStep = testCase.getTestStepAt(y);
-                requiredInterfaces.addAll(testStep.getRequiredInterfaces());
-            }
-
-            if (DragAndDropSupport.importRequiredInterfaces(target.getProject(), requiredInterfaces, "Move TestCase")) {
-                WsdlTestCase importedTestCase = target.importTestCase(testCase, testCase.getName(), position, true, true,
-                        false);
-                if (importedTestCase != null) {
-                    testCase.getTestSuite().removeTestCase(testCase);
-                    return importedTestCase;
-                }
-            }
-        }
-
-        return null;
     }
 
     @Override
@@ -143,5 +143,4 @@ public class TestCaseToTestSuiteDropHandler extends AbstractAfterModelItemDropHa
     String getMoveAfterInfo(WsdlTestCase source, WsdlTestSuite target) {
         return "Move TestCase [" + source.getName() + "] to TestSuite [" + target.getName() + "]";
     }
-
 }

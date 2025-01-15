@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui;
@@ -44,7 +44,6 @@ import java.io.FileInputStream;
 
 public class SwingSoapUICore extends DefaultSoapUICore {
     public SwingSoapUICore() {
-        super();
     }
 
     public SwingSoapUICore(String root, String settingsFile) {
@@ -80,8 +79,7 @@ public class SwingSoapUICore extends DefaultSoapUICore {
         inspectorRegistry.addFactory(new AMFHeadersInspectorFactory());
 
         String actionsDir = System.getProperty("soapui.ext.actions");
-        addExternalActions(actionsDir == null ? getRoot() == null ? "actions" : getRoot() + File.separatorChar
-                + "actions" : actionsDir, getExtensionClassLoader());
+        addExternalActions(actionsDir == null ? getRoot() == null ? "actions" : getRoot() + File.separatorChar + "actions" : actionsDir, getExtensionClassLoader());
     }
 
     @Override
@@ -91,7 +89,8 @@ public class SwingSoapUICore extends DefaultSoapUICore {
         if (!new File(fileName).exists()) {
             try {
                 fileName = importSettingsOnStartup(fileName);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -106,20 +105,17 @@ public class SwingSoapUICore extends DefaultSoapUICore {
     }
 
     protected String importSettingsOnStartup(String fileName) throws Exception {
-        if (UISupport.getDialogs().confirm("Missing SoapUI Settings, import from existing installation?",
-                "Import Preferences")) {
+        if (UISupport.getDialogs().confirm("Missing SoapUI Settings, import from existing installation?", "Import Preferences")) {
             while (true) {
-                File settingsFile = UISupport.getFileDialogs().open(null, "Import Preferences", ".xml",
-                        "SoapUI settings XML", fileName);
+                File settingsFile = UISupport.getFileDialogs().open(null, "Import Preferences", ".xml", "SoapUI settings XML", fileName);
                 if (settingsFile != null) {
                     try {
                         SoapuiSettingsDocumentConfig.Factory.parse(settingsFile);
                         log.info("imported soapui-settings from [" + settingsFile.getAbsolutePath() + "]");
                         return settingsFile.getAbsolutePath();
-                    } catch (Exception e) {
-                        if (!UISupport.getDialogs().confirm(
-                                "Error loading settings from [" + settingsFile.getAbsolutePath() + "]\r\nspecify another?",
-                                "Error Importing")) {
+                    }
+                    catch (Exception e) {
+                        if (!UISupport.getDialogs().confirm("Error loading settings from [" + settingsFile.getAbsolutePath() + "]\r\nspecify another?", "Error Importing")) {
                             break;
                         }
                     }
@@ -147,7 +143,8 @@ public class SwingSoapUICore extends DefaultSoapUICore {
                     log.info("Adding actions from [" + actionFile.getAbsolutePath() + "]");
 
                     SoapUI.getActionRegistry().addConfig(new FileInputStream(actionFile), classLoader);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
             }

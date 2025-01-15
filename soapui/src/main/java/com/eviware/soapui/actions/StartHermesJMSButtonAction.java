@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -34,24 +34,21 @@ import java.util.Map;
  */
 public class StartHermesJMSButtonAction extends AbstractAction {
     public StartHermesJMSButtonAction() {
-        putValue(Action.SMALL_ICON, UISupport.createImageIcon("/hermes-16x16.gif"));
-        putValue(Action.SHORT_DESCRIPTION, "Start HermesJMS application");
-        putValue(Action.NAME, "HermesJMS");
+        putValue(SMALL_ICON, UISupport.createImageIcon("/hermes-16x16.gif"));
+        putValue(SHORT_DESCRIPTION, "Start HermesJMS application");
+        putValue(NAME, "HermesJMS");
     }
 
     public void actionPerformed(ActionEvent e) {
         try {
-            String hermesHome = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS,
-                    HermesUtils.defaultHermesJMSPath());
+            String hermesHome = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS, HermesUtils.defaultHermesJMSPath());
             if (!isHermesHomeValid(hermesHome)) {
                 UISupport.showErrorMessage("Please set Hermes JMS path in Preferences->Tools ! ");
                 if (UISupport.getMainFrame() != null) {
                     if (SoapUIPreferencesAction.getInstance().show(SoapUIPreferencesAction.INTEGRATED_TOOLS)) {
-                        hermesHome = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS,
-                                HermesUtils.defaultHermesJMSPath());
+                        hermesHome = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS, HermesUtils.defaultHermesJMSPath());
                     }
                 }
-
             }
             if (!isHermesHomeValid(hermesHome)) {
                 return;
@@ -62,7 +59,8 @@ public class StartHermesJMSButtonAction extends AbstractAction {
             Map<String, String> env = pb.environment();
             env.put("JAVA_HOME", System.getProperty("java.home"));
             pb.start();
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }

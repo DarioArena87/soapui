@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -57,7 +57,8 @@ public class StringUtils {
 
         try {
             return Integer.parseInt(str);
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             return defaultValue;
         }
     }
@@ -72,7 +73,8 @@ public class StringUtils {
                 list.add(s);
             }
             return list;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             // I don't think this can really happen with a StringReader.
             throw new RuntimeException(e);
         }
@@ -88,15 +90,18 @@ public class StringUtils {
                     sb.append(st.nextToken());
                     if (st.hasMoreTokens()) {
                         sb.append(' ');
-                    } else {
+                    }
+                    else {
                         break;
                     }
                 }
                 return sb.toString();
-            } else {
+            }
+            else {
                 return "";
             }
-        } else {
+        }
+        else {
             return str;
         }
     }
@@ -108,13 +113,13 @@ public class StringUtils {
     public static String stripStartAndEnd(String s, String start, String end) {
         if (s.startsWith(start) && s.endsWith(end)) {
             return s.substring(start.length(), s.length() - end.length());
-        } else {
+        }
+        else {
             return s;
         }
     }
 
-    public static Writer createSeparatedRow(Writer writer, StringList values, char separator, char quote)
-            throws IOException {
+    public static Writer createSeparatedRow(Writer writer, StringList values, char separator, char quote) throws IOException {
         for (int c = 0; c < values.size(); c++) {
             String value = values.get(c);
 
@@ -131,7 +136,8 @@ public class StringUtils {
 
                         if (ch == quote) {
                             writer.append('\\');
-                        } else if (ch == '\\') {
+                        }
+                        else if (ch == '\\') {
                             writer.append('\\');
                         }
 
@@ -140,7 +146,8 @@ public class StringUtils {
                 }
 
                 writer.append(quote);
-            } else if (value != null) {
+            }
+            else if (value != null) {
                 writer.append(value);
             }
         }
@@ -166,7 +173,8 @@ public class StringUtils {
                             ix = -1;
                         }
                         break;
-                    } else if (ch != '\\' || last == '\\') {
+                    }
+                    else if (ch != '\\' || last == '\\') {
                         buf.append(ch);
                     }
 
@@ -178,12 +186,14 @@ public class StringUtils {
                     result.add(row);
                     row = null;
                 }
-            } else {
+            }
+            else {
                 int ix = row.indexOf(separator);
                 if (ix == -1) {
                     result.add(row);
                     row = null;
-                } else {
+                }
+                else {
                     result.add(row.substring(0, ix));
                     row = row.substring(ix + 1);
                 }
@@ -204,9 +214,11 @@ public class StringUtils {
 
             if (Character.isWhitespace(ch) && whitespaceChar != 0) {
                 result.append(whitespaceChar);
-            } else if (Character.isLetterOrDigit(ch)) {
+            }
+            else if (Character.isLetterOrDigit(ch)) {
                 result.append(ch);
-            } else if (ch == whitespaceChar) {
+            }
+            else if (ch == whitespaceChar) {
                 result.append(ch);
             }
         }
@@ -238,7 +250,8 @@ public class StringUtils {
 
             if (Character.isLetterOrDigit(ch)) {
                 result.append(ch);
-            } else {
+            }
+            else {
                 result.append(replace);
             }
         }
@@ -256,28 +269,23 @@ public class StringUtils {
             if (Character.isLetter(ch) || ch == '_' || ch == '-' || ch == '.') {
                 if (skipped) {
                     result.append(Character.toUpperCase(ch));
-                } else {
+                }
+                else {
                     result.append(ch);
                 }
                 skipped = false;
-            } else if (Character.isDigit(ch)) {
+            }
+            else if (Character.isDigit(ch)) {
                 result.append(ch);
                 skipped = false;
-            } else {
+            }
+            else {
                 skipped = true;
             }
         }
 
         String resultString = result.toString();
         return isValidXmlName(str) ? resultString : "_" + resultString;
-    }
-
-    private static boolean isValidXmlName(String str) {
-        if (str.isEmpty() || str.toLowerCase().startsWith("xml")) {
-            return false;
-        }
-        char firstCharacter = str.charAt(0);
-        return Character.isLetter(firstCharacter) || firstCharacter == '_';
     }
 
     public static String[] merge(String[] incomingNames, String string) {
@@ -314,7 +322,7 @@ public class StringUtils {
     }
 
     public static String toHtml(String string, int maxSize) {
-        if (StringUtils.isNullOrEmpty(string)) {
+        if (isNullOrEmpty(string)) {
             return "<html><body></body></html>";
         }
 
@@ -339,7 +347,8 @@ public class StringUtils {
 
                 str = st.readLine();
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -357,7 +366,7 @@ public class StringUtils {
         int pos;
         int i = 0;
         while ((pos = data.indexOf(from, i)) != -1) {
-            buf.append(data.substring(i, pos)).append(to);
+            buf.append(data, i, pos).append(to);
             i = pos + from.length();
         }
         buf.append(data.substring(i));
@@ -367,7 +376,8 @@ public class StringUtils {
     public static String fixLineSeparator(String xml) throws UnsupportedEncodingException {
         if ("\r\n".equals(System.getProperty("line.separator"))) {
             xml = xml.replaceAll("\r[^\n]", System.getProperty("line.separator"));
-        } else {
+        }
+        else {
             xml = xml.replaceAll("\r\n", System.getProperty("line.separator"));
         }
 
@@ -378,7 +388,7 @@ public class StringUtils {
         if (isNullOrEmpty(string)) {
             return string;
         }
-        return string.toUpperCase().substring(0, 1) + string.toLowerCase().substring(1);
+        return string.toUpperCase().charAt(0) + string.toLowerCase().substring(1);
     }
 
     public static String[] toStringArray(Object[] selectedOptions) {
@@ -422,6 +432,14 @@ public class StringUtils {
      * else the method returns initial {@code baseString}
      */
     public static String emptyIfNull(String baseString) {
-        return StringUtils.isNullOrEmpty(baseString) ? "" : baseString;
+        return isNullOrEmpty(baseString) ? "" : baseString;
+    }
+
+    private static boolean isValidXmlName(String str) {
+        if (str.isEmpty() || str.toLowerCase().startsWith("xml")) {
+            return false;
+        }
+        char firstCharacter = str.charAt(0);
+        return Character.isLetter(firstCharacter) || firstCharacter == '_';
     }
 }

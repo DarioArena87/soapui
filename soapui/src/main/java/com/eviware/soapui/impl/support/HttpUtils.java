@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support;
@@ -78,7 +78,8 @@ public class HttpUtils {
         try {
             InetAddress address = InetAddress.getByName(host);
             return address.isReachable(timeout);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             pingErrorMessage = e.getMessage();
             return false;
         }
@@ -87,7 +88,8 @@ public class HttpUtils {
     public static String urlEncodeWithUtf8(String input) {
         try {
             return URLEncoder.encode(input, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e) {
             // if UTF-8 isn't available we might as well die ...
             throw new Error("Unexpected error: charset UTF-8 not available", e);
         }
@@ -98,14 +100,13 @@ public class HttpUtils {
     }
 
     public static java.net.URI createUri(URI uri) throws URISyntaxException, URIException {
-        return createUri(uri.getScheme(), uri.getUserinfo(), uri.getHost(), uri.getPort(), uri.getEscapedPath(),
-                uri.getEscapedQuery(), uri.getEscapedFragment());
+        return createUri(uri.getScheme(), uri.getUserinfo(), uri.getHost(), uri.getPort(), uri.getEscapedPath(), uri.getEscapedQuery(), uri.getEscapedFragment());
     }
 
-    public static java.net.URI createUri(String scheme, String userinfo, String host, int port, String escapedPath,
-                                         String escapedQuery, String escapedFragment) throws URISyntaxException {
-        return URIUtils.createURI(scheme, (userinfo == null ? "" : (userinfo + "@")) + host, port, escapedPath,
-                escapedQuery, escapedFragment);
+    public static java.net.URI createUri(
+        String scheme, String userinfo, String host, int port, String escapedPath, String escapedQuery, String escapedFragment
+    ) throws URISyntaxException {
+        return URIUtils.createURI(scheme, (userinfo == null ? "" : (userinfo + "@")) + host, port, escapedPath, escapedQuery, escapedFragment);
     }
 }
 

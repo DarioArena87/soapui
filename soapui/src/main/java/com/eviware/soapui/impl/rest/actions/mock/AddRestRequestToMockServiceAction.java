@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.mock;
@@ -36,17 +36,16 @@ import java.util.List;
 
 public class AddRestRequestToMockServiceAction extends AbstractSoapUIAction<RestRequest> {
 
-    private static final String SELECT_MOCKSERVICE_OPTION = "Create new..";
     public static final String SOAPUI_ACTION_ID = "AddRestRequestToMockServiceAction";
+    private static final String SELECT_MOCKSERVICE_OPTION = "Create new..";
     private static final MessageSupport messages = MessageSupport.getMessages(AddRestRequestToMockServiceAction.class);
-    private static List<String> HEADERS_TO_IGNORE = new ArrayList<String>();
+    private static final List<String> HEADERS_TO_IGNORE = new ArrayList<String>();
 
     static {
         HEADERS_TO_IGNORE.add("#status#");
         HEADERS_TO_IGNORE.add("Content-Type");
         HEADERS_TO_IGNORE.add("Content-Length");
     }
-
 
     public AddRestRequestToMockServiceAction() {
         super(messages.get("Title"), messages.get("Description"));
@@ -82,20 +81,18 @@ public class AddRestRequestToMockServiceAction extends AbstractSoapUIAction<Rest
         restRequest.getOperation().getService().addEndpoint(mockService.getLocalEndpoint());
     }
 
-
     private void maybeStart(MockService mockService) {
         try {
             mockService.startIfConfigured();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             UISupport.showErrorMessage(e.getMessage());
         }
     }
 
-
     private String promptForMockServiceSelection(String title, WsdlProject project) {
-        String[] mockServices = ModelSupport.getNames(project.getRestMockServiceList(),
-                new String[]{SELECT_MOCKSERVICE_OPTION});
+        String[] mockServices = ModelSupport.getNames(project.getRestMockServiceList(), new String[]{SELECT_MOCKSERVICE_OPTION});
 
         // prompt
         return UISupport.prompt("Select RESTMockService for adding REST request", title, mockServices);
@@ -117,7 +114,7 @@ public class AddRestRequestToMockServiceAction extends AbstractSoapUIAction<Rest
         int responseCount = matchedOperation.getMockResponseCount() + 1;
         String responseName = "Response " + responseCount;
 
-        RestMockResponse mockResponse = ((RestMockAction) matchedOperation).addNewMockResponse(responseName);
+        RestMockResponse mockResponse = ((RestMockAction)matchedOperation).addNewMockResponse(responseName);
         // add expected response if available
         if (restRequest != null && restRequest.getResponse() != null) {
             copyResponseContent(restRequest, mockResponse);
@@ -140,7 +137,5 @@ public class AddRestRequestToMockServiceAction extends AbstractSoapUIAction<Rest
             mockResponse.setResponseContent(response.getContentAsString());
             mockResponse.setContentType(response.getContentType());
         }
-
     }
-
 }

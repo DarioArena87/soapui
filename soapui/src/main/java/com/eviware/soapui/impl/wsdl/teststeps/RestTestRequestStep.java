@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -76,7 +76,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.SchemaType;
 import org.w3c.dom.Document;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import javax.xml.namespace.QName;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -90,23 +90,21 @@ import static com.eviware.soapui.support.JsonUtil.seemsToBeJsonContentType;
 
 public class RestTestRequestStep extends WsdlTestStepWithProperties implements RestTestRequestStepInterface, Securable {
     private final static Logger log = LogManager.getLogger(RestTestRequestStep.class);
+    private final InternalProjectListener projectListener = new InternalProjectListener();
+    private final InternalInterfaceListener interfaceListener = new InternalInterfaceListener();
+    // private final Set<String> requestProperties = new HashSet<String>();
+    private final Map<String, RestTestStepProperty> requestProperties = new HashMap<String, RestTestStepProperty>();
     private RestRequestStepConfig restRequestStepConfig;
     private RestTestRequest testRequest;
     private RestResource restResource;
     private RestMethod restMethod;
-    private final InternalProjectListener projectListener = new InternalProjectListener();
-    private final InternalInterfaceListener interfaceListener = new InternalInterfaceListener();
     private WsdlSubmit<RestRequest> submit;
-    // private final Set<String> requestProperties = new HashSet<String>();
-    private final Map<String, RestTestStepProperty> requestProperties = new HashMap<String, RestTestStepProperty>();
 
-    public RestTestRequestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest)
-            throws ItemDeletedException {
+    public RestTestRequestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) throws ItemDeletedException {
         super(testCase, config, true, forLoadTest);
 
         if (getConfig().getConfig() != null) {
-            restRequestStepConfig = (RestRequestStepConfig) getConfig().getConfig().changeType(
-                    RestRequestStepConfig.type);
+            restRequestStepConfig = (RestRequestStepConfig)getConfig().getConfig().changeType(RestRequestStepConfig.type);
 
             testRequest = buildTestRequest(forLoadTest);
             if (testRequest == null) {
@@ -120,12 +118,13 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
 
             if (config.isSetName()) {
                 testRequest.setName(config.getName());
-            } else {
+            }
+            else {
                 config.setName(testRequest.getName());
             }
-        } else {
-            restRequestStepConfig = (RestRequestStepConfig) getConfig().addNewConfig().changeType(
-                    RestRequestStepConfig.type);
+        }
+        else {
+            restRequestStepConfig = (RestRequestStepConfig)getConfig().addNewConfig().changeType(RestRequestStepConfig.type);
         }
 
         // Add request properties
@@ -140,6 +139,11 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         // init properties
         addProperty(new TestStepBeanProperty("Request", false, testRequest, "requestContent", this, true) {
             @Override
+            public QName getType() {
+                return getSchemaType().getName();
+            }
+
+            @Override
             public String getDefaultValue() {
                 return createDefaultRequestContent();
             }
@@ -153,15 +157,15 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
                         Document dom = XmlUtils.parseXml(requestContent);
 
                         // get matching representations
-                        for (RestRepresentation representation : getTestRequest().getRepresentations(Type.REQUEST,
-                                getTestRequest().getMediaType())) {
+                        for (RestRepresentation representation : getTestRequest().getRepresentations(Type.REQUEST, getTestRequest().getMediaType())) {
                             // is request element same as that of representation?
                             if (representation.getElement().equals(XmlUtils.getQName(dom.getDocumentElement()))) {
                                 // this is it, return its type
                                 return representation.getSchemaType();
                             }
                         }
-                    } catch (Throwable e) {
+                    }
+                    catch (Throwable e) {
                         SoapUI.logError(e);
                     }
                 }
@@ -169,16 +173,14 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
                 // found nothing.. fall back
                 return super.getSchemaType();
             }
+        });
 
+        addProperty(new TestStepBeanProperty(RESPONSE_AS_XML, true, testRequest, "responseContentAsXml", this) {
             @Override
             public QName getType() {
                 return getSchemaType().getName();
             }
 
-        });
-
-        addProperty(new TestStepBeanProperty(WsdlTestStepWithProperties.RESPONSE_AS_XML, true, testRequest,
-                "responseContentAsXml", this) {
             @Override
             public String getDefaultValue() {
                 return createDefaultResponseXmlContent();
@@ -190,25 +192,20 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
                     Document dom = XmlUtils.parseXml(getTestRequest().getResponseContentAsXml());
 
                     // get matching representations
-                    for (RestRepresentation representation : getTestRequest().getRepresentations(Type.RESPONSE,
-                            getTestRequest().getResponse().getContentType())) {
+                    for (RestRepresentation representation : getTestRequest().getRepresentations(Type.RESPONSE, getTestRequest().getResponse().getContentType())) {
                         // is request element same as that of representation?
                         if (representation.getElement().equals(XmlUtils.getQName(dom.getDocumentElement()))) {
                             // this is it, return its type
                             return representation.getSchemaType();
                         }
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
 
                 // found nothing.. fall back
                 return super.getSchemaType();
-            }
-
-            @Override
-            public QName getType() {
-                return getSchemaType().getName();
             }
         });
 
@@ -253,37 +250,8 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         }
     }
 
-    @Override
-    public void beforeSave() {
-        super.beforeSave();
-
-        if (testRequest != null) {
-            testRequest.beforeSave();
-        }
-    }
-
-    @Override
-    public String getDescription() {
-        return testRequest == null ? "<missing>" : testRequest.getDescription();
-    }
-
     public RestRequestStepConfig getRequestStepConfig() {
         return restRequestStepConfig;
-    }
-
-    protected RestTestRequest buildTestRequest(boolean forLoadTest) {
-        if (getRestMethod() == null) {
-            return null;
-        }
-        return new RestTestRequest(getRestMethod(), getRequestStepConfig().getRestRequest(), this, forLoadTest);
-    }
-
-    private void initRestTestRequest() {
-        if (getRestMethod() == null) {
-            setDisabled(true);
-        } else {
-            getTestRequest().setRestMethod(getRestMethod());
-        }
     }
 
     public String getService() {
@@ -292,86 +260,6 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
 
     public String getResourcePath() {
         return getRequestStepConfig().getResourcePath();
-    }
-
-    protected String createDefaultRawResponseContent() {
-        return getResource() == null ? null : getResource().createResponse(true);
-    }
-
-    protected String createDefaultResponseXmlContent() {
-        return getResource() == null ? null : getResource().createResponse(true);
-    }
-
-    protected String createDefaultRequestContent() {
-        return getResource() == null ? null : getResource().createRequest(true);
-    }
-
-    @Override
-    public Collection<Interface> getRequiredInterfaces() {
-        ArrayList<Interface> result = new ArrayList<Interface>();
-        result.add(findRestResource().getInterface());
-        return result;
-    }
-
-    private RestResource findRestResource() {
-        Project project = ModelSupport.getModelItemProject(this);
-        for (Interface iface : project.getInterfaceList()) {
-            if (iface.getName().equals(getRequestStepConfig().getService()) && iface instanceof RestService) {
-                RestService restService = (RestService) iface;
-                // get all resources with the configured path
-                for (RestResource resource : restService.getResourcesByFullPath(getRequestStepConfig().getResourcePath())) {
-                    // try to find matching method
-                    if (getWsdlModelItemByName(resource.getRestMethodList(), getRequestStepConfig().getMethodName()) != null) {
-                        return resource;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private RestMethod findRestMethod() {
-        if (!restRequestStepConfig.isSetMethodName()) {
-            RestRequestConverter.updateRestTestRequest(this);
-
-            // Must be an old version RestRequest...
-            if (getResource() == null) {
-                restResource = RestRequestConverter.resolveResource(this);
-                if (restResource == null) {
-                    return null;
-                }
-                getRequestStepConfig().setService(restResource.getInterface().getName());
-                getRequestStepConfig().setResourcePath(restResource.getFullPath());
-            }
-            RestMethod method = RestRequestConverter.getMethod(getResource(), getRequestStepConfig().getRestRequest()
-                    .selectAttribute(null, "method").newCursor().getTextValue(), getRequestStepConfig().getRestRequest()
-                    .getName());
-            restRequestStepConfig.setMethodName(method.getName());
-            return method;
-        } else if (getResource() == null) {
-            restResource = RestRequestConverter.resolveResource(this);
-            if (restResource == null) {
-                return null;
-            }
-            getRequestStepConfig().setService(restResource.getInterface().getName());
-            getRequestStepConfig().setResourcePath(restResource.getFullPath());
-
-            RestMethod m = (RestMethod) getWsdlModelItemByName(getResource().getRestMethodList(), getRequestStepConfig()
-                    .getMethodName());
-            if (m == null) {
-                String mn = null;
-                while (mn == null) {
-                    mn = UISupport.prompt("Select method in REST Resource [" + restResource.getName() + "]",
-                            "Missing REST Method", ModelSupport.getNames(restResource.getRestMethodList()));
-                }
-
-                restRequestStepConfig.setMethodName(mn);
-                return restResource.getRestMethodByName(mn);
-            }
-        }
-
-        return (RestMethod) getWsdlModelItemByName(getResource().getRestMethodList(), getRequestStepConfig()
-                .getMethodName());
     }
 
     public RestMethod getRestMethod() {
@@ -386,145 +274,6 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
             restResource = findRestResource();
         }
         return restResource;
-    }
-
-    public Operation getOperation() {
-        return getResource();
-    }
-
-    @Override
-    public void release() {
-        super.release();
-
-        if (restResource != null) {
-            restResource.removePropertyChangeListener(this);
-            restResource.getService().getProject().removeProjectListener(projectListener);
-            restResource.getService().removeInterfaceListener(interfaceListener);
-            restResource.getService().removePropertyChangeListener(this);
-        }
-
-        if (restMethod != null) {
-            restMethod.removePropertyChangeListener(this);
-        }
-
-        if (testRequest != null) {
-            testRequest.removePropertyChangeListener(this);
-            testRequest.release();
-        }
-    }
-
-    @Override
-    public void resetConfigOnMove(TestStepConfig config) {
-        super.resetConfigOnMove(config);
-
-        restRequestStepConfig = (RestRequestStepConfig) config.getConfig().changeType(RestRequestStepConfig.type);
-        testRequest.updateConfig(restRequestStepConfig.getRestRequest());
-    }
-
-    public void propertyChange(PropertyChangeEvent event) {
-
-        // TODO Some of these properties should be pulled up as they are common for may steps
-        // FIXME The property names shouldn't be hardcoded
-        if (event.getSource() == testRequest) {
-            if (event.getNewValue() instanceof SinglePartHttpResponse) {
-                SinglePartHttpResponse response = (SinglePartHttpResponse) event.getNewValue();
-                firePropertyValueChanged("Response", String.valueOf(response), null);
-                String XMLContent = response.getContentAsXml();
-                // FIXME The value should not be hard coded
-                firePropertyValueChanged("ResponseAsXml", null, XMLContent);
-            }
-
-            if (event.getPropertyName().equals("domain")) {
-                delegatePropertyChange("Domain", event);
-            } else if (event.getPropertyName().equals("password")) {
-                delegatePropertyChange("Password", event);
-            } else if (event.getPropertyName().equals("username")) {
-                delegatePropertyChange("Username", event);
-            } else if (event.getPropertyName().equals("endpoint")) {
-                delegatePropertyChange("Endpoint", event);
-            }
-        }
-
-        if (event.getSource() == restResource) {
-            if (event.getPropertyName().equals(RestResource.PATH_PROPERTY)) {
-                getRequestStepConfig().setResourcePath(restResource.getFullPath());
-            } else if (event.getPropertyName().equals("childMethods") && restMethod == event.getOldValue()) {
-                // TODO: Convert to HttpTestRequestStep
-                log.debug("Removing test step due to removed Rest method");
-                getTestCase().removeTestStep(RestTestRequestStep.this);
-            }
-        } else if (restResource != null && event.getSource() == restResource.getInterface()) {
-            if (event.getPropertyName().equals(Interface.NAME_PROPERTY)) {
-                getRequestStepConfig().setService((String) event.getNewValue());
-            }
-        } else if (event.getSource() == restMethod) {
-            if (event.getPropertyName().equals(RestMethod.NAME_PROPERTY)) {
-                getRequestStepConfig().setMethodName((String) event.getNewValue());
-            }
-        }
-        if (event.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY)
-                || event.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
-            if (getTestRequest().getResponse() != null) {
-                getTestRequest().assertResponse(new WsdlTestRunContext(this));
-            }
-        } else {
-            if (event.getSource() == testRequest && event.getPropertyName().equals(WsdlTestRequest.NAME_PROPERTY)) {
-                if (!super.getName().equals(event.getNewValue())) {
-                    super.setName((String) event.getNewValue());
-                }
-            } else if (event.getSource() == testRequest && event.getPropertyName().equals("restMethod")) {
-                refreshRequestProperties();
-            }
-
-            notifyPropertyChanged(event.getPropertyName(), event.getOldValue(), event.getNewValue());
-        }
-
-        // TODO copy from HttpTestRequestStep super.propertyChange( evt );
-    }
-
-    private void delegatePropertyChange(String customPropertyname, PropertyChangeEvent event) {
-        firePropertyValueChanged(customPropertyname, String.valueOf(event.getOldValue()),
-                String.valueOf(event.getNewValue()));
-
-    }
-
-    public class InternalProjectListener extends ProjectListenerAdapter {
-        @Override
-        public void interfaceRemoved(Interface iface) {
-            if (restResource != null && restResource.getInterface().equals(iface)) {
-                log.debug("Removing test step due to removed interface");
-                (getTestCase()).removeTestStep(RestTestRequestStep.this);
-            }
-        }
-    }
-
-    public class InternalInterfaceListener extends InterfaceListenerAdapter {
-        @Override
-        public void operationRemoved(Operation operation) {
-            if (operation == restResource) {
-                log.debug("Removing test step due to removed operation");
-                (getTestCase()).removeTestStep(RestTestRequestStep.this);
-            }
-        }
-
-        @Override
-        public void operationUpdated(Operation operation) {
-            if (operation == restResource) {
-                // requestStepConfig.setResourcePath( operation.get );
-            }
-        }
-    }
-
-    @Override
-    public boolean dependsOn(AbstractWsdlModelItem<?> modelItem) {
-        if (modelItem instanceof Interface && getTestRequest().getOperation() != null
-                && getTestRequest().getOperation().getInterface() == modelItem) {
-            return true;
-        } else if (modelItem instanceof Operation && getTestRequest().getOperation() == modelItem) {
-            return true;
-        }
-
-        return false;
     }
 
     public void setRestMethod(RestMethod method) {
@@ -561,12 +310,176 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         getTestRequest().setRestMethod(restMethod);
     }
 
-    public RestTestRequest getTestRequest() {
-        return testRequest;
+    protected RestTestRequest buildTestRequest(boolean forLoadTest) {
+        if (getRestMethod() == null) {
+            return null;
+        }
+        return new RestTestRequest(getRestMethod(), getRequestStepConfig().getRestRequest(), this, forLoadTest);
     }
 
-    public Interface getInterface() {
-        return getResource() == null ? null : getResource().getInterface();
+    private void initRestTestRequest() {
+        if (getRestMethod() == null) {
+            setDisabled(true);
+        }
+        else {
+            getTestRequest().setRestMethod(getRestMethod());
+        }
+    }
+
+    protected String createDefaultRawResponseContent() {
+        return getResource() == null ? null : getResource().createResponse(true);
+    }
+
+    protected String createDefaultResponseXmlContent() {
+        return getResource() == null ? null : getResource().createResponse(true);
+    }
+
+    protected String createDefaultRequestContent() {
+        return getResource() == null ? null : getResource().createRequest(true);
+    }
+
+    private RestResource findRestResource() {
+        Project project = ModelSupport.getModelItemProject(this);
+        for (Interface iface : project.getInterfaceList()) {
+            if (iface.getName().equals(getRequestStepConfig().getService()) && iface instanceof RestService) {
+                RestService restService = (RestService)iface;
+                // get all resources with the configured path
+                for (RestResource resource : restService.getResourcesByFullPath(getRequestStepConfig().getResourcePath())) {
+                    // try to find matching method
+                    if (getWsdlModelItemByName(resource.getRestMethodList(), getRequestStepConfig().getMethodName()) != null) {
+                        return resource;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private RestMethod findRestMethod() {
+        if (!restRequestStepConfig.isSetMethodName()) {
+            RestRequestConverter.updateRestTestRequest(this);
+
+            // Must be an old version RestRequest...
+            if (getResource() == null) {
+                restResource = RestRequestConverter.resolveResource(this);
+                if (restResource == null) {
+                    return null;
+                }
+                getRequestStepConfig().setService(restResource.getInterface().getName());
+                getRequestStepConfig().setResourcePath(restResource.getFullPath());
+            }
+            RestMethod method = RestRequestConverter.getMethod(
+                getResource(),
+                getRequestStepConfig().getRestRequest().selectAttribute(null, "method").newCursor().getTextValue(),
+                getRequestStepConfig().getRestRequest().getName()
+            );
+            restRequestStepConfig.setMethodName(method.getName());
+            return method;
+        }
+        else if (getResource() == null) {
+            restResource = RestRequestConverter.resolveResource(this);
+            if (restResource == null) {
+                return null;
+            }
+            getRequestStepConfig().setService(restResource.getInterface().getName());
+            getRequestStepConfig().setResourcePath(restResource.getFullPath());
+
+            RestMethod m = (RestMethod)getWsdlModelItemByName(getResource().getRestMethodList(), getRequestStepConfig().getMethodName());
+            if (m == null) {
+                String mn = null;
+                while (mn == null) {
+                    mn = UISupport.prompt("Select method in REST Resource [" + restResource.getName() + "]",
+                                          "Missing REST Method",
+                                          ModelSupport.getNames(restResource.getRestMethodList())
+                    );
+                }
+
+                restRequestStepConfig.setMethodName(mn);
+                return restResource.getRestMethodByName(mn);
+            }
+        }
+
+        return (RestMethod)getWsdlModelItemByName(getResource().getRestMethodList(), getRequestStepConfig().getMethodName());
+    }
+
+    public Operation getOperation() {
+        return getResource();
+    }
+
+    public void propertyChange(PropertyChangeEvent event) {
+
+        // TODO Some of these properties should be pulled up as they are common for may steps
+        // FIXME The property names shouldn't be hardcoded
+        if (event.getSource() == testRequest) {
+            if (event.getNewValue() instanceof SinglePartHttpResponse) {
+                SinglePartHttpResponse response = (SinglePartHttpResponse)event.getNewValue();
+                firePropertyValueChanged("Response", String.valueOf(response), null);
+                String XMLContent = response.getContentAsXml();
+                // FIXME The value should not be hard coded
+                firePropertyValueChanged("ResponseAsXml", null, XMLContent);
+            }
+
+            if (event.getPropertyName().equals("domain")) {
+                delegatePropertyChange("Domain", event);
+            }
+            else if (event.getPropertyName().equals("password")) {
+                delegatePropertyChange("Password", event);
+            }
+            else if (event.getPropertyName().equals("username")) {
+                delegatePropertyChange("Username", event);
+            }
+            else if (event.getPropertyName().equals("endpoint")) {
+                delegatePropertyChange("Endpoint", event);
+            }
+        }
+
+        if (event.getSource() == restResource) {
+            if (event.getPropertyName().equals(RestResource.PATH_PROPERTY)) {
+                getRequestStepConfig().setResourcePath(restResource.getFullPath());
+            }
+            else if (event.getPropertyName().equals("childMethods") && restMethod == event.getOldValue()) {
+                // TODO: Convert to HttpTestRequestStep
+                log.debug("Removing test step due to removed Rest method");
+                getTestCase().removeTestStep(this);
+            }
+        }
+        else if (restResource != null && event.getSource() == restResource.getInterface()) {
+            if (event.getPropertyName().equals(NAME_PROPERTY)) {
+                getRequestStepConfig().setService((String)event.getNewValue());
+            }
+        }
+        else if (event.getSource() == restMethod) {
+            if (event.getPropertyName().equals(NAME_PROPERTY)) {
+                getRequestStepConfig().setMethodName((String)event.getNewValue());
+            }
+        }
+        if (event.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY) || event.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
+            if (getTestRequest().getResponse() != null) {
+                getTestRequest().assertResponse(new WsdlTestRunContext(this));
+            }
+        }
+        else {
+            if (event.getSource() == testRequest && event.getPropertyName().equals(NAME_PROPERTY)) {
+                if (!getName().equals(event.getNewValue())) {
+                    setName((String)event.getNewValue());
+                }
+            }
+            else if (event.getSource() == testRequest && event.getPropertyName().equals("restMethod")) {
+                refreshRequestProperties();
+            }
+
+            notifyPropertyChanged(event.getPropertyName(), event.getOldValue(), event.getNewValue());
+        }
+
+        // TODO copy from HttpTestRequestStep super.propertyChange( evt );
+    }
+
+    private void delegatePropertyChange(String customPropertyname, PropertyChangeEvent event) {
+        firePropertyValueChanged(customPropertyname, String.valueOf(event.getOldValue()), String.valueOf(event.getNewValue()));
+    }
+
+    public RestTestRequest getTestRequest() {
+        return testRequest;
     }
 
     @Override
@@ -574,8 +487,30 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         return testRequest == null ? null : testRequest.getIcon();
     }
 
-    public TestStep getTestStep() {
-        return this;
+    @Override
+    public String getDescription() {
+        return testRequest == null ? "<missing>" : testRequest.getDescription();
+    }
+
+    @Override
+    public void release() {
+        super.release();
+
+        if (restResource != null) {
+            restResource.removePropertyChangeListener(this);
+            restResource.getService().getProject().removeProjectListener(projectListener);
+            restResource.getService().removeInterfaceListener(interfaceListener);
+            restResource.getService().removePropertyChangeListener(this);
+        }
+
+        if (restMethod != null) {
+            restMethod.removePropertyChangeListener(this);
+        }
+
+        if (testRequest != null) {
+            testRequest.removePropertyChangeListener(this);
+            testRequest.release();
+        }
     }
 
     @Override
@@ -583,56 +518,63 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         super.resolve(context);
 
         if (getRestMethod() == null) {
-            if (context.hasThisModelItem(this, "Missing REST Method in Project", getRequestStepConfig().getService()
-                    + "/" + getRequestStepConfig().getMethodName())) {
+            if (context.hasThisModelItem(this, "Missing REST Method in Project", getRequestStepConfig().getService() + "/" + getRequestStepConfig().getMethodName())) {
                 return;
             }
-            context.addPathToResolve(this, "Missing REST Method in Project",
-                    getRequestStepConfig().getService() + "/" + getRequestStepConfig().getMethodName()).addResolvers(
-                    new RemoveTestStepResolver(this), new ImportInterfaceResolver(this) {
-                        @Override
-                        protected boolean update() {
-                            RestMethod restMethod = findRestMethod();
-                            if (restMethod == null) {
-                                return false;
-                            }
+            context.addPathToResolve(this, "Missing REST Method in Project", getRequestStepConfig().getService() + "/" + getRequestStepConfig().getMethodName())
+                   .addResolvers(new RemoveTestStepResolver(this), new ImportInterfaceResolver(this) {
+                       @Override
+                       protected boolean update() {
+                           RestMethod restMethod = findRestMethod();
+                           if (restMethod == null) {
+                               return false;
+                           }
 
-                            setRestMethod(restMethod);
-                            initRestTestRequest();
-                            setDisabled(false);
-                            return true;
-                        }
+                           setRestMethod(restMethod);
+                           initRestTestRequest();
+                           setDisabled(false);
+                           return true;
+                       }
+                   }, new ChangeRestMethodResolver(this) {
+                       @Override
+                       public boolean update() {
+                           RestMethod restMethod = getSelectedRestMethod();
+                           if (restMethod == null) {
+                               return false;
+                           }
 
-                    }, new ChangeRestMethodResolver(this) {
-                        @Override
-                        public boolean update() {
-                            RestMethod restMethod = getSelectedRestMethod();
-                            if (restMethod == null) {
-                                return false;
-                            }
+                           setRestMethod(restMethod);
+                           initRestTestRequest();
+                           setDisabled(false);
+                           return true;
+                       }
 
-                            setRestMethod(restMethod);
-                            initRestTestRequest();
-                            setDisabled(false);
-                            return true;
-                        }
-
-                        @Override
-                        protected Interface[] getInterfaces(WsdlProject project) {
-                            List<RestService> interfaces = ModelSupport.getChildren(project, RestService.class);
-                            return interfaces.toArray(new Interface[interfaces.size()]);
-                        }
-                    }
-            );
-        } else {
+                       @Override
+                       protected Interface[] getInterfaces(WsdlProject project) {
+                           List<RestService> interfaces = ModelSupport.getChildren(project, RestService.class);
+                           return interfaces.toArray(new Interface[interfaces.size()]);
+                       }
+                   });
+        }
+        else {
             getRestMethod().resolve(context);
-            if (context.hasThisModelItem(this, "Missing REST Method in Project", getRequestStepConfig().getService()
-                    + "/" + getRequestStepConfig().getMethodName())) {
-                @SuppressWarnings("rawtypes")
-                PathToResolve path = context.getPath(this, "Missing REST Method in Project", getRequestStepConfig()
-                        .getService() + "/" + getRequestStepConfig().getMethodName());
+            if (context.hasThisModelItem(this, "Missing REST Method in Project", getRequestStepConfig().getService() + "/" + getRequestStepConfig().getMethodName())) {
+                @SuppressWarnings("rawtypes") PathToResolve path = context.getPath(
+                    this,
+                    "Missing REST Method in Project",
+                    getRequestStepConfig().getService() + "/" + getRequestStepConfig().getMethodName()
+                );
                 path.setSolved(true);
             }
+        }
+    }
+
+    @Override
+    public void beforeSave() {
+        super.beforeSave();
+
+        if (testRequest != null) {
+            testRequest.beforeSave();
         }
     }
 
@@ -647,50 +589,40 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         }
     }
 
+    @Override
+    public void resetConfigOnMove(TestStepConfig config) {
+        super.resetConfigOnMove(config);
+
+        restRequestStepConfig = (RestRequestStepConfig)config.getConfig().changeType(RestRequestStepConfig.type);
+        testRequest.updateConfig(restRequestStepConfig.getRestRequest());
+    }
+
+    @Override
+    public boolean dependsOn(AbstractWsdlModelItem<?> modelItem) {
+        if (modelItem instanceof Interface && getTestRequest().getOperation() != null && getTestRequest().getOperation().getInterface() == modelItem) {
+            return true;
+        }
+        else return modelItem instanceof Operation && getTestRequest().getOperation() == modelItem;
+    }
+
+    @Override
+    public Collection<Interface> getRequiredInterfaces() {
+        ArrayList<Interface> result = new ArrayList<Interface>();
+        result.add(findRestResource().getInterface());
+        return result;
+    }
+
+    @Override
+    public String getDefaultSourcePropertyName() {
+        HttpResponse response = testRequest.getResponse();
+        return response != null && seemsToBeJsonContentType(response.getContentType()) ? RESPONSE : RESPONSE_AS_XML;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public List<? extends ModelItem> getChildren() {
         return testRequest == null ? Collections.EMPTY_LIST : testRequest.getAssertionList();
     }
-
-	/*
-     * @SuppressWarnings("unchecked") public void resolve(ResolveContext<?>
-	 * context) { super.resolve(context);
-	 * 
-	 * if (getResource() == null) { if (context.hasThisModelItem(this,
-	 * "Missing REST Resource in Project", getRequestStepConfig() .getService() +
-	 * "/" + getRequestStepConfig().getResourcePath())) return;
-	 * context.addPathToResolve( this, "Missing REST Resource in Project",
-	 * getRequestStepConfig().getService() + "/" +
-	 * getRequestStepConfig().getResourcePath()) .addResolvers(new
-	 * RemoveTestStepResolver(this), new ImportInterfaceResolver(this) {
-	 * 
-	 * @Override protected boolean update() { RestResource restResource =
-	 * findRestResource(); if (restResource == null) return false;
-	 * 
-	 * setResource(restResource); initRestTestRequest(); setDisabled(false);
-	 * return true; }
-	 * 
-	 * }, new ChangeOperationResolver(this, "Resource") {
-	 * 
-	 * @Override public boolean update() { RestResource restResource =
-	 * (RestResource) getSelectedOperation(); if (restResource == null) return
-	 * false;
-	 * 
-	 * setResource(restResource); initRestTestRequest(); setDisabled(false);
-	 * return true; }
-	 * 
-	 * protected Interface[] getInterfaces( WsdlProject project) {
-	 * List<RestService> interfaces = ModelSupport .getChildren(project,
-	 * RestService.class); return interfaces .toArray(new Interface[interfaces
-	 * .size()]); } }); } else { getResource().resolve(context); if
-	 * (context.hasThisModelItem(this, "Missing REST Resource in Project",
-	 * getRequestStepConfig() .getService() + "/" +
-	 * getRequestStepConfig().getResourcePath())) { PathToResolve path =
-	 * context.getPath(this, "Missing REST Resource in Project",
-	 * getRequestStepConfig().getService() + "/" +
-	 * getRequestStepConfig().getResourcePath()); path.setSolved(true); } } }
-	 */
 
     public PropertyExpansion[] getPropertyExpansions() {
         PropertyExpansionsResult result = new PropertyExpansionsResult(this, testRequest);
@@ -704,8 +636,7 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         StringToStringsMap requestHeaders = testRequest.getRequestHeaders();
         for (Map.Entry<String, List<String>> headerEntry : requestHeaders.entrySet()) {
             for (String value : headerEntry.getValue()) {
-                result.extractAndAddAll(new HttpTestRequestStep.RequestHeaderHolder(headerEntry.getKey(), value,
-                        testRequest), "value");
+                result.extractAndAddAll(new HttpTestRequestStep.RequestHeaderHolder(headerEntry.getKey(), value, testRequest), "value");
             }
         }
 
@@ -721,12 +652,67 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         return result;
     }
 
+    /*
+     * @SuppressWarnings("unchecked") public void resolve(ResolveContext<?>
+     * context) { super.resolve(context);
+     *
+     * if (getResource() == null) { if (context.hasThisModelItem(this,
+     * "Missing REST Resource in Project", getRequestStepConfig() .getService() +
+     * "/" + getRequestStepConfig().getResourcePath())) return;
+     * context.addPathToResolve( this, "Missing REST Resource in Project",
+     * getRequestStepConfig().getService() + "/" +
+     * getRequestStepConfig().getResourcePath()) .addResolvers(new
+     * RemoveTestStepResolver(this), new ImportInterfaceResolver(this) {
+     *
+     * @Override protected boolean update() { RestResource restResource =
+     * findRestResource(); if (restResource == null) return false;
+     *
+     * setResource(restResource); initRestTestRequest(); setDisabled(false);
+     * return true; }
+     *
+     * }, new ChangeOperationResolver(this, "Resource") {
+     *
+     * @Override public boolean update() { RestResource restResource =
+     * (RestResource) getSelectedOperation(); if (restResource == null) return
+     * false;
+     *
+     * setResource(restResource); initRestTestRequest(); setDisabled(false);
+     * return true; }
+     *
+     * protected Interface[] getInterfaces( WsdlProject project) {
+     * List<RestService> interfaces = ModelSupport .getChildren(project,
+     * RestService.class); return interfaces .toArray(new Interface[interfaces
+     * .size()]); } }); } else { getResource().resolve(context); if
+     * (context.hasThisModelItem(this, "Missing REST Resource in Project",
+     * getRequestStepConfig() .getService() + "/" +
+     * getRequestStepConfig().getResourcePath())) { PathToResolve path =
+     * context.getPath(this, "Missing REST Resource in Project",
+     * getRequestStepConfig().getService() + "/" +
+     * getRequestStepConfig().getResourcePath()); path.setSolved(true); } } }
+     */
+
     public void addAssertionsListener(AssertionsListener listener) {
         testRequest.addAssertionsListener(listener);
     }
 
-    public TestAssertion cloneAssertion(TestAssertion source, String name) {
-        return testRequest.cloneAssertion(source, name);
+    public int getAssertionCount() {
+        return testRequest == null ? 0 : testRequest.getAssertionCount();
+    }
+
+    public WsdlMessageAssertion getAssertionAt(int index) {
+        return testRequest.getAssertionAt(index);
+    }
+
+    public void removeAssertionsListener(AssertionsListener listener) {
+        testRequest.removeAssertionsListener(listener);
+    }
+
+    public void removeAssertion(TestAssertion assertion) {
+        testRequest.removeAssertion(assertion);
+    }
+
+    public AssertionStatus getAssertionStatus() {
+        return testRequest.getAssertionStatus();
     }
 
     public String getAssertableContentAsXml() {
@@ -737,55 +723,40 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         return testRequest.getAssertableContent();
     }
 
-    public AssertableType getAssertableType() {
-        return testRequest.getAssertableType();
+    public String getDefaultAssertableContent() {
+        return testRequest.getDefaultAssertableContent();
     }
 
-    public TestAssertion getAssertionByName(String name) {
-        return testRequest.getAssertionByName(name);
+    public AssertableType getAssertableType() {
+        return testRequest.getAssertableType();
     }
 
     public List<TestAssertion> getAssertionList() {
         return testRequest.getAssertionList();
     }
 
-    public AssertionStatus getAssertionStatus() {
-        return testRequest.getAssertionStatus();
+    public TestAssertion getAssertionByName(String name) {
+        return testRequest.getAssertionByName(name);
     }
 
-    public void removeAssertion(TestAssertion assertion) {
-        testRequest.removeAssertion(assertion);
+    public TestStep getTestStep() {
+        return this;
     }
 
-    public void removeAssertionsListener(AssertionsListener listener) {
-        testRequest.removeAssertionsListener(listener);
+    public Interface getInterface() {
+        return getResource() == null ? null : getResource().getInterface();
     }
 
-    public TestAssertion moveAssertion(int ix, int offset) {
-        return testRequest.moveAssertion(ix, offset);
+    public TestAssertion cloneAssertion(TestAssertion source, String name) {
+        return testRequest.cloneAssertion(source, name);
     }
 
     public Map<String, TestAssertion> getAssertions() {
         return testRequest.getAssertions();
     }
 
-    public WsdlMessageAssertion getAssertionAt(int index) {
-        return testRequest.getAssertionAt(index);
-    }
-
-    public int getAssertionCount() {
-        return testRequest == null ? 0 : testRequest.getAssertionCount();
-    }
-
-    public String getDefaultAssertableContent() {
-        return testRequest.getDefaultAssertableContent();
-    }
-
-    @Override
-    public String getDefaultSourcePropertyName() {
-        HttpResponse response = testRequest.getResponse();
-        return response != null && seemsToBeJsonContentType(response.getContentType()) ? WsdlTestStepWithProperties.RESPONSE :
-                WsdlTestStepWithProperties.RESPONSE_AS_XML;
+    public TestAssertion moveAssertion(int ix, int offset) {
+        return testRequest.moveAssertion(ix, offset);
     }
 
     public TestStepResult run(TestCaseRunner runner, TestCaseRunContext runContext) {
@@ -793,7 +764,7 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
 
         try {
             submit = testRequest.submit(runContext, false);
-            HttpResponse response = (HttpResponse) submit.getResponse();
+            HttpResponse response = (HttpResponse)submit.getResponse();
 
             if (submit.getStatus() != Submit.Status.CANCELED) {
                 if (submit.getStatus() == Submit.Status.ERROR) {
@@ -801,12 +772,14 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
                     testStepResult.addMessage(submit.getError().toString());
 
                     testRequest.setResponse(null, runContext);
-                } else if (response == null) {
+                }
+                else if (response == null) {
                     testStepResult.setStatus(TestStepStatus.FAILED);
                     testStepResult.addMessage("Request is missing response");
 
                     testRequest.setResponse(null, runContext);
-                } else {
+                }
+                else {
                     runContext.setProperty(AssertedXPathsContainer.ASSERTEDXPATHSCONTAINER_PROPERTY, testStepResult);
                     testRequest.setResponse(response, runContext);
 
@@ -826,7 +799,8 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
                             break;
                     }
                 }
-            } else {
+            }
+            else {
                 testStepResult.setStatus(TestStepStatus.CANCELED);
                 testStepResult.addMessage("Request was canceled");
             }
@@ -837,13 +811,16 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
                 testStepResult.addProperty("Method", String.valueOf(response.getMethod()));
                 testStepResult.addProperty("StatusCode", String.valueOf(response.getStatusCode()));
                 testStepResult.addProperty("HTTP Version", response.getHttpVersion());
-            } else {
+            }
+            else {
                 testStepResult.setRequestContent(testRequest.getRequestContent());
             }
-        } catch (SubmitException e) {
+        }
+        catch (SubmitException e) {
             testStepResult.setStatus(TestStepStatus.FAILED);
             testStepResult.addMessage("SubmitException: " + e);
-        } finally {
+        }
+        finally {
             submit = null;
         }
 
@@ -860,7 +837,8 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
                     testStepResult.setStatus(TestStepStatus.FAILED);
                     if (getAssertionCount() == 0) {
                         testStepResult.addMessage("Invalid/empty response");
-                    } else {
+                    }
+                    else {
                         for (int c = 0; c < getAssertionCount(); c++) {
                             WsdlMessageAssertion assertion = getAssertionAt(c);
                             AssertionError[] errors = assertion.getErrors();
@@ -885,11 +863,38 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         return testStepResult;
     }
 
+    public class InternalProjectListener extends ProjectListenerAdapter {
+        @Override
+        public void interfaceRemoved(Interface iface) {
+            if (restResource != null && restResource.getInterface().equals(iface)) {
+                log.debug("Removing test step due to removed interface");
+                (getTestCase()).removeTestStep(RestTestRequestStep.this);
+            }
+        }
+    }
+
+    public class InternalInterfaceListener extends InterfaceListenerAdapter {
+        @Override
+        public void operationRemoved(Operation operation) {
+            if (operation == restResource) {
+                log.debug("Removing test step due to removed operation");
+                (getTestCase()).removeTestStep(RestTestRequestStep.this);
+            }
+        }
+
+        @Override
+        public void operationUpdated(Operation operation) {
+            if (operation == restResource) {
+                // requestStepConfig.setResourcePath( operation.get );
+            }
+        }
+    }
+
     private class InternalTestPropertyListener extends TestPropertyListenerAdapter {
         @Override
         public void propertyAdded(String name) {
             requestProperties.put(name, new RestTestStepProperty(name));
-            RestTestRequestStep.this.addProperty(requestProperties.get(name), true);
+            addProperty(requestProperties.get(name), true);
         }
 
         @Override
@@ -975,6 +980,5 @@ public class RestTestRequestStep extends WsdlTestStepWithProperties implements R
         public SchemaType getSchemaType() {
             return getTestRequest().getProperty(propertyName).getSchemaType();
         }
-
     }
 }

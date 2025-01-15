@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support;
@@ -40,14 +40,13 @@ import java.util.List;
  */
 
 public class MessageXmlObject {
-    private XmlObject messageObj;
-    private WsdlContext wsdlContext;
-    private List<MessageXmlPart> messageParts = new ArrayList<MessageXmlPart>();
-
     private final static Logger log = LogManager.getLogger(MessageXmlObject.class);
     private final String messageContent;
-    private WsdlOperation operation;
     private final boolean isRequest;
+    private XmlObject messageObj;
+    private final WsdlContext wsdlContext;
+    private final List<MessageXmlPart> messageParts = new ArrayList<MessageXmlPart>();
+    private final WsdlOperation operation;
 
     public MessageXmlObject(WsdlOperation operation, String messageContent, boolean isRequest) {
         this.messageContent = messageContent;
@@ -59,7 +58,8 @@ public class MessageXmlObject {
     public String getMessageContent() {
         if (messageObj == null) {
             return messageContent;
-        } else {
+        }
+        else {
             for (int c = 0; c < messageParts.size(); c++) {
                 messageParts.get(c).update();
             }
@@ -89,21 +89,24 @@ public class MessageXmlObject {
         }
 
         XmlObject msgXml = getMessageObj();
-        Part[] inputParts = isRequest ? WsdlUtils.getInputParts(bindingOperation) : WsdlUtils
-                .getOutputParts(bindingOperation);
+        Part[] inputParts = isRequest ? WsdlUtils.getInputParts(bindingOperation) : WsdlUtils.getOutputParts(bindingOperation);
         messageParts.clear();
 
         if (WsdlUtils.isRpc(wsdlContext.getDefinition(), bindingOperation)) {
             // get root element
-            XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                    + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';" + "declare namespace ns='"
-                    + WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) + "';" + "$this/env:Envelope/env:Body/ns:"
-                    + bindingOperation.getName());
+            XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                                  wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                  "';" +
+                                                  "declare namespace ns='" +
+                                                  WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) +
+                                                  "';" +
+                                                  "$this/env:Envelope/env:Body/ns:" +
+                                                  bindingOperation.getName());
 
             if (paths.length != 1) {
-                throw new Exception("Missing message wrapper element ["
-                        + WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) + "@" + bindingOperation.getName());
-            } else {
+                throw new Exception("Missing message wrapper element [" + WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) + "@" + bindingOperation.getName());
+            }
+            else {
                 XmlObject wrapper = paths[0];
 
                 for (int i = 0; i < inputParts.length; i++) {
@@ -124,52 +127,61 @@ public class MessageXmlObject {
                             SchemaType type = typeName == null ? null : wsdlContext.getSchemaTypeLoader().findType(typeName);
                             messageParts.add(new MessageXmlPart(children[0], type, part, bindingOperation, isRequest));
                         }
-                    } else if (children.length != 1) {
+                    }
+                    else if (children.length != 1) {
                         log.error("Missing message part [" + part.getName() + "]");
-                    } else {
+                    }
+                    else {
                         QName typeName = part.getTypeName();
                         if (typeName == null) {
                             typeName = partName;
                             SchemaGlobalElement type = wsdlContext.getSchemaTypeLoader().findElement(typeName);
 
                             if (type != null) {
-                                messageParts.add(new MessageXmlPart(children[0], type.getType(), part, bindingOperation,
-                                        isRequest));
-                            } else {
-                                log.error("Missing element [" + typeName + "] in associated schema for part ["
-                                        + part.getName() + "]");
+                                messageParts.add(new MessageXmlPart(children[0], type.getType(), part, bindingOperation, isRequest));
                             }
-                        } else {
+                            else {
+                                log.error("Missing element [" + typeName + "] in associated schema for part [" + part.getName() + "]");
+                            }
+                        }
+                        else {
                             SchemaType type = wsdlContext.getSchemaTypeLoader().findType(typeName);
                             if (type != null) {
                                 messageParts.add(new MessageXmlPart(children[0], type, part, bindingOperation, isRequest));
-                            } else {
-                                log.error("Missing type [" + typeName + "] in associated schema for part [" + part.getName()
-                                        + "]");
+                            }
+                            else {
+                                log.error("Missing type [" + typeName + "] in associated schema for part [" + part.getName() + "]");
                             }
                         }
                     }
                 }
             }
-        } else {
+        }
+        else {
             Part part = inputParts[0];
             QName elementName = part.getElementName();
             if (elementName != null) {
                 // just check for correct message element, other elements are
                 // avoided (should create an error)
-                XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                        + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';" + "declare namespace ns='"
-                        + elementName.getNamespaceURI() + "';" + "$this/env:Envelope/env:Body/ns:"
-                        + elementName.getLocalPart());
+                XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                                      wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                      "';" +
+                                                      "declare namespace ns='" +
+                                                      elementName.getNamespaceURI() +
+                                                      "';" +
+                                                      "$this/env:Envelope/env:Body/ns:" +
+                                                      elementName.getLocalPart());
 
                 if (paths.length == 1) {
                     SchemaGlobalElement elm = wsdlContext.getSchemaTypeLoader().findElement(elementName);
                     if (elm != null) {
                         messageParts.add(new MessageXmlPart(paths[0], elm.getType(), part, bindingOperation, isRequest));
-                    } else {
+                    }
+                    else {
                         throw new Exception("Missing part type in associated schema");
                     }
-                } else {
+                }
+                else {
                     throw new Exception("Missing message part with name [" + elementName + "]");
                 }
             }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.service;
@@ -43,15 +43,19 @@ import java.io.File;
  */
 
 public class Wadl2JavaAction extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "Wadl2JavaAction";
     private static final String PACKAGE = "Package";
     private static final String OUTPUT = "Output Directory";
     private static final String AUTOMATIC_PACKAGE_NAMES = "Automatic Package Names";
     private static final String JAXB_CUSTOMIZATION = "JAXB Customization File(s)";
 
-    public static final String SOAPUI_ACTION_ID = "Wadl2JavaAction";
-
     public Wadl2JavaAction() {
         super("WADL2Java", "Generates java code from WADL");
+    }
+
+    protected StringToStringMap initValues(Interface modelItem, Object param) {
+        StringToStringMap values = super.initValues(modelItem, param);
+        return values;
     }
 
     protected XFormDialog buildDialog(Interface modelItem) {
@@ -63,18 +67,11 @@ public class Wadl2JavaAction extends AbstractToolsAction<Interface> {
         mainForm.addTextField(PACKAGE, "Default Package for generated classes", XForm.FieldType.JAVA_PACKAGE);
 
         mainForm.addCheckBox(AUTOMATIC_PACKAGE_NAMES, "Generates starting point code for a client mainline");
-        mainForm.addTextField(JAXB_CUSTOMIZATION, "Space-separated list of JAXWS or JAXB binding files",
-                XForm.FieldType.TEXT);
+        mainForm.addTextField(JAXB_CUSTOMIZATION, "Space-separated list of JAXWS or JAXB binding files", XForm.FieldType.TEXT);
 
         buildArgsForm(builder, true, "wadl2java");
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.WADL2JAVA_HELP_URL, modelItem),
-                "Specify arguments for reference wadl2java", UISupport.TOOL_ICON);
-    }
-
-    protected StringToStringMap initValues(Interface modelItem, Object param) {
-        StringToStringMap values = super.initValues(modelItem, param);
-        return values;
+        return builder.buildDialog(buildDefaultActions(HelpUrls.WADL2JAVA_HELP_URL, modelItem), "Specify arguments for reference wadl2java", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {
@@ -89,7 +86,7 @@ public class Wadl2JavaAction extends AbstractToolsAction<Interface> {
         builder.command(args.getArgs());
         builder.directory(new File(xfireDir));
 
-        ((RestService) modelItem).getWadlContext().regenerateWadl();
+        ((RestService)modelItem).getWadlContext().regenerateWadl();
 
         toolHost.run(new ProcessToolRunner(builder, "WADL2Java", modelItem, args));
     }
@@ -108,7 +105,7 @@ public class Wadl2JavaAction extends AbstractToolsAction<Interface> {
         builder.addString(JAXB_CUSTOMIZATION, "-c");
 
         addToolArgs(values, builder);
-        String wsdlUrl = getWadlUrl(values, (RestService) modelItem);
+        String wsdlUrl = getWadlUrl(values, (RestService)modelItem);
         if (PathUtils.isFilePath(wsdlUrl)) {
             wsdlUrl = new File(wsdlUrl).toURI().toURL().toString();
         }
@@ -120,7 +117,8 @@ public class Wadl2JavaAction extends AbstractToolsAction<Interface> {
         String expandPath = PathUtils.expandPath(modelItem.getDefinition(), modelItem);
         if (PathUtils.isHttpPath(expandPath) && !modelItem.isGenerated()) {
             return expandPath;
-        } else {
+        }
+        else {
             File tempFile = File.createTempFile("tempdir", null);
             String path = tempFile.getAbsolutePath();
             tempFile.delete();

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.plugins;
@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.Action;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,30 +52,31 @@ import java.util.Set;
 
 public class LoaderBase {
 
-    private static Logger logger = LoggerFactory.getLogger(LoaderBase.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoaderBase.class);
 
     protected SoapUIFactoryRegistry factoryRegistry;
     protected SoapUIActionRegistry actionRegistry;
     protected ListenerRegistry listenerRegistry;
 
-    public LoaderBase(ListenerRegistry listenerRegistry, SoapUIActionRegistry actionRegistry,
-                      SoapUIFactoryRegistry factoryRegistry) {
+    public LoaderBase(
+        ListenerRegistry listenerRegistry, SoapUIActionRegistry actionRegistry, SoapUIFactoryRegistry factoryRegistry
+    ) {
         this.listenerRegistry = listenerRegistry;
         this.actionRegistry = actionRegistry;
         this.factoryRegistry = factoryRegistry;
     }
 
-    protected Collection<? extends SoapUIFactory> loadFactories(Reflections jarFileScanner)
-            throws IllegalAccessException, InstantiationException {
+    protected Collection<? extends SoapUIFactory> loadFactories(Reflections jarFileScanner) throws IllegalAccessException, InstantiationException {
         Collection<SoapUIFactory> factories = new HashSet<SoapUIFactory>();
 
         Set<Class<?>> factoryClasses = jarFileScanner.getTypesAnnotatedWith(FactoryConfiguration.class);
         for (Class<?> factoryClass : factoryClasses) {
             if (!SoapUIFactory.class.isAssignableFrom(factoryClass)) {
-                logger.warn("Class " + factoryClass + " is annotated with @FactoryConfiguration " +
-                        "but does not implement SoapUIFactory");
-            } else
-                factories.add(createFactory((Class<SoapUIFactory>) factoryClass));
+                logger.warn("Class " + factoryClass + " is annotated with @FactoryConfiguration " + "but does not implement SoapUIFactory");
+            }
+            else {
+                factories.add(createFactory((Class<SoapUIFactory>)factoryClass));
+            }
         }
 
         loadAutoFactories(jarFileScanner, factories);
@@ -109,18 +111,19 @@ public class LoaderBase {
             if (clazz.isAnnotation() && clazz.getSimpleName().startsWith("Plugin")) {
                 try {
                     String className = "Auto" + clazz.getSimpleName().substring(6) + "Factory";
-                    Class<? extends SoapUIFactory> factoryClass = (Class<? extends SoapUIFactory>)
-                            Class.forName(clazz.getPackage().getName() + ".factories." + className);
+                    Class<? extends SoapUIFactory> factoryClass = (Class<? extends SoapUIFactory>)Class.forName(clazz.getPackage().getName() + ".factories." + className);
                     factories.addAll(findAutoFactoryObjects(jarFileScanner, clazz, factoryClass));
-                } catch (ClassNotFoundException e) {
+                }
+                catch (ClassNotFoundException e) {
                     SoapUI.logError(e);
                 }
             }
         }
     }
 
-    protected Collection<SoapUIFactory> findAutoFactoryObjects(Reflections jarFileScanner, Class<? extends Annotation> annotationType,
-                                                               Class<? extends SoapUIFactory> factoryClass) {
+    protected Collection<SoapUIFactory> findAutoFactoryObjects(
+        Reflections jarFileScanner, Class<? extends Annotation> annotationType, Class<? extends SoapUIFactory> factoryClass
+    ) {
 
         Collection<SoapUIFactory> factories = new HashSet<SoapUIFactory>();
         Set<Class<?>> objectClasses = jarFileScanner.getTypesAnnotatedWith(annotationType);
@@ -131,7 +134,8 @@ public class LoaderBase {
                 Annotation annotation = clazz.getAnnotation(annotationType);
                 factories.add(createAutoFactory(annotationType, factoryClass, clazz, annotation));
                 SoapUI.log("Added AutoFactory for [" + annotationType.getSimpleName() + "]");
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -139,7 +143,12 @@ public class LoaderBase {
         return factories;
     }
 
-    protected SoapUIFactory createAutoFactory(Class<? extends Annotation> annotationType, Class<? extends SoapUIFactory> factoryClass, Class<?> clazz, Annotation annotation) throws InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchMethodException {
+    protected SoapUIFactory createAutoFactory(
+        Class<? extends Annotation> annotationType,
+        Class<? extends SoapUIFactory> factoryClass,
+        Class<?> clazz,
+        Annotation annotation
+    ) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         return factoryClass.getConstructor(annotationType, clazz.getClass()).newInstance(annotation, clazz);
     }
 
@@ -167,10 +176,10 @@ public class LoaderBase {
         Set<Class<?>> listenerClasses = jarFileScanner.getTypesAnnotatedWith(ListenerConfiguration.class);
         for (Class<?> listenerClass : listenerClasses) {
             if (!SoapUIListener.class.isAssignableFrom(listenerClass)) {
-                logger.warn("Class " + listenerClass + " is annotated with @ListenerConfiguration " +
-                        "but does not implement SoapUIListener");
-            } else {
-                listeners.add(((Class<SoapUIListener>) listenerClass));
+                logger.warn("Class " + listenerClass + " is annotated with @ListenerConfiguration " + "but does not implement SoapUIListener");
+            }
+            else {
+                listeners.add(((Class<SoapUIListener>)listenerClass));
             }
         }
 
@@ -206,8 +215,9 @@ public class LoaderBase {
 
     protected List<? extends SoapUIActionGroup> registerActionGroups(List<SoapUIActionGroup> actionGroups) {
 
-        for (SoapUIActionGroup actionGroup : actionGroups)
+        for (SoapUIActionGroup actionGroup : actionGroups) {
             actionRegistry.addActionGroup(actionGroup);
+        }
 
         return actionGroups;
     }
@@ -217,35 +227,38 @@ public class LoaderBase {
         Set<Class<?>> actionGroupClasses = jarFileScanner.getTypesAnnotatedWith(ActionGroup.class);
         for (Class<?> actionGroupClass : actionGroupClasses) {
             if (!SoapUIActionGroup.class.isAssignableFrom(actionGroupClass)) {
-                logger.warn("Class " + actionGroupClass + " is annotated with @ActionGroup " +
-                        "but does not implement SoapUIActionGroup");
-            } else {
+                logger.warn("Class " + actionGroupClass + " is annotated with @ActionGroup " + "but does not implement SoapUIActionGroup");
+            }
+            else {
                 ActionGroup annotation = actionGroupClass.getAnnotation(ActionGroup.class);
-                SoapUIActionGroup actionGroup = createActionGroup((Class<SoapUIActionGroup>) actionGroupClass);
+                SoapUIActionGroup actionGroup = createActionGroup((Class<SoapUIActionGroup>)actionGroupClass);
 
                 for (ActionMapping mapping : annotation.actions()) {
                     try {
                         if (mapping.type() == ActionMapping.Type.SEPARATOR) {
-                            actionGroup.addMapping(
-                                    SoapUIActionRegistry.SeperatorAction.SOAPUI_ACTION_ID,
-                                    SoapUIActionRegistry.SeperatorAction.getDefaultMapping());
-                        } else if (mapping.type() == ActionMapping.Type.GROUP || mapping.type() == ActionMapping.Type.INSERT) {
+                            actionGroup.addMapping(SoapUIActionRegistry.SeperatorAction.SOAPUI_ACTION_ID, SoapUIActionRegistry.SeperatorAction.getDefaultMapping());
+                        }
+                        else if (mapping.type() == ActionMapping.Type.GROUP || mapping.type() == ActionMapping.Type.INSERT) {
                             SoapUIActionRegistry.SoapUIActionGroupAction actionListAction = new SoapUIActionRegistry.SoapUIActionGroupAction(mapping.name(),
-                                    mapping.description(), mapping.groupId());
+                                                                                                                                             mapping.description(),
+                                                                                                                                             mapping.groupId()
+                            );
                             actionListAction.setInsert(mapping.type() == ActionMapping.Type.INSERT);
                             StandaloneActionMapping actionMapping = new StandaloneActionMapping(actionListAction);
                             actionGroup.addMapping(mapping.groupId(), actionMapping);
-                        } else if (mapping.type() == ActionMapping.Type.ACTION) {
+                        }
+                        else if (mapping.type() == ActionMapping.Type.ACTION) {
                             Class<?> actionClass = mapping.actionClass();
                             String actionId = mapping.actionId();
 
                             if (actionClass != ObjectUtils.Null.class) {
                                 if (SoapUIAction.class.isAssignableFrom(actionClass)) {
-                                    SoapUIAction action = createAction((Class<SoapUIAction>) actionClass);
+                                    SoapUIAction action = createAction((Class<SoapUIAction>)actionClass);
                                     actionRegistry.addAction(action.getId(), action);
                                     actionId = action.getId();
-                                } else if (Action.class.isAssignableFrom(actionClass)) {
-                                    Action swingAction = createObject((Class<Action>) actionClass);
+                                }
+                                else if (Action.class.isAssignableFrom(actionClass)) {
+                                    Action swingAction = createObject((Class<Action>)actionClass);
                                     SoapUIAction action = new WrapperSoapUIAction(swingAction);
                                     actionRegistry.addAction(action.getId(), action);
                                     actionId = action.getId();
@@ -253,8 +266,11 @@ public class LoaderBase {
                             }
 
                             DefaultActionMapping actionMapping = new DefaultActionMapping(actionId,
-                                    mapping.keyStroke(), mapping.iconPath(), actionId.equals(
-                                    annotation.defaultAction()), mapping.param());
+                                                                                          mapping.keyStroke(),
+                                                                                          mapping.iconPath(),
+                                                                                          actionId.equals(annotation.defaultAction()),
+                                                                                          mapping.param()
+                            );
                             actionMapping.setToolbarAction(mapping.isToolbarAction());
                             actionMapping.setToolbarIndex(mapping.toolbarIndex());
                             if (!mapping.name().equals("")) {
@@ -267,7 +283,8 @@ public class LoaderBase {
 
                             actionGroup.addMapping(actionId, actionMapping);
                         }
-                    } catch (Throwable e) {
+                    }
+                    catch (Throwable e) {
                         logger.error("Error adding actionMapping", e);
                     }
                 }
@@ -284,20 +301,20 @@ public class LoaderBase {
         Set<Class<?>> actionClasses = jarFileScanner.getTypesAnnotatedWith(ActionConfiguration.class);
         for (Class<?> actionClass : actionClasses) {
             if (!SoapUIAction.class.isAssignableFrom(actionClass)) {
-                logger.error("Class " + actionClass + " is annotated with @ActionConfiguration " +
-                        "but does not implement SoapUIAction");
-            } else {
-                actions.add(createAction((Class<SoapUIAction>) actionClass));
+                logger.error("Class " + actionClass + " is annotated with @ActionConfiguration " + "but does not implement SoapUIAction");
+            }
+            else {
+                actions.add(createAction((Class<SoapUIAction>)actionClass));
             }
         }
 
         actionClasses = jarFileScanner.getTypesAnnotatedWith(ActionConfigurations.class);
         for (Class<?> actionClass : actionClasses) {
             if (!SoapUIAction.class.isAssignableFrom(actionClass)) {
-                logger.error("Class " + actionClass + " is annotated with @ActionConfigurations " +
-                        "but does not implement SoapUIAction");
-            } else {
-                actions.add(createAction((Class<SoapUIAction>) actionClass));
+                logger.error("Class " + actionClass + " is annotated with @ActionConfigurations " + "but does not implement SoapUIAction");
+            }
+            else {
+                actions.add(createAction((Class<SoapUIAction>)actionClass));
             }
         }
 
@@ -312,7 +329,7 @@ public class LoaderBase {
         return createObject(actionGroupClass);
     }
 
-    protected void configureAction(final SoapUIAction action, ActionConfiguration configuration) {
+    protected void configureAction(SoapUIAction action, ActionConfiguration configuration) {
         String groupId = configuration.actionGroup();
         SoapUIActionGroup targetGroup = actionRegistry.getActionGroup(groupId);
         if (targetGroup == null) {
@@ -320,8 +337,7 @@ public class LoaderBase {
             actionRegistry.addActionGroup(targetGroup);
         }
 
-        DefaultActionMapping mapping = new DefaultActionMapping(action.getId(), configuration.keyStroke(),
-                configuration.iconPath(), configuration.defaultAction(), null);
+        DefaultActionMapping mapping = new DefaultActionMapping(action.getId(), configuration.keyStroke(), configuration.iconPath(), configuration.defaultAction(), null);
         mapping.setName(action.getName());
         mapping.setDescription(configuration.description());
         mapping.setToolbarAction(configuration.isToolbarAction());
@@ -329,22 +345,22 @@ public class LoaderBase {
         int insertIndex = -1;
         if (StringUtils.hasContent(configuration.beforeAction())) {
             insertIndex = targetGroup.getMappingIndex(configuration.beforeAction());
-        } else if (StringUtils.hasContent(configuration.afterAction())) {
+        }
+        else if (StringUtils.hasContent(configuration.afterAction())) {
             insertIndex = targetGroup.getMappingIndex(configuration.afterAction()) + 1;
         }
 
         if (configuration.separatorBefore()) {
-            targetGroup.addMapping(SoapUIActionRegistry.SeperatorAction.SOAPUI_ACTION_ID,
-                    insertIndex++, SoapUIActionRegistry.SeperatorAction.getDefaultMapping());
+            targetGroup.addMapping(SoapUIActionRegistry.SeperatorAction.SOAPUI_ACTION_ID, insertIndex++, SoapUIActionRegistry.SeperatorAction.getDefaultMapping());
         }
 
         targetGroup.addMapping(action.getId(), insertIndex, mapping);
 
         if (configuration.separatorAfter()) {
-            targetGroup.addMapping(SoapUIActionRegistry.SeperatorAction.SOAPUI_ACTION_ID,
-                    ++insertIndex, SoapUIActionRegistry.SeperatorAction.getDefaultMapping());
+            targetGroup.addMapping(SoapUIActionRegistry.SeperatorAction.SOAPUI_ACTION_ID, ++insertIndex, SoapUIActionRegistry.SeperatorAction.getDefaultMapping());
         }
     }
+
     protected void unregisterListeners(List<Class<? extends SoapUIListener>> listeners) {
         for (Class<? extends SoapUIListener> listenerClass : listeners) {
             for (Class<?> implementedInterface : listenerClass.getInterfaces()) {
@@ -380,7 +396,8 @@ public class LoaderBase {
         public boolean acceptsInput(String file) {
             if (file.endsWith(".groovy")) {
                 return true;
-            } else {
+            }
+            else {
                 return super.acceptsInput(file);
             }
         }
@@ -399,8 +416,9 @@ public class LoaderBase {
         public Class getOfCreateClassObject(Vfs.File file) throws Exception {
             if (file.getName().endsWith(".groovy")) {
                 return jarClassLoader.loadScriptClass(file.getRelativePath());
-            } else {
-                return super.getOfCreateClassObject(file, jarClassLoader);
+            }
+            else {
+                return getOfCreateClassObject(file, jarClassLoader);
             }
         }
     }

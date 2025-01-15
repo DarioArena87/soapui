@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.ui.navigator;
@@ -31,16 +31,7 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.swing.MenuBuilderHelper;
 import com.eviware.soapui.ui.navigator.state.NavigatorNodesExpandStateEngine;
 
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
-import javax.swing.JTree;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
+import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -48,8 +39,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -69,12 +59,11 @@ import java.util.Set;
 
 public class Navigator extends JPanel {
     public static final String NAVIGATOR = "navigator";
-    private Workspace workspace;
+    private final Workspace workspace;
     private JTree mainTree;
     private SoapUITreeModel treeModel;
-    private Set<NavigatorListener> listeners = new HashSet<NavigatorListener>();
+    private final Set<NavigatorListener> listeners = new HashSet<NavigatorListener>();
     private NavigatorNodesExpandStateEngine navigatorNodesExpandStateEngine;
-
 
     public Navigator(Workspace workspace) {
         super(new BorderLayout());
@@ -134,7 +123,7 @@ public class Navigator extends JPanel {
             return null;
         }
 
-        return ((ProjectTreeNode) node).getProject();
+        return ((ProjectTreeNode)node).getProject();
     }
 
     public void addNavigatorListener(NavigatorListener listener) {
@@ -166,7 +155,15 @@ public class Navigator extends JPanel {
             return null;
         }
 
-        return ((SoapUITreeNode) path.getLastPathComponent()).getModelItem();
+        return ((SoapUITreeNode)path.getLastPathComponent()).getModelItem();
+    }
+
+    public boolean isVisible(TreePath path) {
+        return mainTree.isVisible(path);
+    }
+
+    public boolean isExpanded(TreePath path) {
+        return mainTree.isExpanded(path);
     }
 
     private final class TreeKeyListener extends KeyAdapter {
@@ -177,7 +174,7 @@ public class Navigator extends JPanel {
             }
 
             if (mainTree.getSelectionCount() == 1) {
-                SoapUITreeNode lastPathComponent = (SoapUITreeNode) selectionPath.getLastPathComponent();
+                SoapUITreeNode lastPathComponent = (SoapUITreeNode)selectionPath.getLastPathComponent();
                 ActionList actions = lastPathComponent.getActions();
                 if (actions != null) {
                     actions.dispatchKeyEvent(e);
@@ -188,7 +185,8 @@ public class Navigator extends JPanel {
                     if (ks.equals(UISupport.getKeyStroke("alt C"))) {
                         mainTree.collapsePath(selectionPath);
                         e.consume();
-                    } else if (ks.equals(UISupport.getKeyStroke("alt E"))) {
+                    }
+                    else if (ks.equals(UISupport.getKeyStroke("alt E"))) {
                         mainTree.collapsePath(selectionPath);
                         int row = mainTree.getSelectionRows()[0];
                         TreePath nextPath = mainTree.getPathForRow(row + 1);
@@ -202,17 +200,17 @@ public class Navigator extends JPanel {
                         e.consume();
                     }
                 }
-            } else {
+            }
+            else {
                 TreePath[] selectionPaths = mainTree.getSelectionPaths();
                 List<ModelItem> targets = new ArrayList<ModelItem>();
                 for (TreePath treePath : selectionPaths) {
-                    SoapUITreeNode node = (SoapUITreeNode) treePath.getLastPathComponent();
+                    SoapUITreeNode node = (SoapUITreeNode)treePath.getLastPathComponent();
                     targets.add(node.getModelItem());
                 }
 
                 if (targets.size() > 0) {
-                    ActionList actions = ActionListBuilder
-                            .buildMultiActions(targets.toArray(new ModelItem[targets.size()]));
+                    ActionList actions = ActionListBuilder.buildMultiActions(targets.toArray(new ModelItem[targets.size()]));
                     if (actions.getActionCount() > 0) {
                         actions.dispatchKeyEvent(e);
                     }
@@ -225,14 +223,13 @@ public class Navigator extends JPanel {
         public void valueChanged(TreeSelectionEvent e) {
             Object obj = e.getPath().getLastPathComponent();
             if (obj instanceof SoapUITreeNode) {
-                SoapUITreeNode treeNode = (SoapUITreeNode) obj;
+                SoapUITreeNode treeNode = (SoapUITreeNode)obj;
                 MenuBuilderHelper.buildTreeNodeMenu(treeNode);
                 if (!listeners.isEmpty()) {
                     TreePath newPath = e.getNewLeadSelectionPath();
                     NavigatorListener[] array = listeners.toArray(new NavigatorListener[listeners.size()]);
                     for (NavigatorListener listener : array) {
                         listener.nodeSelected(newPath == null ? null : treeNode);
-
                     }
                 }
             }
@@ -240,6 +237,118 @@ public class Navigator extends JPanel {
     }
 
     public class TreeMouseListener extends MouseAdapter {
+        private ActionList actions;
+
+        public void mouseClicked(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showPopup(e);
+            }
+            else if (e.getClickCount() < 2) {
+                return;
+            }
+            if (mainTree.getSelectionCount() == 1) {
+                int row = mainTree.getRowForLocation(e.getX(), e.getY());
+                TreePath path = mainTree.getSelectionPath();
+                if (path == null && row == -1) {
+                    return;
+                }
+
+                if (path == null || mainTree.getRowForPath(path) != row) {
+                    mainTree.setSelectionRow(row);
+                }
+
+                SoapUITreeNode node = (SoapUITreeNode)path.getLastPathComponent();
+                actions = node.getActions();
+                if (actions != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            if (actions != null) {
+                                actions.performDefaultAction(new ActionEvent(mainTree, 0, null));
+                                actions = null;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showPopup(e);
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                showPopup(e);
+            }
+        }
+
+        private void showToolTipLessPopupMenu(JPopupMenu pm, int x, int y) {
+            pm.addPopupMenuListener(new PopupMenuListener() {
+
+                @Override
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                    ToolTipManager.sharedInstance().setEnabled(false);
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    ToolTipManager.sharedInstance().setEnabled(true);
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                    ToolTipManager.sharedInstance().setEnabled(true);
+                }
+            });
+            pm.show(mainTree, x, y);
+        }
+
+        private void showPopup(MouseEvent e) {
+            if (mainTree.getSelectionCount() < 2) {
+                TreePath path = mainTree.getPathForLocation((int)e.getPoint().getX(), (int)e.getPoint().getY());
+                if (path == null) {
+                    int row = (int)e.getPoint().getY() / mainTree.getRowHeight();
+                    if (row != -1) {
+                        JPopupMenu collapsePopup = new JPopupMenu();
+                        collapsePopup.add("Collapse").addActionListener(new CollapseRowAction(row));
+                        collapsePopup.add("Expand").addActionListener(new ExpandRowAction(row));
+                        showToolTipLessPopupMenu(collapsePopup, e.getX(), e.getY());
+                    }
+
+                    return;
+                }
+                SoapUITreeNode node = (SoapUITreeNode)path.getLastPathComponent();
+
+                JPopupMenu popupMenu = node.getPopup();
+                if (popupMenu == null) {
+                    return;
+                }
+
+                mainTree.setSelectionPath(path);
+
+                showToolTipLessPopupMenu(popupMenu, e.getX(), e.getY());
+            }
+            else {
+                TreePath[] selectionPaths = mainTree.getSelectionPaths();
+                List<ModelItem> targets = new ArrayList<ModelItem>();
+                for (TreePath treePath : selectionPaths) {
+                    SoapUITreeNode node = (SoapUITreeNode)treePath.getLastPathComponent();
+                    targets.add(node.getModelItem());
+                }
+
+                if (targets.size() > 0) {
+                    ActionList actions = ActionListBuilder.buildMultiActions(targets.toArray(new ModelItem[targets.size()]));
+                    if (actions.getActionCount() > 0) {
+                        JPopupMenu popup = new JPopupMenu();
+                        ActionSupport.addActions(actions, popup);
+                        showToolTipLessPopupMenu(popup, e.getX(), e.getY());
+                    }
+                }
+            }
+        }
+
         private final class CollapseRowAction extends AbstractAction {
             private final int row;
 
@@ -296,127 +405,7 @@ public class Navigator extends JPanel {
                     }
                 }
             }
-
         }
-
-        private ActionList actions;
-
-        public void mouseClicked(MouseEvent e) {
-            if (e.isPopupTrigger()) {
-                showPopup(e);
-            } else if (e.getClickCount() < 2) {
-                return;
-            }
-            if (mainTree.getSelectionCount() == 1) {
-                int row = mainTree.getRowForLocation(e.getX(), e.getY());
-                TreePath path = mainTree.getSelectionPath();
-                if (path == null && row == -1) {
-                    return;
-                }
-
-                if (path == null || mainTree.getRowForPath(path) != row) {
-                    mainTree.setSelectionRow(row);
-                }
-
-                SoapUITreeNode node = (SoapUITreeNode) path.getLastPathComponent();
-                actions = node.getActions();
-                if (actions != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            if (actions != null) {
-                                actions.performDefaultAction(new ActionEvent(mainTree, 0, null));
-                                actions = null;
-                            }
-                        }
-                    });
-                }
-            }
-        }
-
-        public void mousePressed(MouseEvent e) {
-            if (e.isPopupTrigger()) {
-                showPopup(e);
-            }
-        }
-
-        public void mouseReleased(MouseEvent e) {
-            if (e.isPopupTrigger()) {
-                showPopup(e);
-            }
-        }
-
-        private void showToolTipLessPopupMenu(JPopupMenu pm, int x, int y) {
-            pm.addPopupMenuListener(new PopupMenuListener() {
-
-                @Override
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                    ToolTipManager.sharedInstance().setEnabled(true);
-                }
-
-                @Override
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                    ToolTipManager.sharedInstance().setEnabled(true);
-                }
-
-                @Override
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                    ToolTipManager.sharedInstance().setEnabled(false);
-                }
-            });
-            pm.show(mainTree, x, y);
-        }
-
-        private void showPopup(MouseEvent e) {
-            if (mainTree.getSelectionCount() < 2) {
-                TreePath path = mainTree.getPathForLocation((int) e.getPoint().getX(), (int) e.getPoint().getY());
-                if (path == null) {
-                    int row = (int) e.getPoint().getY() / mainTree.getRowHeight();
-                    if (row != -1) {
-                        JPopupMenu collapsePopup = new JPopupMenu();
-                        collapsePopup.add("Collapse").addActionListener(new CollapseRowAction(row));
-                        collapsePopup.add("Expand").addActionListener(new ExpandRowAction(row));
-                        showToolTipLessPopupMenu(collapsePopup, e.getX(), e.getY());
-                    }
-
-                    return;
-                }
-                SoapUITreeNode node = (SoapUITreeNode) path.getLastPathComponent();
-
-                JPopupMenu popupMenu = node.getPopup();
-                if (popupMenu == null) {
-                    return;
-                }
-
-                mainTree.setSelectionPath(path);
-
-                showToolTipLessPopupMenu(popupMenu, e.getX(), e.getY());
-            } else {
-                TreePath[] selectionPaths = mainTree.getSelectionPaths();
-                List<ModelItem> targets = new ArrayList<ModelItem>();
-                for (TreePath treePath : selectionPaths) {
-                    SoapUITreeNode node = (SoapUITreeNode) treePath.getLastPathComponent();
-                    targets.add(node.getModelItem());
-                }
-
-                if (targets.size() > 0) {
-                    ActionList actions = ActionListBuilder
-                            .buildMultiActions(targets.toArray(new ModelItem[targets.size()]));
-                    if (actions.getActionCount() > 0) {
-                        JPopupMenu popup = new JPopupMenu();
-                        ActionSupport.addActions(actions, popup);
-                        showToolTipLessPopupMenu(popup, e.getX(), e.getY());
-                    }
-                }
-            }
-        }
-    }
-
-    public boolean isVisible(TreePath path) {
-        return mainTree.isVisible(path);
-    }
-
-    public boolean isExpanded(TreePath path) {
-        return mainTree.isExpanded(path);
     }
 
     private class TogglePropertiesAction extends AbstractAction {

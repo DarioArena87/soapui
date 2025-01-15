@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema;
@@ -39,12 +39,12 @@ import java.util.Map;
  * @author Dain Nilsson
  */
 public class Schema {
-    private SchemaSystem schemaSystem;
-    private String namespace;
-    private Map<String, String> prefixes;
-    private Map<String, ComplexType> types;
-    private List<Particle> particles;
-    private EmptyType empty = new EmptyType(this);
+    private final SchemaSystem schemaSystem;
+    private final String namespace;
+    private final Map<String, String> prefixes;
+    private final Map<String, ComplexType> types;
+    private final List<Particle> particles;
+    private final EmptyType empty = new EmptyType(this);
 
     /**
      * Constructs a blank new Schema for the given namespace in the given
@@ -182,8 +182,7 @@ public class Schema {
     }
 
     public String toString() {
-        StringBuilder s = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\" ?>" + "<"
-                + getPrefixForNamespace(Settings.xsdns) + ":schema ");
+        StringBuilder s = new StringBuilder("<?xml version=\"1.0\" encoding=\"utf-8\" ?>" + "<" + getPrefixForNamespace(Settings.xsdns) + ":schema ");
 
         if (StringUtils.hasContent(namespace)) {
             s.append("targetNamespace=\"" + namespace + "\" " + "xmlns=\"" + namespace + "\" ");
@@ -217,10 +216,10 @@ public class Schema {
         XmlCursor cursor = context.getCursor();
         Particle root = getParticle(cursor.getName().getLocalPart());
         if (root == null) {
-            if (context.getHandler().callback(Event.CREATION, ConflictHandler.Type.ELEMENT, cursor.getName(),
-                    "/" + cursor.getName().getLocalPart(), "Undeclared root element.")) {
+            if (context.getHandler().callback(Event.CREATION, ConflictHandler.Type.ELEMENT, cursor.getName(), "/" + cursor.getName().getLocalPart(), "Undeclared root element.")) {
                 root = newElement(cursor.getName().getLocalPart());
-            } else {
+            }
+            else {
                 throw new XmlException("Illegal root element");
             }
         }

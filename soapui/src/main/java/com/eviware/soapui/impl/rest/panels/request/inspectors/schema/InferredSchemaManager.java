@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.inspectors.schema;
@@ -32,10 +32,10 @@ import java.util.Map;
  * @author Dain.Nilsson
  */
 public class InferredSchemaManager {
-    private static Map<RestService, InferredSchema> schemas;
-    private static Map<RestService, PropertyChangeSupport> propertyChangeSupports;
-    private static Map<String, String> filenames;
-    private static Map<String, String> rFilenames;
+    private static final Map<RestService, InferredSchema> schemas;
+    private static final Map<RestService, PropertyChangeSupport> propertyChangeSupports;
+    private static final Map<String, String> filenames;
+    private static final Map<String, String> rFilenames;
 
     static {
         schemas = new HashMap<RestService, InferredSchema>();
@@ -61,25 +61,19 @@ public class InferredSchemaManager {
                     }
                 }
             }
-        } else {
+        }
+        else {
             return rFilenames.get(filename);
         }
         return null;
     }
 
-    private static String generateFilename(String namespace) {
-        if (namespace.equals("")) {
-            return "unnamed.xsd";
-        }
-        return namespace.replaceAll("[^a-zA-Z0-9]", "") + ".xsd";
-    }
-
     public static InferredSchema getInferredSchema(RestService service) {
         if (!schemas.containsKey(service)) {
             try {
-                schemas.put(service,
-                        InferredSchema.Factory.parse(new ByteArrayInputStream(service.getInferredSchema().getBytes())));
-            } catch (Exception e) {
+                schemas.put(service, InferredSchema.Factory.parse(new ByteArrayInputStream(service.getInferredSchema().getBytes())));
+            }
+            catch (Exception e) {
                 schemas.put(service, InferredSchema.Factory.newInstance());
             }
             propertyChangeSupports.put(service, new PropertyChangeSupport(schemas.get(service)));
@@ -94,7 +88,8 @@ public class InferredSchemaManager {
             try {
                 schemas.get(service).save(out);
                 service.setInferredSchema(out.toString());
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
             propertyChangeSupports.get(service).firePropertyChange("inferredSchema", old, out.toString());
@@ -108,9 +103,7 @@ public class InferredSchemaManager {
 
     public static void delete(RestService service) {
         service.setInferredSchema(null);
-        if (schemas.containsKey(service)) {
-            schemas.remove(service);
-        }
+        schemas.remove(service);
         propertyChangeSupports.get(service).firePropertyChange("inferredSchema", service.getInferredSchema(), null);
     }
 
@@ -127,5 +120,12 @@ public class InferredSchemaManager {
     public static void deleteNamespace(RestService service, String ns) {
         getInferredSchema(service).deleteNamespace(ns);
         save(service);
+    }
+
+    private static String generateFilename(String namespace) {
+        if (namespace.equals("")) {
+            return "unnamed.xsd";
+        }
+        return namespace.replaceAll("[^a-zA-Z0-9]", "") + ".xsd";
     }
 }

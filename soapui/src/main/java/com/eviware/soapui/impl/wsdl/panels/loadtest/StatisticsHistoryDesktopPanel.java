@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.loadtest;
@@ -25,15 +25,8 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.ui.support.DefaultDesktopPanel;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
-import java.awt.Color;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -46,12 +39,12 @@ import java.beans.PropertyChangeListener;
  */
 
 public class StatisticsHistoryDesktopPanel extends DefaultDesktopPanel {
-    private JPanel panel;
     private final WsdlLoadTest loadTest;
+    private JPanel panel;
     private JStatisticsHistoryGraph historyGraph;
     private JButton exportButton;
     private JComboBox selectStatisticCombo;
-    private StatisticsHistoryDesktopPanel.InternalPropertyChangeListener propertyChangeListener;
+    private final StatisticsHistoryDesktopPanel.InternalPropertyChangeListener propertyChangeListener;
     private JComboBox resolutionCombo;
 
     public StatisticsHistoryDesktopPanel(WsdlLoadTest loadTest) {
@@ -106,7 +99,8 @@ public class StatisticsHistoryDesktopPanel extends DefaultDesktopPanel {
                     if (resolution != historyGraph.getResolution()) {
                         historyGraph.setResolution(resolution);
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex) {
                     long resolution = historyGraph.getResolution();
                     resolutionCombo.setSelectedItem(resolution == 0 ? "data" : String.valueOf(resolution));
                 }
@@ -133,15 +127,15 @@ public class StatisticsHistoryDesktopPanel extends DefaultDesktopPanel {
         return selectStatisticCombo;
     }
 
-    public JComponent getComponent() {
-        return panel;
-    }
-
     public boolean onClose(boolean canCancel) {
         loadTest.removePropertyChangeListener(WsdlLoadTest.NAME_PROPERTY, propertyChangeListener);
         historyGraph.release();
 
         return super.onClose(canCancel);
+    }
+
+    public JComponent getComponent() {
+        return panel;
     }
 
     private final class InternalPropertyChangeListener implements PropertyChangeListener {

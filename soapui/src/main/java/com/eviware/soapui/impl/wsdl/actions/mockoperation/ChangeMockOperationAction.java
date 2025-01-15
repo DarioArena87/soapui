@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.mockoperation;
@@ -50,7 +50,7 @@ public class ChangeMockOperationAction extends AbstractSoapUIAction<WsdlMockOper
     }
 
     public void perform(WsdlMockOperation target, Object param) {
-        this.testStep = target;
+        testStep = target;
 
         if (dialog == null) {
             dialog = ADialogBuilder.buildDialog(Form.class);
@@ -58,8 +58,7 @@ public class ChangeMockOperationAction extends AbstractSoapUIAction<WsdlMockOper
 
                 public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
                     WsdlProject project = testStep.getMockService().getProject();
-                    dialog.setOptions(Form.OPERATION,
-                            ModelSupport.getNames(project.getInterfaceByName(newValue).getOperationList()));
+                    dialog.setOptions(Form.OPERATION, ModelSupport.getNames(project.getInterfaceByName(newValue).getOperationList()));
                     WsdlOperation operation = testStep.getOperation();
                     dialog.setValue(Form.OPERATION, operation == null ? "" : operation.getName());
                 }
@@ -81,13 +80,11 @@ public class ChangeMockOperationAction extends AbstractSoapUIAction<WsdlMockOper
 
         WsdlOperation operation = testStep.getOperation();
         WsdlProject project = testStep.getMockService().getProject();
-        String[] interfaceNames = ModelSupport.getNames(project.getInterfaceList(),
-                new ModelSupport.InterfaceTypeFilter(WsdlInterfaceFactory.WSDL_TYPE));
+        String[] interfaceNames = ModelSupport.getNames(project.getInterfaceList(), new ModelSupport.InterfaceTypeFilter(WsdlInterfaceFactory.WSDL_TYPE));
         dialog.setOptions(Form.INTERFACE, interfaceNames);
         dialog.setValue(Form.INTERFACE, operation == null ? interfaceNames[0] : operation.getInterface().getName());
 
-        dialog.setOptions(Form.OPERATION,
-                ModelSupport.getNames(project.getInterfaceByName(dialog.getValue(Form.INTERFACE)).getOperationList()));
+        dialog.setOptions(Form.OPERATION, ModelSupport.getNames(project.getInterfaceByName(dialog.getValue(Form.INTERFACE)).getOperationList()));
         dialog.setValue(Form.OPERATION, operation == null ? null : operation.getName());
         dialog.setValue(Form.NAME, target.getName());
 
@@ -95,7 +92,7 @@ public class ChangeMockOperationAction extends AbstractSoapUIAction<WsdlMockOper
             String ifaceName = dialog.getValue(Form.INTERFACE);
             String operationName = dialog.getValue(Form.OPERATION);
 
-            WsdlInterface iface = (WsdlInterface) project.getInterfaceByName(ifaceName);
+            WsdlInterface iface = (WsdlInterface)project.getInterfaceByName(ifaceName);
             operation = iface.getOperationByName(operationName);
             target.setOperation(operation);
 
@@ -108,7 +105,8 @@ public class ChangeMockOperationAction extends AbstractSoapUIAction<WsdlMockOper
                 String req = operation.createResponse(dialog.getBooleanValue(Form.CREATE_OPTIONAL));
                 if (req == null) {
                     UISupport.showErrorMessage("Response creation failed");
-                } else {
+                }
+                else {
                     for (int c = 0; c < target.getMockResponseCount(); c++) {
                         String msg = req;
                         WsdlMockResponse mockResponse = target.getMockResponseAt(c);
@@ -124,24 +122,29 @@ public class ChangeMockOperationAction extends AbstractSoapUIAction<WsdlMockOper
         }
     }
 
-    @AForm(description = "Specify Interface/Operation for MockOperation", name = "Change Operation", helpUrl = HelpUrls.CHANGEMOCKOPERATION_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
+    @AForm(
+        description = "Specify Interface/Operation for MockOperation",
+        name = "Change Operation",
+        helpUrl = HelpUrls.CHANGEMOCKOPERATION_HELP_URL,
+        icon = UISupport.TOOL_ICON_PATH
+    )
     protected interface Form {
         @AField(name = "Name", description = "The Name of the MockOperation", type = AFieldType.STRING)
-        public final static String NAME = "Name";
+        String NAME = "Name";
 
         @AField(name = "Interface", description = "The MockOperations Interface", type = AFieldType.ENUMERATION)
-        public final static String INTERFACE = "Interface";
+        String INTERFACE = "Interface";
 
         @AField(name = "Operation", description = "The MockOperations Operation", type = AFieldType.ENUMERATION)
-        public final static String OPERATION = "Operation";
+        String OPERATION = "Operation";
 
         @AField(name = "Recreate Responses", description = "Recreates all MockResponses content from the new Operations Definition", type = AFieldType.BOOLEAN)
-        public final static String RECREATE_REQUEST = "Recreate Responses";
+        String RECREATE_REQUEST = "Recreate Responses";
 
         @AField(name = "Create Optional", description = "Creates optional content when recreating the response", type = AFieldType.BOOLEAN)
-        public final static String CREATE_OPTIONAL = "Create Optional";
+        String CREATE_OPTIONAL = "Create Optional";
 
         @AField(name = "Keep Existing", description = "Tries to keep existing values when recreating the response", type = AFieldType.BOOLEAN)
-        public final static String KEEP_EXISTING = "Keep Existing";
+        String KEEP_EXISTING = "Keep Existing";
     }
 }

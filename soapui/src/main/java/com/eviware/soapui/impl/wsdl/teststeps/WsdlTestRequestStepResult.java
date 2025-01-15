@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -45,8 +45,7 @@ import java.util.Vector;
  * @author ole.matzura
  */
 
-public class WsdlTestRequestStepResult extends WsdlTestStepResult implements ResponseAssertedMessageExchange,
-        AssertedXPathsContainer, MessageExchangeTestStepResult, WsdlMessageExchange {
+public class WsdlTestRequestStepResult extends WsdlTestStepResult implements ResponseAssertedMessageExchange, AssertedXPathsContainer, MessageExchangeTestStepResult, WsdlMessageExchange {
     private SoftReference<String> softRequestContent;
     private SoftReference<WsdlResponse> softResponse;
     private String domain;
@@ -59,7 +58,7 @@ public class WsdlTestRequestStepResult extends WsdlTestStepResult implements Res
     private List<AssertedXPath> assertedXPaths;
     private WsdlResponse response;
     private String requestContent;
-    private WsdlOperation operation;
+    private final WsdlOperation operation;
 
     public WsdlTestRequestStepResult(WsdlTestRequestStep step) {
         super(step);
@@ -71,12 +70,26 @@ public class WsdlTestRequestStepResult extends WsdlTestStepResult implements Res
         return operation;
     }
 
-    public SoapVersion getSoapVersion() {
-        return ((WsdlOperation) getOperation()).getInterface().getSoapVersion();
-    }
-
     public ModelItem getModelItem() {
         return getResponse() == null ? null : getResponse().getRequest();
+    }
+
+    public long getTimestamp() {
+        WsdlResponse resp = getResponse();
+        return resp == null ? 0 : resp.getTimestamp();
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
+        addProperty("Endpoint", endpoint);
+    }
+
+    public StringToStringMap getProperties() {
+        return properties;
     }
 
     public String getRequestContent() {
@@ -87,16 +100,102 @@ public class WsdlTestRequestStepResult extends WsdlTestStepResult implements Res
         return requestContent != null ? requestContent : softRequestContent == null ? null : softRequestContent.get();
     }
 
-    public void setRequestContent(String requestContent, boolean useSoftReference) {
-        if (useSoftReference) {
-            this.softRequestContent = new SoftReference<String>(requestContent);
-        } else {
-            this.requestContent = requestContent;
+    public String getResponseContent() {
+        if (isDiscarded()) {
+            return "<discarded>";
         }
+
+        if (getResponse() == null) {
+            return "<missing response>";
+        }
+
+        return getResponse().getContentAsString();
+    }
+
+    public String getRequestContentAsXml() {
+        return XmlUtils.seemsToBeXml(getRequestContent()) ? getRequestContent() : "<not-xml/>";
+    }
+
+    public String getResponseContentAsXml() {
+        String responseContent = getResponseContent();
+        return XmlUtils.seemsToBeXml(responseContent) ? responseContent : null;
+    }
+
+    public StringToStringsMap getRequestHeaders() {
+        return getResponse() == null ? null : getResponse().getRequestHeaders();
+    }
+
+    public StringToStringsMap getResponseHeaders() {
+        return getResponse() == null ? new StringToStringsMap() : getResponse().getResponseHeaders();
+    }
+
+    public Attachment[] getRequestAttachments() {
+        if (getResponse() == null || getResponse().getRequest() == null) {
+            return new Attachment[0];
+        }
+
+        return getResponse().getRequest().getAttachments();
+    }
+
+    public Attachment[] getResponseAttachments() {
+        return getResponse() == null ? null : getResponse().getAttachments();
+    }
+
+    public boolean hasRawData() {
+        return false;
+    }
+
+    public byte[] getRawRequestData() {
+        return getResponse() == null ? null : getResponse().getRawRequestData();
+    }
+
+    public byte[] getRawResponseData() {
+        return getResponse() == null ? null : getResponse().getRawResponseData();
+    }
+
+    public Attachment[] getRequestAttachmentsForPart(String partName) {
+        return null;
+    }
+
+    public Attachment[] getResponseAttachmentsForPart(String partName) {
+        return null;
+    }
+
+    public boolean hasRequest(boolean b) {
+        return true;
+    }
+
+    public boolean hasResponse() {
+        return getResponse() != null;
     }
 
     public WsdlResponse getResponse() {
         return response != null ? response : softResponse == null ? null : softResponse.get();
+    }
+
+    public String getProperty(String name) {
+        return properties.get(name);
+    }
+
+    public SoapVersion getSoapVersion() {
+        return getOperation().getInterface().getSoapVersion();
+    }
+
+    public Vector<?> getRequestWssResult() {
+        return null;
+    }
+
+    public Vector<?> getResponseWssResult() {
+        return getResponse() == null ? null : getResponse().getWssResult();
+    }
+
+    public void setRequestContent(String requestContent, boolean useSoftReference) {
+        if (useSoftReference) {
+            softRequestContent = new SoftReference<String>(requestContent);
+        }
+        else {
+            this.requestContent = requestContent;
+        }
     }
 
     @Override
@@ -109,10 +208,59 @@ public class WsdlTestRequestStepResult extends WsdlTestStepResult implements Res
         return super.getActions();
     }
 
+    public void writeTo(PrintWriter writer) {
+        super.writeTo(writer);
+        writer.println("\r\n----------------- Properties ------------------------------");
+        if (properties != null) {
+            for (String key : properties.keySet()) {
+                if (properties.get(key) != null) {
+                    writer.println(key + ": " + properties.get(key));
+                }
+            }
+        }
+
+        writer.println("\r\n---------------- Request ---------------------------");
+        WsdlResponse resp = getResponse();
+        if (resp != null) {
+            writer.println("Request Headers: " + resp.getRequestHeaders().toString() + "\r\n");
+        }
+
+        if (getRequestContent() != null) {
+            writer.println(XmlUtils.prettyPrintXml(getRequestContent()));
+        }
+        else {
+            writer.println("- missing request / garbage collected -");
+        }
+
+        writer.println("\r\n---------------- Response --------------------------");
+        if (resp != null) {
+            writer.println("Response Headers: " + resp.getResponseHeaders().toString() + "\r\n");
+
+            String respContent = resp.getContentAsString();
+            if (respContent != null) {
+                writer.println(XmlUtils.prettyPrintXml(respContent));
+            }
+        }
+        else {
+            writer.println("- missing response / garbage collected -");
+        }
+    }
+
+    public void discard() {
+        super.discard();
+
+        softRequestContent = null;
+        softResponse = null;
+        properties = null;
+        assertedXPaths = null;
+        response = null;
+    }
+
     public void setResponse(WsdlResponse response, boolean useSoftReference) {
         if (useSoftReference) {
-            this.softResponse = new SoftReference<WsdlResponse>(response);
-        } else {
+            softResponse = new SoftReference<WsdlResponse>(response);
+        }
+        else {
             this.response = response;
         }
     }
@@ -143,15 +291,6 @@ public class WsdlTestRequestStepResult extends WsdlTestStepResult implements Res
         addProperty("Encoding", encoding);
     }
 
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-        addProperty("Endpoint", endpoint);
-    }
-
     public String getPassword() {
         return password;
     }
@@ -170,109 +309,8 @@ public class WsdlTestRequestStepResult extends WsdlTestStepResult implements Res
         addProperty("Username", username);
     }
 
-    public void discard() {
-        super.discard();
-
-        softRequestContent = null;
-        softResponse = null;
-        properties = null;
-        assertedXPaths = null;
-        response = null;
-    }
-
-    public void writeTo(PrintWriter writer) {
-        super.writeTo(writer);
-        writer.println("\r\n----------------- Properties ------------------------------");
-        if (properties != null) {
-            for (String key : properties.keySet()) {
-                if (properties.get(key) != null) {
-                    writer.println(key + ": " + properties.get(key));
-                }
-            }
-        }
-
-        writer.println("\r\n---------------- Request ---------------------------");
-        WsdlResponse resp = getResponse();
-        if (resp != null) {
-            writer.println("Request Headers: " + resp.getRequestHeaders().toString() + "\r\n");
-        }
-
-        if (getRequestContent() != null) {
-            writer.println(XmlUtils.prettyPrintXml(getRequestContent()));
-        } else {
-            writer.println("- missing request / garbage collected -");
-        }
-
-        writer.println("\r\n---------------- Response --------------------------");
-        if (resp != null) {
-            writer.println("Response Headers: " + resp.getResponseHeaders().toString() + "\r\n");
-
-            String respContent = resp.getContentAsString();
-            if (respContent != null) {
-                writer.println(XmlUtils.prettyPrintXml(respContent));
-            }
-        } else {
-            writer.println("- missing response / garbage collected -");
-        }
-    }
-
-    public StringToStringMap getProperties() {
-        return properties;
-    }
-
-    public String getProperty(String name) {
-        return properties.get(name);
-    }
-
-    public Attachment[] getRequestAttachments() {
-        if (getResponse() == null || getResponse().getRequest() == null) {
-            return new Attachment[0];
-        }
-
-        return getResponse().getRequest().getAttachments();
-    }
-
-    public StringToStringsMap getRequestHeaders() {
-        return getResponse() == null ? null : getResponse().getRequestHeaders();
-    }
-
-    public Attachment[] getResponseAttachments() {
-        return getResponse() == null ? null : getResponse().getAttachments();
-    }
-
-    public String getResponseContent() {
-        if (isDiscarded()) {
-            return "<discarded>";
-        }
-
-        if (getResponse() == null) {
-            return "<missing response>";
-        }
-
-        return getResponse().getContentAsString();
-    }
-
-    public String getRequestContentAsXml() {
-        return XmlUtils.seemsToBeXml(getRequestContent()) ? getRequestContent() : "<not-xml/>";
-    }
-
-    public String getResponseContentAsXml() {
-        String responseContent = getResponseContent();
-        return XmlUtils.seemsToBeXml(responseContent) ? responseContent : null;
-    }
-
-    public StringToStringsMap getResponseHeaders() {
-        return getResponse() == null ? new StringToStringsMap() : getResponse().getResponseHeaders();
-    }
-
-    public long getTimestamp() {
-        WsdlResponse resp = getResponse();
-        return resp == null ? 0 : resp.getTimestamp();
-    }
-
     public AssertedXPath[] getAssertedXPathsForResponse() {
-        return assertedXPaths == null ? new AssertedXPath[0] : assertedXPaths.toArray(new AssertedXPath[assertedXPaths
-                .size()]);
+        return assertedXPaths == null ? new AssertedXPath[0] : assertedXPaths.toArray(new AssertedXPath[assertedXPaths.size()]);
     }
 
     public void addAssertedXPath(AssertedXPath assertedXPath) {
@@ -285,42 +323,6 @@ public class WsdlTestRequestStepResult extends WsdlTestStepResult implements Res
 
     public MessageExchange[] getMessageExchanges() {
         return new MessageExchange[]{this};
-    }
-
-    public byte[] getRawRequestData() {
-        return getResponse() == null ? null : getResponse().getRawRequestData();
-    }
-
-    public byte[] getRawResponseData() {
-        return getResponse() == null ? null : getResponse().getRawResponseData();
-    }
-
-    public Attachment[] getRequestAttachmentsForPart(String partName) {
-        return null;
-    }
-
-    public Attachment[] getResponseAttachmentsForPart(String partName) {
-        return null;
-    }
-
-    public boolean hasRawData() {
-        return false;
-    }
-
-    public boolean hasRequest(boolean b) {
-        return true;
-    }
-
-    public boolean hasResponse() {
-        return getResponse() != null;
-    }
-
-    public Vector<?> getRequestWssResult() {
-        return null;
-    }
-
-    public Vector<?> getResponseWssResult() {
-        return getResponse() == null ? null : getResponse().getWssResult();
     }
 
     public int getResponseStatusCode() {

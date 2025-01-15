@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.strategy;
@@ -29,10 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.XmlObject;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.Document;
 
 /**
@@ -42,9 +39,8 @@ import javax.swing.text.Document;
  */
 
 public class VarianceLoadStrategy extends AbstractLoadStrategy {
-    private final static Logger log = LogManager.getLogger(VarianceLoadStrategy.class);
-
     public static final String STRATEGY_TYPE = "Variance";
+    private final static Logger log = LogManager.getLogger(VarianceLoadStrategy.class);
     private static final String INTERVAL_ELEMENT = "interval";
     private static final String VARIANCE_ELEMENT = "variance";
     private static final int DEFAULT_INTERVAL = 60000;
@@ -59,7 +55,7 @@ public class VarianceLoadStrategy extends AbstractLoadStrategy {
     private JLabel infoLabel;
     private long baseThreadCount;
     private long startTime;
-    private ComponentBag stateDependantComponents = new ComponentBag();
+    private final ComponentBag stateDependantComponents = new ComponentBag();
 
     public VarianceLoadStrategy(WsdlLoadTest loadTest) {
         super(STRATEGY_TYPE, loadTest);
@@ -74,6 +70,13 @@ public class VarianceLoadStrategy extends AbstractLoadStrategy {
         XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(config);
         interval = reader.readLong(INTERVAL_ELEMENT, DEFAULT_INTERVAL);
         variance = reader.readFloat(VARIANCE_ELEMENT, DEFAULT_VARIANCE);
+    }
+
+    public XmlObject getConfig() {
+        XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
+        builder.add(INTERVAL_ELEMENT, interval);
+        builder.add(VARIANCE_ELEMENT, variance);
+        return builder.finish();
     }
 
     public JComponent getConfigurationPanel() {
@@ -91,7 +94,8 @@ public class VarianceLoadStrategy extends AbstractLoadStrategy {
                     try {
                         interval = Long.parseLong(intervalField.getText()) * 1000;
                         notifyConfigurationChanged();
-                    } catch (NumberFormatException e) {
+                    }
+                    catch (NumberFormatException e) {
                     }
                 }
             });
@@ -113,7 +117,8 @@ public class VarianceLoadStrategy extends AbstractLoadStrategy {
                     try {
                         variance = Float.parseFloat(varianceField.getText());
                         notifyConfigurationChanged();
-                    } catch (NumberFormatException e) {
+                    }
+                    catch (NumberFormatException e) {
                     }
                 }
             });
@@ -135,11 +140,62 @@ public class VarianceLoadStrategy extends AbstractLoadStrategy {
         return configPanel;
     }
 
-    public XmlObject getConfig() {
-        XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
-        builder.add(INTERVAL_ELEMENT, interval);
-        builder.add(VARIANCE_ELEMENT, variance);
-        return builder.finish();
+    public boolean allowThreadCountChangeDuringRun() {
+        return false;
+    }
+
+    public void recalculate(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        double timePassed = (System.currentTimeMillis() - startTime) % interval;
+        float threadCount = baseThreadCount;
+
+        // initial increase?
+        double quarter = (double)interval / 4;
+
+        if (timePassed < quarter) {
+            threadCount += (int)Math.round(((timePassed / quarter) * variance * threadCount));
+        }
+        // decrease?
+        else if (timePassed < quarter * 2) {
+            threadCount += (int)Math.round(((1 - ((timePassed % quarter) / quarter)) * variance * threadCount));
+        }
+        else if (timePassed < quarter * 3) {
+            threadCount -= (int)Math.round((((timePassed % quarter) / quarter) * variance * threadCount));
+        }
+        // final increase
+        else {
+            threadCount -= (int)Math.round(((1 - ((timePassed % quarter) / quarter)) * variance * threadCount));
+        }
+
+        if (threadCount < 1) {
+            threadCount = 1;
+        }
+
+        WsdlLoadTest wsdlLoadTest = ((WsdlLoadTest)loadTestRunner.getLoadTest());
+        if (wsdlLoadTest.getThreadCount() != (int)threadCount) {
+            log.debug("Changing threadcount to " + threadCount);
+            wsdlLoadTest.setThreadCount((int)threadCount);
+        }
+    }
+
+    public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        super.beforeLoadTest(loadTestRunner, context);
+        baseThreadCount = ((WsdlLoadTest)loadTestRunner.getLoadTest()).getThreadCount();
+        startTime = System.currentTimeMillis();
+        stateDependantComponents.setEnabled(false);
+    }
+
+    public void afterLoadTest(LoadTestRunner testRunner, LoadTestRunContext context) {
+        WsdlLoadTest wsdlLoadTest = (WsdlLoadTest)testRunner.getLoadTest();
+        wsdlLoadTest.setThreadCount(baseThreadCount);
+        stateDependantComponents.setEnabled(true);
+    }
+
+    public long getInterval() {
+        return interval;
+    }
+
+    public float getVariance() {
+        return variance;
     }
 
     /**
@@ -161,62 +217,4 @@ public class VarianceLoadStrategy extends AbstractLoadStrategy {
             return new VarianceLoadStrategy(loadTest);
         }
     }
-
-    public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        super.beforeLoadTest(loadTestRunner, context);
-        baseThreadCount = ((WsdlLoadTest) loadTestRunner.getLoadTest()).getThreadCount();
-        startTime = System.currentTimeMillis();
-        stateDependantComponents.setEnabled(false);
-    }
-
-    public void recalculate(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        double timePassed = (System.currentTimeMillis() - startTime) % interval;
-        float threadCount = baseThreadCount;
-
-        // initial increase?
-        double quarter = (double) interval / 4;
-
-        if (timePassed < quarter) {
-            threadCount += (int) Math.round(((timePassed / quarter) * variance * threadCount));
-        }
-        // decrease?
-        else if (timePassed < quarter * 2) {
-            threadCount += (int) Math.round(((1 - ((timePassed % quarter) / quarter)) * variance * threadCount));
-        } else if (timePassed < quarter * 3) {
-            threadCount -= (int) Math.round((((timePassed % quarter) / quarter) * variance * threadCount));
-        }
-        // final increase
-        else {
-            threadCount -= (int) Math.round(((1 - ((timePassed % quarter) / quarter)) * variance * threadCount));
-        }
-
-        if (threadCount < 1) {
-            threadCount = 1;
-        }
-
-        WsdlLoadTest wsdlLoadTest = ((WsdlLoadTest) loadTestRunner.getLoadTest());
-        if (wsdlLoadTest.getThreadCount() != (int) threadCount) {
-            log.debug("Changing threadcount to " + threadCount);
-            wsdlLoadTest.setThreadCount((int) threadCount);
-        }
-    }
-
-    public void afterLoadTest(LoadTestRunner testRunner, LoadTestRunContext context) {
-        WsdlLoadTest wsdlLoadTest = (WsdlLoadTest) testRunner.getLoadTest();
-        wsdlLoadTest.setThreadCount(baseThreadCount);
-        stateDependantComponents.setEnabled(true);
-    }
-
-    public boolean allowThreadCountChangeDuringRun() {
-        return false;
-    }
-
-    public long getInterval() {
-        return interval;
-    }
-
-    public float getVariance() {
-        return variance;
-    }
-
 }

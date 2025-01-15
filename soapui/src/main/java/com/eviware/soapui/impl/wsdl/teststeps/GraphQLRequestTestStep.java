@@ -30,13 +30,12 @@ import com.eviware.soapui.security.Securable;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.resolver.ResolveContext;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.Map;
 
-public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implements
-        GraphQLTestRequestStepInterface, Securable {
+public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implements GraphQLTestRequestStepInterface, Securable {
 
     public static final String ICON_NAME = "/graphql-request.png";
 
@@ -48,26 +47,27 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
         super(testCase, config, true, forLoadTest);
         setIcon(UISupport.createImageIcon(ICON_NAME));
         if (getConfig().getConfig() != null) {
-            graphQLRequestConfig = (GraphQLTestRequestConfig) getConfig().getConfig().changeType(GraphQLTestRequestConfig.type);
+            graphQLRequestConfig = (GraphQLTestRequestConfig)getConfig().getConfig().changeType(GraphQLTestRequestConfig.type);
             graphQLTestRequest = new GraphQLTestRequest(graphQLRequestConfig, this, forLoadTest);
 
             graphQLTestRequest.addPropertyChangeListener(this);
 
             if (config.isSetName()) {
                 graphQLTestRequest.setName(config.getName());
-            } else {
+            }
+            else {
                 config.setName(graphQLTestRequest.getName());
             }
-        } else {
-            graphQLRequestConfig = (GraphQLTestRequestConfig) getConfig().addNewConfig().changeType(GraphQLTestRequestConfig.type);
+        }
+        else {
+            graphQLRequestConfig = (GraphQLTestRequestConfig)getConfig().addNewConfig().changeType(GraphQLTestRequestConfig.type);
         }
 
         initProperties();
     }
 
     private void initProperties() {
-        addProperty(new TestStepBeanProperty(WsdlTestStepWithProperties.RESPONSE_AS_XML, true, graphQLTestRequest,
-                "responseContentAsXml", this) {
+        addProperty(new TestStepBeanProperty(RESPONSE_AS_XML, true, graphQLTestRequest, "responseContentAsXml", this) {
             @Override
             public String getDefaultValue() {
                 return "";
@@ -96,7 +96,6 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
                 return response == null ? null : new String(response.getRawResponseData());
             }
         });
-
     }
 
     @Override
@@ -111,7 +110,7 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
         try {
             submit = graphQLTestRequest.submit(testRunContext, false);
 
-            HttpResponse response = (HttpResponse) submit.getResponse();
+            HttpResponse response = (HttpResponse)submit.getResponse();
             Submit.Status currentStatus = submit.getStatus();
             if (currentStatus == Submit.Status.ERROR) {
                 testStepResult.setStatus(TestStepResult.TestStepStatus.FAILED);
@@ -119,15 +118,18 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
                 testStepResult.setSubmit(submit);
 
                 graphQLTestRequest.setResponse(null, testRunContext);
-            } else if (currentStatus == Submit.Status.CANCELED) {
+            }
+            else if (currentStatus == Submit.Status.CANCELED) {
                 testStepResult.setStatus(TestStepResult.TestStepStatus.CANCELED);
                 testStepResult.addMessage("Request was canceled");
-            } else if (response == null) {
+            }
+            else if (response == null) {
                 testStepResult.setStatus(TestStepResult.TestStepStatus.FAILED);
                 testStepResult.addMessage("Request is missing response");
 
                 graphQLTestRequest.setResponse(null, testRunContext);
-            } else {
+            }
+            else {
                 graphQLTestRequest.setResponse(response, testRunContext);
 
                 testStepResult.setTimeTaken(response.getTimeTaken());
@@ -153,14 +155,16 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
                 testStepResult.addProperty("Method", String.valueOf(response.getMethod()));
                 testStepResult.addProperty("StatusCode", String.valueOf(response.getStatusCode()));
                 testStepResult.addProperty("HTTP Version", response.getHttpVersion());
-            } else {
+            }
+            else {
                 testStepResult.setRequestContent(graphQLTestRequest.getRequestContent());
             }
-
-        } catch (Request.SubmitException e) {
+        }
+        catch (Request.SubmitException e) {
             testStepResult.setStatus(TestStepResult.TestStepStatus.FAILED);
             testStepResult.addMessage("SubmitException: " + e);
-        } finally {
+        }
+        finally {
             submit = null;
         }
 
@@ -174,7 +178,8 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
                     testStepResult.setStatus(TestStepResult.TestStepStatus.FAILED);
                     if (getAssertionCount() == 0) {
                         testStepResult.addMessage("Invalid/empty response");
-                    } else {
+                    }
+                    else {
                         for (int i = 0; i < getAssertionCount(); i++) {
                             WsdlMessageAssertion assertion = getAssertionAt(i);
                             AssertionError[] errors = assertion.getErrors();
@@ -205,12 +210,6 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
     }
 
     @Override
-    public void setName(String name) {
-        super.setName(name);
-        graphQLTestRequest.setName(name);
-    }
-
-    @Override
     public AbstractHttpRequest<?> getHttpRequest() {
         return graphQLTestRequest;
     }
@@ -226,11 +225,6 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
     }
 
     @Override
-    public void removeAssertionsListener(AssertionsListener listener) {
-        graphQLTestRequest.removeAssertionsListener(listener);
-    }
-
-    @Override
     public int getAssertionCount() {
         return graphQLTestRequest.getAssertionCount();
     }
@@ -240,6 +234,10 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
         return graphQLTestRequest.getAssertionAt(index);
     }
 
+    @Override
+    public void removeAssertionsListener(AssertionsListener listener) {
+        graphQLTestRequest.removeAssertionsListener(listener);
+    }
 
     @Override
     public void removeAssertion(TestAssertion assertion) {
@@ -310,27 +308,32 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
     public void propertyChange(PropertyChangeEvent event) {
         if (event.getSource() == graphQLTestRequest) {
             if (event.getNewValue() instanceof SinglePartHttpResponse) {
-                SinglePartHttpResponse response = (SinglePartHttpResponse) event.getNewValue();
+                SinglePartHttpResponse response = (SinglePartHttpResponse)event.getNewValue();
                 firePropertyValueChanged("Response", String.valueOf(response), null);
                 String XMLCOntent = response.getContentAsXml();
                 firePropertyValueChanged("ResponseAsXml", String.valueOf(XMLCOntent), null);
             }
         }
 
-        if (event.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY)
-                || event.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
+        if (event.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY) || event.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
             if (getTestRequest().getResponse() != null) {
                 getTestRequest().assertResponse(new WsdlTestRunContext(this));
             }
-        } else {
-            if (event.getSource() == graphQLTestRequest && event.getPropertyName().equals(WsdlTestRequest.NAME_PROPERTY)) {
-                if (!super.getName().equals(event.getNewValue())) {
-                    super.setName((String) event.getNewValue());
+        }
+        else {
+            if (event.getSource() == graphQLTestRequest && event.getPropertyName().equals(NAME_PROPERTY)) {
+                if (!getName().equals(event.getNewValue())) {
+                    super.setName((String)event.getNewValue());
                 }
             }
 
             notifyPropertyChanged(event.getPropertyName(), event.getOldValue(), event.getNewValue());
         }
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        return graphQLTestRequest == null ? null : graphQLTestRequest.getIcon();
     }
 
     @Override
@@ -359,15 +362,16 @@ public class GraphQLRequestTestStep extends WsdlTestStepWithProperties implement
     }
 
     @Override
-    public ImageIcon getIcon() {
-        return graphQLTestRequest == null ? null : graphQLTestRequest.getIcon();
-    }
-
-    @Override
     public void resetConfigOnMove(TestStepConfig config) {
         super.resetConfigOnMove(config);
 
-        graphQLRequestConfig = (GraphQLTestRequestConfig) config.getConfig().changeType(GraphQLTestRequestConfig.type);
+        graphQLRequestConfig = (GraphQLTestRequestConfig)config.getConfig().changeType(GraphQLTestRequestConfig.type);
         graphQLTestRequest.updateConfig(graphQLRequestConfig);
+    }
+
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        graphQLTestRequest.setName(name);
     }
 }

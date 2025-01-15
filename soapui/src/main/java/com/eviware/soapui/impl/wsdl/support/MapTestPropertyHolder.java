@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support;
@@ -41,10 +41,10 @@ import java.util.Properties;
 import java.util.Set;
 
 public class MapTestPropertyHolder implements MutableTestPropertyHolder {
-    private Map<String, TestProperty> propertyMap = new HashMap<String, TestProperty>();
-    private Set<TestPropertyListener> listeners = new HashSet<TestPropertyListener>();
-    private List<TestProperty> properties = new ArrayList<TestProperty>();
     public ModelItem modelItem;
+    private final Map<String, TestProperty> propertyMap = new HashMap<String, TestProperty>();
+    private final Set<TestPropertyListener> listeners = new HashSet<TestPropertyListener>();
+    private final List<TestProperty> properties = new ArrayList<TestProperty>();
     private String propertiesLabel = "Test Properties";
 
     public MapTestPropertyHolder(ModelItem modelItem) {
@@ -94,32 +94,6 @@ public class MapTestPropertyHolder implements MutableTestPropertyHolder {
         return result;
     }
 
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        listeners.add(listener);
-    }
-
-    public TestProperty getProperty(String name) {
-        return propertyMap.get(name.toUpperCase());
-    }
-
-    public String[] getPropertyNames() {
-        StringList result = new StringList();
-        for (String name : propertyMap.keySet()) {
-            result.add(propertyMap.get(name).getName());
-        }
-
-        return result.toStringArray();
-    }
-
-    public List<TestProperty> getPropertyList() {
-        return Collections.unmodifiableList(properties);
-    }
-
-    public String getPropertyValue(String name) {
-        TestProperty property = getProperty(name);
-        return property == null ? null : property.getValue();
-    }
-
     public TestProperty removeProperty(String propertyName) {
         TestProperty property = getProperty(propertyName);
         if (property != null) {
@@ -131,29 +105,164 @@ public class MapTestPropertyHolder implements MutableTestPropertyHolder {
         return property;
     }
 
-    public void removeTestPropertyListener(TestPropertyListener listener) {
-        listeners.remove(listener);
-    }
-
-    public void setPropertyValue(String name, String value) {
-        InternalTestProperty property = (InternalTestProperty) getProperty(name);
-        if (property != null) {
-            property.setValue(value);
-        }
-    }
-
     public boolean renameProperty(String name, String newName) {
         if (getProperty(newName) != null) {
             return false;
         }
 
-        InternalTestProperty property = (InternalTestProperty) getProperty(name);
+        InternalTestProperty property = (InternalTestProperty)getProperty(name);
         if (property == null) {
             return false;
         }
 
         property.setName(newName);
         return true;
+    }
+
+    public void moveProperty(String propertyName, int targetIndex) {
+        TestProperty property = getProperty(propertyName);
+        int ix = properties.indexOf(property);
+
+        if (ix == targetIndex) {
+            return;
+        }
+
+        if (targetIndex < 0) {
+            targetIndex = 0;
+        }
+
+        if (targetIndex < properties.size()) {
+            properties.add(targetIndex, properties.remove(ix));
+        }
+        else {
+            properties.add(properties.remove(ix));
+        }
+
+        if (targetIndex > properties.size()) {
+            targetIndex = properties.size();
+        }
+
+        firePropertyMoved(propertyName, ix, targetIndex);
+    }
+
+    public String[] getPropertyNames() {
+        StringList result = new StringList();
+        for (String name : propertyMap.keySet()) {
+            result.add(propertyMap.get(name).getName());
+        }
+
+        return result.toStringArray();
+    }
+
+    public void setPropertyValue(String name, String value) {
+        InternalTestProperty property = (InternalTestProperty)getProperty(name);
+        if (property != null) {
+            property.setValue(value);
+        }
+    }
+
+    public String getPropertyValue(String name) {
+        TestProperty property = getProperty(name);
+        return property == null ? null : property.getValue();
+    }
+
+    public TestProperty getProperty(String name) {
+        return propertyMap.get(name.toUpperCase());
+    }
+
+    public Map<String, TestProperty> getProperties() {
+        Map<String, TestProperty> result = new HashMap<String, TestProperty>();
+        for (String name : propertyMap.keySet()) {
+            result.put(name, propertyMap.get(name));
+        }
+
+        return result;
+    }
+
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeTestPropertyListener(TestPropertyListener listener) {
+        listeners.remove(listener);
+    }
+
+    public boolean hasProperty(String name) {
+        return propertyMap.containsKey(name.toUpperCase());
+    }
+
+    public ModelItem getModelItem() {
+        return modelItem;
+    }
+
+    public int getPropertyCount() {
+        return properties.size();
+    }
+
+    public List<TestProperty> getPropertyList() {
+        return Collections.unmodifiableList(properties);
+    }
+
+    public TestProperty getPropertyAt(int index) {
+        return properties.get(index);
+    }
+
+    public String getPropertiesLabel() {
+        return propertiesLabel;
+    }
+
+    public void setPropertiesLabel(String propertiesLabel) {
+        this.propertiesLabel = propertiesLabel;
+    }
+
+    public void saveTo(Properties props) {
+        int cnt = 0;
+        for (TestProperty p : properties) {
+            String name = p.getName();
+            String value = p.getValue();
+            if (value == null) {
+                value = "";
+            }
+
+            props.setProperty(name, value);
+            cnt++;
+        }
+    }
+
+    public int addPropertiesFromFile(String propFile) {
+        try {
+            InputStream input = null;
+
+            File file = new File(propFile);
+            if (file.exists()) {
+                input = new FileInputStream(file);
+            }
+            else if (propFile.toLowerCase().startsWith("http://") || propFile.toLowerCase().startsWith("https://")) {
+                UrlWsdlLoader loader = new UrlWsdlLoader(propFile, getModelItem());
+                loader.setUseWorker(false);
+                input = loader.load();
+            }
+
+            Properties properties = new Properties();
+            properties.load(input);
+
+            for (Object key : properties.keySet()) {
+                String name = key.toString();
+                if (!hasProperty(name)) {
+                    addProperty(name).setValue(properties.getProperty(name));
+                }
+                else {
+                    setPropertyValue(name, properties.getProperty(name));
+                }
+            }
+
+            return properties.size();
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+
+        return 0;
     }
 
     /**
@@ -213,11 +322,6 @@ public class MapTestPropertyHolder implements MutableTestPropertyHolder {
             return modelItem;
         }
 
-        public String getDefaultValue() {
-            // TODO Auto-generated method stub
-            return null;
-        }
-
         @Override
         public boolean isRequestPart() {
             return false;
@@ -226,112 +330,11 @@ public class MapTestPropertyHolder implements MutableTestPropertyHolder {
         @Override
         public SchemaType getSchemaType() {
             return XmlBeans.getBuiltinTypeSystem().findType(getType());
-
-        }
-    }
-
-    public void saveTo(Properties props) {
-        int cnt = 0;
-        for (TestProperty p : properties) {
-            String name = p.getName();
-            String value = p.getValue();
-            if (value == null) {
-                value = "";
-            }
-
-            props.setProperty(name, value);
-            cnt++;
-        }
-    }
-
-    public Map<String, TestProperty> getProperties() {
-        Map<String, TestProperty> result = new HashMap<String, TestProperty>();
-        for (String name : propertyMap.keySet()) {
-            result.put(name, propertyMap.get(name));
         }
 
-        return result;
-    }
-
-    public boolean hasProperty(String name) {
-        return propertyMap.containsKey(name.toUpperCase());
-    }
-
-    public int addPropertiesFromFile(String propFile) {
-        try {
-            InputStream input = null;
-
-            File file = new File(propFile);
-            if (file.exists()) {
-                input = new FileInputStream(file);
-            } else if (propFile.toLowerCase().startsWith("http://") || propFile.toLowerCase().startsWith("https://")) {
-                UrlWsdlLoader loader = new UrlWsdlLoader(propFile, getModelItem());
-                loader.setUseWorker(false);
-                input = loader.load();
-            }
-
-            Properties properties = new Properties();
-            properties.load(input);
-
-            for (Object key : properties.keySet()) {
-                String name = key.toString();
-                if (!hasProperty(name)) {
-                    addProperty(name).setValue(properties.getProperty(name));
-                } else {
-                    setPropertyValue(name, properties.getProperty(name));
-                }
-            }
-
-            return properties.size();
-        } catch (Exception e) {
-            SoapUI.logError(e);
+        public String getDefaultValue() {
+            // TODO Auto-generated method stub
+            return null;
         }
-
-        return 0;
-    }
-
-    public ModelItem getModelItem() {
-        return modelItem;
-    }
-
-    public void moveProperty(String propertyName, int targetIndex) {
-        TestProperty property = getProperty(propertyName);
-        int ix = properties.indexOf(property);
-
-        if (ix == targetIndex) {
-            return;
-        }
-
-        if (targetIndex < 0) {
-            targetIndex = 0;
-        }
-
-        if (targetIndex < properties.size()) {
-            properties.add(targetIndex, properties.remove(ix));
-        } else {
-            properties.add(properties.remove(ix));
-        }
-
-        if (targetIndex > properties.size()) {
-            targetIndex = properties.size();
-        }
-
-        firePropertyMoved(propertyName, ix, targetIndex);
-    }
-
-    public TestProperty getPropertyAt(int index) {
-        return properties.get(index);
-    }
-
-    public int getPropertyCount() {
-        return properties.size();
-    }
-
-    public void setPropertiesLabel(String propertiesLabel) {
-        this.propertiesLabel = propertiesLabel;
-    }
-
-    public String getPropertiesLabel() {
-        return propertiesLabel;
     }
 }

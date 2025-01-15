@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.monitor;
@@ -54,19 +54,19 @@ import java.util.Set;
  */
 
 public class TestMonitor {
-    private Set<TestMonitorListener> listeners = new HashSet<TestMonitorListener>();
-    private InternalWorkspaceListener workspaceListener = new InternalWorkspaceListener();
-    private InternalProjectListener projectListener = new InternalProjectListener();
-    private InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
-    private InternalTestRunListener testRunListener = new InternalTestRunListener();
-    private InternalMockRunListener mockRunListener = new InternalMockRunListener();
-    private InternalLoadTestRunListener loadTestRunListener = new InternalLoadTestRunListener();
-    private InternalSecurityTestRunListener securityTestRunListener = new InternalSecurityTestRunListener();
-    private Set<TestCaseRunner> runningTestCases = new HashSet<TestCaseRunner>();
-    private Set<LoadTestRunner> runningLoadTests = new HashSet<LoadTestRunner>();
-    private Set<SecurityTestRunner> runningSecurityTests = new HashSet<SecurityTestRunner>();
-    private Set<MockRunner> runningMockServices = new HashSet<MockRunner>();
-    private Map<String, TestCaseRunner.Status> runStatusHistory = new HashMap<String, TestCaseRunner.Status>();
+    private final Set<TestMonitorListener> listeners = new HashSet<TestMonitorListener>();
+    private final InternalWorkspaceListener workspaceListener = new InternalWorkspaceListener();
+    private final InternalProjectListener projectListener = new InternalProjectListener();
+    private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
+    private final InternalTestRunListener testRunListener = new InternalTestRunListener();
+    private final InternalMockRunListener mockRunListener = new InternalMockRunListener();
+    private final InternalLoadTestRunListener loadTestRunListener = new InternalLoadTestRunListener();
+    private final InternalSecurityTestRunListener securityTestRunListener = new InternalSecurityTestRunListener();
+    private final Set<TestCaseRunner> runningTestCases = new HashSet<TestCaseRunner>();
+    private final Set<LoadTestRunner> runningLoadTests = new HashSet<LoadTestRunner>();
+    private final Set<SecurityTestRunner> runningSecurityTests = new HashSet<SecurityTestRunner>();
+    private final Set<MockRunner> runningMockServices = new HashSet<MockRunner>();
+    private final Map<String, TestCaseRunner.Status> runStatusHistory = new HashMap<String, TestCaseRunner.Status>();
 
     public TestMonitor() {
     }
@@ -200,114 +200,6 @@ public class TestMonitor {
 
     public void removeTestMonitorListener(TestMonitorListener listener) {
         listeners.remove(listener);
-    }
-
-    private class InternalWorkspaceListener extends WorkspaceListenerAdapter {
-        public void projectRemoved(Project project) {
-            unmonitorProject(project);
-        }
-
-        public void projectAdded(Project project) {
-            monitorProject(project);
-        }
-    }
-
-    private class InternalProjectListener extends ProjectListenerAdapter {
-        public void testSuiteRemoved(TestSuite testSuite) {
-            unmonitorTestSuite(testSuite);
-        }
-
-        public void testSuiteAdded(TestSuite testSuite) {
-            monitorTestSuite(testSuite);
-        }
-
-        @Override
-        public void mockServiceAdded(MockService mockService) {
-            monitorMockService(mockService);
-        }
-
-        @Override
-        public void mockServiceRemoved(MockService mockService) {
-            unmonitorMockService(mockService);
-        }
-    }
-
-    private class InternalTestSuiteListener extends TestSuiteListenerAdapter {
-        public void testCaseAdded(TestCase testCase) {
-            monitorTestCase(testCase);
-        }
-
-        public void testCaseRemoved(TestCase testCase) {
-            unmonitorTestCase(testCase);
-        }
-
-        public void loadTestAdded(LoadTest loadTest) {
-            monitorLoadTest(loadTest);
-        }
-
-        public void loadTestRemoved(LoadTest loadTest) {
-            unmonitorLoadTest(loadTest);
-        }
-
-        public void securityTestAdded(SecurityTest securityTest) {
-            monitorSecurityTest(securityTest);
-        }
-
-        public void securityTestRemoved(SecurityTest securityTest) {
-            unmonitorSecurityTest(securityTest);
-        }
-    }
-
-    private class InternalTestRunListener extends TestRunListenerAdapter {
-        public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-            runStatusHistory.put(testRunner.getTestCase().getId(), testRunner.getStatus());
-
-            runningTestCases.remove(testRunner);
-            notifyTestCaseFinished(testRunner);
-        }
-
-        public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-            runningTestCases.add(testRunner);
-            notifyTestCaseStarted(testRunner);
-        }
-    }
-
-    private class InternalMockRunListener extends MockRunListenerAdapter {
-        @Override
-        public void onMockRunnerStart(MockRunner mockRunner) {
-            runningMockServices.add(mockRunner);
-            notifyMockServiceStarted(mockRunner);
-        }
-
-        @Override
-        public void onMockRunnerStop(MockRunner mockRunner) {
-            runningMockServices.remove(mockRunner);
-            notifyMockServiceStopped(mockRunner);
-        }
-    }
-
-    private class InternalLoadTestRunListener extends LoadTestRunListenerAdapter {
-        public void afterLoadTest(LoadTestRunner testRunner, LoadTestRunContext context) {
-            runningLoadTests.remove(testRunner);
-            notifyLoadTestFinished(testRunner);
-        }
-
-        public void beforeLoadTest(LoadTestRunner testRunner, LoadTestRunContext context) {
-            runningLoadTests.add(testRunner);
-            notifyLoadTestStarted(testRunner);
-        }
-    }
-
-    private class InternalSecurityTestRunListener extends SecurityTestRunListenerAdapter {
-        public void afterRun(TestCaseRunner testRunner, SecurityTestRunContext context) {
-            runningSecurityTests.remove((SecurityTestRunnerImpl) testRunner);
-            notifySecurityTestFinished((SecurityTestRunnerImpl) testRunner);
-        }
-
-        public void beforeRun(TestCaseRunner testRunner, SecurityTestRunContext context) {
-            runningSecurityTests.add((SecurityTestRunnerImpl) testRunner);
-            notifySecurityTestStarted((SecurityTestRunnerImpl) testRunner);
-        }
     }
 
     public LoadTestRunner[] getRunningLoadTest() {
@@ -508,4 +400,111 @@ public class TestMonitor {
         return false;
     }
 
+    private class InternalWorkspaceListener extends WorkspaceListenerAdapter {
+        public void projectAdded(Project project) {
+            monitorProject(project);
+        }
+
+        public void projectRemoved(Project project) {
+            unmonitorProject(project);
+        }
+    }
+
+    private class InternalProjectListener extends ProjectListenerAdapter {
+        public void testSuiteAdded(TestSuite testSuite) {
+            monitorTestSuite(testSuite);
+        }
+
+        public void testSuiteRemoved(TestSuite testSuite) {
+            unmonitorTestSuite(testSuite);
+        }
+
+        @Override
+        public void mockServiceAdded(MockService mockService) {
+            monitorMockService(mockService);
+        }
+
+        @Override
+        public void mockServiceRemoved(MockService mockService) {
+            unmonitorMockService(mockService);
+        }
+    }
+
+    private class InternalTestSuiteListener extends TestSuiteListenerAdapter {
+        public void testCaseAdded(TestCase testCase) {
+            monitorTestCase(testCase);
+        }
+
+        public void testCaseRemoved(TestCase testCase) {
+            unmonitorTestCase(testCase);
+        }
+
+        public void loadTestAdded(LoadTest loadTest) {
+            monitorLoadTest(loadTest);
+        }
+
+        public void loadTestRemoved(LoadTest loadTest) {
+            unmonitorLoadTest(loadTest);
+        }
+
+        public void securityTestAdded(SecurityTest securityTest) {
+            monitorSecurityTest(securityTest);
+        }
+
+        public void securityTestRemoved(SecurityTest securityTest) {
+            unmonitorSecurityTest(securityTest);
+        }
+    }
+
+    private class InternalTestRunListener extends TestRunListenerAdapter {
+        public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+            runningTestCases.add(testRunner);
+            notifyTestCaseStarted(testRunner);
+        }
+
+        public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+            runStatusHistory.put(testRunner.getTestCase().getId(), testRunner.getStatus());
+
+            runningTestCases.remove(testRunner);
+            notifyTestCaseFinished(testRunner);
+        }
+    }
+
+    private class InternalMockRunListener extends MockRunListenerAdapter {
+        @Override
+        public void onMockRunnerStart(MockRunner mockRunner) {
+            runningMockServices.add(mockRunner);
+            notifyMockServiceStarted(mockRunner);
+        }
+
+        @Override
+        public void onMockRunnerStop(MockRunner mockRunner) {
+            runningMockServices.remove(mockRunner);
+            notifyMockServiceStopped(mockRunner);
+        }
+    }
+
+    private class InternalLoadTestRunListener extends LoadTestRunListenerAdapter {
+        public void beforeLoadTest(LoadTestRunner testRunner, LoadTestRunContext context) {
+            runningLoadTests.add(testRunner);
+            notifyLoadTestStarted(testRunner);
+        }
+
+        public void afterLoadTest(LoadTestRunner testRunner, LoadTestRunContext context) {
+            runningLoadTests.remove(testRunner);
+            notifyLoadTestFinished(testRunner);
+        }
+    }
+
+    private class InternalSecurityTestRunListener extends SecurityTestRunListenerAdapter {
+        public void beforeRun(TestCaseRunner testRunner, SecurityTestRunContext context) {
+            runningSecurityTests.add((SecurityTestRunnerImpl)testRunner);
+            notifySecurityTestStarted((SecurityTestRunnerImpl)testRunner);
+        }
+
+        public void afterRun(TestCaseRunner testRunner, SecurityTestRunContext context) {
+            runningSecurityTests.remove((SecurityTestRunnerImpl)testRunner);
+            notifySecurityTestFinished((SecurityTestRunnerImpl)testRunner);
+        }
+    }
 }

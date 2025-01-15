@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support.definition.export;
@@ -76,8 +76,7 @@ public abstract class AbstractDefinitionExporter<T extends Interface> implements
             obj.save(new File(outFolder, urlToFileMap.get(part.getUrl())));
         }
 
-        return folderName + File.separatorChar
-                + urlToFileMap.get(definition.getDefinitionCache().getRootPart().getUrl());
+        return folderName + File.separatorChar + urlToFileMap.get(definition.getDefinitionCache().getRootPart().getUrl());
     }
 
     public StringToStringMap createFilesForExport(String urlPrefix) throws Exception {
@@ -119,15 +118,15 @@ public abstract class AbstractDefinitionExporter<T extends Interface> implements
     protected void postProcessing(XmlObject obj, InterfaceDefinitionPart part) {
     }
 
-    private void setFilenameForPart(InterfaceDefinitionPart part, Map<String, String> urlToFileMap, String urlPrefix)
-            throws MalformedURLException {
+    private void setFilenameForPart(InterfaceDefinitionPart part, Map<String, String> urlToFileMap, String urlPrefix) throws MalformedURLException {
 
         String path = part.getUrl();
 
         try {
             URL url = new URL(path);
             path = url.getPath();
-        } catch (MalformedURLException ignored) {
+        }
+        catch (MalformedURLException ignored) {
         }
 
         int ix = path.lastIndexOf('/');
@@ -145,12 +144,14 @@ public abstract class AbstractDefinitionExporter<T extends Interface> implements
 
         if (type.equals(Constants.WSDL11_NS)) {
             fileName += ".wsdl";
-        } else if (part.getType().equals(Constants.XSD_NS)) {
+        }
+        else if (part.getType().equals(Constants.XSD_NS)) {
             fileName += ".xsd";
-        } else if (getDefinition().getInterface() instanceof RestService
-                && part.getType().equals(((RestService) getDefinition().getInterface()).getWadlVersion())) {
+        }
+        else if (getDefinition().getInterface() instanceof RestService && part.getType().equals(((RestService)getDefinition().getInterface()).getWadlVersion())) {
             fileName += ".wadl";
-        } else {
+        }
+        else {
             fileName += ".xml";
         }
 
@@ -161,9 +162,11 @@ public abstract class AbstractDefinitionExporter<T extends Interface> implements
         int cnt = 1;
         while (urlToFileMap.containsValue(fileName)) {
             ix = fileName.lastIndexOf('.');
-			int iy = fileName.lastIndexOf("_");
-			if (iy == -1) iy = ix;
-			fileName = fileName.substring(0, iy) + "_" + cnt + fileName.substring(ix);
+            int iy = fileName.lastIndexOf("_");
+            if (iy == -1) {
+                iy = ix;
+            }
+            fileName = fileName.substring(0, iy) + "_" + cnt + fileName.substring(ix);
             //fileName = fileName.substring(0, ix) + "_" + cnt + fileName.substring(ix);
             cnt++;
         }
@@ -171,15 +174,14 @@ public abstract class AbstractDefinitionExporter<T extends Interface> implements
         urlToFileMap.put(part.getUrl(), fileName);
     }
 
-    private void replaceImportsAndIncludes(XmlObject xmlObject, Map<String, String> urlToFileMap, String baseUrl)
-            throws Exception {
+    private void replaceImportsAndIncludes(XmlObject xmlObject, Map<String, String> urlToFileMap, String baseUrl) throws Exception {
         String[] paths = getLocationXPathsToReplace();
 
         for (String path : paths) {
             XmlObject[] locations = xmlObject.selectPath(path);
 
             for (XmlObject location : locations) {
-                SimpleValue wsdlImport = ((SimpleValue) location);
+                SimpleValue wsdlImport = ((SimpleValue)location);
                 replaceLocation(urlToFileMap, baseUrl, wsdlImport);
             }
         }
@@ -187,18 +189,19 @@ public abstract class AbstractDefinitionExporter<T extends Interface> implements
 
     protected abstract String[] getLocationXPathsToReplace();
 
-    private void replaceLocation(Map<String, String> urlToFileMap, String baseUrl, SimpleValue wsdlImport)
-            throws Exception {
+    private void replaceLocation(Map<String, String> urlToFileMap, String baseUrl, SimpleValue wsdlImport) throws Exception {
         String location = wsdlImport.getStringValue();
         if (location != null) {
             if (location.startsWith("file:") || location.indexOf("://") > 0) {
                 String newLocation = urlToFileMap.get(location);
                 if (newLocation != null) {
                     wsdlImport.setStringValue(newLocation);
-                } else {
+                }
+                else {
                     throw new Exception("Missing local file for [" + newLocation + "]");
                 }
-            } else {
+            }
+            else {
                 String loc = Tools.joinRelativeUrl(baseUrl, location);
                 String newLocation = urlToFileMap.get(loc);
                 if (newLocation == null) {
@@ -209,11 +212,11 @@ public abstract class AbstractDefinitionExporter<T extends Interface> implements
                 }
                 if (newLocation != null) {
                     wsdlImport.setStringValue(newLocation);
-                } else {
+                }
+                else {
                     throw new Exception("Missing local file for [" + loc + "]");
                 }
             }
         }
     }
-
 }

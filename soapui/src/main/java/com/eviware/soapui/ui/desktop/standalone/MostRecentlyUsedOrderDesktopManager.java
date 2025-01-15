@@ -1,24 +1,22 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.ui.desktop.standalone;
 
-import javax.swing.DesktopManager;
-import javax.swing.JComponent;
-import javax.swing.JInternalFrame;
+import javax.swing.*;
 import java.beans.PropertyVetoException;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -43,7 +41,7 @@ public class MostRecentlyUsedOrderDesktopManager implements DesktopManager {
     // Keep desktop panel list (JInternalFrame) of existing internal frames in a most-recently-used order (i.e. a stack).
     Deque<JInternalFrame> mostRecentlyUsedFrames = new ArrayDeque<JInternalFrame>();
 
-    private DesktopManager delegate;
+    private final DesktopManager delegate;
     // this is used to prevent AquaInternalFrameManager from activating another pane when we are closing one on Mac
     private boolean isClosingFrame;
 
@@ -52,35 +50,8 @@ public class MostRecentlyUsedOrderDesktopManager implements DesktopManager {
     }
 
     @Override
-    public void activateFrame(JInternalFrame f) {
-        if (f == null || isClosingFrame) {
-            return;
-        }
-        delegate.activateFrame(f);
-        if (!mostRecentlyUsedFrames.isEmpty() && f.equals(mostRecentlyUsedFrames.getFirst())) {
-            selectTopFrame(null);
-            return;
-        } else if (!mostRecentlyUsedFrames.isEmpty() && mostRecentlyUsedFrames.contains(f)) {
-            mostRecentlyUsedFrames.remove(f);
-        }
-        JInternalFrame previousTop = mostRecentlyUsedFrames.isEmpty() ? null : mostRecentlyUsedFrames.getFirst();
-        mostRecentlyUsedFrames.addFirst(f);
-        selectTopFrame(previousTop);
-    }
-
-    @Override
-    public void beginDraggingFrame(JComponent f) {
-        delegate.beginDraggingFrame(f);
-    }
-
-    @Override
-    public void beginResizingFrame(JComponent f, int direction) {
-        delegate.beginResizingFrame(f, direction);
-    }
-
-    @Override
-    public void deactivateFrame(JInternalFrame f) {
-        delegate.deactivateFrame(f);
+    public void openFrame(JInternalFrame f) {
+        delegate.openFrame(f);
     }
 
     @Override
@@ -89,17 +60,11 @@ public class MostRecentlyUsedOrderDesktopManager implements DesktopManager {
         try {
             isClosingFrame = true;
             delegate.closeFrame(f);
-        } finally {
+        }
+        finally {
             isClosingFrame = false;
         }
         selectTopFrame(f);
-    }
-
-    @Override
-    public void iconifyFrame(JInternalFrame f) {
-        mostRecentlyUsedFrames.remove(f);
-        selectTopFrame(f);
-        delegate.iconifyFrame(f);
     }
 
     @Override
@@ -113,24 +78,44 @@ public class MostRecentlyUsedOrderDesktopManager implements DesktopManager {
     }
 
     @Override
-    public void openFrame(JInternalFrame f) {
-        delegate.openFrame(f);
-    }
-
-    @Override
-    public void resizeFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
-        delegate.resizeFrame(f, newX, newY, newWidth, newHeight);
-    }
-
-    @Override
-    public void setBoundsForFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
-        delegate.setBoundsForFrame(f, newX, newY, newWidth, newHeight);
+    public void iconifyFrame(JInternalFrame f) {
+        mostRecentlyUsedFrames.remove(f);
+        selectTopFrame(f);
+        delegate.iconifyFrame(f);
     }
 
     @Override
     public void deiconifyFrame(JInternalFrame f) {
         delegate.deiconifyFrame(f);
         activateFrame(f);
+    }
+
+    @Override
+    public void activateFrame(JInternalFrame f) {
+        if (f == null || isClosingFrame) {
+            return;
+        }
+        delegate.activateFrame(f);
+        if (!mostRecentlyUsedFrames.isEmpty() && f.equals(mostRecentlyUsedFrames.getFirst())) {
+            selectTopFrame(null);
+            return;
+        }
+        else if (!mostRecentlyUsedFrames.isEmpty()) {
+            mostRecentlyUsedFrames.remove(f);
+        }
+        JInternalFrame previousTop = mostRecentlyUsedFrames.isEmpty() ? null : mostRecentlyUsedFrames.getFirst();
+        mostRecentlyUsedFrames.addFirst(f);
+        selectTopFrame(previousTop);
+    }
+
+    @Override
+    public void deactivateFrame(JInternalFrame f) {
+        delegate.deactivateFrame(f);
+    }
+
+    @Override
+    public void beginDraggingFrame(JComponent f) {
+        delegate.beginDraggingFrame(f);
     }
 
     @Override
@@ -144,8 +129,23 @@ public class MostRecentlyUsedOrderDesktopManager implements DesktopManager {
     }
 
     @Override
+    public void beginResizingFrame(JComponent f, int direction) {
+        delegate.beginResizingFrame(f, direction);
+    }
+
+    @Override
+    public void resizeFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
+        delegate.resizeFrame(f, newX, newY, newWidth, newHeight);
+    }
+
+    @Override
     public void endResizingFrame(JComponent f) {
         delegate.endResizingFrame(f);
+    }
+
+    @Override
+    public void setBoundsForFrame(JComponent f, int newX, int newY, int newWidth, int newHeight) {
+        delegate.setBoundsForFrame(f, newX, newY, newWidth, newHeight);
     }
 
     protected void selectTopFrame(JInternalFrame previousTopFrame) {
@@ -153,7 +153,8 @@ public class MostRecentlyUsedOrderDesktopManager implements DesktopManager {
         try {
             if (mostRecentlyUsedFrames.isEmpty()) {
                 return;
-            } else {
+            }
+            else {
                 topFrame = mostRecentlyUsedFrames.getFirst();
             }
             if (previousTopFrame != null && !previousTopFrame.equals(topFrame)) {
@@ -164,8 +165,8 @@ public class MostRecentlyUsedOrderDesktopManager implements DesktopManager {
             if (!topFrame.isSelected()) {
                 topFrame.setSelected(true);
             }
-        } catch (PropertyVetoException ignore) {
+        }
+        catch (PropertyVetoException ignore) {
         }
     }
-
 }

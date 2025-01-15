@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -35,14 +35,14 @@ import com.eviware.soapui.model.testsuite.TestAssertion;
 import com.eviware.soapui.monitor.TestMonitor;
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class HttpTestRequest extends HttpRequest implements HttpTestRequestInterface<HttpRequestConfig> {
     private final boolean forLoadTest;
-    private HttpTestRequestStep testStep;
+    private final HttpTestRequestStep testStep;
     private AssertionsSupport assertionsSupport;
     private HttpResponseMessageExchange messageExchange;
     private PropertyChangeNotifier notifier;
@@ -78,10 +78,6 @@ public class HttpTestRequest extends HttpRequest implements HttpTestRequestInter
 
     private void initAssertions() {
         assertionsSupport = new AssertionsSupport(testStep, new AssertableConfig() {
-            public TestAssertionConfig addNewAssertion() {
-                return getConfig().addNewAssertion();
-            }
-
             public List<TestAssertionConfig> getAssertionList() {
                 return getConfig().getAssertionList();
             }
@@ -90,25 +86,16 @@ public class HttpTestRequest extends HttpRequest implements HttpTestRequestInter
                 getConfig().removeAssertion(ix);
             }
 
+            public TestAssertionConfig addNewAssertion() {
+                return getConfig().addNewAssertion();
+            }
+
             public TestAssertionConfig insertAssertion(TestAssertionConfig source, int ix) {
                 TestAssertionConfig conf = getConfig().insertNewAssertion(ix);
                 conf.set(source);
                 return conf;
             }
         });
-    }
-
-    public int getAssertionCount() {
-        return assertionsSupport.getAssertionCount();
-    }
-
-    public WsdlMessageAssertion getAssertionAt(int c) {
-        return assertionsSupport.getAssertionAt(c);
-    }
-
-    public void setResponse(HttpResponse response, SubmitContext context) {
-        super.setResponse(response, context);
-        assertResponse(context);
     }
 
     public void assertResponse(SubmitContext context) {
@@ -128,6 +115,18 @@ public class HttpTestRequest extends HttpRequest implements HttpTestRequestInter
         notifier.notifyChange();
     }
 
+    public String getResponseContentAsString() {
+        return getResponse() == null ? null : getResponse().getContentAsString();
+    }
+
+    public HttpTestRequestStep getTestStep() {
+        return testStep;
+    }
+
+    public WsdlTestCase getTestCase() {
+        return testStep.getTestCase();
+    }
+
     @Override
     public ImageIcon getIcon() {
         if (forLoadTest || getIconAnimator() == null) {
@@ -135,9 +134,7 @@ public class HttpTestRequest extends HttpRequest implements HttpTestRequestInter
         }
 
         TestMonitor testMonitor = SoapUI.getTestMonitor();
-        if (testMonitor != null
-                && (testMonitor.hasRunningLoadTest(getTestStep().getTestCase()) || testMonitor
-                .hasRunningSecurityTest(getTestStep().getTestCase()))) {
+        if (testMonitor != null && (testMonitor.hasRunningLoadTest(getTestStep().getTestCase()) || testMonitor.hasRunningSecurityTest(getTestStep().getTestCase()))) {
             return disabledRequestIcon;
         }
 
@@ -146,14 +143,174 @@ public class HttpTestRequest extends HttpRequest implements HttpTestRequestInter
             AssertionStatus status = getAssertionStatus();
             if (status == AssertionStatus.VALID) {
                 return validRequestIcon;
-            } else if (status == AssertionStatus.FAILED) {
+            }
+            else if (status == AssertionStatus.FAILED) {
                 return failedRequestIcon;
-            } else if (status == AssertionStatus.UNKNOWN) {
+            }
+            else if (status == AssertionStatus.UNKNOWN) {
                 return unknownRequestIcon;
             }
         }
 
         return icon;
+    }
+
+    public void setResponse(HttpResponse response, SubmitContext context) {
+        super.setResponse(response, context);
+        assertResponse(context);
+    }
+
+    public WsdlMessageAssertion addAssertion(String assertionLabel) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+
+        try {
+            WsdlMessageAssertion assertion = assertionsSupport.addWsdlAssertion(assertionLabel);
+            if (assertion == null) {
+                return null;
+            }
+
+            if (getResponse() != null) {
+                assertion.assertResponse(new HttpResponseMessageExchange(this), new WsdlTestRunContext(testStep));
+                notifier.notifyChange();
+            }
+
+            return assertion;
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+            return null;
+        }
+    }
+
+    public void addAssertionsListener(AssertionsListener listener) {
+        assertionsSupport.addAssertionsListener(listener);
+    }
+
+    public int getAssertionCount() {
+        return assertionsSupport.getAssertionCount();
+    }
+
+    public WsdlMessageAssertion getAssertionAt(int c) {
+        return assertionsSupport.getAssertionAt(c);
+    }
+
+    public void removeAssertionsListener(AssertionsListener listener) {
+        assertionsSupport.removeAssertionsListener(listener);
+    }
+
+    public void removeAssertion(TestAssertion assertion) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+
+        try {
+            assertionsSupport.removeAssertion((WsdlMessageAssertion)assertion);
+        }
+        finally {
+            ((WsdlMessageAssertion)assertion).release();
+            notifier.notifyChange();
+        }
+    }
+
+    public AssertionStatus getAssertionStatus() {
+        currentStatus = AssertionStatus.UNKNOWN;
+
+        if (messageExchange != null) {
+            if (!messageExchange.hasResponse() && getOperation() != null && getOperation().isBidirectional()) {
+                currentStatus = AssertionStatus.FAILED;
+            }
+        }
+        else {
+            return currentStatus;
+        }
+
+        int cnt = getAssertionCount();
+        if (cnt == 0) {
+            return currentStatus;
+        }
+
+        for (int c = 0; c < cnt; c++) {
+            if (getAssertionAt(c).getStatus() == AssertionStatus.FAILED) {
+                currentStatus = AssertionStatus.FAILED;
+                break;
+            }
+        }
+
+        if (currentStatus == AssertionStatus.UNKNOWN) {
+            currentStatus = AssertionStatus.VALID;
+        }
+
+        return currentStatus;
+    }
+
+    public String getAssertableContentAsXml() {
+        return getResponseContentAsXml();
+    }
+
+    public String getAssertableContent() {
+        return getResponseContentAsString();
+    }
+
+    public String getDefaultAssertableContent() {
+        return "";
+    }
+
+    public AssertableType getAssertableType() {
+        return AssertableType.RESPONSE;
+    }
+
+    public List<TestAssertion> getAssertionList() {
+        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
+    }
+
+    public WsdlMessageAssertion getAssertionByName(String name) {
+        return assertionsSupport.getAssertionByName(name);
+    }
+
+    public Interface getInterface() {
+        return null;
+    }
+
+    public TestAssertion cloneAssertion(TestAssertion source, String name) {
+        return assertionsSupport.cloneAssertion(source, name);
+    }
+
+    public Map<String, TestAssertion> getAssertions() {
+        return assertionsSupport.getAssertions();
+    }
+
+    public TestAssertion moveAssertion(int ix, int offset) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+        WsdlMessageAssertion assertion = getAssertionAt(ix);
+        try {
+            return assertionsSupport.moveAssertion(ix, offset);
+        }
+        finally {
+            assertion.release();
+            notifier.notifyChange();
+        }
+    }
+
+    public void updateConfig(HttpRequestConfig request) {
+        super.updateConfig(request);
+
+        assertionsSupport.refresh();
+    }
+
+    public ModelItem getParent() {
+        return getTestStep();
+    }
+
+    public boolean isDiscardResponse() {
+        return getSettings().getBoolean("discardResponse");
+    }
+
+    public WsdlMessageAssertion importAssertion(
+        WsdlMessageAssertion source, boolean overwrite, boolean createCopy, String newName
+    ) {
+        return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
+    }
+
+    public void setDiscardResponse(boolean discardResponse) {
+        getSettings().setBoolean("discardResponse", discardResponse);
     }
 
     private class PropertyChangeNotifier {
@@ -180,158 +337,5 @@ public class HttpTestRequest extends HttpRequest implements HttpTestRequestInter
             oldStatus = newStatus;
             oldIcon = newIcon;
         }
-    }
-
-    public WsdlMessageAssertion addAssertion(String assertionLabel) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
-
-        try {
-            WsdlMessageAssertion assertion = assertionsSupport.addWsdlAssertion(assertionLabel);
-            if (assertion == null) {
-                return null;
-            }
-
-            if (getResponse() != null) {
-                assertion.assertResponse(new HttpResponseMessageExchange(this), new WsdlTestRunContext(testStep));
-                notifier.notifyChange();
-            }
-
-            return assertion;
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return null;
-        }
-    }
-
-    public void removeAssertion(TestAssertion assertion) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
-
-        try {
-            assertionsSupport.removeAssertion((WsdlMessageAssertion) assertion);
-
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
-            notifier.notifyChange();
-        }
-    }
-
-    public TestAssertion moveAssertion(int ix, int offset) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
-        WsdlMessageAssertion assertion = getAssertionAt(ix);
-        try {
-            return assertionsSupport.moveAssertion(ix, offset);
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
-            notifier.notifyChange();
-        }
-    }
-
-    public AssertionStatus getAssertionStatus() {
-        currentStatus = AssertionStatus.UNKNOWN;
-
-        if (messageExchange != null) {
-            if (!messageExchange.hasResponse() && getOperation() != null && getOperation().isBidirectional()) {
-                currentStatus = AssertionStatus.FAILED;
-            }
-        } else {
-            return currentStatus;
-        }
-
-        int cnt = getAssertionCount();
-        if (cnt == 0) {
-            return currentStatus;
-        }
-
-        for (int c = 0; c < cnt; c++) {
-            if (getAssertionAt(c).getStatus() == AssertionStatus.FAILED) {
-                currentStatus = AssertionStatus.FAILED;
-                break;
-            }
-        }
-
-        if (currentStatus == AssertionStatus.UNKNOWN) {
-            currentStatus = AssertionStatus.VALID;
-        }
-
-        return currentStatus;
-    }
-
-    public void addAssertionsListener(AssertionsListener listener) {
-        assertionsSupport.addAssertionsListener(listener);
-    }
-
-    public void removeAssertionsListener(AssertionsListener listener) {
-        assertionsSupport.removeAssertionsListener(listener);
-    }
-
-    public String getResponseContentAsString() {
-        return getResponse() == null ? null : getResponse().getContentAsString();
-    }
-
-    public String getAssertableContentAsXml() {
-        return getResponseContentAsXml();
-    }
-
-    public String getAssertableContent() {
-        return getResponseContentAsString();
-    }
-
-    public HttpTestRequestStep getTestStep() {
-        return testStep;
-    }
-
-    public TestAssertion cloneAssertion(TestAssertion source, String name) {
-        return assertionsSupport.cloneAssertion(source, name);
-    }
-
-    public List<TestAssertion> getAssertionList() {
-        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
-    }
-
-    public WsdlMessageAssertion getAssertionByName(String name) {
-        return assertionsSupport.getAssertionByName(name);
-    }
-
-    public Map<String, TestAssertion> getAssertions() {
-        return assertionsSupport.getAssertions();
-    }
-
-    public String getDefaultAssertableContent() {
-        return "";
-    }
-
-    public AssertableType getAssertableType() {
-        return AssertableType.RESPONSE;
-    }
-
-    public Interface getInterface() {
-        return null;
-    }
-
-    public void updateConfig(HttpRequestConfig request) {
-        super.updateConfig(request);
-
-        assertionsSupport.refresh();
-    }
-
-    public WsdlTestCase getTestCase() {
-        return testStep.getTestCase();
-    }
-
-    public ModelItem getParent() {
-        return getTestStep();
-    }
-
-    public WsdlMessageAssertion importAssertion(WsdlMessageAssertion source, boolean overwrite, boolean createCopy,
-                                                String newName) {
-        return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
-    }
-
-    public boolean isDiscardResponse() {
-        return getSettings().getBoolean("discardResponse");
-    }
-
-    public void setDiscardResponse(boolean discardResponse) {
-        getSettings().setBoolean("discardResponse", discardResponse);
     }
 }

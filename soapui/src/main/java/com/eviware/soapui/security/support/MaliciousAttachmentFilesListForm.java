@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.support;
@@ -24,26 +24,22 @@ import com.eviware.soapui.security.tools.AttachmentElement;
 import com.eviware.soapui.security.ui.MaliciousAttachmentMutationsPanel.MutationTables;
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 
 public class MaliciousAttachmentFilesListForm extends JPanel {
-    private DefaultListModel listModel;
+    final MaliciousAttachmentListToTableHolder holder;
+    private final DefaultListModel listModel;
     private JList list;
     private AttachmentElement oldSelection;
     private AttachmentElement currentSelection;
     private MaliciousAttachmentSecurityScanConfig config;
-    final MaliciousAttachmentListToTableHolder holder;
 
-    public MaliciousAttachmentFilesListForm(MaliciousAttachmentSecurityScanConfig config,
-                                            MaliciousAttachmentListToTableHolder holder) {
+    public MaliciousAttachmentFilesListForm(
+        MaliciousAttachmentSecurityScanConfig config, MaliciousAttachmentListToTableHolder holder
+    ) {
         super(new BorderLayout());
 
         this.config = config;
@@ -63,8 +59,7 @@ public class MaliciousAttachmentFilesListForm extends JPanel {
         list.addListSelectionListener(new ListSelectionListener() {
 
             public void valueChanged(ListSelectionEvent e) {
-                currentSelection = (list.getSelectedIndex() == -1) ? null : (AttachmentElement) listModel.get(list
-                        .getSelectedIndex());
+                currentSelection = (list.getSelectedIndex() == -1) ? null : (AttachmentElement)listModel.get(list.getSelectedIndex());
                 MaliciousAttachmentFilesListForm.this.holder.refresh(oldSelection, currentSelection);
                 oldSelection = currentSelection;
             }
@@ -76,7 +71,7 @@ public class MaliciousAttachmentFilesListForm extends JPanel {
     public AttachmentElement getFirstItem() {
         if (list.getModel().getSize() != 0) {
             list.setSelectedIndex(0);
-            return (AttachmentElement) list.getSelectedValue();
+            return (AttachmentElement)list.getSelectedValue();
         }
         return null;
     }
@@ -88,19 +83,19 @@ public class MaliciousAttachmentFilesListForm extends JPanel {
     public AttachmentElement[] getData() {
         AttachmentElement[] result = new AttachmentElement[listModel.size()];
         for (int c = 0; c < result.length; c++) {
-            result[c] = (AttachmentElement) listModel.get(c);
+            result[c] = (AttachmentElement)listModel.get(c);
         }
         return result;
     }
 
     public void setData(Attachment[] attachments) {
-        MaliciousAttachmentSecurityScanConfig copy = (MaliciousAttachmentSecurityScanConfig) config.copy();
+        MaliciousAttachmentSecurityScanConfig copy = (MaliciousAttachmentSecurityScanConfig)config.copy();
 
         listModel.clear();
         config.getElementList().clear();
         holder.getGenerateTableModel().clear();
         holder.getReplaceTableModel().clear();
-        holder.getTablesDialog().setBooleanValue(MutationTables.REMOVE_FILE, new Boolean(false));
+        holder.getTablesDialog().setBooleanValue(MutationTables.REMOVE_FILE, Boolean.FALSE);
 
         if (attachments != null) {
             for (Attachment att : attachments) {
@@ -109,7 +104,7 @@ public class MaliciousAttachmentFilesListForm extends JPanel {
 
                 holder.getGenerateTableModel().clear();
                 holder.getReplaceTableModel().clear();
-                holder.getTablesDialog().setBooleanValue(MutationTables.REMOVE_FILE, new Boolean(false));
+                holder.getTablesDialog().setBooleanValue(MutationTables.REMOVE_FILE, Boolean.FALSE);
 
                 // add empty element
                 MaliciousAttachmentElementConfig newElement = config.addNewElement();

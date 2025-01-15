@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl;
@@ -30,29 +30,29 @@ import java.beans.PropertyChangeListener;
  */
 
 public interface AttachmentContainer {
-    public int getAttachmentCount();
+    String ATTACHMENTS_PROPERTY = WsdlRequest.class.getName() + "@attachments";
 
-    public Attachment getAttachmentAt(int index);
+    int getAttachmentCount();
 
-    public Attachment[] getAttachmentsForPart(String partName);
+    Attachment getAttachmentAt(int index);
 
-    public Attachment[] getAttachments();
+    Attachment[] getAttachmentsForPart(String partName);
 
-    public AttachmentPart[] getDefinedAttachmentParts();
+    Attachment[] getAttachments();
 
-    public AttachmentPart getAttachmentPart(String partName);
+    AttachmentPart[] getDefinedAttachmentParts();
 
-    public static final String ATTACHMENTS_PROPERTY = WsdlRequest.class.getName() + "@attachments";
+    AttachmentPart getAttachmentPart(String partName);
 
-    public void addAttachmentsChangeListener(PropertyChangeListener listener);
+    void addAttachmentsChangeListener(PropertyChangeListener listener);
 
-    public void removeAttachmentsChangeListener(PropertyChangeListener listener);
+    void removeAttachmentsChangeListener(PropertyChangeListener listener);
 
-    public boolean isMultipartEnabled();
+    boolean isMultipartEnabled();
 
     /**
      * Returns ModelItem associated with this container
      */
 
-    public ModelItem getModelItem();
+    ModelItem getModelItem();
 }

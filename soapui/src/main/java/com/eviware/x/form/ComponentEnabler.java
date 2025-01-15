@@ -1,38 +1,29 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.form;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ComponentEnabler implements XFormFieldListener {
     private final XFormField formField;
 
     // Cannot use HashMap, because the XFormField may be a Proxy.
-    private ArrayList<FieldValue> fields = new ArrayList<FieldValue>();
-
-    private static class FieldValue {
-        XFormField field;
-        String value;
-
-        public FieldValue(XFormField field, String value) {
-            this.field = field;
-            this.value = value;
-        }
-    }
+    private final ArrayList<FieldValue> fields = new ArrayList<FieldValue>();
 
     public ComponentEnabler(XFormField formField) {
         this.formField = formField;
@@ -50,7 +41,7 @@ public class ComponentEnabler implements XFormFieldListener {
      */
     void add(XFormField field, String value) {
         String fieldValue = formField.getValue();
-        boolean enable = (fieldValue == null ? value == null : fieldValue.equals(value));
+        boolean enable = (Objects.equals(fieldValue, value));
         field.setEnabled(enable);
         fields.add(new FieldValue(field, value));
     }
@@ -59,6 +50,16 @@ public class ComponentEnabler implements XFormFieldListener {
         for (FieldValue f : fields) {
             boolean enable = newValue.equals(f.value);
             f.field.setEnabled(enable);
+        }
+    }
+
+    private static class FieldValue {
+        XFormField field;
+        String value;
+
+        public FieldValue(XFormField field, String value) {
+            this.field = field;
+            this.value = value;
         }
     }
 }

@@ -1,21 +1,20 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.mock;
-
 
 import com.eviware.soapui.config.RESTMockResponseConfig;
 import com.eviware.soapui.impl.rest.RestRequestInterface;
@@ -40,11 +39,6 @@ public class RestMockResponse extends AbstractMockResponse<RESTMockResponseConfi
 
     public RestMockResponse(RestMockAction action, RESTMockResponseConfig config) {
         super(config, action, ICON_NAME);
-    }
-
-    @Override
-    public int getAttachmentCount() {
-        return 0;
     }
 
     @Override
@@ -83,11 +77,6 @@ public class RestMockResponse extends AbstractMockResponse<RESTMockResponseConfi
     }
 
     @Override
-    public boolean isMtomEnabled() {
-        return false;
-    }
-
-    @Override
     public boolean isInlineFilesEnabled() {
         return false;
     }
@@ -100,21 +89,6 @@ public class RestMockResponse extends AbstractMockResponse<RESTMockResponseConfi
     @Override
     public Attachment.AttachmentEncoding getAttachmentEncoding(String partName) {
         return null;
-    }
-
-    @Override
-    public Attachment[] getAttachments() {
-        return new Attachment[0];
-    }
-
-    @Override
-    public MockOperation getMockOperation() {
-        return (MockOperation) getParent();
-    }
-
-    @Override
-    public String getScriptHelpUrl() {
-        return HelpUrls.REST_MOCK_RESPONSE_SCRIPT;
     }
 
     @Override
@@ -142,20 +116,12 @@ public class RestMockResponse extends AbstractMockResponse<RESTMockResponseConfi
     }
 
     @Override
-    protected String executeSpecifics(MockRequest request, String responseContent, WsdlMockRunContext context) throws IOException, WSSecurityException {
+    protected String removeEmptyContent(String responseContent) {
         return responseContent;
     }
 
     @Override
-    public String getContentType() {
-        if (getEncoding() != null) {
-            return getMediaType() + "; " + getEncoding();
-        }
-        return getMediaType();
-    }
-
-    @Override
-    protected String removeEmptyContent(String responseContent) {
+    protected String executeSpecifics(MockRequest request, String responseContent, WsdlMockRunContext context) throws IOException, WSSecurityException {
         return responseContent;
     }
 
@@ -175,15 +141,37 @@ public class RestMockResponse extends AbstractMockResponse<RESTMockResponseConfi
     }
 
     @Override
-    public String getMediaType() {
-        return getConfig().isSetMediaType() ? getConfig().getMediaType() : RestRequestInterface.DEFAULT_MEDIATYPE;
+    public String getContentType() {
+        if (getEncoding() != null) {
+            return getMediaType() + "; " + getEncoding();
+        }
+        return getMediaType();
     }
 
     @Override
-    public void setMediaType(String mediaType) {
-        getConfig().setMediaType(mediaType);
+    public boolean isMtomEnabled() {
+        return false;
     }
 
+    @Override
+    public Attachment[] getAttachments() {
+        return new Attachment[0];
+    }
+
+    @Override
+    public int getAttachmentCount() {
+        return 0;
+    }
+
+    @Override
+    public MockOperation getMockOperation() {
+        return (MockOperation)getParent();
+    }
+
+    @Override
+    public String getScriptHelpUrl() {
+        return HelpUrls.REST_MOCK_RESPONSE_SCRIPT;
+    }
 
     public void setContentType(String contentType) {
         String[] parts = contentType.split(";");
@@ -193,6 +181,16 @@ public class RestMockResponse extends AbstractMockResponse<RESTMockResponseConfi
         if (encodingValue != null) {
             setEncoding(encodingValue);
         }
+    }
+
+    @Override
+    public String getMediaType() {
+        return getConfig().isSetMediaType() ? getConfig().getMediaType() : RestRequestInterface.DEFAULT_MEDIATYPE;
+    }
+
+    @Override
+    public void setMediaType(String mediaType) {
+        getConfig().setMediaType(mediaType);
     }
 
     protected String getEncodingValue(String[] parameters) {
@@ -207,10 +205,8 @@ public class RestMockResponse extends AbstractMockResponse<RESTMockResponseConfi
                     return encoding;
                 }
             }
-
         }
 
         return encoding;
     }
-
 }

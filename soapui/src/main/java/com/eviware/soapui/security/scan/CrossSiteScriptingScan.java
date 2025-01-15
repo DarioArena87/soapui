@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.scan;
@@ -45,10 +45,8 @@ import com.eviware.x.form.support.AForm;
 import com.eviware.x.impl.swing.JFormDialog;
 import com.eviware.x.impl.swing.JStringListFormField;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -73,20 +71,19 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
     public static final String PARAMETER_EXPOSURE_SCAN_CONFIG = "CrossSiteScriptingScanConfig";
     public static final String TEST_CASE_RUNNER = "testCaseRunner";
     public static final String TEST_STEP = "testStep";
-    private CrossSiteScriptingScanConfig cssConfig;
     StrategyTypeConfig.Enum strategy = StrategyTypeConfig.ONE_BY_ONE;
-
     List<String> defaultParameterExposureStrings = new ArrayList<String>();
+    private CrossSiteScriptingScanConfig cssConfig;
     private JFormDialog dialog;
 
     public CrossSiteScriptingScan(TestStep testStep, SecurityScanConfig config, ModelItem parent, String icon) {
         super(testStep, config, parent, icon);
         if (config.getConfig() == null || !(config.getConfig() instanceof CrossSiteScriptingScanConfig)) {
             initConfig();
-        } else {
-            cssConfig = (CrossSiteScriptingScanConfig) getConfig().getConfig();
         }
-
+        else {
+            cssConfig = (CrossSiteScriptingScanConfig)getConfig().getConfig();
+        }
     }
 
     private void initDefaultVectors() {
@@ -98,28 +95,18 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
                 defaultParameterExposureStrings.add(strLine);
             }
             in.close();
-        } catch (Exception e) {
-            SoapUI.logError(e);
         }
-
-    }
-
-    @Override
-    protected void initAssertions() {
-        super.initAssertions();
-
-        if (assertionsSupport.getAssertionByName(CrossSiteScriptAssertion.LABEL) == null) {
-            assertionsSupport.addWsdlAssertion(CrossSiteScriptAssertion.LABEL);
+        catch (Exception e) {
+            SoapUI.logError(e);
         }
     }
 
     private void initConfig() {
         initDefaultVectors();
         getConfig().setConfig(CrossSiteScriptingScanConfig.Factory.newInstance());
-        cssConfig = (CrossSiteScriptingScanConfig) getConfig().getConfig();
+        cssConfig = (CrossSiteScriptingScanConfig)getConfig().getConfig();
 
-        cssConfig.setParameterExposureStringsArray(defaultParameterExposureStrings
-                .toArray(new String[defaultParameterExposureStrings.size()]));
+        cssConfig.setParameterExposureStringsArray(defaultParameterExposureStrings.toArray(new String[defaultParameterExposureStrings.size()]));
     }
 
     @Override
@@ -127,30 +114,17 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
         super.updateSecurityConfig(config);
 
         if (cssConfig != null) {
-            cssConfig = (CrossSiteScriptingScanConfig) getConfig().getConfig();
+            cssConfig = (CrossSiteScriptingScanConfig)getConfig().getConfig();
         }
     }
 
     @Override
-    protected void execute(SecurityTestRunner securityTestRunner, TestStep testStep, SecurityTestRunContext context) {
-        sendToContext(context, testStep, securityTestRunner);
-        PropertyMutation mutation = PropertyMutation.popMutation(context);
-        if (mutation != null) {
-            if (testStep instanceof RestTestRequestStep) {
-                RestRequestStepResult message = (RestRequestStepResult) mutation.getTestStep().run(
-                        (TestCaseRunner) securityTestRunner, context);
-                message.setRequestContent("");
-                createMessageExchange(mutation.getMutatedParameters(), message, context);
-            } else {
-                MessageExchange message = (MessageExchange) mutation.getTestStep().run(
-                        (TestCaseRunner) securityTestRunner, context);
-                if (message instanceof WsdlTestRequestStepResult) {
-                    ((WsdlTestRequestStepResult) message).setRequestContent("", false);
-                }
-
-                createMessageExchange(mutation.getMutatedParameters(), message, context);
-            }
+    public void release() {
+        if (dialog != null) {
+            dialog.release();
         }
+
+        super.release();
     }
 
     private void sendToContext(SecurityTestRunContext context, TestStep testStep, SecurityTestRunner securityTestRunner) {
@@ -175,6 +149,95 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
         return TYPE;
     }
 
+    @Override
+    public String getConfigName() {
+        return "Cross Site Scripting Scan";
+    }
+
+    @Override
+    public String getConfigDescription() {
+        return "Configures parameter exposure security scan";
+    }
+
+    @Override
+    public String getHelpURL() {
+        return "http://soapui.org/Security/cross-site-scripting.html";
+    }
+
+    @Override
+    public JComponent getAdvancedSettingsPanel() {
+        dialog = (JFormDialog)ADialogBuilder.buildDialog(AdvancedSettings.class);
+        JStringListFormField stringField = (JStringListFormField)dialog.getFormField(AdvancedSettings.PARAMETER_EXPOSURE_STRINGS);
+        stringField.setOptions(cssConfig.getParameterExposureStringsList().toArray());
+        stringField.setProperty("dimension", new Dimension(470, 150));
+        stringField.getComponent().addPropertyChangeListener("options", new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String[] newOptions = (String[])evt.getNewValue();
+                String[] oldOptions = (String[])evt.getOldValue();
+                // added
+                if (newOptions.length > oldOptions.length) {
+                    // new element is always added to the end
+                    String[] newValue = (String[])evt.getNewValue();
+                    String itemToAdd = newValue[newValue.length - 1];
+                    cssConfig.addParameterExposureStrings(itemToAdd);
+                }
+                // removed
+                if (newOptions.length < oldOptions.length) {
+                    /*
+                     * items with same index should me same. first one in oldOptions
+                     * that does not match is element that is removed.
+                     */
+                    for (int cnt = 0; cnt < oldOptions.length; cnt++) {
+                        if (cnt < newOptions.length) {
+                            if (newOptions[cnt] != oldOptions[cnt]) {
+                                cssConfig.removeParameterExposureStrings(cnt);
+                                break;
+                            }
+                        }
+                        else {
+                            // this is border case, last lement in array is removed.
+                            cssConfig.removeParameterExposureStrings(oldOptions.length - 1);
+                        }
+                    }
+                }
+            }
+        });
+
+        return dialog.getPanel();
+    }
+
+    @Override
+    protected void initAssertions() {
+        super.initAssertions();
+
+        if (assertionsSupport.getAssertionByName(CrossSiteScriptAssertion.LABEL) == null) {
+            assertionsSupport.addWsdlAssertion(CrossSiteScriptAssertion.LABEL);
+        }
+    }
+
+    @Override
+    protected void execute(SecurityTestRunner securityTestRunner, TestStep testStep, SecurityTestRunContext context) {
+        sendToContext(context, testStep, securityTestRunner);
+        PropertyMutation mutation = PropertyMutation.popMutation(context);
+        if (mutation != null) {
+            if (testStep instanceof RestTestRequestStep) {
+                RestRequestStepResult message = (RestRequestStepResult)mutation.getTestStep().run((TestCaseRunner)securityTestRunner, context);
+                message.setRequestContent("");
+                createMessageExchange(mutation.getMutatedParameters(), message, context);
+            }
+            else {
+                MessageExchange message = (MessageExchange)mutation.getTestStep().run((TestCaseRunner)securityTestRunner, context);
+                if (message instanceof WsdlTestRequestStepResult) {
+                    ((WsdlTestRequestStepResult)message).setRequestContent("", false);
+                }
+
+                createMessageExchange(mutation.getMutatedParameters(), message, context);
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
@@ -184,32 +247,30 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
             context.put(PARAMETER_EXPOSURE_SCAN_CONFIG, cssConfig);
             try {
                 extractMutations(testStep, context);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
 
             return checkIfEmptyStack(context);
         }
 
-        Stack<PropertyMutation> stack = (Stack<PropertyMutation>) context.get(PropertyMutation.REQUEST_MUTATIONS_STACK);
+        Stack<PropertyMutation> stack = (Stack<PropertyMutation>)context.get(PropertyMutation.REQUEST_MUTATIONS_STACK);
         if (stack.empty()) {
             context.remove(PropertyMutation.REQUEST_MUTATIONS_STACK);
             context.remove(PARAMETER_EXPOSURE_SCAN_CONFIG);
             removeFromContext(context);
             return false;
-        } else {
+        }
+        else {
             return true;
         }
     }
 
     @SuppressWarnings("unchecked")
     private boolean checkIfEmptyStack(SecurityTestRunContext context) {
-        Stack<PropertyMutation> stack = (Stack<PropertyMutation>) context.get(PropertyMutation.REQUEST_MUTATIONS_STACK);
-        if (stack.empty()) {
-            return false;
-        } else {
-            return true;
-        }
+        Stack<PropertyMutation> stack = (Stack<PropertyMutation>)context.get(PropertyMutation.REQUEST_MUTATIONS_STACK);
+        return !stack.empty();
     }
 
     private void extractMutations(TestStep testStep, SecurityTestRunContext context) {
@@ -228,13 +289,14 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
                 if (strategy.equals(StrategyTypeConfig.ONE_BY_ONE)) {
                     stsmap = new StringToStringMap();
                     model = SecurityScanUtil.getXmlObjectTreeModel(testStep, scp);
-                    testStepCopy = SecurityTestRunnerImpl.cloneTestStepForSecurityScan((WsdlTestStep) testStep);
-                } else {
+                    testStepCopy = SecurityTestRunnerImpl.cloneTestStepForSecurityScan((WsdlTestStep)testStep);
+                }
+                else {
                     if (model == null) {
                         model = SecurityScanUtil.getXmlObjectTreeModel(testStep, scp);
                     }
                     if (testStepCopy == null) {
-                        testStepCopy = SecurityTestRunnerImpl.cloneTestStepForSecurityScan((WsdlTestStep) testStep);
+                        testStepCopy = SecurityTestRunnerImpl.cloneTestStepForSecurityScan((WsdlTestStep)testStep);
                     }
                 }
 
@@ -260,14 +322,14 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
                                 oneByOnePropertyMutation.updateRequestProperty(testStepCopy);
                                 oneByOnePropertyMutation.setTestStep(testStepCopy);
                                 oneByOnePropertyMutation.addMutation(context);
-                            } else {
+                            }
+                            else {
                                 allAtOncePropertyMutation.setPropertyName(scp.getName());
                                 allAtOncePropertyMutation.setPropertyValue(unescapEscaped(model.getXmlObject().toString()));
                                 stsmap.put(scp.getLabel(), mynode.getNodeText());
                                 allAtOncePropertyMutation.setMutatedParameters(stsmap);
                                 allAtOncePropertyMutation.updateRequestProperty(testStepCopy);
                                 allAtOncePropertyMutation.setTestStep(testStepCopy);
-
                             }
                         }
                     }
@@ -283,7 +345,8 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
                         oneByOnePropertyMutation.updateRequestProperty(testStepCopy);
                         oneByOnePropertyMutation.setTestStep(testStepCopy);
                         oneByOnePropertyMutation.addMutation(context);
-                    } else {
+                    }
+                    else {
                         allAtOncePropertyMutation.setPropertyName(scp.getName());
                         allAtOncePropertyMutation.setPropertyValue(value);
                         stsmap.put(scp.getLabel(), value);
@@ -304,79 +367,10 @@ public class CrossSiteScriptingScan extends AbstractSecurityScanWithProperties {
         return value.replaceAll("&lt;", "<");
     }
 
-    @Override
-    public String getConfigDescription() {
-        return "Configures parameter exposure security scan";
-    }
-
-    @Override
-    public String getConfigName() {
-        return "Cross Site Scripting Scan";
-    }
-
-    @Override
-    public String getHelpURL() {
-        return "http://soapui.org/Security/cross-site-scripting.html";
-    }
-
-    @Override
-    public JComponent getAdvancedSettingsPanel() {
-        dialog = (JFormDialog) ADialogBuilder.buildDialog(AdvancedSettings.class);
-        JStringListFormField stringField = (JStringListFormField) dialog
-                .getFormField(AdvancedSettings.PARAMETER_EXPOSURE_STRINGS);
-        stringField.setOptions(cssConfig.getParameterExposureStringsList().toArray());
-        stringField.setProperty("dimension", new Dimension(470, 150));
-        stringField.getComponent().addPropertyChangeListener("options", new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                String[] newOptions = (String[]) evt.getNewValue();
-                String[] oldOptions = (String[]) evt.getOldValue();
-                // added
-                if (newOptions.length > oldOptions.length) {
-                    // new element is always added to the end
-                    String[] newValue = (String[]) evt.getNewValue();
-                    String itemToAdd = newValue[newValue.length - 1];
-                    cssConfig.addParameterExposureStrings(itemToAdd);
-                }
-                // removed
-                if (newOptions.length < oldOptions.length) {
-                    /*
-					 * items with same index should me same. first one in oldOptions
-					 * that does not match is element that is removed.
-					 */
-                    for (int cnt = 0; cnt < oldOptions.length; cnt++) {
-                        if (cnt < newOptions.length) {
-                            if (newOptions[cnt] != oldOptions[cnt]) {
-                                cssConfig.removeParameterExposureStrings(cnt);
-                                break;
-                            }
-                        } else {
-                            // this is border case, last lement in array is removed.
-                            cssConfig.removeParameterExposureStrings(oldOptions.length - 1);
-                        }
-                    }
-                }
-            }
-        });
-
-        return dialog.getPanel();
-    }
-
-    @Override
-    public void release() {
-        if (dialog != null) {
-            dialog.release();
-        }
-
-        super.release();
-    }
-
     @AForm(description = "Cross Site Scripting", name = "Cross Site Scripting")
     protected interface AdvancedSettings {
 
         @AField(description = "Cross Site Scripting Vectors", name = "###Cross Site Scripting", type = AFieldType.STRINGLIST)
-        public final static String PARAMETER_EXPOSURE_STRINGS = "###Cross Site Scripting";
-
+        String PARAMETER_EXPOSURE_STRINGS = "###Cross Site Scripting";
     }
 }

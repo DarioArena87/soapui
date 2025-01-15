@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security;
@@ -55,22 +55,20 @@ import java.util.Set;
  *
  * @author SoapUI team
  */
-public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<SecurityTestConfig> implements TestModelItem,
-        TestRunnable {
+public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<SecurityTestConfig> implements TestModelItem, TestRunnable {
     public final static String STARTUP_SCRIPT_PROPERTY = SecurityTest.class.getName() + "@startupScript";
     public final static String TEARDOWN_SCRIPT_PROPERTY = SecurityTest.class.getName() + "@tearDownScript";
     public final static String FAIL_ON_SCANS_ERRORS_PROPERTY = SecurityTest.class.getName() + "@failOnScansErrors";
     public final static String FAIL_ON_ERROR_PROPERTY = SecurityTest.class.getName() + "@failOnError";
     public final static String SKIP_DATASOURCE_LOOP_PROPERTY = SecurityTest.class.getName() + "@skipDataSourceLoop";
     public static final String ICON_NAME = "/security_test.gif";
-    private WsdlTestCase testCase;
-    private Set<SecurityTestRunListener> securityTestRunListeners = Collections
-            .synchronizedSet(new HashSet<SecurityTestRunListener>());
-    private Map<TestStep, Set<SecurityTestRunListener>> securityTestStepRunListeners = new HashMap<TestStep, Set<SecurityTestRunListener>>();
-    private Map<TestStep, SecurityTestStepResult> securityTestStepResultMap;
+    private final WsdlTestCase testCase;
+    private final Set<SecurityTestRunListener> securityTestRunListeners = Collections.synchronizedSet(new HashSet<SecurityTestRunListener>());
+    private final Map<TestStep, Set<SecurityTestRunListener>> securityTestStepRunListeners = new HashMap<TestStep, Set<SecurityTestRunListener>>();
+    private final Map<TestStep, SecurityTestStepResult> securityTestStepResultMap;
 
-    private HashMap<String, List<SecurityScan>> securityScansMap = new HashMap<String, List<SecurityScan>>();
-    private ArrayList<SecurityTestListener> securityTestListeners = new ArrayList<SecurityTestListener>();
+    private final HashMap<String, List<SecurityScan>> securityScansMap = new HashMap<String, List<SecurityScan>>();
+    private final ArrayList<SecurityTestListener> securityTestListeners = new ArrayList<SecurityTestListener>();
 
     private SecurityTestRunnerImpl runner;
     private SoapUIScriptEngine startupScriptEngine;
@@ -111,8 +109,7 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
      * @return SecurityScan
      */
     public SecurityScan addNewSecurityScan(TestStep testStep, String securityScanName) {
-        SecurityScanFactory factory = SoapUI.getSoapUICore().getSecurityScanRegistry()
-                .getFactoryByName(securityScanName);
+        SecurityScanFactory factory = SoapUI.getSoapUICore().getSecurityScanRegistry().getFactoryByName(securityScanName);
         SecurityScanConfig newScanConfig = factory.createNewSecurityScan(securityScanName);
         return addSecurityScan(testStep, factory, newScanConfig);
     }
@@ -149,7 +146,6 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
 
         addSecurityScanToMapByTestStepId(testStep.getId(), newSecScan);
         return newSecScan;
-
     }
 
     /**
@@ -161,8 +157,9 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
      * @param testStep
      * @return
      */
-    private SecurityScan buildSecurityScan(SecurityScanFactory factory, SecurityScanConfig newSecScanConfig,
-                                           TestStepSecurityTestConfig testStepSecurityTestConfig, TestStep testStep) {
+    private SecurityScan buildSecurityScan(
+        SecurityScanFactory factory, SecurityScanConfig newSecScanConfig, TestStepSecurityTestConfig testStepSecurityTestConfig, TestStep testStep
+    ) {
         SecurityScanConfig newSecurityScan = testStepSecurityTestConfig.addNewTestStepSecurityScan();
         newSecurityScan.setType(newSecScanConfig.getType());
         newSecurityScan.setName(newSecScanConfig.getName());
@@ -180,7 +177,8 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
             if (!securityScansMap.get(testStepId).contains(newSecScan)) {
                 securityScansMap.get(testStepId).add(newSecScan);
             }
-        } else {
+        }
+        else {
             List<SecurityScan> list = new ArrayList<SecurityScan>();
             list.add(newSecScan);
             securityScansMap.put(testStepId, list);
@@ -297,8 +295,7 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
         while (scannedSteps.hasNext()) {
             List<SecurityScan> scanList = scannedSteps.next();
             for (SecurityScan securityScan : scanList) {
-                if (securityScan.getTestStep().getId().equals(tsr.getTestStep().getId())
-                        && (tsr.getStatus() != TestStepStatus.FAILED || securityScan.isApplyForFailedStep())) {
+                if (securityScan.getTestStep().getId().equals(tsr.getTestStep().getId()) && (tsr.getStatus() != TestStepStatus.FAILED || securityScan.isApplyForFailedStep())) {
                     count++;
                 }
             }
@@ -313,15 +310,15 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
                     List<SecurityScan> scanList = new ArrayList<SecurityScan>();
                     if (testStepSecurityTestListConfig != null) {
                         if (!testStepSecurityTestListConfig.getTestStepSecurityScanList().isEmpty()) {
-                            for (SecurityScanConfig secScanConfig : testStepSecurityTestListConfig
-                                    .getTestStepSecurityScanList()) {
+                            for (SecurityScanConfig secScanConfig : testStepSecurityTestListConfig.getTestStepSecurityScanList()) {
                                 TestStep testStep = null;
                                 for (TestStep ts : testCase.getTestSteps().values()) {
                                     if (testStepSecurityTestListConfig.getTestStepId().equals(ts.getId())) {
                                         testStep = ts;
-                                        SecurityScan securityScan = SoapUI.getSoapUICore().getSecurityScanRegistry()
-                                                .getFactory(secScanConfig.getType())
-                                                .buildSecurityScan(testStep, secScanConfig, this);
+                                        SecurityScan securityScan = SoapUI.getSoapUICore()
+                                                                          .getSecurityScanRegistry()
+                                                                          .getFactory(secScanConfig.getType())
+                                                                          .buildSecurityScan(testStep, secScanConfig, this);
                                         scanList.add(securityScan);
                                     }
                                 }
@@ -375,6 +372,13 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
     }
 
     /**
+     * @return The current startup script
+     */
+    public String getStartupScript() {
+        return getConfig() != null ? (getConfig().isSetSetupScript() ? getConfig().getSetupScript().getStringValue() : "") : "";
+    }
+
+    /**
      * Sets the script to be used on startup
      *
      * @param script
@@ -392,14 +396,6 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
         }
 
         notifyPropertyChanged(STARTUP_SCRIPT_PROPERTY, oldScript, script);
-    }
-
-    /**
-     * @return The current startup script
-     */
-    public String getStartupScript() {
-        return getConfig() != null ? (getConfig().isSetSetupScript() ? getConfig().getSetupScript().getStringValue()
-                : "") : "";
     }
 
     /**
@@ -428,6 +424,13 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
     }
 
     /**
+     * @return The current teardown script
+     */
+    public String getTearDownScript() {
+        return getConfig() != null ? (getConfig().isSetTearDownScript() ? getConfig().getTearDownScript().getStringValue() : "") : "";
+    }
+
+    /**
      * Sets the script to be used on teardown
      *
      * @param script
@@ -445,14 +448,6 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
         }
 
         notifyPropertyChanged(TEARDOWN_SCRIPT_PROPERTY, oldScript, script);
-    }
-
-    /**
-     * @return The current teardown script
-     */
-    public String getTearDownScript() {
-        return getConfig() != null ? (getConfig().isSetTearDownScript() ? getConfig().getTearDownScript()
-                .getStringValue() : "") : "";
     }
 
     /**
@@ -481,8 +476,7 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
     }
 
     public List<SecurityScan> getTestStepSecurityScans(String testStepId) {
-        return getSecurityScansMap().get(testStepId) != null ? getSecurityScansMap().get(testStepId)
-                : new ArrayList<SecurityScan>();
+        return getSecurityScansMap().get(testStepId) != null ? getSecurityScansMap().get(testStepId) : new ArrayList<SecurityScan>();
     }
 
     public SecurityScan getTestStepSecurityScanByName(String testStepId, String securityScanName) {
@@ -502,7 +496,7 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
         List<T> result = new ArrayList<T>();
         for (SecurityScan scan : getTestStepSecurityScans(testStepId)) {
             if (securityScanType.isAssignableFrom(scan.getClass())) {
-                result.add((T) scan);
+                result.add((T)scan);
             }
         }
 
@@ -517,10 +511,12 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
     public int getTestStepSecurityScansCount(String testStepId) {
         if (getSecurityScansMap().isEmpty()) {
             return 0;
-        } else {
+        }
+        else {
             if (getSecurityScansMap().get(testStepId) != null) {
                 return getSecurityScansMap().get(testStepId).size();
-            } else {
+            }
+            else {
                 return 0;
             }
         }
@@ -542,9 +538,8 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
             for (TestStepSecurityTestConfig testStepSecurityTest : testStepSecurityTestList) {
                 if (testStepSecurityTest.getTestStepId().equals(testStep.getId())) {
                     List<SecurityScanConfig> securityScanList = testStepSecurityTest.getTestStepSecurityScanList();
-                    SecurityScanFactory factory = SoapUI.getSoapUICore().getSecurityScanRegistry()
-                            .getFactory(securityScan.getType());
-                    SecurityScanConfig newSecScanConfig = (SecurityScanConfig) securityScan.getConfig().copy();
+                    SecurityScanFactory factory = SoapUI.getSoapUICore().getSecurityScanRegistry().getFactory(securityScan.getType());
+                    SecurityScanConfig newSecScanConfig = (SecurityScanConfig)securityScan.getConfig().copy();
                     SecurityScan newSecScan = factory.buildSecurityScan(testStep, newSecScanConfig, this);
 
                     securityScanList.remove(securityScan.getConfig());
@@ -643,7 +638,8 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
 
         if (securityTestStepRunListeners.containsKey(testStep)) {
             securityTestStepRunListeners.get(testStep).add(listener);
-        } else {
+        }
+        else {
             Set<SecurityTestRunListener> listeners = new HashSet<SecurityTestRunListener>();
             listeners.add(listener);
             securityTestStepRunListeners.put(testStep, listeners);
@@ -658,7 +654,8 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
         if (securityTestStepRunListeners.containsKey(testStep)) {
             Set<SecurityTestRunListener> listeners = securityTestStepRunListeners.get(testStep);
             return listeners.toArray(new SecurityTestRunListener[listeners.size()]);
-        } else {
+        }
+        else {
             return new SecurityTestRunListener[0];
         }
     }
@@ -671,7 +668,7 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
             List<SecurityScan> t = getSecurityScansMap().get(testStepId);
             for (int i = 0; i < t.size(); i++) {
                 SecurityScan scan = t.get(i);
-                result.add((ModelItem) scan);
+                result.add(scan);
             }
         }
         return result;
@@ -682,13 +679,11 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
 
         if (securityTestConfig != null) {
             if (!securityTestConfig.getTestStepSecurityTestList().isEmpty()) {
-                for (TestStepSecurityTestConfig testStepSecurityTestListConfig : securityTestConfig
-                        .getTestStepSecurityTestList()) {
+                for (TestStepSecurityTestConfig testStepSecurityTestListConfig : securityTestConfig.getTestStepSecurityTestList()) {
                     List<SecurityScan> scanList = getSecurityScansMap().get(testStepSecurityTestListConfig.getTestStepId());
 
                     for (int i = 0; i < scanList.size(); i++) {
-                        scanList.get(i).updateSecurityConfig(
-                                testStepSecurityTestListConfig.getTestStepSecurityScanList().get(i));
+                        scanList.get(i).updateSecurityConfig(testStepSecurityTestListConfig.getTestStepSecurityScanList().get(i));
                     }
                 }
             }
@@ -704,8 +699,7 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
      */
     public boolean canAddSecurityScan(TestStep testStep, String securityScanName) {
         boolean hasScansOfType = false;
-        String securityScanType = SoapUI.getSoapUICore().getSecurityScanRegistry()
-                .getSecurityScanTypeForName(securityScanName);
+        String securityScanType = SoapUI.getSoapUICore().getSecurityScanRegistry().getSecurityScanTypeForName(securityScanName);
 
         for (SecurityScan scan : getTestStepSecurityScans(testStep.getId())) {
             if (securityScanType.equals(scan.getType())) {
@@ -743,8 +737,7 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
 
         SecurityScanConfig newScanConfig = SecurityScanConfig.Factory.newInstance();
         newScanConfig.set(newConfig);
-        SecurityScanFactory factory = SoapUI.getSoapUICore().getSecurityScanRegistry()
-                .getFactory(newScanConfig.getType());
+        SecurityScanFactory factory = SoapUI.getSoapUICore().getSecurityScanRegistry().getFactory(newScanConfig.getType());
         boolean targetStepHasScans = getTestStepSecurityScansCount(targetTestStep.getId()) > 0;
         if (targetStepHasScans) {
             boolean targetHasScanOfSameType = false;
@@ -756,7 +749,8 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
                     if (overwrite) {
                         removeSecurityScan(targetTestStep, oldScan);
                         addSecurityScan(targetTestStep, factory, newScanConfig);
-                    } else {
+                    }
+                    else {
                         return false;
                     }
                     break;
@@ -767,8 +761,8 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
                 // scans
                 addSecurityScan(targetTestStep, factory, newScanConfig);
             }
-
-        } else {
+        }
+        else {
             // teststep doesn't have particular scan, but has other
             // scans
             addSecurityScan(targetTestStep, factory, newScanConfig);
@@ -788,7 +782,8 @@ public class SecurityTest extends AbstractTestPropertyHolderWsdlModelItem<Securi
     public boolean isRunning() {
         if (runner == null) {
             return false;
-        } else {
+        }
+        else {
             return runner.isRunning();
         }
     }

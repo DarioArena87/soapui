@@ -26,7 +26,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class SplashScreenStomper {
-    public static void main(String arg[]) throws IOException {
+    public static void main(String[] arg) throws IOException {
         String version = arg[0];
         String inputFilePath = arg[1];
         String outputFilePath = arg[2];

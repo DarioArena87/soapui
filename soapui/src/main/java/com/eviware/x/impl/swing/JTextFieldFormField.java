@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.impl.swing;
@@ -20,9 +20,9 @@ import com.eviware.soapui.support.DocumentListenerAdapter;
 import com.eviware.soapui.support.components.JUndoableTextField;
 import com.eviware.x.form.XFormTextField;
 
-import javax.swing.BorderFactory;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.Color;
+import java.awt.*;
 
 public class JTextFieldFormField extends AbstractSwingXFormField<JUndoableTextField> implements XFormTextField {
     private boolean updating;
@@ -50,14 +50,15 @@ public class JTextFieldFormField extends AbstractSwingXFormField<JUndoableTextFi
         super.setRequired(required, message);
 
         if (required) {
-            getComponent().setBorder(
-                    BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.RED),
-                            BorderFactory.createEmptyBorder(2, 2, 2, 2)));
-        } else {
-            getComponent().setBorder(
-                    BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.GRAY),
-                            BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+            getComponent().setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.RED), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
         }
+        else {
+            getComponent().setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.GRAY), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+        }
+    }
+
+    public String getValue() {
+        return getComponent().getText();
     }
 
     public void setValue(String value) {
@@ -65,10 +66,6 @@ public class JTextFieldFormField extends AbstractSwingXFormField<JUndoableTextFi
         oldValue = null;
         getComponent().setText(value);
         updating = false;
-    }
-
-    public String getValue() {
-        return getComponent().getText();
     }
 
     public void setWidth(int columns) {

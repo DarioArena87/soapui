@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.support;
@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InferredSchemaImpl implements InferredSchema {
-    private SchemaSystem ss;
+    private final SchemaSystem ss;
 
     public InferredSchemaImpl() {
         ss = new SchemaSystem();
@@ -43,39 +43,26 @@ public class InferredSchemaImpl implements InferredSchema {
         ss = new SchemaSystem(SchemaSetConfig.Factory.parse(is));
     }
 
-    public String[] getNamespaces() {
-        return ss.getNamespaces().toArray(new String[0]);
-    }
-
     public SchemaTypeSystem getSchemaTypeSystem() {
         return getSchemaTypeSystem(XmlBeans.getBuiltinTypeSystem());
     }
 
-    public SchemaTypeSystem getSchemaTypeSystem(SchemaTypeSystem sts) {
-        List<XmlObject> schemas = new ArrayList<XmlObject>();
-        try {
-            for (String namespace : getNamespaces()) {
-                // schemas.add( XmlObject.Factory.parse( getXsdForNamespace(
-                // namespace ).toString() ) );
-                schemas.add(XmlUtils.createXmlObject(getXsdForNamespace(namespace).toString()));
-            }
-            return XmlBeans.compileXsd(sts, schemas.toArray(new XmlObject[0]), XmlBeans.getBuiltinTypeSystem(), null);
-        } catch (XmlException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public void processValidXml(XmlObject xml) throws XmlException {
+        ss.validate(xml, new AllowAll());
     }
 
-    public String getXsdForNamespace(String namespace) {
-        return ss.getSchemaForNamespace(namespace).toString();
+    public boolean validate(XmlObject xml) {
+        try {
+            ss.validate(xml, new DenyAll());
+            return true;
+        }
+        catch (XmlException e) {
+            return false;
+        }
     }
 
     public void learningValidate(XmlObject xml, ConflictHandler handler) throws XmlException {
         ss.validate(xml, handler);
-    }
-
-    public void processValidXml(XmlObject xml) throws XmlException {
-        ss.validate(xml, new AllowAll());
     }
 
     public void save(OutputStream os) throws IOException {
@@ -84,17 +71,31 @@ public class InferredSchemaImpl implements InferredSchema {
         xml.save(os);
     }
 
-    public boolean validate(XmlObject xml) {
-        try {
-            ss.validate(xml, new DenyAll());
-            return true;
-        } catch (XmlException e) {
-            return false;
-        }
+    public String getXsdForNamespace(String namespace) {
+        return ss.getSchemaForNamespace(namespace).toString();
+    }
+
+    public String[] getNamespaces() {
+        return ss.getNamespaces().toArray(new String[0]);
     }
 
     public void deleteNamespace(String ns) {
         ss.deleteNamespace(ns);
     }
 
+    public SchemaTypeSystem getSchemaTypeSystem(SchemaTypeSystem sts) {
+        List<XmlObject> schemas = new ArrayList<XmlObject>();
+        try {
+            for (String namespace : getNamespaces()) {
+                // schemas.add( XmlObject.Factory.parse( getXsdForNamespace(
+                // namespace ).toString() ) );
+                schemas.add(XmlUtils.createXmlObject(getXsdForNamespace(namespace)));
+            }
+            return XmlBeans.compileXsd(sts, schemas.toArray(new XmlObject[0]), XmlBeans.getBuiltinTypeSystem(), null);
+        }
+        catch (XmlException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

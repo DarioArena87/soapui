@@ -9,7 +9,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 public class OAuth1TokenStatusChangeManager implements PropertyChangeListener {
-    private static final MessageSupport messages = MessageSupport.getMessages(com.eviware.soapui.support.editor.inspectors.auth.OAuth1TokenStatusChangeManager.class);
+    private static final MessageSupport messages = MessageSupport.getMessages(OAuth1TokenStatusChangeManager.class);
     OAuth1TokenStatusChangeListener listener = null;
 
     public OAuth1TokenStatusChangeManager(OAuth1TokenStatusChangeListener listener) {
@@ -19,10 +19,11 @@ public class OAuth1TokenStatusChangeManager implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OAuth1Profile.ACCESS_TOKEN_STATUS_PROPERTY)) {
-            AccessTokenStatusConfig.Enum status = (AccessTokenStatusConfig.Enum) evt.getNewValue();
+            AccessTokenStatusConfig.Enum status = (AccessTokenStatusConfig.Enum)evt.getNewValue();
             listener.onAccessTokenStatusChanged(status);
-        } else if (evt.getPropertyName().equals(OAuth1Profile.TOKEN_SECRET_STATUS_PROPERTY)) {
-            AccessTokenStatusConfig.Enum status = (AccessTokenStatusConfig.Enum) evt.getNewValue();
+        }
+        else if (evt.getPropertyName().equals(OAuth1Profile.TOKEN_SECRET_STATUS_PROPERTY)) {
+            AccessTokenStatusConfig.Enum status = (AccessTokenStatusConfig.Enum)evt.getNewValue();
             listener.onTokenSecretStatusChanged(status);
         }
     }

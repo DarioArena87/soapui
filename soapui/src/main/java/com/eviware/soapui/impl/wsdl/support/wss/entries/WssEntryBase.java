@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.entries;
@@ -35,12 +35,8 @@ import org.apache.ws.security.WSEncryptionPart;
 import org.apache.ws.security.WSSecurityException;
 import org.apache.ws.security.components.crypto.Merlin;
 
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -67,10 +63,6 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
         load(new XmlObjectConfigurationReader(config.getConfiguration()));
     }
 
-    public OutgoingWss getOutgoingWss() {
-        return outgoingWss;
-    }
-
     public String getPassword() {
         String password = config.getPassword();
         if (StringUtils.isNullOrEmpty(password)) {
@@ -80,6 +72,10 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
         return password;
     }
 
+    public void setPassword(String arg0) {
+        config.setPassword(arg0);
+    }
+
     public String getUsername() {
         String username = config.getUsername();
         if (StringUtils.isNullOrEmpty(username)) {
@@ -87,10 +83,6 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
         }
 
         return username;
-    }
-
-    public void setPassword(String arg0) {
-        config.setPassword(arg0);
     }
 
     public void setUsername(String arg0) {
@@ -107,6 +99,17 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
 
     public String getLabel() {
         return label;
+    }
+
+    public OutgoingWss getOutgoingWss() {
+        return outgoingWss;
+    }
+
+    public void updateEntryConfig(WSSEntryConfig config) {
+        this.config = config;
+    }
+
+    public void release() {
     }
 
     protected abstract JComponent buildUI();
@@ -157,15 +160,10 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
         int identifierType = reader.readInt("keyIdentifierType", WSConstants.ISSUER_SERIAL);
 
         //For backward compatibility see SOAP-2347
-        if(identifierType == 0)
-        {
+        if (identifierType == 0) {
             return WSConstants.ISSUER_SERIAL;
         }
         return identifierType;
-    }
-
-    public void updateEntryConfig(WSSEntryConfig config) {
-        this.config = config;
     }
 
     @Override
@@ -177,7 +175,7 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
     protected List<StringToStringMap> readTableValues(XmlObjectConfigurationReader reader, String parameterName) {
         List<StringToStringMap> result = new ArrayList<StringToStringMap>();
         String[] tableValues = reader.readStrings(parameterName);
-        if (tableValues != null && tableValues.length > 0) {
+        if (tableValues != null) {
             for (String tableValue : tableValues) {
                 result.add(StringToStringMap.fromXml(tableValue));
             }
@@ -187,8 +185,9 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
     }
 
     // Used to read values from table GUI components
-    protected void saveTableValues(XmlObjectConfigurationBuilder builder, List<StringToStringMap> tableValues,
-                                   String string) {
+    protected void saveTableValues(
+        XmlObjectConfigurationBuilder builder, List<StringToStringMap> tableValues, String string
+    ) {
         for (StringToStringMap tableValue : tableValues) {
             builder.add(string, tableValue.toXml());
         }
@@ -200,7 +199,8 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
         for (StringToStringMap map : parts) {
             if (map.hasValue("id")) {
                 result.add(new WSEncryptionPart(map.get("id"), map.get("enc")));
-            } else {
+            }
+            else {
                 String ns = map.get("namespace");
                 if (ns == null) {
                     ns = "";
@@ -218,29 +218,39 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
 
     protected class KeyIdentifierTypeRenderer extends DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
             Component result = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
             if (value.equals(1)) {
                 setText("Binary Security Token");
-            } else if (value.equals(2)) {
+            }
+            else if (value.equals(2)) {
                 setText("Issuer Name and Serial Number");
-            } else if (value.equals(3)) {
+            }
+            else if (value.equals(3)) {
                 setText("X509 Certificate");
-            } else if (value.equals(4)) {
+            }
+            else if (value.equals(4)) {
                 setText("Subject Key Identifier");
-            } else if (value.equals(5)) {
+            }
+            else if (value.equals(5)) {
                 setText("Embedded KeyInfo");
-            } else if (value.equals(6)) {
+            }
+            else if (value.equals(6)) {
                 setText("Embed SecurityToken Reference");
-            } else if (value.equals(7)) {
+            }
+            else if (value.equals(7)) {
                 setText("UsernameToken Signature");
-            } else if (value.equals(8)) {
+            }
+            else if (value.equals(8)) {
                 setText("Thumbprint SHA1 Identifier");
-            } else if (value.equals(9)) {
+            }
+            else if (value.equals(9)) {
                 setText("Custom Reference");
-            } else if( value.equals(12) ) {
+            }
+            else if (value.equals(12)) {
                 setText("Custom Key Identifier");
             }
 
@@ -251,7 +261,7 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
     protected class KeyAliasComboBoxModel extends AbstractListModel implements ComboBoxModel {
         private KeyStore keyStore;
         private Object alias;
-        private StringList aliases = new StringList();
+        private final StringList aliases = new StringList();
 
         public KeyAliasComboBoxModel(WssCrypto crypto) {
             update(crypto);
@@ -261,16 +271,19 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
             try {
                 if (crypto == null || crypto.getCrypto() == null) {
                     keyStore = null;
-                } else {
-                    Merlin merlinCrypto = (Merlin) crypto.getCrypto();
+                }
+                else {
+                    Merlin merlinCrypto = (Merlin)crypto.getCrypto();
 
                     if (crypto.getType() == CryptoType.KEYSTORE) {
                         keyStore = merlinCrypto.getKeyStore();
-                    } else if (crypto.getType() == CryptoType.TRUSTSTORE) {
+                    }
+                    else if (crypto.getType() == CryptoType.TRUSTSTORE) {
                         keyStore = merlinCrypto.getTrustStore();
                     }
                 }
-            } catch (WSSecurityException wssecurityException) {
+            }
+            catch (WSSecurityException wssecurityException) {
                 wssecurityException.printStackTrace();
             }
 
@@ -287,29 +300,27 @@ public abstract class WssEntryBase implements WssEntry, PropertyExpansionContain
                     }
 
                     fireIntervalAdded(this, 0, aliases.size() - 1);
-                } catch (KeyStoreException e) {
+                }
+                catch (KeyStoreException e) {
                     e.printStackTrace();
                 }
             }
         }
 
-        public Object getSelectedItem() {
+        public int getSize() {
+            return aliases.size();
+        }        public Object getSelectedItem() {
             return alias;
-        }
-
-        public void setSelectedItem(Object anItem) {
-            this.alias = anItem;
         }
 
         public Object getElementAt(int index) {
             return aliases.get(index);
+        }        public void setSelectedItem(Object anItem) {
+            alias = anItem;
         }
 
-        public int getSize() {
-            return aliases.size();
-        }
-    }
 
-    public void release() {
+
+
     }
 }

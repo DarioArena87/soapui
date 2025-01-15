@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.auth;
@@ -29,25 +29,8 @@ import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.adapter.Bindings;
 
 import javax.annotation.Nonnull;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.MouseInfo;
-import java.awt.Point;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -59,29 +42,23 @@ import java.awt.event.WindowFocusListener;
 public class OAuth2Form extends AbstractAuthenticationForm implements OAuth2AccessTokenStatusChangeListener {
     public static final String ADVANCED_OPTIONS_BUTTON_NAME = "Advanced...";
     public static final String REFRESH_ACCESS_TOKEN_BUTTON_NAME = "refreshAccessTokenButton";
-
+    static final ImageIcon SUCCESS_ICON = UISupport.createImageIcon("/check.png");
+    static final ImageIcon WAIT_ICON = UISupport.createImageIcon("/waiting-spinner.gif");
+    static final ImageIcon FAIL_ICON = UISupport.createImageIcon("/alert.png");
     private static final int ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET = 120;
-
     private static final Dimension HORIZONTAL_SPACING_IN_ACCESS_TOKEN_ROW = new Dimension(5, 0);
     private static final String ACCESS_TOKEN_LABEL = "Access Token";
     private static final Insets ACCESS_TOKEN_FIELD_INSETS = new Insets(5, 5, 5, 5);
     private static final float ACCESS_TOKEN_STATUS_TEXT_FONT_SCALE = 0.95f;
     private static final int ACCESS_TOKEN_STATUS_TEXT_WIDTH = 100;
-
     private static final String GET_ACCESS_TOKEN_BUTTON_DEFAULT_LABEL = "Get Token";
     private static final String GET_ACCESS_TOKEN_BUTTON_RESUME_LABEL = GET_ACCESS_TOKEN_BUTTON_DEFAULT_LABEL + " (Resume)";
-
     private final Color DEFAULT_COLOR = Color.WHITE;
     private final Color SUCCESS_COLOR = new Color(0xccffcb);
     private final Color FAIL_COLOR = new Color(0xffcccc);
-
-    static final ImageIcon SUCCESS_ICON = UISupport.createImageIcon("/check.png");
-    static final ImageIcon WAIT_ICON = UISupport.createImageIcon("/waiting-spinner.gif");
-    static final ImageIcon FAIL_ICON = UISupport.createImageIcon("/alert.png");
-
     private final AbstractXmlInspector inspector;
     private final OAuth2AccessTokenStatusChangeManager statusChangeManager;
-    private OAuth2Profile profile;
+    private final OAuth2Profile profile;
     private JPanel formPanel;
     private boolean disclosureButtonDisabled;
     private boolean isMouseOnDisclosureLabel;
@@ -96,7 +73,6 @@ public class OAuth2Form extends AbstractAuthenticationForm implements OAuth2Acce
     private SoapUIMainWindowFocusListener mainWindowFocusListener;
 
     public OAuth2Form(OAuth2Profile profile, AbstractXmlInspector inspector) {
-        super();
         this.profile = profile;
         this.inspector = inspector;
         statusChangeManager = new OAuth2AccessTokenStatusChangeManager(this);
@@ -164,7 +140,7 @@ public class OAuth2Form extends AbstractAuthenticationForm implements OAuth2Acce
         JLabel accessTokenStatusIcon = createAccessTokenStatusIcon();
         JLabel accessTokenStatusText = createAccessTokenStatusText();
 
-        final JButton refreshAccessTokenButton = createRefreshButton();
+        JButton refreshAccessTokenButton = createRefreshButton();
 
         JPanel accessTokenRowPanel = createAccessTokenRowPanel(accessTokenField, accessTokenStatusIcon, accessTokenStatusText, refreshAccessTokenButton);
         oAuth2Form.append(ACCESS_TOKEN_LABEL, accessTokenRowPanel);
@@ -177,7 +153,7 @@ public class OAuth2Form extends AbstractAuthenticationForm implements OAuth2Acce
         oAuth2Form.addComponentWithoutLabel(disclosureButton);
 
         accessTokenForm = new OAuth2GetAccessTokenForm(profile);
-        final JDialog accessTokenFormDialog = accessTokenForm.getComponent();
+        JDialog accessTokenFormDialog = accessTokenForm.getComponent();
 
         disclosureButton.addMouseListener(new DisclosureButtonMouseListener(accessTokenFormDialog, disclosureButton));
 
@@ -220,11 +196,10 @@ public class OAuth2Form extends AbstractAuthenticationForm implements OAuth2Acce
     }
 
     private JButton createRefreshButton() {
-        final JButton refreshAccessTokenButton = new JButton("Refresh");
+        JButton refreshAccessTokenButton = new JButton("Refresh");
         refreshAccessTokenButton.setName(REFRESH_ACCESS_TOKEN_BUTTON_NAME);
         refreshAccessTokenButton.addActionListener(new RefreshOAuthAccessTokenAction(profile));
-        boolean enabled = profile.getRefreshAccessTokenMethod().equals(OAuth2Profile.RefreshAccessTokenMethods.MANUAL)
-                && (!StringUtils.isNullOrEmpty(profile.getRefreshToken()));
+        boolean enabled = profile.getRefreshAccessTokenMethod().equals(OAuth2Profile.RefreshAccessTokenMethods.MANUAL) && (!StringUtils.isNullOrEmpty(profile.getRefreshToken()));
         refreshAccessTokenButton.setVisible(enabled);
         return refreshAccessTokenButton;
     }
@@ -245,21 +220,23 @@ public class OAuth2Form extends AbstractAuthenticationForm implements OAuth2Acce
 
     private Font scaledFont(JComponent component, float scale) {
         Font currentFont = component.getFont();
-        return currentFont.deriveFont((float) currentFont.getSize() * scale);
+        return currentFont.deriveFont((float)currentFont.getSize() * scale);
     }
 
     private String setWrappedText(String text) {
-        return String.format("<html><div WIDTH=%d>%s</div><html>", OAuth2Form.ACCESS_TOKEN_STATUS_TEXT_WIDTH, text);
+        return String.format("<html><div WIDTH=%d>%s</div><html>", ACCESS_TOKEN_STATUS_TEXT_WIDTH, text);
     }
 
     private void setAccessTokenFormDialogBoundsBelowTheButton(Point disclosureButtonLocation, JDialog accessTokenFormDialog, int disclosureButtonHeight) {
-        accessTokenFormDialog.setLocation((int) disclosureButtonLocation.getX() - ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET,
-                (int) disclosureButtonLocation.getY() + disclosureButtonHeight);
+        accessTokenFormDialog.setLocation((int)disclosureButtonLocation.getX() - ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET,
+                                          (int)disclosureButtonLocation.getY() + disclosureButtonHeight
+        );
     }
 
     private void setAccessTokenFormDialogBoundsAboveTheButton(Point disclosureButtonLocation, JDialog accessTokenFormDialog) {
-        accessTokenFormDialog.setLocation((int) disclosureButtonLocation.getX() - ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET,
-                (int) disclosureButtonLocation.getY() - accessTokenFormDialog.getHeight());
+        accessTokenFormDialog.setLocation((int)disclosureButtonLocation.getX() - ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET,
+                                          (int)disclosureButtonLocation.getY() - accessTokenFormDialog.getHeight()
+        );
     }
 
     private void setAccessTokenStatusFeedback(OAuth2Profile.AccessTokenStatus status) {
@@ -353,7 +330,6 @@ public class OAuth2Form extends AbstractAuthenticationForm implements OAuth2Acce
         }
     }
 
-
     private class DisclosureButtonMouseListener extends MouseAdapter {
         private final JDialog accessTokenFormDialog;
         private final JLabel disclosureButton;
@@ -371,14 +347,15 @@ public class OAuth2Form extends AbstractAuthenticationForm implements OAuth2Acce
                 return;
             }
 
-            JLabel source = (JLabel) e.getSource();
+            JLabel source = (JLabel)e.getSource();
             Point disclosureButtonLocation = source.getLocationOnScreen();
             accessTokenFormDialog.pack();
             accessTokenFormDialog.setVisible(true);
             disclosureButton.setIcon(UISupport.createImageIcon("/pop-down-close.png"));
             if (UISupport.isEnoughSpaceAvailableBelowComponent(disclosureButtonLocation, accessTokenFormDialog.getHeight(), source.getHeight())) {
                 setAccessTokenFormDialogBoundsBelowTheButton(disclosureButtonLocation, accessTokenFormDialog, source.getHeight());
-            } else {
+            }
+            else {
                 setAccessTokenFormDialogBoundsAboveTheButton(disclosureButtonLocation, accessTokenFormDialog);
             }
         }

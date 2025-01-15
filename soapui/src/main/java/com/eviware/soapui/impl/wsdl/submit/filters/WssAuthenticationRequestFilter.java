@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.filters;
@@ -45,35 +45,17 @@ public class WssAuthenticationRequestFilter extends AbstractWssRequestFilter {
     private static final String WSS_USERNAME_TOKEN = "WsSecurityAuthenticationRequestFilter@UsernameToken";
     private static final String WSS_TIMESTAMP_TOKEN = "WsSecurityAuthenticationRequestFilter@TimestampToken";
 
-    public void filterWsdlRequest(SubmitContext context, WsdlRequest wsdlRequest) {
-        String pwType = PropertyExpander.expandProperties(context, wsdlRequest.getWssPasswordType());
-        String wsTimestamp = wsdlRequest.getWssTimeToLive();
-
-        if ((StringUtils.isNullOrEmpty(pwType) || WsdlRequest.PW_TYPE_NONE.equals(pwType))
-                && (StringUtils.isNullOrEmpty(wsTimestamp))) {
-            return;
-        }
-        try {
-            String password = PropertyExpander.expandProperties(context, wsdlRequest.getPassword());
-            String username = PropertyExpander.expandProperties(context, wsdlRequest.getUsername());
-
-            setWssHeaders(context, username, password, pwType, wsTimestamp);
-        } catch (Throwable e) {
-            SoapUI.logError(e);
-        }
-    }
-
-    public static void setWssHeaders(SubmitContext context, String username, String password, String pwType,
-                                     String wsTimestamp) throws SAXException, IOException, WSSecurityException {
+    public static void setWssHeaders(
+        SubmitContext context, String username, String password, String pwType, String wsTimestamp
+    ) throws SAXException, IOException, WSSecurityException {
         Document doc = getWssDocument(context);
 
         // create username token?
-        if (StringUtils.hasContent(pwType) && !pwType.equals(WsdlRequest.PW_TYPE_NONE)
-                && StringUtils.hasContent(username) && StringUtils.hasContent(password)) {
+        if (StringUtils.hasContent(pwType) && !pwType.equals(WsdlRequest.PW_TYPE_NONE) && StringUtils.hasContent(username) && StringUtils.hasContent(password)) {
             // remove if already set
-            Element elm = (Element) context.getProperty(WSS_USERNAME_TOKEN);
+            Element elm = (Element)context.getProperty(WSS_USERNAME_TOKEN);
             if (elm != null) {
-                Element parentNode = (Element) elm.getParentNode();
+                Element parentNode = (Element)elm.getParentNode();
                 parentNode.removeChild(elm);
             }
 
@@ -82,9 +64,9 @@ public class WssAuthenticationRequestFilter extends AbstractWssRequestFilter {
         }
         // remove if pwType is not null
         else if (pwType != null && context.getProperty(WSS_USERNAME_TOKEN) != null) {
-            Element elm = (Element) context.getProperty(WSS_USERNAME_TOKEN);
+            Element elm = (Element)context.getProperty(WSS_USERNAME_TOKEN);
             context.removeProperty(WSS_USERNAME_TOKEN);
-            Element parentNode = (Element) elm.getParentNode();
+            Element parentNode = (Element)elm.getParentNode();
             parentNode.removeChild(elm);
             if (XmlUtils.getChildElements(parentNode).getLength() == 0) {
                 parentNode.getParentNode().removeChild(parentNode);
@@ -94,9 +76,9 @@ public class WssAuthenticationRequestFilter extends AbstractWssRequestFilter {
         // add timestamp?
         if (StringUtils.hasContent(wsTimestamp)) {
             // remove if already set
-            Element elm = (Element) context.getProperty(WSS_TIMESTAMP_TOKEN);
+            Element elm = (Element)context.getProperty(WSS_TIMESTAMP_TOKEN);
             if (elm != null) {
-                Element parentNode = (Element) elm.getParentNode();
+                Element parentNode = (Element)elm.getParentNode();
                 parentNode.removeChild(elm);
             }
 
@@ -105,9 +87,9 @@ public class WssAuthenticationRequestFilter extends AbstractWssRequestFilter {
         }
         // remove
         else if (wsTimestamp != null && context.getProperty(WSS_TIMESTAMP_TOKEN) != null) {
-            Element elm = (Element) context.getProperty(WSS_TIMESTAMP_TOKEN);
+            Element elm = (Element)context.getProperty(WSS_TIMESTAMP_TOKEN);
             context.removeProperty(WSS_TIMESTAMP_TOKEN);
-            Element parentNode = (Element) elm.getParentNode();
+            Element parentNode = (Element)elm.getParentNode();
             parentNode.removeChild(elm);
             if (XmlUtils.getChildElements(parentNode).getLength() == 0) {
                 parentNode.getParentNode().removeChild(parentNode);
@@ -115,6 +97,24 @@ public class WssAuthenticationRequestFilter extends AbstractWssRequestFilter {
         }
 
         updateWssDocument(context, doc);
+    }
+
+    public void filterWsdlRequest(SubmitContext context, WsdlRequest wsdlRequest) {
+        String pwType = PropertyExpander.expandProperties(context, wsdlRequest.getWssPasswordType());
+        String wsTimestamp = wsdlRequest.getWssTimeToLive();
+
+        if ((StringUtils.isNullOrEmpty(pwType) || WsdlRequest.PW_TYPE_NONE.equals(pwType)) && (StringUtils.isNullOrEmpty(wsTimestamp))) {
+            return;
+        }
+        try {
+            String password = PropertyExpander.expandProperties(context, wsdlRequest.getPassword());
+            String username = PropertyExpander.expandProperties(context, wsdlRequest.getUsername());
+
+            setWssHeaders(context, username, password, pwType, wsTimestamp);
+        }
+        catch (Throwable e) {
+            SoapUI.logError(e);
+        }
     }
 
     private static Element setWsTimestampToken(String ttl, Document doc) throws WSSecurityException {
@@ -132,12 +132,12 @@ public class WssAuthenticationRequestFilter extends AbstractWssRequestFilter {
         return addTimestamp.getElement();
     }
 
-    private static Element setWssUsernameToken(String username, String password, String pwType, Document doc)
-            throws WSSecurityException {
+    private static Element setWssUsernameToken(String username, String password, String pwType, Document doc) throws WSSecurityException {
         WSSecUsernameToken wsa = new WSSecUsernameToken();
         if (WsdlRequest.PW_TYPE_DIGEST.equals(pwType)) {
             wsa.setPasswordType(WSConstants.PASSWORD_DIGEST);
-        } else {
+        }
+        else {
             wsa.setPasswordType(WSConstants.PASSWORD_TEXT);
         }
 

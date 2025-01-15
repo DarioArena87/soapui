@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support;
@@ -32,9 +32,17 @@ public class JdbcMessageExchange extends AbstractNonHttpMessageExchange<JdbcRequ
         this.response = response;
     }
 
-    @Override
-    public Response getResponse() {
-        return response;
+    public long getTimestamp() {
+        return response.getTimestamp();
+    }
+
+    public long getTimeTaken() {
+        return response.getTimeTaken();
+    }
+
+    public String getEndpoint() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     public String getRequestContent() {
@@ -42,15 +50,11 @@ public class JdbcMessageExchange extends AbstractNonHttpMessageExchange<JdbcRequ
     }
 
     public String getResponseContent() {
-        return response == null? null : response.getContentAsString();
+        return response == null ? null : response.getContentAsString();
     }
 
-    public long getTimeTaken() {
-        return response.getTimeTaken();
-    }
-
-    public long getTimestamp() {
-        return response.getTimestamp();
+    public boolean isDiscarded() {
+        return false;
     }
 
     public boolean hasRequest(boolean ignoreEmpty) {
@@ -61,12 +65,8 @@ public class JdbcMessageExchange extends AbstractNonHttpMessageExchange<JdbcRequ
         return getResponseContent() != null;
     }
 
-    public boolean isDiscarded() {
-        return false;
-    }
-
-    public String getEndpoint() {
-        // TODO Auto-generated method stub
-        return null;
+    @Override
+    public Response getResponse() {
+        return response;
     }
 }

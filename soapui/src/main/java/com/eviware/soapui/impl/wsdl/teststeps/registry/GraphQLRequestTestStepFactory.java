@@ -7,9 +7,22 @@ import com.eviware.soapui.impl.wsdl.teststeps.GraphQLRequestTestStep;
 import com.eviware.soapui.impl.wsdl.teststeps.GraphQLTestRequest;
 import com.eviware.soapui.impl.wsdl.teststeps.WsdlTestStep;
 
-
 public class GraphQLRequestTestStepFactory extends WsdlTestStepFactory {
     public static final String GRAPHQL_TYPE = "graphqltestrequest";
+
+    public static TestStepConfig createConfig(GraphQLTestRequest request, String stepName) {
+        GraphQLTestRequestConfig graphQLRequestConfig = GraphQLTestRequestConfig.Factory.newInstance();
+        graphQLRequestConfig.setMethod(request.getMethod().toString());
+        graphQLRequestConfig.setEndpoint(request.getEndpoint());
+        graphQLRequestConfig.setRequest(request.getConfig().getRequest());
+
+        TestStepConfig testStepConfig = TestStepConfig.Factory.newInstance();
+        testStepConfig.setType(GRAPHQL_TYPE);
+        testStepConfig.setConfig(graphQLRequestConfig);
+        testStepConfig.setName(stepName);
+
+        return testStepConfig;
+    }
 
     public GraphQLRequestTestStepFactory() {
         super(GRAPHQL_TYPE, "GraphQL Request", "Submits a GraphQL request and validates its response", "/graphql-request.png");
@@ -28,20 +41,6 @@ public class GraphQLRequestTestStepFactory extends WsdlTestStepFactory {
         testStepConfig.setType(GRAPHQL_TYPE);
         testStepConfig.setConfig(graphQLRequestConfig);
         testStepConfig.setName(name);
-
-        return testStepConfig;
-    }
-
-    public static TestStepConfig createConfig(GraphQLTestRequest request, String stepName) {
-        GraphQLTestRequestConfig graphQLRequestConfig = GraphQLTestRequestConfig.Factory.newInstance();
-        graphQLRequestConfig.setMethod(request.getMethod().toString());
-        graphQLRequestConfig.setEndpoint(request.getEndpoint());
-        graphQLRequestConfig.setRequest(request.getConfig().getRequest());
-
-        TestStepConfig testStepConfig = TestStepConfig.Factory.newInstance();
-        testStepConfig.setType(GRAPHQL_TYPE);
-        testStepConfig.setConfig(graphQLRequestConfig);
-        testStepConfig.setName(stepName);
 
         return testStepConfig;
     }

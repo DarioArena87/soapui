@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.settings;
@@ -42,10 +42,6 @@ public class SettingsImpl implements Settings {
         this.parent = parent;
     }
 
-    public boolean isSet(String id) {
-        return values.containsKey(id);
-    }
-
     public String getString(String id, String defaultValue) {
         if (values.containsKey(id)) {
             return values.get(id);
@@ -59,12 +55,6 @@ public class SettingsImpl implements Settings {
 
         for (SettingsListener listener : listeners) {
             listener.settingChanged(id, value, oldValue);
-        }
-    }
-
-    public void reloadSettings() {
-        for (SettingsListener listener : listeners) {
-            listener.settingsReloaded();
         }
     }
 
@@ -89,17 +79,6 @@ public class SettingsImpl implements Settings {
         }
     }
 
-    public long getLong(String id, long defaultValue) {
-        if (values.containsKey(id)) {
-            try {
-                return Long.parseLong(values.get(id));
-            } catch (NumberFormatException e) {
-            }
-        }
-
-        return defaultValue;
-    }
-
     public void addSettingsListener(SettingsListener listener) {
         listeners.add(listener);
     }
@@ -112,7 +91,29 @@ public class SettingsImpl implements Settings {
         values.remove(id);
     }
 
+    public long getLong(String id, long defaultValue) {
+        if (values.containsKey(id)) {
+            try {
+                return Long.parseLong(values.get(id));
+            }
+            catch (NumberFormatException e) {
+            }
+        }
+
+        return defaultValue;
+    }
+
+    public boolean isSet(String id) {
+        return values.containsKey(id);
+    }
+
     public void setLong(String id, long value) {
         values.put(id, Long.toString(value));
+    }
+
+    public void reloadSettings() {
+        for (SettingsListener listener : listeners) {
+            listener.settingsReloaded();
+        }
     }
 }

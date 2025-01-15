@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.resolver;
@@ -26,22 +26,12 @@ import com.eviware.soapui.support.resolver.ResolveContext.Resolver;
 import com.eviware.soapui.support.swing.JTableFactory;
 import org.jdesktop.swingx.JXTable;
 
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -62,9 +52,9 @@ public class ResolveDialog {
     private JDialog dialog;
     private ResolveContextTableModel resolveContextTableModel;
     private boolean showOkMessage;
-    private String title;
-    private String description;
-    private String helpUrl;
+    private final String title;
+    private final String description;
+    private final String helpUrl;
     private JXTable table;
 
     public ResolveDialog(String title, String description, String helpUrl) {
@@ -72,12 +62,28 @@ public class ResolveDialog {
 
         this.description = description;
         this.helpUrl = helpUrl;
-
     }
 
     @SuppressWarnings("serial")
     private void buildDialog() {
         dialog = new SimpleDialog(title, description, helpUrl, true) {
+            /*
+             * Change Cancel into Update
+             */
+            @Override
+            protected void modifyButtons() {
+                super.modifyButtons();
+                Component[] components = buttons.getComponents();
+                for (Component component : components) {
+                    if (component instanceof JButton) {
+                        JButton button = (JButton)component;
+                        if (button.getText().equals("Cancel")) {
+                            button.setText("Update");
+                        }
+                    }
+                }
+            }
+
             @Override
             protected Component buildContent() {
                 JPanel panel = new JPanel(new BorderLayout());
@@ -93,8 +99,7 @@ public class ResolveDialog {
                         if (e.getClickCount() > 1) {
                             int ix = table.getSelectedRow();
                             if (ix != -1) {
-                                ResolveContext.PathToResolve pathToResolve = resolveContextTableModel.getContext()
-                                        .getPathsToResolve().get(ix);
+                                ResolveContext.PathToResolve pathToResolve = resolveContextTableModel.getContext().getPathsToResolve().get(ix);
 
                                 if (pathToResolve != null) {
                                     UISupport.selectAndShow(pathToResolve.getOwner());
@@ -110,21 +115,15 @@ public class ResolveDialog {
                 return panel;
             }
 
-            /*
-             * Change Cancel into Update
-             */
+            @SuppressWarnings("unchecked")
             @Override
-            protected void modifyButtons() {
-                super.modifyButtons();
-                Component[] components = buttons.getComponents();
-                for (Component component : components) {
-                    if (component instanceof JButton) {
-                        JButton button = (JButton) component;
-                        if (button.getText().equals("Cancel")) {
-                            button.setText("Update");
-                        }
+            protected boolean handleOk() {
+                for (PathToResolve path : resolveContextTableModel.getContext().getPathsToResolve()) {
+                    if (!path.isResolved()) {
+                        return UISupport.confirm("There are unresolved paths, continue?", "Unresolved paths - Warning");
                     }
                 }
+                return true;
             }
 
             @Override
@@ -146,21 +145,6 @@ public class ResolveDialog {
                 resolve(resolveContextTableModel.getContext().getModelItem());
                 return true;
             }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            protected boolean handleOk() {
-                for (PathToResolve path : resolveContextTableModel.getContext().getPathsToResolve()) {
-                    if (!path.isResolved()) {
-                        if (UISupport.confirm("There are unresolved paths, continue?", "Unresolved paths - Warning")) {
-                            return true;
-                        }
-                        return false;
-                    }
-                }
-                return true;
-            }
-
         };
 
         dialog.setSize(550, 300);
@@ -181,7 +165,6 @@ public class ResolveDialog {
                 }
             }
         });
-
     }
 
     public boolean isShowOkMessage() {
@@ -199,11 +182,13 @@ public class ResolveDialog {
             if (isShowOkMessage()) {
                 UISupport.showInfoMessage("No resolve problems found", title);
             }
-        } else {
+        }
+        else {
             resolveContextTableModel = new ResolveContextTableModel(context);
             if (dialog == null) {
                 buildDialog();
-            } else {
+            }
+            else {
                 table.setModel(resolveContextTableModel);
             }
 
@@ -217,7 +202,7 @@ public class ResolveDialog {
     @SuppressWarnings("serial")
     private class ResolveContextTableModel extends AbstractTableModel {
         private ResolveContext<?> context;
-        private ArrayList<JComboBox> jbcList = new ArrayList<JComboBox>();
+        private final ArrayList<JComboBox> jbcList = new ArrayList<JComboBox>();
 
         @SuppressWarnings("unchecked")
         public ResolveContextTableModel(ResolveContext<?> context2) {
@@ -231,20 +216,10 @@ public class ResolveDialog {
                 JComboBox jbc = new JComboBox(resolversAndDefaultAction.toArray());
                 jbcList.add(jbc);
             }
-
         }
 
         public JComboBox getResolversAndActions(int row) {
             return jbcList.get(row);
-        }
-
-        public int getColumnCount() {
-            return 4;
-        }
-
-        public void setContext(ResolveContext<?> context) {
-            this.context = context;
-            fireTableDataChanged();
         }
 
         @Override
@@ -267,18 +242,23 @@ public class ResolveDialog {
         public Class<?> getColumnClass(int arg0) {
             if (arg0 == 3) {
                 return JComboBox.class;
-            } else {
+            }
+            else {
                 return String.class;
             }
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex == 3;
         }
 
         public int getRowCount() {
             return context.getPathsToResolve().size();
         }
 
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return columnIndex == 3;
+        public int getColumnCount() {
+            return 4;
         }
 
         @SuppressWarnings("unchecked")
@@ -291,7 +271,6 @@ public class ResolveDialog {
                     return ptr.getDescription();
                 case 2:
                     return ptr.getPath();
-
             }
 
             return null;
@@ -303,7 +282,8 @@ public class ResolveDialog {
             ModelItem modelItem = ptr.getOwner();
             try {
                 name = modelItem.getName();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.getStackTrace();
             }
 
@@ -319,21 +299,26 @@ public class ResolveDialog {
             return context;
         }
 
+        public void setContext(ResolveContext<?> context) {
+            this.context = context;
+            fireTableDataChanged();
+        }
+
         @SuppressWarnings("unchecked")
         public void setResolver(int pathIndex, Object resolveOrDefaultAction) {
             PathToResolve path = context.getPathsToResolve().get(pathIndex);
             if (resolveOrDefaultAction instanceof Resolver) {
                 path.setResolver(resolveOrDefaultAction);
             }
-
         }
     }
 
     private class ResolverRenderer implements TableCellRenderer {
 
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            return ((ResolveContextTableModel) table.getModel()).getResolversAndActions(row);
+        public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
+        ) {
+            return ((ResolveContextTableModel)table.getModel()).getResolversAndActions(row);
         }
     }
 
@@ -342,10 +327,11 @@ public class ResolveDialog {
         private JComboBox jbc = new JComboBox();
 
         @SuppressWarnings("unchecked")
-        public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, int row,
-                                                     int column) {
-            jbc = ((ResolveContextTableModel) table.getModel()).getResolversAndActions(row);
-            final PathToResolve path = resolveContextTableModel.getContext().getPathsToResolve().get(row);
+        public Component getTableCellEditorComponent(
+            JTable table, Object value, boolean isSelected, int row, int column
+        ) {
+            jbc = ((ResolveContextTableModel)table.getModel()).getResolversAndActions(row);
+            PathToResolve path = resolveContextTableModel.getContext().getPathsToResolve().get(row);
 
             jbc.addActionListener(new ActionListener() {
 
@@ -381,7 +367,6 @@ public class ResolveDialog {
                         // }
                     }
                 }
-
             });
             return jbc;
         }
@@ -389,18 +374,18 @@ public class ResolveDialog {
         public Object getCellEditorValue() {
             return null;
         }
-
     }
 
     @SuppressWarnings("serial")
     private class PathCellRenderer extends DefaultTableCellRenderer {
-        private Color greenColor = Color.GREEN.darker().darker();
-        private Color redColor = Color.RED.darker().darker();
+        private final Color greenColor = Color.GREEN.darker().darker();
+        private final Color redColor = Color.RED.darker().darker();
 
         @SuppressWarnings("unchecked")
         @Override
-        public Component getTableCellRendererComponent(JTable arg0, Object arg1, boolean arg2, boolean arg3, int arg4,
-                                                       int arg5) {
+        public Component getTableCellRendererComponent(
+            JTable arg0, Object arg1, boolean arg2, boolean arg3, int arg4, int arg5
+        ) {
             Component comp = super.getTableCellRendererComponent(arg0, arg1, arg2, arg3, arg4, arg5);
 
             List<? extends PathToResolve> paths = resolveContextTableModel.getContext().getPathsToResolve();
@@ -411,12 +396,12 @@ public class ResolveDialog {
             if (ptr != null && ptr.isResolved()) {
                 comp.setForeground(greenColor);
                 setText(ptr.getPath());
-            } else {
+            }
+            else {
                 comp.setForeground(redColor);
             }
 
             return comp;
         }
     }
-
 }

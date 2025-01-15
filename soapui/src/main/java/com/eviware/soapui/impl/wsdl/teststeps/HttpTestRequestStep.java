@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -82,22 +82,24 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
             httpRequestConfig = RestRequestConverter.updateIfNeeded(getConfig().getConfig());
 
             getConfig().setConfig(httpRequestConfig);
-            httpRequestConfig = (HttpRequestConfig) getConfig().getConfig();
+            httpRequestConfig = (HttpRequestConfig)getConfig().getConfig();
             testRequest = buildTestRequest(forLoadTest);
             testRequest.addPropertyChangeListener(this);
             testRequest.addTestPropertyListener(new InternalTestPropertyListener());
 
             if (config.isSetName()) {
                 testRequest.setName(config.getName());
-            } else {
+            }
+            else {
                 config.setName(testRequest.getName());
             }
-        } else {
-            httpRequestConfig = (HttpRequestConfig) getConfig().addNewConfig().changeType(HttpRequestConfig.type);
+        }
+        else {
+            httpRequestConfig = (HttpRequestConfig)getConfig().addNewConfig().changeType(HttpRequestConfig.type);
         }
 
         for (TestProperty property : testRequest.getProperties().values()) {
-            addProperty(new RestTestStepProperty((RestParamProperty) property));
+            addProperty(new RestTestStepProperty((RestParamProperty)property));
         }
 
         // init default properties
@@ -114,8 +116,7 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
             }
         });
 
-        addProperty(new TestStepBeanProperty(WsdlTestStepWithProperties.RESPONSE_AS_XML, true, testRequest,
-                "responseContentAsXml", this) {
+        addProperty(new TestStepBeanProperty(RESPONSE_AS_XML, true, testRequest, "responseContentAsXml", this) {
             @Override
             public String getDefaultValue() {
                 return createDefaultResponseXmlContent();
@@ -159,23 +160,20 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
     }
 
     @Override
-    public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
-        beforeSave();
+    public ImageIcon getIcon() {
+        return testRequest == null ? null : testRequest.getIcon();
+    }
 
-        TestStepConfig config = (TestStepConfig) getConfig().copy();
-        RequestStepConfig stepConfig = (RequestStepConfig) config.getConfig().changeType(RequestStepConfig.type);
+    @Override
+    public String getDescription() {
+        return testRequest == null ? "<missing>" : testRequest.getDescription();
+    }
 
-        while (stepConfig.getRequest().sizeOfAttachmentArray() > 0) {
-            stepConfig.getRequest().removeAttachment(0);
+    @Override
+    public void setDescription(String description) {
+        if (testRequest != null) {
+            testRequest.setDescription(description);
         }
-
-        config.setName(name);
-        stepConfig.getRequest().setName(name);
-
-        WsdlTestRequestStep result = (WsdlTestRequestStep) targetTestCase.addTestStep(config);
-        testRequest.copyAttachmentsTo(result.getTestRequest());
-
-        return result;
     }
 
     @Override
@@ -189,27 +187,29 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
         }
     }
 
-    @Override
-    public void resetConfigOnMove(TestStepConfig config) {
-        super.resetConfigOnMove(config);
+    public void resolve(ResolveContext<?> context) {
+        super.resolve(context);
 
-        httpRequestConfig = (HttpRequestConfig) config.getConfig().changeType(HttpRequestConfig.type);
-        testRequest.updateConfig(httpRequestConfig);
+        testRequest.resolve(context);
     }
 
     @Override
-    public ImageIcon getIcon() {
-        return testRequest == null ? null : testRequest.getIcon();
+    protected void addExternalDependencies(List<ExternalDependency> dependencies) {
+        super.addExternalDependencies(dependencies);
+        testRequest.addExternalDependencies(dependencies);
+    }
+
+    @Override
+    public void beforeSave() {
+        super.beforeSave();
+
+        if (testRequest != null) {
+            testRequest.beforeSave();
+        }
     }
 
     public HttpTestRequest getTestRequest() {
         return testRequest;
-    }
-
-    @Override
-    public void setName(String name) {
-        super.setName(name);
-        testRequest.setName(name);
     }
 
     public void propertyChange(PropertyChangeEvent event) {
@@ -218,7 +218,7 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
         // FIXME The property names shouldn't be hardcoded
         if (event.getSource() == testRequest) {
             if (event.getNewValue() instanceof SinglePartHttpResponse) {
-                SinglePartHttpResponse response = (SinglePartHttpResponse) event.getNewValue();
+                SinglePartHttpResponse response = (SinglePartHttpResponse)event.getNewValue();
                 firePropertyValueChanged("Response", String.valueOf(response), null);
                 String XMLCOntent = response.getContentAsXml();
                 firePropertyValueChanged("ResponseAsXml", String.valueOf(XMLCOntent), null);
@@ -226,24 +226,27 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
 
             if (event.getPropertyName().equals("domain")) {
                 delegatePropertyChange("Domain", event);
-            } else if (event.getPropertyName().equals("password")) {
+            }
+            else if (event.getPropertyName().equals("password")) {
                 delegatePropertyChange("Password", event);
-            } else if (event.getPropertyName().equals("username")) {
+            }
+            else if (event.getPropertyName().equals("username")) {
                 delegatePropertyChange("Username", event);
-            } else if (event.getPropertyName().equals("endpoint")) {
+            }
+            else if (event.getPropertyName().equals("endpoint")) {
                 delegatePropertyChange("Endpoint", event);
             }
         }
 
-        if (event.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY)
-                || event.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
+        if (event.getPropertyName().equals(TestAssertion.CONFIGURATION_PROPERTY) || event.getPropertyName().equals(TestAssertion.DISABLED_PROPERTY)) {
             if (getTestRequest().getResponse() != null) {
                 getTestRequest().assertResponse(new WsdlTestRunContext(this));
             }
-        } else {
-            if (event.getSource() == testRequest && event.getPropertyName().equals(WsdlTestRequest.NAME_PROPERTY)) {
-                if (!super.getName().equals((String) event.getNewValue())) {
-                    super.setName((String) event.getNewValue());
+        }
+        else {
+            if (event.getSource() == testRequest && event.getPropertyName().equals(NAME_PROPERTY)) {
+                if (!getName().equals(event.getNewValue())) {
+                    super.setName((String)event.getNewValue());
                 }
             }
 
@@ -252,9 +255,7 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
     }
 
     private void delegatePropertyChange(String customPropertyname, PropertyChangeEvent event) {
-        firePropertyValueChanged(customPropertyname, String.valueOf(event.getOldValue()),
-                String.valueOf(event.getNewValue()));
-
+        firePropertyValueChanged(customPropertyname, String.valueOf(event.getOldValue()), String.valueOf(event.getNewValue()));
     }
 
     public TestStepResult run(TestCaseRunner runner, TestCaseRunContext runContext) {
@@ -262,7 +263,7 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
 
         try {
             submit = testRequest.submit(runContext, false);
-            HttpResponse response = (HttpResponse) submit.getResponse();
+            HttpResponse response = (HttpResponse)submit.getResponse();
 
             if (submit.getStatus() != Submit.Status.CANCELED) {
                 if (submit.getStatus() == Submit.Status.ERROR) {
@@ -270,12 +271,14 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
                     testStepResult.addMessage(submit.getError().toString());
 
                     testRequest.setResponse(null, runContext);
-                } else if (response == null) {
+                }
+                else if (response == null) {
                     testStepResult.setStatus(TestStepStatus.FAILED);
                     testStepResult.addMessage("Request is missing response");
 
                     testRequest.setResponse(null, runContext);
-                } else {
+                }
+                else {
                     runContext.setProperty(AssertedXPathsContainer.ASSERTEDXPATHSCONTAINER_PROPERTY, testStepResult);
                     testRequest.setResponse(response, runContext);
 
@@ -295,7 +298,8 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
                             break;
                     }
                 }
-            } else {
+            }
+            else {
                 testStepResult.setStatus(TestStepStatus.CANCELED);
                 testStepResult.addMessage("Request was canceled");
             }
@@ -306,14 +310,17 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
                 testStepResult.addProperty("Method", String.valueOf(response.getMethod()));
                 testStepResult.addProperty("StatusCode", String.valueOf(response.getStatusCode()));
                 testStepResult.addProperty("HTTP Version", response.getHttpVersion());
-            } else {
+            }
+            else {
                 testStepResult.addMessage("Missing Response");
                 testStepResult.setRequestContent(testRequest.getRequestContent());
             }
-        } catch (SubmitException e) {
+        }
+        catch (SubmitException e) {
             testStepResult.setStatus(TestStepStatus.FAILED);
             testStepResult.addMessage("SubmitException: " + e);
-        } finally {
+        }
+        finally {
             submit = null;
         }
 
@@ -330,7 +337,8 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
                     testStepResult.setStatus(TestStepStatus.FAILED);
                     if (getAssertionCount() == 0) {
                         testStepResult.addMessage("Invalid/empty response");
-                    } else {
+                    }
+                    else {
                         for (int c = 0; c < getAssertionCount(); c++) {
                             WsdlMessageAssertion assertion = getAssertionAt(c);
                             AssertionError[] errors = assertion.getErrors();
@@ -353,51 +361,6 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
         }
 
         return testStepResult;
-    }
-
-    public WsdlMessageAssertion getAssertionAt(int index) {
-        return testRequest.getAssertionAt(index);
-    }
-
-    public int getAssertionCount() {
-        return testRequest == null ? 0 : testRequest.getAssertionCount();
-    }
-
-    @Override
-    public boolean cancel() {
-        if (submit == null) {
-            return false;
-        }
-
-        submit.cancel();
-
-        return true;
-    }
-
-    @Override
-    public boolean dependsOn(AbstractWsdlModelItem<?> modelItem) {
-        return false;
-    }
-
-    @Override
-    public void beforeSave() {
-        super.beforeSave();
-
-        if (testRequest != null) {
-            testRequest.beforeSave();
-        }
-    }
-
-    @Override
-    public String getDescription() {
-        return testRequest == null ? "<missing>" : testRequest.getDescription();
-    }
-
-    @Override
-    public void setDescription(String description) {
-        if (testRequest != null) {
-            testRequest.setDescription(description);
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -437,10 +400,152 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
         return testRequest;
     }
 
+    public TestAssertion addAssertion(String type) {
+        WsdlMessageAssertion result = testRequest.addAssertion(type);
+        return result;
+    }
+
+    public void addAssertionsListener(AssertionsListener listener) {
+        testRequest.addAssertionsListener(listener);
+    }
+
+    public int getAssertionCount() {
+        return testRequest == null ? 0 : testRequest.getAssertionCount();
+    }
+
+    public WsdlMessageAssertion getAssertionAt(int index) {
+        return testRequest.getAssertionAt(index);
+    }
+
+    public void removeAssertionsListener(AssertionsListener listener) {
+        testRequest.removeAssertionsListener(listener);
+    }
+
+    public void removeAssertion(TestAssertion assertion) {
+        testRequest.removeAssertion(assertion);
+    }
+
+    public AssertionStatus getAssertionStatus() {
+        return testRequest.getAssertionStatus();
+    }
+
+    public String getAssertableContentAsXml() {
+        return testRequest.getAssertableContentAsXml();
+    }
+
+    public String getAssertableContent() {
+        return testRequest.getAssertableContent();
+    }
+
+    public String getDefaultAssertableContent() {
+        return testRequest.getDefaultAssertableContent();
+    }
+
+    public AssertableType getAssertableType() {
+        return testRequest.getAssertableType();
+    }
+
+    public List<TestAssertion> getAssertionList() {
+        return testRequest.getAssertionList();
+    }
+
+    public TestAssertion getAssertionByName(String name) {
+        return testRequest.getAssertionByName(name);
+    }
+
+    public TestStep getTestStep() {
+        return this;
+    }
+
+    public Interface getInterface() {
+        return null;
+    }
+
+    public TestAssertion cloneAssertion(TestAssertion source, String name) {
+        return testRequest.cloneAssertion(source, name);
+    }
+
+    public Map<String, TestAssertion> getAssertions() {
+        return testRequest.getAssertions();
+    }
+
+    public TestAssertion moveAssertion(int ix, int offset) {
+        return testRequest.moveAssertion(ix, offset);
+    }
+
+    @Override
+    public void prepare(TestCaseRunner testRunner, TestCaseRunContext testRunContext) throws Exception {
+        super.prepare(testRunner, testRunContext);
+
+        testRequest.setResponse(null, testRunContext);
+
+        for (TestAssertion assertion : testRequest.getAssertionList()) {
+            assertion.prepare(testRunner, testRunContext);
+        }
+    }
+
+    @Override
+    public boolean cancel() {
+        if (submit == null) {
+            return false;
+        }
+
+        submit.cancel();
+
+        return true;
+    }
+
+    @Override
+    public void resetConfigOnMove(TestStepConfig config) {
+        super.resetConfigOnMove(config);
+
+        httpRequestConfig = (HttpRequestConfig)config.getConfig().changeType(HttpRequestConfig.type);
+        testRequest.updateConfig(httpRequestConfig);
+    }
+
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        testRequest.setName(name);
+    }
+
+    @Override
+    public boolean dependsOn(AbstractWsdlModelItem<?> modelItem) {
+        return false;
+    }
+
+    @Override
+    public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
+        beforeSave();
+
+        TestStepConfig config = (TestStepConfig)getConfig().copy();
+        RequestStepConfig stepConfig = (RequestStepConfig)config.getConfig().changeType(RequestStepConfig.type);
+
+        while (stepConfig.getRequest().sizeOfAttachmentArray() > 0) {
+            stepConfig.getRequest().removeAttachment(0);
+        }
+
+        config.setName(name);
+        stepConfig.getRequest().setName(name);
+
+        WsdlTestRequestStep result = (WsdlTestRequestStep)targetTestCase.addTestStep(config);
+        testRequest.copyAttachmentsTo(result.getTestRequest());
+
+        return result;
+    }
+
+    public String getDefaultSourcePropertyName() {
+        return RESPONSE_AS_XML;
+    }
+
+    public String getDefaultTargetPropertyName() {
+        return "Request";
+    }
+
     public static class RequestHeaderHolder {
         private final String key;
         private final String oldValue;
-        private AbstractHttpRequest<?> testRequest;
+        private final AbstractHttpRequest<?> testRequest;
 
         public RequestHeaderHolder(String key, String oldValue, AbstractHttpRequest<?> testRequest) {
             this.key = key;
@@ -475,111 +580,15 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
         }
     }
 
-    public TestAssertion addAssertion(String type) {
-        WsdlMessageAssertion result = testRequest.addAssertion(type);
-        return result;
-    }
-
-    public void addAssertionsListener(AssertionsListener listener) {
-        testRequest.addAssertionsListener(listener);
-    }
-
-    public TestAssertion cloneAssertion(TestAssertion source, String name) {
-        return testRequest.cloneAssertion(source, name);
-    }
-
-    public String getAssertableContentAsXml() {
-        return testRequest.getAssertableContentAsXml();
-    }
-
-    public String getAssertableContent() {
-        return testRequest.getAssertableContent();
-    }
-
-    public AssertableType getAssertableType() {
-        return testRequest.getAssertableType();
-    }
-
-    public TestAssertion getAssertionByName(String name) {
-        return testRequest.getAssertionByName(name);
-    }
-
-    public List<TestAssertion> getAssertionList() {
-        return testRequest.getAssertionList();
-    }
-
-    public AssertionStatus getAssertionStatus() {
-        return testRequest.getAssertionStatus();
-    }
-
-    public Interface getInterface() {
-        return null;
-    }
-
-    public TestStep getTestStep() {
-        return this;
-    }
-
-    public void removeAssertion(TestAssertion assertion) {
-        testRequest.removeAssertion(assertion);
-    }
-
-    public void removeAssertionsListener(AssertionsListener listener) {
-        testRequest.removeAssertionsListener(listener);
-    }
-
-    public TestAssertion moveAssertion(int ix, int offset) {
-        return testRequest.moveAssertion(ix, offset);
-    }
-
-    public Map<String, TestAssertion> getAssertions() {
-        return testRequest.getAssertions();
-    }
-
-    @Override
-    public void prepare(TestCaseRunner testRunner, TestCaseRunContext testRunContext) throws Exception {
-        super.prepare(testRunner, testRunContext);
-
-        testRequest.setResponse(null, testRunContext);
-
-        for (TestAssertion assertion : testRequest.getAssertionList()) {
-            assertion.prepare(testRunner, testRunContext);
-        }
-    }
-
-    public String getDefaultSourcePropertyName() {
-        return WsdlTestStepWithProperties.RESPONSE_AS_XML;
-    }
-
-    public String getDefaultTargetPropertyName() {
-        return "Request";
-    }
-
-    public String getDefaultAssertableContent() {
-        return testRequest.getDefaultAssertableContent();
-    }
-
-    public void resolve(ResolveContext<?> context) {
-        super.resolve(context);
-
-        testRequest.resolve(context);
-    }
-
-    @Override
-    protected void addExternalDependencies(List<ExternalDependency> dependencies) {
-        super.addExternalDependencies(dependencies);
-        testRequest.addExternalDependencies(dependencies);
-    }
-
     private class InternalTestPropertyListener extends TestPropertyListenerAdapter {
         @Override
         public void propertyAdded(String name) {
-            HttpTestRequestStep.this.addProperty(new RestTestStepProperty(getTestRequest().getProperty(name)), true);
+            addProperty(new RestTestStepProperty(getTestRequest().getProperty(name)), true);
         }
 
         @Override
         public void propertyRemoved(String name) {
-            HttpTestRequestStep.this.deleteProperty(name, true);
+            deleteProperty(name, true);
         }
 
         @Override
@@ -589,17 +598,17 @@ public class HttpTestRequestStep extends WsdlTestStepWithProperties implements H
 
         @Override
         public void propertyValueChanged(String name, String oldValue, String newValue) {
-            HttpTestRequestStep.this.firePropertyValueChanged(name, oldValue, newValue);
+            firePropertyValueChanged(name, oldValue, newValue);
         }
 
         @Override
         public void propertyMoved(String name, int oldIndex, int newIndex) {
-            HttpTestRequestStep.this.firePropertyMoved(name, oldIndex, newIndex);
+            firePropertyMoved(name, oldIndex, newIndex);
         }
     }
 
     private class RestTestStepProperty implements TestStepProperty {
-        private RestParamProperty property;
+        private final RestParamProperty property;
 
         public RestTestStepProperty(RestParamProperty property) {
             this.property = property;

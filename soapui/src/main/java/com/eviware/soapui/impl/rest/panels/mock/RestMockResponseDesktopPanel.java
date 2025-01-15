@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.mock;
@@ -30,38 +30,19 @@ import com.eviware.soapui.support.xml.SyntaxEditorUtil;
 import com.eviware.soapui.ui.support.AbstractMockResponseDesktopPanel;
 import org.apache.commons.httpclient.HttpStatus;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.FlowLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.lang.reflect.Field;
 import java.util.Vector;
 
-public class RestMockResponseDesktopPanel extends
-        AbstractMockResponseDesktopPanel<RestMockResponse, MockResponse> {
+public class RestMockResponseDesktopPanel extends AbstractMockResponseDesktopPanel<RestMockResponse, MockResponse> {
 
     public RestMockResponseDesktopPanel(MockResponse mockResponse) {
-        super((RestMockResponse) mockResponse);
+        super((RestMockResponse)mockResponse);
 
         init(mockResponse);
-    }
-
-    public JComponent addTopEditorPanel() {
-        JPanel topEditorPanel = new JPanel(new BorderLayout());
-
-        topEditorPanel.add(createHttpStatusPanel(), BorderLayout.NORTH);
-        topEditorPanel.add(createHeaderInspector(), BorderLayout.CENTER);
-
-        return topEditorPanel;
     }
 
     protected Component addBottomEditorPanel(MockResponseMessageEditor responseEditor) {
@@ -73,12 +54,21 @@ public class RestMockResponseDesktopPanel extends
         return bottomEditorPanel;
     }
 
-    public boolean hasTopEditorPanel() {
-        return true;
+    public boolean hasRequestEditor() {
+        return false;
     }
 
-    private JComponent createHttpStatusPanel() {
-        return createPanelWithLabel("Http Status Code: ", createStatusCodeCombo());
+    public JComponent addTopEditorPanel() {
+        JPanel topEditorPanel = new JPanel(new BorderLayout());
+
+        topEditorPanel.add(createHttpStatusPanel(), BorderLayout.NORTH);
+        topEditorPanel.add(createHeaderInspector(), BorderLayout.CENTER);
+
+        return topEditorPanel;
+    }
+
+    public boolean hasTopEditorPanel() {
+        return true;
     }
 
     protected MockResponseMessageEditor buildResponseEditor() {
@@ -88,8 +78,12 @@ public class RestMockResponseDesktopPanel extends
         return mockResponseMessageEditor;
     }
 
+    private JComponent createHttpStatusPanel() {
+        return createPanelWithLabel("Http Status Code: ", createStatusCodeCombo());
+    }
+
     private JComponent createMediaTypeCombo() {
-        MediaTypeComboBox mediaTypeComboBox = new MediaTypeComboBox(this.getModelItem());
+        MediaTypeComboBox mediaTypeComboBox = new MediaTypeComboBox(getModelItem());
         mediaTypeComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -119,13 +113,13 @@ public class RestMockResponseDesktopPanel extends
     private JComboBox createStatusCodeCombo() {
         ComboBoxModel httpStatusCodeComboBoxModel = new HttpStatusCodeComboBoxModel();
 
-        final JComboBox statusCodeCombo = new JComboBox(httpStatusCodeComboBoxModel);
+        JComboBox statusCodeCombo = new JComboBox(httpStatusCodeComboBoxModel);
 
         statusCodeCombo.setSelectedItem(CompleteHttpStatus.from(getModelItem().getResponseHttpStatus()));
         statusCodeCombo.setToolTipText("Set desired HTTP status code");
         statusCodeCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                getModelItem().setResponseHttpStatus(((CompleteHttpStatus) statusCodeCombo.getSelectedItem()).getStatusCode());
+                getModelItem().setResponseHttpStatus(((CompleteHttpStatus)statusCodeCombo.getSelectedItem()).getStatusCode());
             }
         });
         return statusCodeCombo;
@@ -139,28 +133,23 @@ public class RestMockResponseDesktopPanel extends
         return component;
     }
 
-    public boolean hasRequestEditor() {
-        return false;
-    }
-
     @Override
     public String getHelpUrl() {
         return HelpUrls.REST_MOCK_RESPONSE_EDITOR;
     }
-
 }
 
 class CompleteHttpStatus {
-    private int statusCode;
-    private String description;
-
-    private CompleteHttpStatus(int statusCode) {
-        this.statusCode = statusCode;
-        this.description = HttpStatus.getStatusText(statusCode);
-    }
+    private final int statusCode;
+    private final String description;
 
     public static CompleteHttpStatus from(int statusCode) {
         return new CompleteHttpStatus(statusCode);
+    }
+
+    private CompleteHttpStatus(int statusCode) {
+        this.statusCode = statusCode;
+        description = HttpStatus.getStatusText(statusCode);
     }
 
     public int getStatusCode() {
@@ -168,19 +157,18 @@ class CompleteHttpStatus {
     }
 
     @Override
-    public String toString() {
-        return "" + statusCode + " - " + description;
+    public boolean equals(Object object) {
+        return ((CompleteHttpStatus)object).statusCode == statusCode;
     }
 
     @Override
-    public boolean equals(Object object) {
-        return ((CompleteHttpStatus) object).statusCode == statusCode;
-
+    public String toString() {
+        return statusCode + " - " + description;
     }
 }
 
 class HttpStatusCodeComboBoxModel extends DefaultComboBoxModel {
-    private static Vector<CompleteHttpStatus> LIST_OF_CODES = new Vector<CompleteHttpStatus>();
+    private static final Vector<CompleteHttpStatus> LIST_OF_CODES = new Vector<CompleteHttpStatus>();
 
     static {
         final String statusCodePrefix = "SC_";
@@ -190,7 +178,8 @@ class HttpStatusCodeComboBoxModel extends DefaultComboBoxModel {
                 if (statusCodeField.getName().startsWith(statusCodePrefix)) {
                     LIST_OF_CODES.add(CompleteHttpStatus.from(statusCodeField.getInt(null)));
                 }
-            } catch (IllegalAccessException e) {
+            }
+            catch (IllegalAccessException e) {
                 SoapUI.logError(e);
             }
         }

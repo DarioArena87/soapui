@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.methods;
@@ -39,9 +39,9 @@ import java.net.URL;
  */
 
 public final class ExtendedGenericMethod extends HttpPost implements ExtendedEntityEnclosingHttpMethod {
-    private HttpMethodSupport httpMethodSupport;
+    private final HttpMethodSupport httpMethodSupport;
     private IAfterRequestInjection afterRequestInjection;
-    private String method;
+    private final String method;
 
     public ExtendedGenericMethod(String method) {
         this.method = method;
@@ -56,29 +56,16 @@ public final class ExtendedGenericMethod extends HttpPost implements ExtendedEnt
         httpMethodSupport.setDumpFile(dumpFile);
     }
 
-    public boolean hasResponse() {
-        return httpMethodSupport.hasResponse();
-    }
-
-    public void afterReadResponse(SSLSession session) {
-        httpMethodSupport.afterReadResponse(session);
-    }
-
-    @Override
-    public String getResponseCharSet() {
-        return httpMethodSupport.getResponseCharset();
-    }
-
-    public HttpEntity getRequestEntity() {
-        return super.getEntity();
-    }
-
     public long getMaxSize() {
         return httpMethodSupport.getMaxSize();
+    }    public boolean hasResponse() {
+        return httpMethodSupport.hasResponse();
     }
 
     public void setMaxSize(long maxSize) {
         httpMethodSupport.setMaxSize(maxSize);
+    }    public void afterReadResponse(SSLSession session) {
+        httpMethodSupport.afterReadResponse(session);
     }
 
     public long getResponseReadTime() {
@@ -87,13 +74,8 @@ public final class ExtendedGenericMethod extends HttpPost implements ExtendedEnt
 
     public long getResponseReadTimeNanos() {
         return httpMethodSupport.getResponseReadTimeNanos();
-    }
-
-    public void afterWriteRequest() {
-        httpMethodSupport.afterWriteRequest();
-        if (afterRequestInjection != null) {
-            afterRequestInjection.executeAfterRequest();
-        }
+    }    public HttpEntity getRequestEntity() {
+        return getEntity();
     }
 
     public void initStartTime() {
@@ -108,12 +90,18 @@ public final class ExtendedGenericMethod extends HttpPost implements ExtendedEnt
         return httpMethodSupport.getStartTime();
     }
 
-    public byte[] getResponseBody() throws IOException {
-        return httpMethodSupport.getResponseBody();
-    }
-
     public SSLInfo getSSLInfo() {
         return httpMethodSupport.getSSLInfo();
+    }
+
+    @Override
+    public String getResponseCharSet() {
+        return httpMethodSupport.getResponseCharset();
+    }    public void afterWriteRequest() {
+        httpMethodSupport.afterWriteRequest();
+        if (afterRequestInjection != null) {
+            afterRequestInjection.executeAfterRequest();
+        }
     }
 
     public String getResponseContentType() {
@@ -127,6 +115,18 @@ public final class ExtendedGenericMethod extends HttpPost implements ExtendedEnt
     public void setAfterRequestInjection(IAfterRequestInjection injection) {
         afterRequestInjection = injection;
     }
+
+    public byte[] getResponseBody() throws IOException {
+        return httpMethodSupport.getResponseBody();
+    }
+
+
+
+
+
+
+
+
 
     public Throwable getFailureCause() {
         return httpMethodSupport.getFailureCause();
@@ -164,7 +164,8 @@ public final class ExtendedGenericMethod extends HttpPost implements ExtendedEnt
         byte[] rawdata = getResponseBody();
         if (rawdata != null) {
             return EncodingUtil.getString(rawdata, getResponseCharSet());
-        } else {
+        }
+        else {
             return null;
         }
     }

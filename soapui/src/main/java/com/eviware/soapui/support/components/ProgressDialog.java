@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -23,16 +23,8 @@ import com.eviware.x.dialogs.XProgressDialog;
 import com.eviware.x.dialogs.XProgressMonitor;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
-import java.awt.HeadlessException;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 /**
@@ -42,15 +34,14 @@ import java.awt.event.ActionEvent;
  */
 
 public class ProgressDialog extends JDialog implements XProgressDialog, XProgressMonitor {
-    private JProgressBar progressBar;
+    private final JProgressBar progressBar;
     private JButton cancelButton;
     private Worker worker;
 
-    public ProgressDialog(String title, String label, int length, String initialValue, boolean allowCancel)
-            throws HeadlessException {
+    public ProgressDialog(String title, String label, int length, String initialValue, boolean allowCancel) throws HeadlessException {
         super(UISupport.getMainFrame(), title, true);
 
-        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
         progressBar = new JProgressBar(0, length);
         JPanel panel = UISupport.createProgressBarPanel(progressBar, 10, true);
@@ -90,6 +81,16 @@ public class ProgressDialog extends JDialog implements XProgressDialog, XProgres
         setVisible(true);
     }
 
+    public void setCancelLabel(String label) {
+        if (cancelButton != null) {
+            cancelButton.setText(label);
+        }
+    }
+
+    public void setDeterminate() {
+        progressBar.setIndeterminate(false);
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -97,7 +98,7 @@ public class ProgressDialog extends JDialog implements XProgressDialog, XProgres
      * com.eviware.soapui.support.components.XProgressMonitor#setProgress(int,
      * java.lang.String)
      */
-    public void setProgress(final int value, final String string) {
+    public void setProgress(int value, String string) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 progressBar.setValue(value);
@@ -105,10 +106,6 @@ public class ProgressDialog extends JDialog implements XProgressDialog, XProgres
                 pack();
             }
         });
-    }
-
-    public void setDeterminate() {
-        progressBar.setIndeterminate(false);
     }
 
     public void setIndeterminate() {
@@ -135,12 +132,6 @@ public class ProgressDialog extends JDialog implements XProgressDialog, XProgres
 
         public void actionPerformed(ActionEvent e) {
             worker.onCancel();
-        }
-    }
-
-    public void setCancelLabel(String label) {
-        if (cancelButton != null) {
-            cancelButton.setText(label);
         }
     }
 }

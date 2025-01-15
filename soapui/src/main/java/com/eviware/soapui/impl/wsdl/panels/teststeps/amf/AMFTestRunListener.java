@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps.amf;
@@ -31,19 +31,10 @@ import flex.messaging.io.amf.client.exceptions.ServerStatusException;
 public class AMFTestRunListener implements TestRunListener {
     private AMFCredentials amfCredentials;
 
-    public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-        if (amfCredentials != null && runContext.getProperty(AMFSubmit.AMF_CONNECTION) != null
-                && runContext.getProperty(AMFSubmit.AMF_CONNECTION) instanceof SoapUIAMFConnection) {
-            if (amfCredentials.isLoggedIn()) {
-                amfCredentials.logout();
-            }
-        }
-    }
-
     public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
         if (testRunner.getTestCase() instanceof WsdlTestCase) {
             try {
-                WsdlTestCase wsdlTestCase = (WsdlTestCase) testRunner.getTestCase();
+                WsdlTestCase wsdlTestCase = (WsdlTestCase)testRunner.getTestCase();
 
                 if (wsdlTestCase.getConfig().getAmfAuthorisation()) {
                     if (noAMFTestSteps(wsdlTestCase)) {
@@ -60,7 +51,8 @@ public class AMFTestRunListener implements TestRunListener {
                         if (StringUtils.hasContent(username)) {
                             amfCredentials = new AMFCredentials(endpoint, username, password, runContext);
                             amfConnection = amfCredentials.login();
-                        } else {
+                        }
+                        else {
                             amfConnection = new SoapUIAMFConnection();
                             amfConnection.connect(runContext.expand(endpoint));
                         }
@@ -68,12 +60,31 @@ public class AMFTestRunListener implements TestRunListener {
                         runContext.setProperty(AMFSubmit.AMF_CONNECTION, amfConnection);
                     }
                 }
-            } catch (ClientStatusException e) {
+            }
+            catch (ClientStatusException e) {
                 SoapUI.logError(e);
-            } catch (ServerStatusException e) {
+            }
+            catch (ServerStatusException e) {
                 SoapUI.logError(e);
             }
         }
+    }
+
+    public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+        if (amfCredentials != null && runContext.getProperty(AMFSubmit.AMF_CONNECTION) != null && runContext.getProperty(AMFSubmit.AMF_CONNECTION) instanceof SoapUIAMFConnection) {
+            if (amfCredentials.isLoggedIn()) {
+                amfCredentials.logout();
+            }
+        }
+    }
+
+    public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+    }
+
+    public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
+    }
+
+    public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
     }
 
     /**
@@ -84,23 +95,11 @@ public class AMFTestRunListener implements TestRunListener {
      * @return boolean
      */
     private static boolean noAMFTestSteps(WsdlTestCase wsdlTestCase) {
-        if (wsdlTestCase.getTestStepsOfType(AMFRequestTestStep.class).isEmpty()) {
-            // wsdlTestCase.getConfig().setAmfAuthorisation( false );
-            // SoapUI.log( wsdlTestCase.getName()
-            // +
-            // " does not contain any AMF Test Step therefore AMF Authorisation is disabled!"
-            // );
-            return true;
-        }
-        return false;
-    }
-
-    public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-    }
-
-    public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
-    }
-
-    public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
+        // wsdlTestCase.getConfig().setAmfAuthorisation( false );
+        // SoapUI.log( wsdlTestCase.getName()
+        // +
+        // " does not contain any AMF Test Step therefore AMF Authorisation is disabled!"
+        // );
+        return wsdlTestCase.getTestStepsOfType(AMFRequestTestStep.class).isEmpty();
     }
 }

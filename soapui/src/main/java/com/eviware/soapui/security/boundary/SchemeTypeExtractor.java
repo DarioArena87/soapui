@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.boundary;
@@ -40,9 +40,8 @@ public class SchemeTypeExtractor {
 
     public SchemeTypeExtractor(TestStep testStep) {
         if (testStep instanceof WsdlTestRequestStep) {
-            request = ((WsdlTestRequestStep) testStep).getHttpRequest();
+            request = ((WsdlTestRequestStep)testStep).getHttpRequest();
         }
-
     }
 
     public String getTypeFor(String name) throws Exception {
@@ -57,13 +56,15 @@ public class SchemeTypeExtractor {
         return nodes;
     }
 
-    public TreeMap<String, NodeInfo> extract() throws XmlException, Exception {
+    public TreeMap<String, NodeInfo> extract() throws Exception {
         // XmlObjectTreeModel model = new XmlObjectTreeModel(
         // request.getOperation().getInterface().getDefinitionContext()
         // .getSchemaTypeSystem(), XmlObject.Factory.parse(
         // request.getRequestContent() ) );
-        XmlObjectTreeModel model = new XmlObjectTreeModel(request.getOperation().getInterface().getDefinitionContext()
-                .getSchemaTypeSystem(), XmlUtils.createXmlObject(request.getRequestContent()));
+        XmlObjectTreeModel model = new XmlObjectTreeModel(
+            request.getOperation().getInterface().getDefinitionContext().getSchemaTypeSystem(),
+            XmlUtils.createXmlObject(request.getRequestContent())
+        );
 
         nodes = getElements(model.getRootNode());
 
@@ -96,11 +97,12 @@ public class SchemeTypeExtractor {
     TreeMap<String, NodeInfo> getElements(XmlTreeNode rootXmlTreeNode) {
         TreeMap<String, NodeInfo> result = new TreeMap<String, NodeInfo>();
         for (int cnt = 0; cnt < rootXmlTreeNode.getChildCount(); cnt++) {
-            XmlTreeNode xmlTreeNodeChild = (XmlTreeNode) rootXmlTreeNode.getChild(cnt);
+            XmlTreeNode xmlTreeNodeChild = rootXmlTreeNode.getChild(cnt);
 
             if (xmlTreeNodeChild.getChildCount() > 0) {
                 result.putAll(getElements(rootXmlTreeNode.getChild(cnt)));
-            } else {
+            }
+            else {
                 if (xmlTreeNodeChild.getSchemaType() != null && xmlTreeNodeChild.getSchemaType().isPrimitiveType()) {
                     result.put(xmlTreeNodeChild.getDomNode().getLocalName(), new NodeInfo(rootXmlTreeNode.getChild(cnt)));
                 }
@@ -112,21 +114,37 @@ public class SchemeTypeExtractor {
     private String declareXPathNamespaces(Definition definition) {
         StringBuilder result = new StringBuilder();
         for (Object shortName : definition.getNamespaces().keySet()) {
-            result.append("declare namespace ").append(shortName.toString()).append("=\'")
-                    .append(definition.getNamespaces().get(shortName).toString()).append("\';");
+            result.append("declare namespace ").append(shortName.toString()).append("='").append(definition.getNamespaces().get(shortName).toString()).append("';");
         }
         return result.toString();
     }
 
     public class NodeInfo {
 
-        private String name;
-        private String text;
-        private TreePath treePath;
-        private XmlTreeNode node;
-        private String xpath;
+        private final String name;
+        private final String text;
+        private final TreePath treePath;
+        private final XmlTreeNode node;
+        private final String xpath;
         private String type;
         private boolean selected = false;
+
+        public NodeInfo(String name, String text, TreePath treePath, XmlTreeNode node, String xpath) {
+            this.name = name;
+            this.text = text;
+            this.treePath = treePath;
+            this.node = node;
+            this.xpath = xpath;
+        }
+
+        public NodeInfo(XmlTreeNode child) {
+            name = child.getNodeName();
+            text = child.getNodeText();
+            treePath = child.getTreePath();
+            type = child.getSchemaType().toString();
+            node = child;
+            xpath = XmlUtils.createXPath(child.getDomNode(), true, false, false, null);
+        }
 
         public boolean isSelected() {
             return selected;
@@ -150,25 +168,6 @@ public class SchemeTypeExtractor {
 
         public String getXPath() {
             return xpath;
-
-        }
-
-        public NodeInfo(String name, String text, TreePath treePath, XmlTreeNode node, String xpath) {
-            this.name = name;
-            this.text = text;
-            this.treePath = treePath;
-            this.node = node;
-            this.xpath = xpath;
-
-        }
-
-        public NodeInfo(XmlTreeNode child) {
-            this.name = child.getNodeName();
-            this.text = child.getNodeText();
-            this.treePath = child.getTreePath();
-            this.type = child.getSchemaType().toString();
-            this.node = child;
-            this.xpath = XmlUtils.createXPath(child.getDomNode(), true, false, false, null);
         }
 
         public String getType() {
@@ -179,5 +178,4 @@ public class SchemeTypeExtractor {
             return node.getDomNode().getLocalName();
         }
     }
-
 }

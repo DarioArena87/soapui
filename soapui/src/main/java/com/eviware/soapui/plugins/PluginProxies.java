@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.plugins;
@@ -37,21 +37,38 @@ public class PluginProxies {
     private static final Method OBJECT_EQUALS_METHOD = getObjectEqualsMethod();
     private static final Logger log = LoggerFactory.getLogger(PluginProxies.class);
 
-    private static Method getObjectEqualsMethod() {
-        try {
-            return Object.class.getMethod("equals", Object.class);
-        } catch (NoSuchMethodException e) {
-            // shouldn't happen. Really.
-            throw new Error("Object.equals() not found!");
-        }
-    }
-
     public static <T> T proxyIfApplicable(T delegate) {
         if (loadedFromPluginJar(delegate)) {
             return createProxyFor(delegate);
-        } else {
+        }
+        else {
             return delegate;
         }
+    }
+
+    public static <T> Collection<T> proxyInstancesWhereApplicable(Collection<T> instancesToProxy) {
+        Collection<T> proxiedInstances = new HashSet<T>();
+        for (T instance : instancesToProxy) {
+            proxiedInstances.add(proxyIfApplicable(instance));
+        }
+        return proxiedInstances;
+    }
+
+    public static <T extends Annotation> T getAnnotation(Object possiblyProxiedObject, Class<T> annotationClass) {
+        if (possiblyProxiedObject == null) {
+            return null;
+        }
+
+        if (possiblyProxiedObject instanceof Class) {
+            return (T)((Class)possiblyProxiedObject).getAnnotation(annotationClass);
+        }
+
+        T annotation = possiblyProxiedObject.getClass().getAnnotation(annotationClass);
+        if (annotation != null) {
+            return annotation;
+        }
+
+        return (possiblyProxiedObject instanceof PluginProxy) ? ((PluginProxy)possiblyProxiedObject).getProxiedClassAnnotation(annotationClass) : null;
     }
 
     @SuppressWarnings("unchecked")
@@ -69,34 +86,17 @@ public class PluginProxies {
             return delegate;
         }
         interfaces.add(PluginProxy.class);
-        return (T) Proxy.newProxyInstance(PluginProxies.class.getClassLoader(),
-                interfaces.toArray(new Class[interfaces.size()]), new DelegatingHandler<T>(delegate));
+        return (T)Proxy.newProxyInstance(PluginProxies.class.getClassLoader(), interfaces.toArray(new Class[interfaces.size()]), new DelegatingHandler<T>(delegate));
     }
 
-    public static <T> Collection<T> proxyInstancesWhereApplicable(Collection<T> instancesToProxy) {
-        Collection<T> proxiedInstances = new HashSet<T>();
-        for (T instance : instancesToProxy) {
-            proxiedInstances.add(proxyIfApplicable(instance));
+    private static Method getObjectEqualsMethod() {
+        try {
+            return Object.class.getMethod("equals", Object.class);
         }
-        return proxiedInstances;
-    }
-
-    public static <T extends Annotation> T getAnnotation(Object possiblyProxiedObject, Class<T> annotationClass) {
-        if (possiblyProxiedObject == null) {
-            return null;
+        catch (NoSuchMethodException e) {
+            // shouldn't happen. Really.
+            throw new Error("Object.equals() not found!");
         }
-
-        if (possiblyProxiedObject instanceof Class) {
-            return (T) ((Class) possiblyProxiedObject).getAnnotation(annotationClass);
-        }
-
-        T annotation = possiblyProxiedObject.getClass().getAnnotation(annotationClass);
-        if (annotation != null) {
-            return annotation;
-        }
-
-        return (possiblyProxiedObject instanceof PluginProxy) ?
-                ((PluginProxy) possiblyProxiedObject).getProxiedClassAnnotation(annotationClass) : null;
     }
 
     private static <T> boolean loadedFromPluginJar(T delegate) {
@@ -105,7 +105,7 @@ public class PluginProxies {
 
     private static class DelegatingHandler<T> implements InvocationHandler {
 
-        private T innerObject;
+        private final T innerObject;
 
         public DelegatingHandler(T innerObject) {
             this.innerObject = innerObject;
@@ -115,11 +115,12 @@ public class PluginProxies {
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             if (method.equals(OBJECT_EQUALS_METHOD)) {
                 return equalsInternal(args[0]);
-            } else if (method.getName().equals("hashCode")) {
+            }
+            else if (method.getName().equals("hashCode")) {
                 return innerObject.hashCode();
-            } else if (method.getDeclaringClass().equals(PluginProxy.class) &&
-                    method.getName().equals("getProxiedClassAnnotation")) {
-                return innerObject.getClass().getAnnotation((Class<Annotation>) args[0]);
+            }
+            else if (method.getDeclaringClass().equals(PluginProxy.class) && method.getName().equals("getProxiedClassAnnotation")) {
+                return innerObject.getClass().getAnnotation((Class<Annotation>)args[0]);
             }
             ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
             if (shouldUsePluginClassloaderFor(method)) {
@@ -128,7 +129,8 @@ public class PluginProxies {
             try {
                 Object returnValue = method.invoke(innerObject, args);
                 return proxyIfApplicable(returnValue);
-            } finally {
+            }
+            finally {
                 Thread.currentThread().setContextClassLoader(originalClassLoader);
             }
         }
@@ -136,10 +138,11 @@ public class PluginProxies {
         private boolean shouldUsePluginClassloaderFor(Method method) {
             try {
                 return method.getAnnotation(UsePluginClassloader.class) != null ||
-                        method.getDeclaringClass().getAnnotation(UsePluginClassloader.class) != null ||
-                        innerObject.getClass().getAnnotation(UsePluginClassloader.class) != null ||
-                        innerObject.getClass().getMethod(method.getName(), method.getParameterTypes()).getAnnotation(UsePluginClassloader.class) != null;
-            } catch (NoSuchMethodException e) {
+                       method.getDeclaringClass().getAnnotation(UsePluginClassloader.class) != null ||
+                       innerObject.getClass().getAnnotation(UsePluginClassloader.class) != null ||
+                       innerObject.getClass().getMethod(method.getName(), method.getParameterTypes()).getAnnotation(UsePluginClassloader.class) != null;
+            }
+            catch (NoSuchMethodException e) {
                 return false;
             }
         }
@@ -152,9 +155,10 @@ public class PluginProxies {
             if (Proxy.isProxyClass(other.getClass())) {
                 InvocationHandler handler = Proxy.getInvocationHandler(other);
                 if (handler instanceof DelegatingHandler) {
-                    actualOtherObject = ((DelegatingHandler) handler).innerObject;
+                    actualOtherObject = ((DelegatingHandler)handler).innerObject;
                 }
-            } else {
+            }
+            else {
                 actualOtherObject = other;
             }
             return innerObject.equals(actualOtherObject);

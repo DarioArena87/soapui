@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.views.content;
@@ -33,19 +33,15 @@ import com.eviware.soapui.support.types.TupleList;
 import org.apache.xmlbeans.SchemaType;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JPopupMenu;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 
 import static com.eviware.soapui.impl.rest.actions.support.NewRestResourceActionBase.ParamLocation;
 
 public class RestRequestContentView extends HttpRequestContentView {
-    private RestRequestInterface restRequest;
+    private final RestRequestInterface restRequest;
     private JButton recreateButton;
     private FormatJsonAction formatJsonAction;
 
@@ -54,7 +50,6 @@ public class RestRequestContentView extends HttpRequestContentView {
         super(restRequestMessageEditor, restRequest);
         this.restRequest = restRequest;
     }
-
 
     protected RestParamsTable buildParamsTable() {
         RestParamsTableModel model = new RestParamsTableModel(restRequest.getParams()) {
@@ -70,8 +65,12 @@ public class RestRequestContentView extends HttpRequestContentView {
         return new RestParamsTable(restRequest.getParams(), true, model, ParamLocation.RESOURCE, true, true);
     }
 
-    public RestParamsTable getParamsTable() {
-        return paramsTable;
+    @Override
+    protected void buildPopup(JPopupMenu inputPopup, RSyntaxTextArea editArea) {
+        super.buildPopup(inputPopup, editArea);
+        formatJsonAction = new FormatJsonAction(editArea);
+        inputPopup.addSeparator();
+        inputPopup.add(formatJsonAction);
     }
 
     protected Component buildToolbar() {
@@ -93,27 +92,6 @@ public class RestRequestContentView extends HttpRequestContentView {
         return toolbar;
     }
 
-    @Override
-    protected void buildPopup(JPopupMenu inputPopup, RSyntaxTextArea editArea) {
-        super.buildPopup(inputPopup, editArea);
-        formatJsonAction = new FormatJsonAction(editArea);
-        inputPopup.addSeparator();
-        inputPopup.add(formatJsonAction);
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Request.MEDIA_TYPE)) {
-            formatJsonAction.setEnabled(isFormatJsonEnable());
-            if (recreateButton != null) {
-                recreateButton.setEnabled(canRecreate());
-            }
-        } else if (evt.getPropertyName().equals("restMethod")) {
-            paramsTable.setParams(restRequest.getParams());
-        }
-
-        super.propertyChange(evt);
-    }
-
     protected Object[] getRequestMediaTypes() {
         StringList result = new StringList(super.getRequestMediaTypes());
 
@@ -126,9 +104,26 @@ public class RestRequestContentView extends HttpRequestContentView {
         return result.toStringArray();
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(Request.MEDIA_TYPE)) {
+            formatJsonAction.setEnabled(isFormatJsonEnable());
+            if (recreateButton != null) {
+                recreateButton.setEnabled(canRecreate());
+            }
+        }
+        else if (evt.getPropertyName().equals("restMethod")) {
+            paramsTable.setParams(restRequest.getParams());
+        }
+
+        super.propertyChange(evt);
+    }
+
+    public RestParamsTable getParamsTable() {
+        return paramsTable;
+    }
+
     private boolean canRecreate() {
-        for (RestRepresentation representation : restRequest.getRepresentations(RestRepresentation.Type.REQUEST,
-                restRequest.getMediaType())) {
+        for (RestRepresentation representation : restRequest.getRepresentations(RestRepresentation.Type.REQUEST, restRequest.getMediaType())) {
             if (representation.getSchemaType() != null) {
                 return true;
             }
@@ -142,8 +137,8 @@ public class RestRequestContentView extends HttpRequestContentView {
 
     private class UpdateRestParamsAction extends AbstractAction {
         private UpdateRestParamsAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/update-request-parameters-from-url.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Updates this Requests params from a specified URL");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/update-request-parameters-from-url.png"));
+            putValue(SHORT_DESCRIPTION, "Updates this Requests params from a specified URL");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -156,7 +151,8 @@ public class RestRequestContentView extends HttpRequestContentView {
                 restRequest.getParams().resetValues();
                 RestUtils.extractParams(str, restRequest.getParams(), false);
                 paramsTable.refresh();
-            } catch (Exception e1) {
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1);
             }
         }
@@ -164,8 +160,8 @@ public class RestRequestContentView extends HttpRequestContentView {
 
     private class CreateDefaultRepresentationAction extends AbstractAction {
         private CreateDefaultRepresentationAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/recreate_request.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Recreates a default representation from the schema");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/recreate_request.gif"));
+            putValue(SHORT_DESCRIPTION, "Recreates a default representation from the schema");
         }
 
         @SuppressWarnings("unchecked")
@@ -176,8 +172,7 @@ public class RestRequestContentView extends HttpRequestContentView {
                 }
             };
 
-            for (RestRepresentation representation : ((RestRequestInterface) restRequest).getRepresentations(
-                    RestRepresentation.Type.REQUEST, restRequest.getMediaType())) {
+            for (RestRepresentation representation : restRequest.getRepresentations(RestRepresentation.Type.REQUEST, restRequest.getMediaType())) {
                 SchemaType schemaType = representation.getSchemaType();
                 if (schemaType != null) {
                     list.add(representation, schemaType);
@@ -189,8 +184,7 @@ public class RestRequestContentView extends HttpRequestContentView {
                 return;
             }
 
-            TupleList<RestRepresentation, SchemaType>.Tuple result = (TupleList.Tuple) UISupport.prompt(
-                    "Select element to create", "Create default content", list.toArray());
+            TupleList<RestRepresentation, SchemaType>.Tuple result = (TupleList.Tuple)UISupport.prompt("Select element to create", "Create default content", list.toArray());
             if (result == null) {
                 return;
             }

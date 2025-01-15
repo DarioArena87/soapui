@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -39,8 +39,9 @@ class MutableValue {
 
     static Object extractValueFromMutable(Object obj) {
         if (obj instanceof MutableValue) {
-            return ((MutableValue) obj).getValue();
-        } else {
+            return ((MutableValue)obj).getValue();
+        }
+        else {
             return obj;
         }
     }
@@ -59,10 +60,12 @@ class MutableValue {
         @Override
         public MutableValue apply(@Nullable Object o) {
             if (o instanceof List) {
-                return new MutableValue(new ArrayList<Object>(Lists.transform((List) o, this)));
-            } else if (o instanceof Map) {
-                return new MutableValue(new LinkedHashMap<Object, Object>(Maps.transformValues((Map) o, this)));
-            } else {
+                return new MutableValue(new ArrayList<Object>(Lists.transform((List)o, this)));
+            }
+            else if (o instanceof Map) {
+                return new MutableValue(new LinkedHashMap<Object, Object>(Maps.transformValues((Map)o, this)));
+            }
+            else {
                 return new MutableValue(o);
             }
         }
@@ -75,10 +78,12 @@ class MutableValue {
         public Object apply(@Nullable Object o) {
             Object value = extractValueFromMutable(o);
             if (value instanceof List) {
-                return new ArrayList<Object>(Lists.transform((List) value, this));
-            } else if (value instanceof Map) {
-                return new LinkedHashMap<Object, Object>(Maps.transformValues((Map) value, this));
-            } else {
+                return new ArrayList<Object>(Lists.transform((List)value, this));
+            }
+            else if (value instanceof Map) {
+                return new LinkedHashMap<Object, Object>(Maps.transformValues((Map)value, this));
+            }
+            else {
                 return value;
             }
         }

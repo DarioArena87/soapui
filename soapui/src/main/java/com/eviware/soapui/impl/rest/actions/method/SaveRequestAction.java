@@ -25,10 +25,8 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 
-import javax.swing.AbstractAction;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +40,7 @@ public class SaveRequestAction extends AbstractAction {
     private static final Dimension PROJECTS_FORM_SIZE = new Dimension(400, 100);
     private XFormDialog dialog;
     private Project selectedProject;
-    private Map<String, Object> context;
+    private final Map<String, Object> context;
 
     public SaveRequestAction(Map<String, Object> context) {
         this.context = context;
@@ -56,7 +54,8 @@ public class SaveRequestAction extends AbstractAction {
     public boolean showNewRestRequestDialog() {
         if (dialog == null) {
             dialog = ADialogBuilder.buildDialog(SaveRequestAction.Form.class);
-        } else {
+        }
+        else {
             dialog.setValue(SaveRequestAction.Form.RESOURCENAME, "");
         }
         dialog.getFormField(Form.PROJECTS).setProperty("component", getProjectListComponent());
@@ -69,7 +68,8 @@ public class SaveRequestAction extends AbstractAction {
             RestRequest request = addRequest(context, requestName);
             if (dialog.getBooleanValue(SaveRequestAction.Form.OPENSREQUEST)) {
                 UISupport.selectAndShow(request);
-            } else {
+            }
+            else {
                 //SOAPUIOS-447
                 UISupport.select(request.getResource().getService().getProject());
             }
@@ -111,27 +111,29 @@ public class SaveRequestAction extends AbstractAction {
         RestServiceBuilder serviceBuilder = new RestServiceBuilder();
         WsdlProject project = null;
         RestRequest restRequest = null;
-        WorkspaceImpl workspace = (WorkspaceImpl) SoapUI.getWorkspace();
-        List<String> urls = (List<String>) context.get("URLs");
-        List<RestRequestInterface.HttpMethod> methods = (List<RestRequestInterface.HttpMethod>) context.get("Methods");
-        List<RequestInspectionData> inspectionDataList = (List<RequestInspectionData>) context.get("InspectionData");
+        WorkspaceImpl workspace = (WorkspaceImpl)SoapUI.getWorkspace();
+        List<String> urls = (List<String>)context.get("URLs");
+        List<RestRequestInterface.HttpMethod> methods = (List<RestRequestInterface.HttpMethod>)context.get("Methods");
+        List<RequestInspectionData> inspectionDataList = (List<RequestInspectionData>)context.get("InspectionData");
         try {
             String url = urls == null ? null : urls.get(0);
             RestRequestInterface.HttpMethod method = methods == null ? null : methods.get(0);
             RequestInspectionData inspectionData = inspectionDataList == null ? null : inspectionDataList.get(0);
             if (selectedProject == null) {
                 project = workspace.createProject(ModelItemNamer.createName(DEFAULT_PROJECT_NAME, workspace.getProjectList()), null);
-            } else {
-                project = (WsdlProject) selectedProject;
+            }
+            else {
+                project = (WsdlProject)selectedProject;
             }
 
             if (inspectionData == null) {
                 restRequest = serviceBuilder.createRestServiceWithMethod(project, url, method, false, requestName);
-            } else {
-                restRequest = serviceBuilder.createRestServiceFromInspectionData(project, url, method,
-                        inspectionData, false, requestName);
             }
-        } catch (Exception ex) {
+            else {
+                restRequest = serviceBuilder.createRestServiceFromInspectionData(project, url, method, inspectionData, false, requestName);
+            }
+        }
+        catch (Exception ex) {
             UISupport.showErrorMessage(ex.getMessage());
             if (project != null) {
                 workspace.removeProject(project);
@@ -144,12 +146,12 @@ public class SaveRequestAction extends AbstractAction {
     @AForm(name = "Form.Title", description = "Form.Description")
     public interface Form {
         @AField(description = "Form.ResourceName.Description", type = AField.AFieldType.STRING)
-        public final static String RESOURCENAME = messages.get("Form.ResourceName.Label");
+        String RESOURCENAME = messages.get("Form.ResourceName.Label");
 
         @AField(description = "Form.OpenRequest.Description", type = AField.AFieldType.BOOLEAN)
-        public final static String OPENSREQUEST = messages.get("Form.OpenRequest.Label");
+        String OPENSREQUEST = messages.get("Form.OpenRequest.Label");
 
         @AField(description = "Form.Projects.Description", type = AField.AFieldType.COMPONENT)
-        public final static String PROJECTS = messages.get("Form.Projects.Label");
+        String PROJECTS = messages.get("Form.Projects.Label");
     }
 }

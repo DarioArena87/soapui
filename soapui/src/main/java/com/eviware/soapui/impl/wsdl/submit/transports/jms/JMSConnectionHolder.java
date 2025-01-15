@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.jms;
@@ -39,9 +39,9 @@ public class JMSConnectionHolder {
     private Connection connection = null;
     private Session session = null;
 
-    private JMSEndpoint jmsEndpoint;
-    private Hermes hermes;
-    private String clientID;
+    private final JMSEndpoint jmsEndpoint;
+    private final Hermes hermes;
+    private final String clientID;
 
     /**
      * @param jmsEndpoint
@@ -53,19 +53,19 @@ public class JMSConnectionHolder {
      * @param password
      * @throws JMSException
      */
-    public JMSConnectionHolder(JMSEndpoint jmsEndpoint, Hermes hermes, boolean isTopicDomain, String clientID,
-                               String username, String password) throws JMSException {
+    public JMSConnectionHolder(
+        JMSEndpoint jmsEndpoint, Hermes hermes, boolean isTopicDomain, String clientID, String username, String password
+    ) throws JMSException {
         try {
             this.jmsEndpoint = jmsEndpoint;
             this.hermes = hermes;
             this.clientID = clientID;
 
-            connectionFactory = (ConnectionFactory) hermes.getConnectionFactory();
-            connection = createConnection(connectionFactory, isTopicDomain ? Domain.TOPIC : Domain.QUEUE, clientID,
-                    username, password);
+            connectionFactory = hermes.getConnectionFactory();
+            connection = createConnection(connectionFactory, isTopicDomain ? Domain.TOPIC : Domain.QUEUE, clientID, username, password);
             connection.start();
-
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
 
             if (connection != null) {
@@ -73,21 +73,21 @@ public class JMSConnectionHolder {
             }
 
             throw new JMSException(t.getMessage());
-
         }
     }
 
-    private Connection createConnection(ConnectionFactory connectionFactory, Domain domain, String clientId,
-                                        String username, String password) throws JMSException {
-        Connection connection = StringUtils.hasContent(username) ? ((ConnectionFactory) connectionFactory)
-                .createConnection(username, password) : ((ConnectionFactory) connectionFactory).createConnection();
+    private Connection createConnection(
+        ConnectionFactory connectionFactory, Domain domain, String clientId, String username, String password
+    ) throws JMSException {
+        Connection connection = StringUtils.hasContent(username)
+                                ? connectionFactory.createConnection(username, password)
+                                : connectionFactory.createConnection();
 
         if (!StringUtils.isNullOrEmpty(clientId) && domain.equals(Domain.TOPIC)) {
             connection.setClientID(clientId);
         }
 
         return connection;
-
     }
 
     public ConnectionFactory getConnectionFactory() {
@@ -102,9 +102,7 @@ public class JMSConnectionHolder {
         return clientID;
     }
 
-    public Hermes getHermes()
-
-    {
+    public Hermes getHermes() {
         return hermes;
     }
 
@@ -121,8 +119,9 @@ public class JMSConnectionHolder {
     public Topic getTopic(String name) throws JMSException, NamingException {
         if (name == null || name.isEmpty()) {
             return getSession().createTemporaryTopic();
-        } else {
-            return (Topic) getHermes().getDestination(name, Domain.TOPIC);
+        }
+        else {
+            return (Topic)getHermes().getDestination(name, Domain.TOPIC);
         }
     }
 
@@ -135,8 +134,9 @@ public class JMSConnectionHolder {
     public Queue getQueue(String name) throws JMSException, NamingException {
         if (name == null || name.isEmpty()) {
             return getSession().createTemporaryQueue();
-        } else {
-            return (Queue) getHermes().getDestination(name, Domain.QUEUE);
+        }
+        else {
+            return (Queue)getHermes().getDestination(name, Domain.QUEUE);
         }
     }
 
@@ -164,9 +164,9 @@ public class JMSConnectionHolder {
                 connection.close();
                 connection = null;
             }
-        } catch (JMSException e) {
+        }
+        catch (JMSException e) {
             SoapUI.logError(e);
         }
     }
-
 }

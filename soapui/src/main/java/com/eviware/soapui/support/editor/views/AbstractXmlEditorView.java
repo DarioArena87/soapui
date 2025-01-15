@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.views;
@@ -36,17 +36,16 @@ import java.util.Set;
  */
 
 public abstract class AbstractXmlEditorView<T extends XmlDocument> implements XmlEditorView<T>, PropertyChangeListener {
+    private final String viewId;
     private String title;
     private boolean isActive;
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private T xmlDocument;
     private boolean editorDocumentChanged;
-    private Set<EditorLocationListener<T>> listeners = new HashSet<EditorLocationListener<T>>();
-    private XmlEditor<T> editor;
-    private final String viewId;
+    private final Set<EditorLocationListener<T>> listeners = new HashSet<EditorLocationListener<T>>();
+    private final XmlEditor<T> editor;
 
     public AbstractXmlEditorView(String title, XmlEditor<T> xmlEditor, String viewId) {
-        super();
         this.title = title;
         editor = xmlEditor;
         this.viewId = viewId;
@@ -57,44 +56,17 @@ public abstract class AbstractXmlEditorView<T extends XmlDocument> implements Xm
         return propertyChangeSupport;
     }
 
-    public String getViewId() {
-        return viewId;
-    }
-
-    public boolean activate(EditorLocation<T> location) {
-        isActive = true;
-        update();
-
-        return true;
-    }
-
     public void update() {
         if (editorDocumentChanged) {
             documentUpdated();
             editorDocumentChanged = false;
         }
-    }
-
-    public boolean deactivate() {
-        isActive = false;
-        editorDocumentChanged = false;
-
-        return true;
+    }    public String getViewId() {
+        return viewId;
     }
 
     public boolean isActive() {
         return isActive;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        String oldTitle = this.title;
-        this.title = title;
-
-        propertyChangeSupport.firePropertyChange(TITLE_PROPERTY, oldTitle, title);
     }
 
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
@@ -113,11 +85,48 @@ public abstract class AbstractXmlEditorView<T extends XmlDocument> implements Xm
         propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
     }
 
-    public T getDocument() {
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == xmlDocument && evt.getPropertyName().equals(EditorDocument.DOCUMENT_PROPERTY)) {
+            if (isActive()) {
+                documentUpdated();
+            }
+            else {
+                editorDocumentChanged = true;
+            }
+        }
+    }
+
+    /**
+     * Called when document content is updated. If not active at the moment the call will come once the editor becomes active.
+     */
+    public void documentUpdated() {
+    }
+
+    public void fireLocationChanged(EditorLocation<T> location) {
+        for (EditorLocationListener<T> listener : listeners) {
+            listener.locationChanged(location);
+        }
+    }
+
+    public String getXml() {
+        return xmlDocument == null ? null : xmlDocument.getDocumentContent(EditorDocument.Format.XML).getContentAsString();
+    }
+
+    public void locationChanged(EditorLocation<T> location) {
+    }
+
+    public void syncUpdates() {
+        if (!isActive() && editorDocumentChanged) {
+            documentUpdated();
+            editorDocumentChanged = false;
+        }
+    }    public T getDocument() {
         return xmlDocument;
     }
 
-    public void setDocument(T xmlDocument) {
+    public XmlEditor<T> getEditor() {
+        return editor;
+    }    public void setDocument(T xmlDocument) {
         if (this.xmlDocument != null) {
             this.xmlDocument.removePropertyChangeListener(EditorDocument.DOCUMENT_PROPERTY, this);
         }
@@ -129,79 +138,73 @@ public abstract class AbstractXmlEditorView<T extends XmlDocument> implements Xm
             this.xmlDocument.addPropertyChangeListener(EditorDocument.DOCUMENT_PROPERTY, this);
             if (isActive()) {
                 documentUpdated();
-            } else {
+            }
+            else {
                 editorDocumentChanged = true;
             }
-        } else {
+        }
+        else {
             if (isActive()) {
                 documentUpdated();
-            } else {
+            }
+            else {
                 editorDocumentChanged = true;
             }
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() == this.xmlDocument && evt.getPropertyName().equals(EditorDocument.DOCUMENT_PROPERTY)) {
-            if (isActive()) {
-                documentUpdated();
-            } else {
-                editorDocumentChanged = true;
-            }
-        }
+    public String getTitle() {
+        return title;
     }
 
-    /**
-     * Called when document content is updated. If not active at the moment the call will come once the editor becomes active.
-     */
-    public void documentUpdated(){
+    public boolean deactivate() {
+        isActive = false;
+        editorDocumentChanged = false;
+
+        return true;
     }
 
-    public void release() {
-        if (this.xmlDocument != null) {
-            this.xmlDocument.removePropertyChangeListener(EditorDocument.DOCUMENT_PROPERTY, this);
-            this.xmlDocument = null;
-        }
-    }
+    public boolean activate(EditorLocation<T> location) {
+        isActive = true;
+        update();
 
-    public void addLocationListener(EditorLocationListener<T> listener) {
-        listeners.add(listener);
-    }
-
-    public void removeLocationListener(EditorLocationListener<T> listener) {
-        listeners.remove(listener);
-    }
-
-    public void fireLocationChanged(EditorLocation<T> location) {
-        for (EditorLocationListener<T> listener : listeners) {
-            listener.locationChanged(location);
+        return true;
+    }    public void release() {
+        if (xmlDocument != null) {
+            xmlDocument.removePropertyChangeListener(EditorDocument.DOCUMENT_PROPERTY, this);
+            xmlDocument = null;
         }
     }
 
     public EditorLocation<T> getEditorLocation() {
         return null;
-    }
-
-    public String getXml() {
-        return xmlDocument == null ? null : xmlDocument.getDocumentContent(EditorDocument.Format.XML).getContentAsString();
+    }    public void addLocationListener(EditorLocationListener<T> listener) {
+        listeners.add(listener);
     }
 
     public void setLocation(EditorLocation<T> location) {
+    }    public void removeLocationListener(EditorLocationListener<T> listener) {
+        listeners.remove(listener);
     }
 
-    public void locationChanged(EditorLocation<T> location) {
+    public void setTitle(String title) {
+        String oldTitle = this.title;
+        this.title = title;
+
+        propertyChangeSupport.firePropertyChange(TITLE_PROPERTY, oldTitle, title);
     }
 
-    public void syncUpdates() {
-        if (!isActive() && editorDocumentChanged) {
-            documentUpdated();
-            editorDocumentChanged = false;
-        }
-    }
 
-    public XmlEditor<T> getEditor() {
-        return editor;
-    }
+
+
+
+
+
+
+
+
+
+
 
     public void requestFocus() {
     }

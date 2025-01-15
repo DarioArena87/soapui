@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.saml.callback;
@@ -31,17 +31,16 @@ import java.io.IOException;
 
 /**
  * @author Erik R. Yverling
- *         <p/>
- *         A Callback Handler implementation for a SAML 1.1 assertion. By
- *         default it creates an authentication assertion using Sender Vouches.
+ * <p/>
+ * A Callback Handler implementation for a SAML 1.1 assertion. By
+ * default it creates an authentication assertion using Sender Vouches.
  */
 public class SAML1CallbackHandler extends AbstractSAMLCallbackHandler {
 
     /**
      * Use this for signed assertion
      */
-    public SAML1CallbackHandler(Crypto crypto, String alias, String assertionTypeFriendlyName, String confirmationMethodFriendlyName)
-            throws Exception {
+    public SAML1CallbackHandler(Crypto crypto, String alias, String assertionTypeFriendlyName, String confirmationMethodFriendlyName) throws Exception {
         super(crypto, alias, assertionTypeFriendlyName, confirmationMethodFriendlyName);
 
         if (certs == null) {
@@ -61,7 +60,7 @@ public class SAML1CallbackHandler extends AbstractSAMLCallbackHandler {
     public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         for (int i = 0; i < callbacks.length; i++) {
             if (callbacks[i] instanceof SAMLCallback) {
-                SAMLCallback callback = (SAMLCallback) callbacks[i];
+                SAMLCallback callback = (SAMLCallback)callbacks[i];
                 callback.setSamlVersion(SAMLVersion.VERSION_11);
                 callback.setIssuer(issuer);
                 SubjectBean subjectBean = new SubjectBean(subjectName, subjectQualifier, confirmationMethod);
@@ -72,12 +71,14 @@ public class SAML1CallbackHandler extends AbstractSAMLCallbackHandler {
                     try {
                         KeyInfoBean keyInfo = createKeyInfo();
                         subjectBean.setKeyInfo(keyInfo);
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex) {
                         throw new IOException("Problem creating KeyInfo: " + ex.getMessage());
                     }
                 }
                 createAndSetStatement(subjectBean, callback);
-            } else {
+            }
+            else {
                 throw new UnsupportedCallbackException(callbacks[i], "Unrecognized Callback");
             }
         }
@@ -87,7 +88,8 @@ public class SAML1CallbackHandler extends AbstractSAMLCallbackHandler {
     public void setConfirmationMethod(String confirmationMethodFriendlyName) {
         if (confirmationMethodFriendlyName.equals(AutomaticSAMLEntry.HOLDER_OF_KEY_CONFIRMATION_METHOD)) {
             confirmationMethod = SAML1Constants.CONF_HOLDER_KEY;
-        } else if (confirmationMethodFriendlyName.equals(AutomaticSAMLEntry.SENDER_VOUCHES_CONFIRMATION_METHOD)) {
+        }
+        else if (confirmationMethodFriendlyName.equals(AutomaticSAMLEntry.SENDER_VOUCHES_CONFIRMATION_METHOD)) {
             confirmationMethod = SAML1Constants.CONF_SENDER_VOUCHES;
         }
     }

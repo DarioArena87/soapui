@@ -17,7 +17,7 @@ import java.util.Set;
 public class DateObjectSerializer extends JsonSerializer<Date> {
 
     private static final Logger log = LoggerFactory.getLogger(DateObjectSerializer.class);
-    private Set<String> exclusions = Sets.newHashSet("metaClass", "class", "declaringClass");
+    private final Set<String> exclusions = Sets.newHashSet("metaClass", "class", "declaringClass");
 
     @Override
     public void serialize(Date date, JsonGenerator gen, SerializerProvider provider) throws IOException {
@@ -30,12 +30,14 @@ public class DateObjectSerializer extends JsonSerializer<Date> {
                 if (!exclusions.contains(name)) {
                     Object value = PropertyUtils.getProperty(date, name);
                     if (value instanceof Integer) {
-                        gen.writeNumberField(name, (Integer) value);
-                    } else {
-                        gen.writeNumberField(name, (Long) value);
+                        gen.writeNumberField(name, (Integer)value);
+                    }
+                    else {
+                        gen.writeNumberField(name, (Long)value);
                     }
                 }
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 log.error(ex.getMessage(), ex);
             }
         });

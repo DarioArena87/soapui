@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps;
@@ -42,26 +42,11 @@ import com.eviware.soapui.support.log.JLogList;
 import com.eviware.soapui.support.xml.XmlUtils;
 import com.eviware.soapui.ui.support.ModelItemDesktopPanel;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Date;
 
@@ -82,18 +67,18 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
     private GotoTestStepsComboBoxModel testStepsModel;
     private JComboBox testStepsCombo;
     private JButton testConditionButton;
-    private TestRunComponentEnabler componentEnabler;
+    private final TestRunComponentEnabler componentEnabler;
     private GotoCondition currentCondition;
     private JButton renameButton;
     private JButton runButton;
     private JButton addButton;
     private JLogList logList;
-    private InternalTestRunListener testRunListener = new InternalTestRunListener();
+    private final InternalTestRunListener testRunListener = new InternalTestRunListener();
     private JInspectorPanel inspectorPanel;
 
     public GotoStepDesktopPanel(WsdlGotoTestStep testStep) {
         super(testStep);
-        this.gotoStep = testStep;
+        gotoStep = testStep;
         componentEnabler = new TestRunComponentEnabler(testStep.getTestCase());
         gotoStep.getTestCase().addTestRunListener(testRunListener);
 
@@ -153,8 +138,7 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
         splitPane.setDividerLocation(120);
 
         inspectorPanel = JInspectorPanelFactory.build(splitPane);
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildLog(), "Log",
-                "A log of evaluated conditions", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildLog(), "Log", "A log of evaluated conditions", true));
 
         add(inspectorPanel.getComponent(), BorderLayout.CENTER);
 
@@ -266,6 +250,40 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
         return builder;
     }
 
+    public boolean onClose(boolean canCancel) {
+        componentEnabler.release();
+        gotoStep.getTestCase().removeTestRunListener(testRunListener);
+        testStepsModel.release();
+        inspectorPanel.release();
+
+        return release();
+    }
+
+    public JComponent getComponent() {
+        return this;
+    }
+
+    public boolean dependsOn(ModelItem modelItem) {
+        return modelItem == gotoStep ||
+               modelItem == gotoStep.getTestCase() ||
+               modelItem == gotoStep.getTestCase().getTestSuite() ||
+               modelItem == gotoStep.getTestCase().getTestSuite().getProject();
+    }
+
+    public GotoCondition getCurrentCondition() {
+        return currentCondition;
+    }
+
+    protected void enableEditComponents(boolean b) {
+        expressionArea.setEnabled(b);
+        testStepsCombo.setEnabled(b);
+        copyButton.setEnabled(b);
+        deleteButton.setEnabled(b);
+        declareButton.setEnabled(b);
+        testConditionButton.setEnabled(b);
+        renameButton.setEnabled(b);
+    }
+
     private final class SourceAreaDocumentListener extends DocumentListenerAdapter {
         @Override
         public void update(Document document) {
@@ -283,7 +301,8 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
                 expressionArea.setText("");
                 testStepsModel.setCondition(null);
                 currentCondition = null;
-            } else {
+            }
+            else {
                 currentCondition = gotoStep.getConditionAt(ix);
                 expressionArea.setText(currentCondition.getExpression());
                 testStepsModel.setCondition(currentCondition);
@@ -296,13 +315,12 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
     private final class AddAction extends AbstractAction {
         public AddAction() {
-            putValue(Action.SHORT_DESCRIPTION, "Adds a new Condition");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds a new Condition");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
         }
 
         public void actionPerformed(ActionEvent e) {
-            String name = UISupport.prompt("Specify name for condition", "Add Condition",
-                    "Condition " + (gotoStep.getConditionCount() + 1));
+            String name = UISupport.prompt("Specify name for condition", "Add Condition", "Condition " + (gotoStep.getConditionCount() + 1));
             if (name == null || name.trim().length() == 0) {
                 return;
             }
@@ -316,8 +334,8 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
     private final class CopyAction extends AbstractAction {
         public CopyAction() {
-            putValue(Action.SHORT_DESCRIPTION, "Copies the selected Condition");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/clone.png"));
+            putValue(SHORT_DESCRIPTION, "Copies the selected Condition");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/clone.png"));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -341,8 +359,8 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
     private final class DeleteAction extends AbstractAction {
         public DeleteAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Deletes the selected Condition");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
+            putValue(SHORT_DESCRIPTION, "Deletes the selected Condition");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -363,8 +381,8 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
     private final class RenameAction extends AbstractAction {
         public RenameAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/rename.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Renames the selected Condition");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/rename.gif"));
+            putValue(SHORT_DESCRIPTION, "Renames the selected Condition");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -383,28 +401,29 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
     private final class DeclareNamespacesAction extends AbstractAction {
         public DeclareNamespacesAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/declareNs.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Declare available response namespaces in condition expression");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/declareNs.gif"));
+            putValue(SHORT_DESCRIPTION, "Declare available response namespaces in condition expression");
         }
 
         public void actionPerformed(ActionEvent e) {
             try {
-                SamplerTestStep previousStep = (SamplerTestStep) gotoStep.getTestCase().findPreviousStepOfType(gotoStep,
-                        SamplerTestStep.class);
+                SamplerTestStep previousStep = gotoStep.getTestCase().findPreviousStepOfType(gotoStep, SamplerTestStep.class);
 
                 if (previousStep != null) {
                     Response response = previousStep.getTestRequest().getResponse();
                     String xml = response == null ? null : response.getContentAsString();
                     if (XmlUtils.seemsToBeXml(xml)) {
                         expressionArea.setText(XmlUtils.declareXPathNamespaces(xml) + expressionArea.getText());
-                    } else {
-                        UISupport.showErrorMessage("Missing response in previous request step [" + previousStep.getName()
-                                + "]");
                     }
-                } else {
+                    else {
+                        UISupport.showErrorMessage("Missing response in previous request step [" + previousStep.getName() + "]");
+                    }
+                }
+                else {
                     UISupport.showErrorMessage("Missing previous request step");
                 }
-            } catch (Exception e1) {
+            }
+            catch (Exception e1) {
                 SoapUI.logError(e1);
             }
         }
@@ -412,8 +431,8 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
     private final class RunAction extends AbstractAction {
         public RunAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run_all.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Runs the current conditions against the previous response");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run_all.png"));
+            putValue(SHORT_DESCRIPTION, "Runs the current conditions against the previous response");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -426,9 +445,9 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
             if (previousStep == null) {
                 UISupport.showErrorMessage("Missing previous request step");
-            } else {
-                if (previousStep.getTestRequest().getResponse() == null
-                        || !XmlUtils.seemsToBeXml(previousStep.getTestRequest().getResponse().getContentAsXml())) {
+            }
+            else {
+                if (previousStep.getTestRequest().getResponse() == null || !XmlUtils.seemsToBeXml(previousStep.getTestRequest().getResponse().getContentAsXml())) {
                     UISupport.showErrorMessage("Missing response in previous message");
                     return;
                 }
@@ -437,7 +456,8 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
                 GotoCondition target = gotoStep.runConditions(previousStep, context);
                 if (target == null) {
                     logList.addLine("No condition true for current response in [" + previousStep.getName() + "]");
-                } else {
+                }
+                else {
                     logList.addLine("Condition triggered for go to [" + target.getTargetStep() + "]");
                 }
 
@@ -448,9 +468,8 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
     private final class TestConditionAction extends AbstractAction {
         public TestConditionAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION,
-                    "Runs the current condition against the previous response and shows the result");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Runs the current condition against the previous response and shows the result");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -458,11 +477,10 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
 
             if (previousStep == null) {
                 UISupport.showErrorMessage("Missing previous request step");
-            } else {
-                if (previousStep.getTestRequest().getResponse() == null
-                        || !XmlUtils.seemsToBeXml(previousStep.getTestRequest().getResponse().getContentAsXml())) {
-                    UISupport
-                            .showErrorMessage("Missing response in previous request step [" + previousStep.getName() + "]");
+            }
+            else {
+                if (previousStep.getTestRequest().getResponse() == null || !XmlUtils.seemsToBeXml(previousStep.getTestRequest().getResponse().getContentAsXml())) {
+                    UISupport.showErrorMessage("Missing response in previous request step [" + previousStep.getName() + "]");
                     return;
                 }
 
@@ -471,56 +489,24 @@ public class GotoStepDesktopPanel extends ModelItemDesktopPanel<WsdlGotoTestStep
                     WsdlTestRunContext context = new WsdlTestRunContext(gotoStep);
                     boolean evaluate = condition.evaluate(previousStep, context);
                     if (!evaluate) {
-                        UISupport.showInfoMessage("Condition not true for current response in [" + previousStep.getName()
-                                + "]");
-                    } else {
+                        UISupport.showInfoMessage("Condition not true for current response in [" + previousStep.getName() + "]");
+                    }
+                    else {
                         UISupport.showInfoMessage("Condition true for current response in [" + previousStep.getName() + "]");
                     }
-                } catch (Exception e1) {
+                }
+                catch (Exception e1) {
                     UISupport.showErrorMessage("Error checking condition: " + e1.getMessage());
                 }
             }
         }
     }
 
-    public boolean onClose(boolean canCancel) {
-        componentEnabler.release();
-        gotoStep.getTestCase().removeTestRunListener(testRunListener);
-        testStepsModel.release();
-        inspectorPanel.release();
-
-        return release();
-    }
-
-    public JComponent getComponent() {
-        return this;
-    }
-
-    public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == gotoStep || modelItem == gotoStep.getTestCase()
-                || modelItem == gotoStep.getTestCase().getTestSuite()
-                || modelItem == gotoStep.getTestCase().getTestSuite().getProject();
-    }
-
-    public GotoCondition getCurrentCondition() {
-        return currentCondition;
-    }
-
-    protected void enableEditComponents(boolean b) {
-        expressionArea.setEnabled(b);
-        testStepsCombo.setEnabled(b);
-        copyButton.setEnabled(b);
-        deleteButton.setEnabled(b);
-        declareButton.setEnabled(b);
-        testConditionButton.setEnabled(b);
-        renameButton.setEnabled(b);
-    }
-
     private class InternalTestRunListener extends TestRunListenerAdapter {
         @Override
         public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
             if (result.getTestStep() == gotoStep) {
-                logList.addLine(new Date(result.getTimeStamp()).toString() + ": " + result.getMessages()[0]);
+                logList.addLine(new Date(result.getTimeStamp()) + ": " + result.getMessages()[0]);
                 inspectorPanel.setCurrentInspector("Log");
             }
         }

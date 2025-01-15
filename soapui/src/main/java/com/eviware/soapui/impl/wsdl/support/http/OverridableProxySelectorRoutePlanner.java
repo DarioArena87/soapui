@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.http;
@@ -25,9 +25,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.SchemePortResolver;
 import org.apache.http.conn.params.ConnRouteParams;
-import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.conn.DefaultRoutePlanner;
-import org.apache.http.impl.conn.ProxySelectorRoutePlanner;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
@@ -46,14 +44,14 @@ public class OverridableProxySelectorRoutePlanner extends DefaultRoutePlanner {
 
     private final ProxySelector proxySelector;
 
-    @Deprecated
-    static void setForceDirectConnection(HttpParams params) {
-        params.setBooleanParameter(FORCE_DIRECT_CONNECTION, true);
-    }
-
     public OverridableProxySelectorRoutePlanner(SchemePortResolver schemePortResolver, ProxySelector proxySelector) {
         super(schemePortResolver);
         this.proxySelector = proxySelector;
+    }
+
+    @Deprecated
+    static void setForceDirectConnection(HttpParams params) {
+        params.setBooleanParameter(FORCE_DIRECT_CONNECTION, true);
     }
 
     @Override
@@ -71,14 +69,13 @@ public class OverridableProxySelectorRoutePlanner extends DefaultRoutePlanner {
 
         //TODO: replace deprecated ClientContext with new HttpClientContext (string representation of the CREDS_PROVIDER remains the same)
         if ((proxy != null) && (context != null)) {
-            CredentialsProvider credentialsProvider = (CredentialsProvider) context.getAttribute(ClientContext.CREDS_PROVIDER);
+            CredentialsProvider credentialsProvider = (CredentialsProvider)context.getAttribute(ClientContext.CREDS_PROVIDER);
             if ((credentialsProvider != null) && (credentialsProvider instanceof HttpCredentialsProvider)) {
                 boolean autoProxy = SoapUI.getSettings().getBoolean(ProxySettings.AUTO_PROXY);
                 if (autoProxy) {
-                    HttpCredentialsProvider httpCredentialsProvider = (HttpCredentialsProvider) credentialsProvider;
+                    HttpCredentialsProvider httpCredentialsProvider = (HttpCredentialsProvider)credentialsProvider;
                     httpCredentialsProvider.setProxy(proxy.getHostName(), String.valueOf(proxy.getPort()));
                 }
-
             }
         }
 
@@ -87,19 +84,20 @@ public class OverridableProxySelectorRoutePlanner extends DefaultRoutePlanner {
 
     //borrowed from the ProxySelectorRoutePlanner
     protected HttpHost determineProxyThroughProxySelector(HttpHost target) throws HttpException {
-        if(proxySelector == null) {
+        if (proxySelector == null) {
             return null;
         }
 
         URI targetURI = null;
         try {
             targetURI = new URI(target.toURI());
-        } catch (URISyntaxException var10) {
+        }
+        catch (URISyntaxException var10) {
             throw new HttpException("Cannot convert host to URI: " + target, var10);
         }
 
         List proxies = proxySelector.select(targetURI);
-        Proxy proxy = this.chooseProxy(proxies);
+        Proxy proxy = chooseProxy(proxies);
 
         HttpHost result = null;
         if (proxy != null && proxy.type() == Proxy.Type.HTTP) {
@@ -116,7 +114,7 @@ public class OverridableProxySelectorRoutePlanner extends DefaultRoutePlanner {
     }
 
     protected Proxy chooseProxy(List<Proxy> proxies) {
-        for (Proxy p: proxies) {
+        for (Proxy p : proxies) {
             if (p.type() == Proxy.Type.HTTP) {
                 return p;
             }

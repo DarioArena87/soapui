@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.auth;
@@ -25,15 +25,16 @@ import com.eviware.x.form.support.ADialogBuilder;
 import com.eviware.x.form.support.AField;
 import com.eviware.x.form.support.AForm;
 import com.eviware.x.form.support.XFormRadioGroup;
+import org.apache.commons.lang.StringUtils;
 
-import javax.swing.JButton;
+import javax.swing.*;
 
 import static com.eviware.soapui.impl.rest.OAuth2Profile.AccessTokenPosition;
 
 public class OAuth2AdvancedOptionsDialog {
     public static final MessageSupport messages = MessageSupport.getMessages(OAuth2AdvancedOptionsDialog.class);
-    private ExpirationTimeChooser expirationTimeComponent;
-    private JButton refreshAccessTokenButton;
+    private final ExpirationTimeChooser expirationTimeComponent;
+    private final JButton refreshAccessTokenButton;
 
     public OAuth2AdvancedOptionsDialog(OAuth2Profile profile, JButton refreshAccessTokenButton) {
         this.refreshAccessTokenButton = refreshAccessTokenButton;
@@ -58,31 +59,27 @@ public class OAuth2AdvancedOptionsDialog {
             profile.setManualAccessTokenExpirationTime(manualExpirationTime);
             profile.setManualAccessTokenExpirationTimeUnit(expirationTimeUnit);
 
-            if (expirationTimeComponent.manualExpirationTimeIsSelected()) {
-                profile.setUseManualAccessTokenExpirationTime(true);
-            } else {
-                profile.setUseManualAccessTokenExpirationTime(false);
-            }
+            profile.setUseManualAccessTokenExpirationTime(expirationTimeComponent.manualExpirationTimeIsSelected());
 
             enableRefreshAccessTokenButton(profile);
         }
     }
 
     private void enableRefreshAccessTokenButton(OAuth2Profile profile) {
-        boolean enabled = profile.getRefreshAccessTokenMethod() == OAuth2Profile.RefreshAccessTokenMethods.MANUAL
-                && (!org.apache.commons.lang.StringUtils.isEmpty(profile.getRefreshToken()));
+        boolean enabled = profile.getRefreshAccessTokenMethod() == OAuth2Profile.RefreshAccessTokenMethods.MANUAL &&
+                          (!StringUtils.isEmpty(profile.getRefreshToken()));
         refreshAccessTokenButton.setEnabled(enabled);
         refreshAccessTokenButton.setVisible(enabled);
     }
 
     private void setRefreshAccessTokenOptions(OAuth2Profile profile, XFormDialog dialog) {
-        XFormRadioGroup refreshOptions = (XFormRadioGroup) dialog.getFormField(Form.AUTOMATIC_ACCESS_TOKEN_REFRESH);
+        XFormRadioGroup refreshOptions = (XFormRadioGroup)dialog.getFormField(Form.AUTOMATIC_ACCESS_TOKEN_REFRESH);
         refreshOptions.setOptions(OAuth2Profile.RefreshAccessTokenMethods.values());
         refreshOptions.setValue(profile.getRefreshAccessTokenMethod().name());
     }
 
     private void setAccessTokenOptions(OAuth2Profile profile, XFormDialog dialog) {
-        XFormRadioGroup accessTokenPositionField = (XFormRadioGroup) dialog.getFormField(Form.ACCESS_TOKEN_POSITION);
+        XFormRadioGroup accessTokenPositionField = (XFormRadioGroup)dialog.getFormField(Form.ACCESS_TOKEN_POSITION);
 
         // TODO We're explicity removing the BODY option. Why?
         AccessTokenPosition[] accessTokenPositions = new AccessTokenPosition[]{AccessTokenPosition.HEADER, AccessTokenPosition.QUERY};
@@ -94,12 +91,12 @@ public class OAuth2AdvancedOptionsDialog {
     @AForm(name = "Form.Title", description = "Form.Description", helpUrl = HelpUrls.OAUTH_ADVANCED_OPTIONS)
     public interface Form {
         @AField(description = "Form.AccessTokenPosition.Description", type = AField.AFieldType.RADIOGROUP)
-        public final static String ACCESS_TOKEN_POSITION = messages.get("Form.AccessTokenPosition.Label");
+        String ACCESS_TOKEN_POSITION = messages.get("Form.AccessTokenPosition.Label");
 
         @AField(description = "Form.AutomaticRefreshAccessToken.Description", type = AField.AFieldType.RADIOGROUP)
-        public final static String AUTOMATIC_ACCESS_TOKEN_REFRESH = messages.get("Form.AutomaticRefreshAccessToken.Label");
+        String AUTOMATIC_ACCESS_TOKEN_REFRESH = messages.get("Form.AutomaticRefreshAccessToken.Label");
 
         @AField(description = "Form.AccessTokenExpirationTime.Description", type = AField.AFieldType.COMPONENT)
-        public final static String ACCESS_TOKEN_EXPIRATION_TIME = messages.get("Form.AccessTokenExpirationTime.Label");
+        String ACCESS_TOKEN_EXPIRATION_TIME = messages.get("Form.AccessTokenExpirationTime.Label");
     }
 }

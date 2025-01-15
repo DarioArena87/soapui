@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.xml;
@@ -52,7 +52,7 @@ public class SyntaxEditorUtil {
 
     public static RSyntaxTextArea createDefaultSQLSyntaxTextArea() {
         RSyntaxTextArea textArea = new RSyntaxTextArea() {
-            protected void configurePopupMenu(javax.swing.JPopupMenu popupMenu) {
+            protected void configurePopupMenu(JPopupMenu popupMenu) {
                 // Suppress superclass behavior
             }
         };
@@ -67,12 +67,6 @@ public class SyntaxEditorUtil {
         textArea.setCaretPosition(0);
         textArea.setBorder(BorderFactory.createMatteBorder(0, 2, 0, 0, Color.WHITE));
         return textArea;
-    }
-
-    private static RSyntaxTextArea createDefaultSyntaxTextArea(String type) {
-        RSyntaxTextArea textArea = new RSyntaxTextArea();
-        textArea.setSyntaxEditingStyle(type);
-        return decorateSyntaxArea(textArea);
     }
 
     public static RSyntaxTextArea addDefaultActions(RSyntaxTextArea editor, RTextScrollPane scrollPane, boolean readOnly) {
@@ -97,7 +91,8 @@ public class SyntaxEditorUtil {
             popupMenu.add(findAndReplaceDialog);
             if (UISupport.isMac()) {
                 editor.getInputMap().put(KeyStroke.getKeyStroke("meta F"), findAndReplaceDialog);
-            } else {
+            }
+            else {
                 editor.getInputMap().put(KeyStroke.getKeyStroke("ctrl F"), findAndReplaceDialog);
             }
         }
@@ -122,7 +117,8 @@ public class SyntaxEditorUtil {
                 editor.getInputMap().put(KeyStroke.getKeyStroke("shift meta F"), formatXmlAction);
                 editor.getInputMap().put(KeyStroke.getKeyStroke("meta L"), loadXmlTextAreaAction);
             }
-        } else {
+        }
+        else {
             editor.getInputMap().put(KeyStroke.getKeyStroke("ctrl S"), saveXmlTextAreaAction);
             editor.getInputMap().put(KeyStroke.getKeyStroke("alt L"), enableLineNumbersAction);
             editor.getInputMap().put(KeyStroke.getKeyStroke("control G"), goToLineAction);
@@ -137,23 +133,33 @@ public class SyntaxEditorUtil {
     public static void setMediaType(RSyntaxTextArea inputArea, String mediaType) {
         if (mediaType.contains("json")) {
             inputArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT);
-        } else if (mediaType.contains("xml")) {
+        }
+        else if (mediaType.contains("xml")) {
             inputArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
-        } else {
+        }
+        else {
             try {
                 ContentType contentType = new ContentType(mediaType);
                 String subType = contentType.getSubType();
                 String textContentType = "text/" + subType.replaceAll(".*\\+", "");
                 if (TokenMakerFactory.getDefaultInstance().keySet().contains(textContentType)) {
                     inputArea.setSyntaxEditingStyle(textContentType);
-                } else {
+                }
+                else {
                     inputArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
                 }
-            } catch (ParseException e) {
+            }
+            catch (ParseException e) {
                 inputArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
             }
         }
         // Force rendering with new style
         inputArea.setText(inputArea.getText());
+    }
+
+    private static RSyntaxTextArea createDefaultSyntaxTextArea(String type) {
+        RSyntaxTextArea textArea = new RSyntaxTextArea();
+        textArea.setSyntaxEditingStyle(type);
+        return decorateSyntaxArea(textArea);
     }
 }

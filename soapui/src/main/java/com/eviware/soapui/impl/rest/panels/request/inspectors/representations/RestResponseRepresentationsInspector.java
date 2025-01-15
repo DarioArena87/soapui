@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.inspectors.representations;
@@ -29,22 +29,23 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.xml.XmlUtils;
 import org.apache.xmlbeans.XmlCursor;
 
-import javax.swing.JCheckBox;
+import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class RestResponseRepresentationsInspector extends AbstractRestRepresentationsInspector implements
-        SubmitListener {
-    private JCheckBox enableRecordingCheckBox;
+public class RestResponseRepresentationsInspector extends AbstractRestRepresentationsInspector implements SubmitListener {
     public static final String RECORD_RESPONSE_REPRESENTATIONS = "RecordResponseRepresentations";
-    private RestRequestInterface request;
+    private JCheckBox enableRecordingCheckBox;
+    private final RestRequestInterface request;
 
     protected RestResponseRepresentationsInspector(RestRequestInterface request) {
         super(request.getRestMethod(), "Representations", "Response Representations", new RestRepresentation.Type[]{
-                RestRepresentation.Type.RESPONSE, RestRepresentation.Type.FAULT});
+            RestRepresentation.Type.RESPONSE, RestRepresentation.Type.FAULT
+        });
 
         request.addSubmitListener(this);
         this.request = request;
@@ -60,15 +61,14 @@ public class RestResponseRepresentationsInspector extends AbstractRestRepresenta
         XmlBeansSettingsImpl settings = getMethod().getSettings();
         if (settings.isSet(RECORD_RESPONSE_REPRESENTATIONS)) {
             enableRecordingCheckBox.setSelected(settings.getBoolean(RECORD_RESPONSE_REPRESENTATIONS));
-        } else {
-            enableRecordingCheckBox.setSelected(getMethod().getResource() == null
-                    || getMethod().getResource().getService().isGenerated());
+        }
+        else {
+            enableRecordingCheckBox.setSelected(getMethod().getResource() == null || getMethod().getResource().getService().isGenerated());
         }
 
         enableRecordingCheckBox.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                getMethod().getSettings()
-                        .setBoolean(RECORD_RESPONSE_REPRESENTATIONS, enableRecordingCheckBox.isSelected());
+                getMethod().getSettings().setBoolean(RECORD_RESPONSE_REPRESENTATIONS, enableRecordingCheckBox.isSelected());
             }
         });
     }
@@ -78,12 +78,19 @@ public class RestResponseRepresentationsInspector extends AbstractRestRepresenta
         return true;
     }
 
+    @Override
+    public void release() {
+        super.release();
+        request.removeSubmitListener(this);
+    }
+
     public void afterSubmit(Submit submit, SubmitContext context) {
-        HttpResponse response = (HttpResponse) submit.getResponse();
+        HttpResponse response = (HttpResponse)submit.getResponse();
         if (response != null && enableRecordingCheckBox.isSelected()) {
             if (HttpUtils.isErrorStatus(response.getStatusCode())) {
                 extractRepresentation(response, RestRepresentation.Type.FAULT);
-            } else {
+            }
+            else {
                 extractRepresentation(response, RestRepresentation.Type.RESPONSE);
             }
         }
@@ -94,10 +101,8 @@ public class RestResponseRepresentationsInspector extends AbstractRestRepresenta
         RestRepresentation[] representations = getMethod().getRepresentations(type, null);
         int c = 0;
         for (; c < representations.length; c++) {
-            if (representations[c].getMediaType() != null
-                    && representations[c].getMediaType().equals(response.getContentType())) {
-                @SuppressWarnings("rawtypes")
-                List status = representations[c].getStatus();
+            if (representations[c].getMediaType() != null && representations[c].getMediaType().equals(response.getContentType())) {
+                @SuppressWarnings("rawtypes") List status = representations[c].getStatus();
                 if (status == null || !status.contains(response.getStatusCode())) {
                     status = status == null ? new ArrayList<Integer>() : new ArrayList<Integer>(status);
                     status.add(response.getStatusCode());
@@ -110,7 +115,7 @@ public class RestResponseRepresentationsInspector extends AbstractRestRepresenta
         if (c == representations.length) {
             RestRepresentation representation = getMethod().addNewRepresentation(type);
             representation.setMediaType(response.getContentType());
-            representation.setStatus(Arrays.asList(response.getStatusCode()));
+            representation.setStatus(Collections.singletonList(response.getStatusCode()));
 
             String xmlContent = response.getContentAsXml();
 
@@ -123,16 +128,11 @@ public class RestResponseRepresentationsInspector extends AbstractRestRepresenta
                     XmlCursor cursor = XmlUtils.createXmlObject(xmlContent).newCursor();
                     cursor.toFirstChild();
                     representation.setElement(cursor.getName());
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
 
                 }
             }
         }
-    }
-
-    @Override
-    public void release() {
-        super.release();
-        request.removeSubmitListener(this);
     }
 }

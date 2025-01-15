@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -52,7 +52,7 @@ public class HttpPrefs implements Prefs {
     public static final String DISABLE_RESPONSE_DECOMPRESSION = "Disable Response Decompression";
     public static final String FORWARD_SLASHES = "Normalize Forward Slashes";
 
-    private static TreeMap<String, String> compressionAlgs = new TreeMap<String, String>();
+    private static final TreeMap<String, String> compressionAlgs = new TreeMap<String, String>();
 
     static {
         compressionAlgs.put("None", "None");
@@ -60,8 +60,8 @@ public class HttpPrefs implements Prefs {
         compressionAlgs.put(CompressionSupport.ALG_DEFLATE, "DEFLATE");
     }
 
-    private SimpleForm httpForm;
     private final String title;
+    private SimpleForm httpForm;
 
     public HttpPrefs(String title) {
         this.title = title;
@@ -71,44 +71,39 @@ public class HttpPrefs implements Prefs {
         if (httpForm == null) {
             httpForm = new SimpleForm();
             httpForm.addSpace(5);
-            httpForm.appendComboBox(HttpPrefs.HTTP_VERSION, new String[]{HttpSettings.HTTP_VERSION_1_1,
-                    HttpSettings.HTTP_VERSION_1_0}, "Select HTTP Version to use");
-            httpForm.appendTextField(HttpPrefs.USER_AGENT_HEADER,
-                    "User-Agent HTTP header to send, blank will send default");
-            httpForm.appendComboBox(HttpPrefs.REQUEST_COMPRESSION, compressionAlgs);
-            httpForm.appendCheckBox(HttpPrefs.RESPONSE_COMPRESSION, "Accept compressed responses from hosts", true);
-            httpForm.appendCheckBox(HttpPrefs.DISABLE_RESPONSE_DECOMPRESSION,
-                    "Disable decompression of compressed responses", true);
-            httpForm.appendCheckBox(HttpPrefs.CLOSE_CONNECTIONS_AFTER_REQUEST,
-                    "Closes the HTTP connection after each HTTP request", true);
-            httpForm.appendTextField(HttpPrefs.CHUNKING_THRESHOLD,
-                    "Uses content-chunking for requests larger than threshold, blank to disable");
-            httpForm.appendCheckBox(HttpPrefs.AUTHENTICATE_PREEMPTIVELY,
-                    "Adds authentication information to outgoing request", true);
-            httpForm.appendCheckBox(HttpPrefs.EXPECT_CONTINUE,
-                    "Activates 'Expect: 100-Continue' handshake for the entity enclosing methods", true);
-            httpForm.appendCheckBox(HttpPrefs.ENCODED_URLS, "URI contains encoded endpoints, don't try to re-encode", true);
-            httpForm.appendCheckBox(HttpPrefs.FORWARD_SLASHES,
-                    "Replaces duplicate forward slashes in HTTP request endpoints with a single slash", false);
+            httpForm.appendComboBox(HTTP_VERSION, new String[]{
+                HttpSettings.HTTP_VERSION_1_1, HttpSettings.HTTP_VERSION_1_0
+            }, "Select HTTP Version to use");
+            httpForm.appendTextField(USER_AGENT_HEADER, "User-Agent HTTP header to send, blank will send default");
+            httpForm.appendComboBox(REQUEST_COMPRESSION, compressionAlgs);
+            httpForm.appendCheckBox(RESPONSE_COMPRESSION, "Accept compressed responses from hosts", true);
+            httpForm.appendCheckBox(DISABLE_RESPONSE_DECOMPRESSION, "Disable decompression of compressed responses", true);
+            httpForm.appendCheckBox(CLOSE_CONNECTIONS_AFTER_REQUEST, "Closes the HTTP connection after each HTTP request", true);
+            httpForm.appendTextField(CHUNKING_THRESHOLD, "Uses content-chunking for requests larger than threshold, blank to disable");
+            httpForm.appendCheckBox(AUTHENTICATE_PREEMPTIVELY, "Adds authentication information to outgoing request", true);
+            httpForm.appendCheckBox(EXPECT_CONTINUE, "Activates 'Expect: 100-Continue' handshake for the entity enclosing methods", true);
+            httpForm.appendCheckBox(ENCODED_URLS, "URI contains encoded endpoints, don't try to re-encode", true);
+            httpForm.appendCheckBox(FORWARD_SLASHES, "Replaces duplicate forward slashes in HTTP request endpoints with a single slash", false);
 
-            httpForm.appendTextField(HttpPrefs.BIND_ADDRESS, "Default local address to bind to when sending requests");
+            httpForm.appendTextField(BIND_ADDRESS, "Default local address to bind to when sending requests");
             httpForm.appendSeparator();
-            httpForm.appendCheckBox(HttpPrefs.INCLUDE_REQUEST_IN_TIME_TAKEN,
-                    "Includes the time it took to write the request in time-taken", true);
-            httpForm.appendCheckBox(HttpPrefs.INCLUDE_RESPONSE_IN_TIME_TAKEN,
-                    "Includes the time it took to read the entire response in time-taken", true);
-            httpForm.appendTextField(HttpPrefs.SOCKET_TIMEOUT, "Socket timeout in milliseconds");
-            httpForm.appendTextField(HttpPrefs.MAX_RESPONSE_SIZE, "Maximum size to read from response (0 = no limit)");
-            httpForm.appendTextField(HttpPrefs.MAX_CONNECTIONS_PER_HOST, "Maximum number of Connections Per Host");
-            httpForm.appendTextField(HttpPrefs.MAX_TOTAL_CONNECTIONS, "Maximum number of Total Connections");
+            httpForm.appendCheckBox(INCLUDE_REQUEST_IN_TIME_TAKEN, "Includes the time it took to write the request in time-taken", true);
+            httpForm.appendCheckBox(INCLUDE_RESPONSE_IN_TIME_TAKEN, "Includes the time it took to read the entire response in time-taken", true);
+            httpForm.appendTextField(SOCKET_TIMEOUT, "Socket timeout in milliseconds");
+            httpForm.appendTextField(MAX_RESPONSE_SIZE, "Maximum size to read from response (0 = no limit)");
+            httpForm.appendTextField(MAX_CONNECTIONS_PER_HOST, "Maximum number of Connections Per Host");
+            httpForm.appendTextField(MAX_TOTAL_CONNECTIONS, "Maximum number of Total Connections");
             httpForm.appendSeparator();
-            httpForm.appendCheckBox(HttpPrefs.LEAVE_MOCKENGINE, "Leave MockEngine running when stopping MockServices",
-                    false);
-            httpForm.appendCheckBox(HttpPrefs.ENABLE_MOCK_WIRE_LOG, "Logs wire content of all mock requests", false);
+            httpForm.appendCheckBox(LEAVE_MOCKENGINE, "Leave MockEngine running when stopping MockServices", false);
+            httpForm.appendCheckBox(ENABLE_MOCK_WIRE_LOG, "Logs wire content of all mock requests", false);
             httpForm.addSpace(5);
         }
 
         return httpForm;
+    }
+
+    public void setFormValues(Settings settings) {
+        getForm().setValues(getValues(settings));
     }
 
     public void getFormValues(Settings settings) {
@@ -124,8 +119,7 @@ public class HttpPrefs implements Prefs {
         settings.setString(HttpSettings.REQUEST_COMPRESSION, httpValues.get(REQUEST_COMPRESSION));
         settings.setString(HttpSettings.RESPONSE_COMPRESSION, httpValues.get(RESPONSE_COMPRESSION));
         settings.setString(HttpSettings.EXPECT_CONTINUE, httpValues.get(EXPECT_CONTINUE));
-        settings
-                .setString(HttpSettings.DISABLE_RESPONSE_DECOMPRESSION, httpValues.get(DISABLE_RESPONSE_DECOMPRESSION));
+        settings.setString(HttpSettings.DISABLE_RESPONSE_DECOMPRESSION, httpValues.get(DISABLE_RESPONSE_DECOMPRESSION));
         settings.setString(HttpSettings.CLOSE_CONNECTIONS, httpValues.get(CLOSE_CONNECTIONS_AFTER_REQUEST));
         settings.setString(HttpSettings.AUTHENTICATE_PREEMPTIVELY, httpValues.get(AUTHENTICATE_PREEMPTIVELY));
         settings.setString(HttpSettings.SOCKET_TIMEOUT, httpValues.get(SOCKET_TIMEOUT));
@@ -133,8 +127,7 @@ public class HttpPrefs implements Prefs {
         settings.setString(HttpSettings.FORWARD_SLASHES, httpValues.get(FORWARD_SLASHES));
         settings.setString(HttpSettings.MAX_RESPONSE_SIZE, httpValues.get(MAX_RESPONSE_SIZE));
         settings.setString(HttpSettings.INCLUDE_REQUEST_IN_TIME_TAKEN, httpValues.get(INCLUDE_REQUEST_IN_TIME_TAKEN));
-        settings
-                .setString(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN, httpValues.get(INCLUDE_RESPONSE_IN_TIME_TAKEN));
+        settings.setString(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN, httpValues.get(INCLUDE_RESPONSE_IN_TIME_TAKEN));
         settings.setString(HttpSettings.MAX_CONNECTIONS_PER_HOST, httpValues.get(MAX_CONNECTIONS_PER_HOST));
         settings.setString(HttpSettings.MAX_TOTAL_CONNECTIONS, httpValues.get(MAX_TOTAL_CONNECTIONS));
         settings.setString(HttpSettings.BIND_ADDRESS, httpValues.get(BIND_ADDRESS));
@@ -142,27 +135,19 @@ public class HttpPrefs implements Prefs {
         settings.setString(HttpSettings.ENABLE_MOCK_WIRE_LOG, httpValues.get(ENABLE_MOCK_WIRE_LOG));
     }
 
-    public void setFormValues(Settings settings) {
-        getForm().setValues(getValues(settings));
-    }
-
     public StringToStringMap getValues(Settings settings) {
         StringToStringMap httpValues = new StringToStringMap();
         httpValues.put(HTTP_VERSION, settings.getString(HttpSettings.HTTP_VERSION, HttpSettings.HTTP_VERSION_1_1));
         httpValues.put(CHUNKING_THRESHOLD, settings.getString(HttpSettings.CHUNKING_THRESHOLD, null));
         httpValues.put(USER_AGENT_HEADER, settings.getString(HttpSettings.USER_AGENT, null));
-        httpValues.put(REQUEST_COMPRESSION,
-                compressionAlgs.get(settings.getString(HttpSettings.REQUEST_COMPRESSION, "None")));
+        httpValues.put(REQUEST_COMPRESSION, compressionAlgs.get(settings.getString(HttpSettings.REQUEST_COMPRESSION, "None")));
         httpValues.put(RESPONSE_COMPRESSION, settings.getString(HttpSettings.RESPONSE_COMPRESSION, null));
-        httpValues.put(DISABLE_RESPONSE_DECOMPRESSION,
-                settings.getString(HttpSettings.DISABLE_RESPONSE_DECOMPRESSION, null));
+        httpValues.put(DISABLE_RESPONSE_DECOMPRESSION, settings.getString(HttpSettings.DISABLE_RESPONSE_DECOMPRESSION, null));
         httpValues.put(EXPECT_CONTINUE, settings.getString(HttpSettings.EXPECT_CONTINUE, null));
         httpValues.put(CLOSE_CONNECTIONS_AFTER_REQUEST, settings.getString(HttpSettings.CLOSE_CONNECTIONS, null));
         httpValues.put(AUTHENTICATE_PREEMPTIVELY, settings.getString(HttpSettings.AUTHENTICATE_PREEMPTIVELY, null));
-        httpValues.put(INCLUDE_REQUEST_IN_TIME_TAKEN,
-                settings.getString(HttpSettings.INCLUDE_REQUEST_IN_TIME_TAKEN, null));
-        httpValues.put(INCLUDE_RESPONSE_IN_TIME_TAKEN,
-                settings.getString(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN, null));
+        httpValues.put(INCLUDE_REQUEST_IN_TIME_TAKEN, settings.getString(HttpSettings.INCLUDE_REQUEST_IN_TIME_TAKEN, null));
+        httpValues.put(INCLUDE_RESPONSE_IN_TIME_TAKEN, settings.getString(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN, null));
         httpValues.put(SOCKET_TIMEOUT, settings.getString(HttpSettings.SOCKET_TIMEOUT, null));
         httpValues.put(ENCODED_URLS, settings.getString(HttpSettings.ENCODED_URLS, null));
         httpValues.put(MAX_RESPONSE_SIZE, settings.getString(HttpSettings.MAX_RESPONSE_SIZE, "0"));

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.component;
@@ -24,23 +24,9 @@ import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -57,13 +43,12 @@ class RestResourceEditorPopupWindow extends JDialog {
     JTextField basePathTextField;
 
     List<RestSubResourceTextField> restSubResourceTextFields;
-    private RestResource targetResource;
-    private RestResource focusedResource;
-
+    private final RestResource targetResource;
+    private final RestResource focusedResource;
 
     RestResourceEditorPopupWindow(RestResource resource, RestResource focusedResource) {
         super(SoapUI.getFrame());
-        this.targetResource = resource;
+        targetResource = resource;
         this.focusedResource = focusedResource;
         setModal(true);
         setResizable(false);
@@ -71,7 +56,6 @@ class RestResourceEditorPopupWindow extends JDialog {
 
         JPanel contentPane = new JPanel(new BorderLayout());
         setContentPane(contentPane);
-
 
         JButton okButton = new JButton(new AbstractAction("OK") {
             @Override
@@ -107,14 +91,12 @@ class RestResourceEditorPopupWindow extends JDialog {
     }
 
     private JPanel createResourceEditorPanel(RestResource focusedResource) {
-        final JPanel panel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel(new BorderLayout());
 
         Box contentBox = Box.createVerticalBox();
 
-        final JLabel changeWarningLabel = new JLabel(" ");
-        changeWarningLabel.setBorder(BorderFactory.createCompoundBorder(
-                contentBox.getBorder(),
-                BorderFactory.createEmptyBorder(10, 0, 0, 0)));
+        JLabel changeWarningLabel = new JLabel(" ");
+        changeWarningLabel.setBorder(BorderFactory.createCompoundBorder(contentBox.getBorder(), BorderFactory.createEmptyBorder(10, 0, 0, 0)));
         addBasePathFieldIfApplicable(contentBox, changeWarningLabel);
         addResourceFields(focusedResource, contentBox, changeWarningLabel);
 
@@ -122,9 +104,7 @@ class RestResourceEditorPopupWindow extends JDialog {
 
         panel.add(changeWarningLabel, BorderLayout.CENTER);
 
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        panel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK), BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
         return panel;
     }
@@ -138,8 +118,8 @@ class RestResourceEditorPopupWindow extends JDialog {
             row.setAlignmentX(0);
             addConnectorIfApplicable(rowIndex, row);
 
-            final RestSubResourceTextField restSubResourceTextField = new RestSubResourceTextField(restResource);
-            final JTextField innerTextField = restSubResourceTextField.getTextField();
+            RestSubResourceTextField restSubResourceTextField = new RestSubResourceTextField(restResource);
+            JTextField innerTextField = restSubResourceTextField.getTextField();
 
             innerTextField.getDocument().addDocumentListener(new PathChangeListener(changeWarningLabel, restResource));
             restSubResourceTextFields.add(restSubResourceTextField);
@@ -165,7 +145,7 @@ class RestResourceEditorPopupWindow extends JDialog {
         }
     }
 
-    private void moveFocusToField(final JTextField innerTextField) {
+    private void moveFocusToField(JTextField innerTextField) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -182,15 +162,30 @@ class RestResourceEditorPopupWindow extends JDialog {
         return textFieldBox;
     }
 
+    private void addBasePathFieldIfApplicable(Box contentBox, JLabel changeWarningLabel) {
+        if (!StringUtils.isNullOrEmpty(targetResource.getInterface().getBasePath())) {
+            basePathTextField = new JTextField(targetResource.getInterface().getBasePath());
+            basePathTextField.getDocument().addDocumentListener(new PathChangeListener(changeWarningLabel, targetResource.getTopLevelResource()));
+            basePathTextField.setMaximumSize(new Dimension(340, (int)basePathTextField.getPreferredSize().getHeight()));
+            Box row = Box.createHorizontalBox();
+            row.setAlignmentX(0);
+            row.add(createBoxWith(basePathTextField));
+            contentBox.add(row);
+            if (focusedResource == null) {
+                moveFocusToField(basePathTextField);
+            }
+        }
+    }
+
     class RestSubResourceTextField {
-        private RestResource restResource;
-        private JTextField textField;
+        private final RestResource restResource;
+        private final JTextField textField;
 
         private RestSubResourceTextField(RestResource restResource) {
             this.restResource = restResource;
             textField = new JTextField(restResource.getPath());
-            textField.setMaximumSize(new Dimension(340, (int) textField.getPreferredSize().getHeight()));
-            textField.setPreferredSize(new Dimension(340, (int) textField.getPreferredSize().getHeight()));
+            textField.setMaximumSize(new Dimension(340, (int)textField.getPreferredSize().getHeight()));
+            textField.setPreferredSize(new Dimension(340, (int)textField.getPreferredSize().getHeight()));
         }
 
         public JTextField getTextField() {
@@ -202,25 +197,9 @@ class RestResourceEditorPopupWindow extends JDialog {
         }
     }
 
-    private void addBasePathFieldIfApplicable(Box contentBox, JLabel changeWarningLabel) {
-        if (!StringUtils.isNullOrEmpty(targetResource.getInterface().getBasePath())) {
-            basePathTextField = new JTextField(targetResource.getInterface().getBasePath());
-            basePathTextField.getDocument().addDocumentListener(new PathChangeListener(changeWarningLabel,
-                    targetResource.getTopLevelResource()));
-            basePathTextField.setMaximumSize(new Dimension(340, (int) basePathTextField.getPreferredSize().getHeight()));
-            Box row = Box.createHorizontalBox();
-            row.setAlignmentX(0);
-            row.add(createBoxWith(basePathTextField));
-            contentBox.add(row);
-            if (focusedResource == null) {
-                moveFocusToField(basePathTextField);
-            }
-        }
-    }
-
     private class PathChangeListener extends DocumentListenerAdapter {
         private final JLabel changeWarningLabel;
-        private RestResource affectedRestResource;
+        private final RestResource affectedRestResource;
 
         public PathChangeListener(JLabel changeWarningLabel, RestResource affectedRestResource) {
             this.changeWarningLabel = changeWarningLabel;
@@ -231,10 +210,10 @@ class RestResourceEditorPopupWindow extends JDialog {
         public void update(Document document) {
             int affectedRequestCount = getRequestCountForResource(affectedRestResource);
             if (affectedRequestCount > 0) {
-                changeWarningLabel.setText(String.format("<html>Changes will affect <b>%d</b> request%s</html>",
-                        affectedRequestCount, affectedRequestCount > 1 ? "s" : ""));
+                changeWarningLabel.setText(String.format("<html>Changes will affect <b>%d</b> request%s</html>", affectedRequestCount, affectedRequestCount > 1 ? "s" : ""));
                 changeWarningLabel.setVisible(true);
-            } else {
+            }
+            else {
                 changeWarningLabel.setVisible(false);
             }
         }

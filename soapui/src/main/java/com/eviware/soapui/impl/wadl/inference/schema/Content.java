@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema;
@@ -39,24 +39,24 @@ public interface Content {
      * @param context A Context object containing the XML data to be validated, and
      *                other needed contextual variables.
      * @return Returns a Content object that is valid for the element/attribute,
-     *         quite possibly this Content instance itself.
+     * quite possibly this Content instance itself.
      * @throws XmlException
      */
-    public Content validate(Context context) throws XmlException;
+    Content validate(Context context) throws XmlException;
 
-    public String toString(String attrs);
+    String toString(String attrs);
 
     /**
      * Save the Content to an XmlObject.
      */
-    public ContentConfig save();
+    ContentConfig save();
 
     /**
      * A static factory class for creating new instances.
      *
      * @author Dain Nilsson
      */
-    public class Factory {
+    class Factory {
 
         /**
          * Creates a new, empty, Content.
@@ -77,13 +77,13 @@ public interface Content {
          */
         public static Content parse(ContentConfig xml, Schema schema) {
             if (xml instanceof EmptyContentConfig) {
-                return new EmptyContent((EmptyContentConfig) xml, schema);
+                return new EmptyContent((EmptyContentConfig)xml, schema);
             }
             if (xml instanceof SimpleContentConfig) {
-                return new SimpleContent((SimpleContentConfig) xml, schema);
+                return new SimpleContent((SimpleContentConfig)xml, schema);
             }
             if (xml instanceof SequenceContentConfig) {
-                return new SequenceContent((SequenceContentConfig) xml, schema);
+                return new SequenceContent((SequenceContentConfig)xml, schema);
             }
             return null;
         }

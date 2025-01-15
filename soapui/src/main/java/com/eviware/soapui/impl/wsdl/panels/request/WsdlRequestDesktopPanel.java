@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.request;
@@ -23,8 +23,7 @@ import com.eviware.soapui.impl.wsdl.support.HelpUrls;
 import com.eviware.soapui.support.action.swing.SwingActionDelegate;
 import com.eviware.soapui.support.components.JXToolBar;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
+import javax.swing.*;
 
 /**
  * DesktopPanel for standard WsdlRequests
@@ -42,14 +41,23 @@ public class WsdlRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel<Wsd
 
     @Override
     protected void init(WsdlRequest request) {
-        addToTestCaseButton = createActionButton(SwingActionDelegate.createDelegate(
-                AddRequestToTestCaseAction.SOAPUI_ACTION_ID, getRequest(), null, "/add_to_test_case.png"), true);
+        addToTestCaseButton = createActionButton(
+            SwingActionDelegate.createDelegate(AddRequestToTestCaseAction.SOAPUI_ACTION_ID, getRequest(), null, "/add_to_test_case.png"),
+            true
+        );
 
         super.init(request);
     }
 
-    protected String getHelpUrl() {
-        return HelpUrls.REQUESTEDITOR_HELP_URL;
+    protected void insertButtons(JXToolBar toolbar) {
+        toolbar.add(addToTestCaseButton);
+
+        super.insertButtons(toolbar);
+
+        AbstractAction delegate = SwingActionDelegate.createDelegate(AddRequestAsMockResponseStepAction.SOAPUI_ACTION_ID, getRequest(), null, "/addAsMockResponseStep.gif");
+        addAsMockResponseStepToTestCaseButton = createActionButton(delegate, true);
+
+        toolbar.add(addAsMockResponseStepToTestCaseButton);
     }
 
     public void setEnabled(boolean enabled) {
@@ -58,15 +66,7 @@ public class WsdlRequestDesktopPanel extends AbstractWsdlRequestDesktopPanel<Wsd
         addAsMockResponseStepToTestCaseButton.setEnabled(enabled);
     }
 
-    protected void insertButtons(JXToolBar toolbar) {
-        toolbar.add(addToTestCaseButton);
-
-        super.insertButtons(toolbar);
-
-        AbstractAction delegate = SwingActionDelegate.createDelegate(
-                AddRequestAsMockResponseStepAction.SOAPUI_ACTION_ID, getRequest(), null, "/addAsMockResponseStep.gif");
-        addAsMockResponseStepToTestCaseButton = createActionButton(delegate, true);
-
-        toolbar.add(addAsMockResponseStepToTestCaseButton);
+    protected String getHelpUrl() {
+        return HelpUrls.REQUESTEDITOR_HELP_URL;
     }
 }

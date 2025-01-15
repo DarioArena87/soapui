@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -21,26 +21,16 @@ import com.eviware.soapui.support.swing.JTableFactory;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.VerticalLayout;
 
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MetricsPanel extends JPanel {
-    private Map<String, Metric> metrics = new HashMap<String, Metric>();
-    private Map<String, MetricsSection> sections = new HashMap<String, MetricsSection>();
+    private final Map<String, Metric> metrics = new HashMap<String, Metric>();
+    private final Map<String, MetricsSection> sections = new HashMap<String, MetricsSection>();
 
     public MetricsPanel() {
         super(new VerticalLayout());
@@ -54,11 +44,60 @@ public class MetricsPanel extends JPanel {
         return section;
     }
 
-    public enum MetricType {
-        STRING, URL
+    public MetricsSection getSection(String name) {
+        return sections.get(name);
     }
 
-    ;
+    public boolean setMetric(String label, int value) {
+        return setMetric(label, String.valueOf(value));
+    }
+
+    public boolean setMetric(String label, String value) {
+        if (!hasMetric(label)) {
+            return false;
+        }
+
+        metrics.get(label).set(value);
+        return true;
+    }
+
+    public boolean hasMetric(String name) {
+        return metrics.containsKey(name);
+    }
+
+    public enum MetricType {
+        STRING,
+        URL
+    }
+
+    public static class InternalHeaderRenderer extends DefaultTableCellRenderer {
+        private final Color color;
+        private final Font boldFont;
+
+        public InternalHeaderRenderer(Color color) {
+            this.color = color;
+
+            setHorizontalAlignment(LEFT);
+            boldFont = getFont().deriveFont(Font.BOLD);
+        }
+
+        public InternalHeaderRenderer() {
+            this(null);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(
+            JTable arg0, Object arg1, boolean arg2, boolean arg3, int arg4, int arg5
+        ) {
+            JComponent result = (JComponent)super.getTableCellRendererComponent(arg0, arg1, arg2, arg3, arg4, arg5);
+            setFont(boldFont);
+            if (color != null) {
+                setBackground(color);
+            }
+            setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(), BorderFactory.createEmptyBorder(0, 2, 1, 2)));
+            return result;
+        }
+    }
 
     public class Metric {
         private final JLabel label;
@@ -122,8 +161,7 @@ public class MetricsPanel extends JPanel {
             table.getColumn(0).setWidth(195);
             table.getColumn(0).setMinWidth(195);
 
-            InternalHeaderRenderer internalHeaderRenderer = new InternalHeaderRenderer(table.getTableHeader()
-                    .getBackground());
+            InternalHeaderRenderer internalHeaderRenderer = new InternalHeaderRenderer(table.getTableHeader().getBackground());
             InternalCellRenderer internalCellRenderer = new InternalCellRenderer();
 
             for (int c = 0; c < table.getColumnCount(); c++) {
@@ -149,32 +187,10 @@ public class MetricsPanel extends JPanel {
         }
     }
 
-    public MetricsSection getSection(String name) {
-        return sections.get(name);
-    }
-
-    public boolean setMetric(String label, int value) {
-        return setMetric(label, String.valueOf(value));
-    }
-
-    public boolean setMetric(String label, String value) {
-        if (!hasMetric(label)) {
-            return false;
-        }
-
-        metrics.get(label).set(value);
-        return true;
-    }
-
-    public boolean hasMetric(String name) {
-        return metrics.containsKey(name);
-    }
-
     private class MetricsForm extends SimpleForm {
-        private Dimension labelDimensions = new Dimension(200, 16);
+        private final Dimension labelDimensions = new Dimension(200, 16);
 
         public MetricsForm() {
-            super();
 
             addSpace(7);
             setRowSpacing(3);
@@ -209,7 +225,8 @@ public class MetricsPanel extends JPanel {
 
             if (isHyperlink) {
                 textField = append(labelText, label, new JHyperlinkLabel(text));
-            } else {
+            }
+            else {
                 textField = append(labelText, label, new JLabel(text));
             }
 
@@ -222,46 +239,16 @@ public class MetricsPanel extends JPanel {
         }
     }
 
-    public static class InternalHeaderRenderer extends DefaultTableCellRenderer {
-        private Font boldFont;
-        private final Color color;
-
-        public InternalHeaderRenderer(Color color) {
-            super();
-            this.color = color;
-
-            setHorizontalAlignment(SwingConstants.LEFT);
-            boldFont = getFont().deriveFont(Font.BOLD);
-        }
-
-        public InternalHeaderRenderer() {
-            this(null);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable arg0, Object arg1, boolean arg2, boolean arg3, int arg4,
-                                                       int arg5) {
-            JComponent result = (JComponent) super.getTableCellRendererComponent(arg0, arg1, arg2, arg3, arg4, arg5);
-            setFont(boldFont);
-            if (color != null) {
-                setBackground(color);
-            }
-            setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEtchedBorder(),
-                    BorderFactory.createEmptyBorder(0, 2, 1, 2)));
-            return result;
-        }
-    }
-
     private class InternalCellRenderer extends DefaultTableCellRenderer {
         public InternalCellRenderer() {
-            super();
 
-            setHorizontalAlignment(SwingConstants.LEFT);
+            setHorizontalAlignment(LEFT);
         }
 
         @Override
-        public Component getTableCellRendererComponent(JTable arg0, Object arg1, boolean arg2, boolean arg3, int arg4,
-                                                       int arg5) {
+        public Component getTableCellRendererComponent(
+            JTable arg0, Object arg1, boolean arg2, boolean arg3, int arg4, int arg5
+        ) {
             Component result = super.getTableCellRendererComponent(arg0, arg1, arg2, arg3, arg4, arg5);
             setBorder(BorderFactory.createEmptyBorder(3, 1, 3, 2));
             return result;

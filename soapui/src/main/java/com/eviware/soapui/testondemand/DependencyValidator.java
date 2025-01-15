@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.testondemand;
@@ -44,11 +44,13 @@ public class DependencyValidator {
         for (Interface inf : project.getInterfaceList()) {
             try {
                 if (inf instanceof WsdlInterface) {
-                    ((WsdlInterface) inf).getWsdlContext().loadIfNecessary();
-                } else {
-                    ((RestService) inf).getDefinitionContext().loadIfNecessary();
+                    ((WsdlInterface)inf).getWsdlContext().loadIfNecessary();
                 }
-            } catch (Exception e) {
+                else {
+                    ((RestService)inf).getDefinitionContext().loadIfNecessary();
+                }
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -67,11 +69,11 @@ public class DependencyValidator {
                 project.setCacheDefinitions(true);
             }
             project.saveIn(tempFile);
-            this.filename = tempFile;
-        } finally {
+            filename = tempFile;
+        }
+        finally {
             project.setCacheDefinitions(shouldCache);
         }
-
     }
 
     public boolean isValid(WsdlTestCase testCase) {
@@ -96,9 +98,9 @@ public class DependencyValidator {
 
         try {
             saveProject(project);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 }

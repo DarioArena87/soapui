@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock;
@@ -44,42 +44,18 @@ public class WsdlMockRequest extends AbstractMockRequest {
     private String soapAction;
     private Vector<Object> wssResult;
 
-    public WsdlMockRequest(HttpServletRequest request, HttpServletResponse response, WsdlMockRunContext context)
-            throws Exception {
+    public WsdlMockRequest(HttpServletRequest request, HttpServletResponse response, WsdlMockRunContext context) throws Exception {
 
         super(request, response, context);
-
     }
-
 
     public SoapVersion getSoapVersion() {
         return soapVersion;
     }
 
-    public String getProtocol() {
-        return super.getProtocol();
-    }
-
     public Vector<?> getWssResult() {
         return wssResult;
     }
-
-
-    public void setRequestContent(String requestContent) {
-        super.setRequestContent(requestContent);
-        setRequestXmlObject(null);
-
-        try {
-            soapVersion = SoapUtils.deduceSoapVersion(getRequest().getContentType(), getRequestXmlObject());
-        } catch (XmlException e) {
-            SoapUI.logError(e);
-        }
-
-        if (soapVersion == null) {
-            soapVersion = SoapVersion.Soap11;
-        }
-    }
-
 
     @Override
     public XmlObject getContentElement() throws XmlException {
@@ -103,11 +79,30 @@ public class WsdlMockRequest extends AbstractMockRequest {
         soapAction = SoapUtils.getSoapAction(soapVersion, getRequestHeaders());
     }
 
+    public String getProtocol() {
+        return super.getProtocol();
+    }
+
+    public void setRequestContent(String requestContent) {
+        super.setRequestContent(requestContent);
+        setRequestXmlObject(null);
+
+        try {
+            soapVersion = SoapUtils.deduceSoapVersion(getRequest().getContentType(), getRequestXmlObject());
+        }
+        catch (XmlException e) {
+            SoapUI.logError(e);
+        }
+
+        if (soapVersion == null) {
+            soapVersion = SoapVersion.Soap11;
+        }
+    }
+
     private void addWSSResult(WsdlMockRunContext context, String requestContent) throws IOException {
-        WsdlMockService mockService = (WsdlMockService) context.getMockService();
+        WsdlMockService mockService = (WsdlMockService)context.getMockService();
         if (StringUtils.hasContent(mockService.getIncomingWss())) {
-            IncomingWss incoming = mockService.getProject().getWssContainer()
-                    .getIncomingWssByName(mockService.getIncomingWss());
+            IncomingWss incoming = mockService.getProject().getWssContainer().getIncomingWssByName(mockService.getIncomingWss());
             if (incoming != null) {
                 Document dom = XmlUtils.parseXml(requestContent);
                 try {
@@ -117,9 +112,10 @@ public class WsdlMockRequest extends AbstractMockRequest {
                         XmlUtils.serialize(dom, writer);
                         setActualRequestContent(requestContent);
                         super.setRequestContent(writer.toString());
-                        super.refreshRequestXmlObject();
+                        refreshRequestXmlObject();
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     if (wssResult == null) {
                         wssResult = new Vector<>();
                     }
@@ -132,7 +128,8 @@ public class WsdlMockRequest extends AbstractMockRequest {
     private void initSoapVersion(String contentType) {
         try {
             soapVersion = SoapUtils.deduceSoapVersion(contentType, getRequestXmlObject());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             // ignore non xml requests
         }
 
@@ -140,6 +137,4 @@ public class WsdlMockRequest extends AbstractMockRequest {
             soapVersion = SoapVersion.Soap11;
         }
     }
-
-
 }

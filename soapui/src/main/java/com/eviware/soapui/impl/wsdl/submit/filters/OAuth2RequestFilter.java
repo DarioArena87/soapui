@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.filters;
@@ -45,7 +45,7 @@ public class OAuth2RequestFilter extends AbstractRequestFilter {
     private static Logger log = LogManager.getLogger(OAuth2RequestFilter.class);
 
 
-	/* setLog() and getLog() should only be used for testing */
+    /* setLog() and getLog() should only be used for testing */
 
     static Logger getLog() {
         return log;
@@ -58,12 +58,11 @@ public class OAuth2RequestFilter extends AbstractRequestFilter {
     @Override
     public void filterRestRequest(SubmitContext context, RestRequestInterface request) {
 
-        HttpRequestBase httpMethod = (HttpRequestBase) context.getProperty(BaseHttpRequestTransport.HTTP_METHOD);
+        HttpRequestBase httpMethod = (HttpRequestBase)context.getProperty(BaseHttpRequestTransport.HTTP_METHOD);
 
         if (O_AUTH_2_0.toString().equals(request.getAuthType())) {
-            OAuth2ProfileContainer profileContainer = request.getResource().getService().getProject()
-                    .getOAuth2ProfileContainer();
-            OAuth2Profile profile = profileContainer.getProfileByName(((AbstractHttpRequest) request).getSelectedAuthProfile());
+            OAuth2ProfileContainer profileContainer = request.getResource().getService().getProject().getOAuth2ProfileContainer();
+            OAuth2Profile profile = profileContainer.getProfileByName(((AbstractHttpRequest)request).getSelectedAuthProfile());
             if (profile == null || StringUtils.isNullOrEmpty(profile.getAccessToken())) {
                 return;
             }
@@ -72,16 +71,16 @@ public class OAuth2RequestFilter extends AbstractRequestFilter {
             if (accessTokenIsExpired(profile)) {
                 if (profile.shouldReloadAccessTokenAutomatically()) {
                     reloadAccessToken(profile, oAuth2Client);
-                } else {
+                }
+                else {
                     profile.setAccessTokenStatus(OAuth2Profile.AccessTokenStatus.EXPIRED);
                 }
             }
             oAuth2Client.applyAccessToken(profile, httpMethod, request.getRequestContent());
-        } else if (O_AUTH_1_0.toString().equals(request.getAuthType())) {
-            OAuth1ProfileContainer profileContainer = request.getResource().getService().getProject()
-                    .getOAuth1ProfileContainer();
-            OAuth1Profile profile = profileContainer.getProfileByName(
-                    ((AbstractHttpRequest) request).getSelectedAuthProfile());
+        }
+        else if (O_AUTH_1_0.toString().equals(request.getAuthType())) {
+            OAuth1ProfileContainer profileContainer = request.getResource().getService().getProject().getOAuth1ProfileContainer();
+            OAuth1Profile profile = profileContainer.getProfileByName(((AbstractHttpRequest)request).getSelectedAuthProfile());
 
             if (profile == null || StringUtils.isNullOrEmpty(profile.getAccessToken())) {
                 return;
@@ -109,7 +108,8 @@ public class OAuth2RequestFilter extends AbstractRequestFilter {
             String expirationTimeString = profile.getManualAccessTokenExpirationTime() == null ? "" : profile.getManualAccessTokenExpirationTime();
             String expandedValue = PropertyExpander.expandProperties(profile.getContainer().getProject(), expirationTimeString);
             expirationTime = convertExpirationTimeToSeconds(expandedValue, profile.getManualAccessTokenExpirationTimeUnit());
-        } else {
+        }
+        else {
             expirationTime = profile.getAccessTokenExpirationTime();
         }
 
@@ -121,15 +121,17 @@ public class OAuth2RequestFilter extends AbstractRequestFilter {
         long expirationTime;
         try {
             expirationTime = Long.valueOf(expirationTimeString.trim());
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Manual expiration time cannot be parsed due to invalid characters." +
-                    "Please review it and make sure it is set correctly.", e);
+        }
+        catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Manual expiration time cannot be parsed due to invalid characters." + "Please review it and make sure it is set correctly.", e);
         }
         if (timeUnit.equals(TimeUnitConfig.HOURS)) {
             return expirationTime * 3600;
-        } else if (timeUnit.equals(TimeUnitConfig.MINUTES)) {
+        }
+        else if (timeUnit.equals(TimeUnitConfig.MINUTES)) {
             return expirationTime * 60;
-        } else {
+        }
+        else {
             return expirationTime;
         }
     }
@@ -140,24 +142,27 @@ public class OAuth2RequestFilter extends AbstractRequestFilter {
                 log.info("The access token has expired, trying to refresh it.");
                 oAuth2Client.refreshAccessToken(profile);
                 log.info("The access token has been refreshed successfully.");
-            } else {
+            }
+            else {
                 if (profile.hasAutomationJavaScripts()) {
                     log.info("The access token has expired, trying to retrieve a new one with JavaScript automation.");
                     oAuth2Client.requestAccessToken(profile);
-                    profile.waitForAccessTokenStatus(OAuth2Profile.AccessTokenStatus.RETRIEVED_FROM_SERVER,
-                            ACCESS_TOKEN_RETRIEVAL_TIMEOUT);
+                    profile.waitForAccessTokenStatus(OAuth2Profile.AccessTokenStatus.RETRIEVED_FROM_SERVER, ACCESS_TOKEN_RETRIEVAL_TIMEOUT);
                     if (profile.getAccessTokenStatus() == OAuth2Profile.AccessTokenStatus.RETRIEVED_FROM_SERVER) {
                         log.info("A new access token has been retrieved successfully.");
-                    } else {
+                    }
+                    else {
                         log.warn("OAuth2 access token retrieval timed out after " + ACCESS_TOKEN_RETRIEVAL_TIMEOUT + " ms");
                         throw new RuntimeException("OAuth2 access token retrieval timed out after " + ACCESS_TOKEN_RETRIEVAL_TIMEOUT + " ms");
                     }
-                } else {
+                }
+                else {
                     log.warn("No automation JavaScripts added to OAuth2 profile – cannot retrieve new access token");
                     throw new RuntimeException("No automation JavaScripts added to OAuth2 profile – cannot retrieve new access token");
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             //Propagate it up so that it is shown as a failure message in test case log
             throw new RuntimeException("Unable to refresh expired access token.", e);
         }

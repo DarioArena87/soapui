@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.testcase;
@@ -43,14 +43,13 @@ import java.util.Set;
  * @author Ole.Matzura
  */
 
-public class WsdlTestSuiteRunner extends AbstractTestRunner<WsdlTestSuite, WsdlTestSuiteRunContext> implements
-        TestSuiteRunner {
+public class WsdlTestSuiteRunner extends AbstractTestRunner<WsdlTestSuite, WsdlTestSuiteRunContext> implements TestSuiteRunner {
     private TestSuiteRunListener[] listeners;
-    private Set<TestCaseRunner> finishedRunners = new HashSet<TestCaseRunner>();
-    private Set<TestCaseRunner> activeRunners = new HashSet<TestCaseRunner>();
+    private final Set<TestCaseRunner> finishedRunners = new HashSet<TestCaseRunner>();
+    private final Set<TestCaseRunner> activeRunners = new HashSet<TestCaseRunner>();
     private int currentTestCaseIndex;
     private WsdlTestCase currentTestCase;
-    private TestRunListener parallellTestRunListener = new ParallellTestRunListener();
+    private final TestRunListener parallellTestRunListener = new ParallellTestRunListener();
 
     public WsdlTestSuiteRunner(WsdlTestSuite testSuite, StringToObjectMap properties) {
         super(testSuite, properties);
@@ -92,9 +91,26 @@ public class WsdlTestSuiteRunner extends AbstractTestRunner<WsdlTestSuite, WsdlT
 
         if (testSuite.getRunType() == TestSuiteRunType.SEQUENTIAL) {
             runSequential(testSuite, runContext);
-        } else if (testSuite.getRunType() == TestSuiteRunType.PARALLEL) {
+        }
+        else if (testSuite.getRunType() == TestSuiteRunType.PARALLEL) {
             runParallel(testSuite, runContext);
         }
+    }
+
+    protected void internalFinally(WsdlTestSuiteRunContext runContext) {
+        WsdlTestSuite testSuite = getTestRunnable();
+
+        try {
+            testSuite.runTearDownScript(runContext, this);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+
+        notifyAfterRun();
+
+        runContext.clear();
+        listeners = null;
     }
 
     private void runParallel(WsdlTestSuite testSuite, WsdlTestSuiteRunContext runContext) {
@@ -105,7 +121,7 @@ public class WsdlTestSuiteRunner extends AbstractTestRunner<WsdlTestSuite, WsdlT
             if (!testCase.isDisabled()) {
                 testCase.addTestRunListener(parallellTestRunListener);
                 notifyBeforeRunTestCase(testCase);
-                runTestCase((WsdlTestCase) testCase, true);
+                runTestCase((WsdlTestCase)testCase, true);
             }
         }
 
@@ -113,7 +129,8 @@ public class WsdlTestSuiteRunner extends AbstractTestRunner<WsdlTestSuite, WsdlT
             synchronized (activeRunners) {
                 activeRunners.wait();
             }
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -144,7 +161,7 @@ public class WsdlTestSuiteRunner extends AbstractTestRunner<WsdlTestSuite, WsdlT
     }
 
     private TestCaseRunner runTestCase(WsdlTestCase testCaseAt, boolean async) {
-        DefaultPropertyExpansionContext properties = (DefaultPropertyExpansionContext) getRunContext().getProperties();
+        DefaultPropertyExpansionContext properties = (DefaultPropertyExpansionContext)getRunContext().getProperties();
         properties.put("#TestSuiteRunner#", this);
 
         TestCaseRunner currentRunner = testCaseAt.run(properties, true);
@@ -154,21 +171,6 @@ public class WsdlTestSuiteRunner extends AbstractTestRunner<WsdlTestSuite, WsdlT
         }
 
         return currentRunner;
-    }
-
-    protected void internalFinally(WsdlTestSuiteRunContext runContext) {
-        WsdlTestSuite testSuite = getTestRunnable();
-
-        try {
-            testSuite.runTearDownScript(runContext, this);
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
-
-        notifyAfterRun();
-
-        runContext.clear();
-        listeners = null;
     }
 
     private void notifyAfterRun() {

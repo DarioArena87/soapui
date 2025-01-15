@@ -9,8 +9,7 @@ public class PropertyModelItem extends EmptyModelItem {
     private String xpath;
 
     public PropertyModelItem(TestProperty property, boolean readOnly) {
-        super(PropertyTreeNode.buildName(property), readOnly ? UISupport.createImageIcon("/bullet_black.gif") : UISupport
-                .createImageIcon("/bullet_green.gif"));
+        super(PropertyTreeNode.buildName(property), readOnly ? UISupport.createImageIcon("/bullet_black.gif") : UISupport.createImageIcon("/bullet_green.gif"));
 
         this.property = property;
     }

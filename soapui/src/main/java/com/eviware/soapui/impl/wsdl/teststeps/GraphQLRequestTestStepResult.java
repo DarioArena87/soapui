@@ -25,7 +25,7 @@ public class GraphQLRequestTestStepResult extends WsdlTestStepResult implements 
     private WsdlSubmit submit;
 
     public GraphQLRequestTestStepResult(HttpTestRequestStepInterface step) {
-        super((WsdlTestStep) step);
+        super((WsdlTestStep)step);
     }
 
     @Override
@@ -40,62 +40,19 @@ public class GraphQLRequestTestStepResult extends WsdlTestStepResult implements 
     public ModelItem getModelItem() {
         if (response != null) {
             return response.getRequest();
-        } else {
+        }
+        else {
             return null;
         }
     }
 
     @Override
-    public String getRequestContent() {
-        if (isDiscarded()) {
-            return "<discarded>";
+    public long getTimestamp() {
+        if (isDiscarded() || response == null) {
+            return -1;
         }
 
-        return requestContent;
-    }
-
-    public void setRequestContent(String requestContent) {
-        this.requestContent = requestContent;
-    }
-
-    public void setSubmit(WsdlSubmit submit) {
-        this.submit = submit;
-    }
-
-    @Override
-    public HttpResponse getResponse() {
-        return response;
-    }
-
-    @Override
-    public ActionList getActions() {
-        if (!addedAction) {
-            addAction(new ShowMessageExchangeAction(this, "TestStep"), true);
-            addedAction = true;
-        }
-
-        return super.getActions();
-    }
-
-    public void setResponse(HttpResponse response) {
-        this.response = response;
-    }
-
-    public void addProperty(String key, String value) {
-        if (properties == null) {
-            properties = new StringToStringMap();
-        }
-
-        properties.put(key, value);
-    }
-
-    public String getEncoding() {
-        return encoding;
-    }
-
-    public void setEncoding(String encoding) {
-        this.encoding = encoding;
-        addProperty("Encoding", encoding);
+        return response.getTimestamp();
     }
 
     @Override
@@ -109,45 +66,21 @@ public class GraphQLRequestTestStepResult extends WsdlTestStepResult implements 
     }
 
     @Override
-    public void discard() {
-        super.discard();
-
-        requestContent = null;
-        response = null;
-        properties = null;
-    }
-
-    @Override
     public StringToStringMap getProperties() {
         return properties;
     }
 
     @Override
-    public String getProperty(String name) {
-        return properties == null ? null : properties.get(name);
-    }
-
-    @Override
-    public Attachment[] getRequestAttachments() {
-        if (response == null || response.getRequest() == null) {
-            return new Attachment[0];
+    public String getRequestContent() {
+        if (isDiscarded()) {
+            return "<discarded>";
         }
 
-        return response.getRequest().getAttachments();
+        return requestContent;
     }
 
-    @Override
-    public StringToStringsMap getRequestHeaders() {
-        if (response == null) {
-            return null;
-        }
-
-        return response.getRequestHeaders();
-    }
-
-    @Override
-    public Attachment[] getResponseAttachments() {
-        return new Attachment[0];
+    public void setRequestContent(String requestContent) {
+        this.requestContent = requestContent;
     }
 
     @Override
@@ -177,6 +110,15 @@ public class GraphQLRequestTestStepResult extends WsdlTestStepResult implements 
     }
 
     @Override
+    public StringToStringsMap getRequestHeaders() {
+        if (response == null) {
+            return null;
+        }
+
+        return response.getRequestHeaders();
+    }
+
+    @Override
     public StringToStringsMap getResponseHeaders() {
         if (response == null) {
             return new StringToStringsMap();
@@ -186,24 +128,30 @@ public class GraphQLRequestTestStepResult extends WsdlTestStepResult implements 
     }
 
     @Override
-    public long getTimestamp() {
-        if (isDiscarded() || response == null) {
-            return -1;
+    public Attachment[] getRequestAttachments() {
+        if (response == null || response.getRequest() == null) {
+            return new Attachment[0];
         }
 
-        return response.getTimestamp();
+        return response.getRequest().getAttachments();
     }
 
     @Override
-    public MessageExchange[] getMessageExchanges() {
-        return new MessageExchange[]{this};
+    public Attachment[] getResponseAttachments() {
+        return new Attachment[0];
+    }
+
+    @Override
+    public boolean hasRawData() {
+        return getRawResponseData() != null || getRawRequestData() != null;
     }
 
     @Override
     public byte[] getRawRequestData() {
         if (response == null && submit != null && submit.getResponse() != null) {
             return submit.getResponse().getRawRequestData();
-        } else if (response != null) {
+        }
+        else if (response != null) {
             return response.getRawRequestData();
         }
         return null;
@@ -228,11 +176,6 @@ public class GraphQLRequestTestStepResult extends WsdlTestStepResult implements 
     }
 
     @Override
-    public boolean hasRawData() {
-        return getRawResponseData() != null || getRawRequestData() != null;
-    }
-
-    @Override
     public boolean hasRequest(boolean b) {
         return true;
     }
@@ -240,6 +183,65 @@ public class GraphQLRequestTestStepResult extends WsdlTestStepResult implements 
     @Override
     public boolean hasResponse() {
         return response != null;
+    }
+
+    @Override
+    public HttpResponse getResponse() {
+        return response;
+    }
+
+    public void setResponse(HttpResponse response) {
+        this.response = response;
+    }
+
+    @Override
+    public String getProperty(String name) {
+        return properties == null ? null : properties.get(name);
+    }
+
+    public void setSubmit(WsdlSubmit submit) {
+        this.submit = submit;
+    }
+
+    @Override
+    public ActionList getActions() {
+        if (!addedAction) {
+            addAction(new ShowMessageExchangeAction(this, "TestStep"), true);
+            addedAction = true;
+        }
+
+        return super.getActions();
+    }
+
+    @Override
+    public void discard() {
+        super.discard();
+
+        requestContent = null;
+        response = null;
+        properties = null;
+    }
+
+    public void addProperty(String key, String value) {
+        if (properties == null) {
+            properties = new StringToStringMap();
+        }
+
+        properties.put(key, value);
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+        addProperty("Encoding", encoding);
+    }
+
+    @Override
+    public MessageExchange[] getMessageExchanges() {
+        return new MessageExchange[]{this};
     }
 
     @Override

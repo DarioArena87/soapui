@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request;
@@ -34,26 +34,19 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.components.JXToolBar;
 import org.apache.xmlbeans.impl.values.XmlValueDisconnectedException;
 
-import javax.swing.Box;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import static com.eviware.soapui.impl.rest.actions.support.NewRestResourceActionBase.ParamLocation;
 import static com.eviware.soapui.impl.rest.support.RestParamsPropertyHolder.ParameterStyle;
 
-public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 extends RestRequestInterface> extends
-        AbstractHttpXmlRequestDesktopPanel<T, T2> {
+public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 extends RestRequestInterface> extends AbstractHttpXmlRequestDesktopPanel<T, T2> {
     protected static final int STANDARD_TOOLBAR_HEIGHT = 45;
 
-    private InternalTestPropertyListener testPropertyListener = new InternalTestPropertyListener();
-    private RestParamPropertyChangeListener restParamPropertyChangeListener = new RestParamPropertyChangeListener();
+    private final InternalTestPropertyListener testPropertyListener = new InternalTestPropertyListener();
+    private final RestParamPropertyChangeListener restParamPropertyChangeListener = new RestParamPropertyChangeListener();
 
     public AbstractRestRequestDesktopPanel(T modelItem, T2 requestItem) {
         super(modelItem, requestItem);
@@ -64,9 +57,8 @@ public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 ex
         requestItem.getOperation().getInterface().addPropertyChangeListener(new EndpointChangeListener());
 
         for (TestProperty param : requestItem.getParams().getProperties().values()) {
-            ((RestParamProperty) param).addPropertyChangeListener(restParamPropertyChangeListener);
+            ((RestParamProperty)param).addPropertyChangeListener(restParamPropertyChangeListener);
         }
-
     }
 
     private void addPropertyChangeListenerToResource(T2 requestItem) {
@@ -76,22 +68,6 @@ public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 ex
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        super.propertyChange(evt);
-        updateUiValues();
-    }
-
-
-    @Override
-    protected Submit doSubmit() throws SubmitException {
-        return getRequest().submit(new WsdlSubmitContext(getModelItem()), true);
-    }
-
-    @Override
-    protected String getHelpUrl() {
-        return null;
-    }
-
     @Override
     protected JComponent buildToolbar() {
         if (getRequest().getResource() != null) {
@@ -99,7 +75,7 @@ public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 ex
 
             JXToolBar topToolBar = UISupport.createToolbar();
 
-            JComponent submitButton = super.getSubmitButton();
+            JComponent submitButton = getSubmitButton();
             topToolBar.add(submitButton);
             topToolBar.add(getCancelButton());
 
@@ -136,9 +112,39 @@ public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 ex
             addBottomToolbar(panel);
 
             return panel;
-        } else {
+        }
+        else {
             return super.buildToolbar();
         }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+        updateUiValues();
+    }
+
+    @Override
+    protected String getHelpUrl() {
+        return null;
+    }
+
+    @Override
+    protected Submit doSubmit() throws SubmitException {
+        return getRequest().submit(new WsdlSubmitContext(getModelItem()), true);
+    }
+
+    protected boolean release() {
+        if (getRequest().getResource() != null) {
+            getRequest().getResource().removePropertyChangeListener(this);
+        }
+
+        getRequest().removeTestPropertyListener(testPropertyListener);
+
+        for (TestProperty param : getRequest().getParams().getProperties().values()) {
+            ((RestParamProperty)param).removePropertyChangeListener(restParamPropertyChangeListener);
+        }
+
+        return super.release();
     }
 
     protected int findMaximumPreferredHeight(Container parent) {
@@ -151,7 +157,6 @@ public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 ex
         return maximum;
     }
 
-
     //Hooks for subclasses
     protected abstract void addTopToolbarComponents(JXToolBar toolBar);
 
@@ -159,64 +164,9 @@ public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 ex
 
     protected abstract void updateUiValues();
 
-    protected boolean release() {
-        if (getRequest().getResource() != null) {
-            getRequest().getResource().removePropertyChangeListener(this);
-        }
-
-        getRequest().removeTestPropertyListener(testPropertyListener);
-
-        for (TestProperty param : getRequest().getParams().getProperties().values()) {
-            ((RestParamProperty) param).removePropertyChangeListener(restParamPropertyChangeListener);
-        }
-
-        return super.release();
-    }
-
-
-    private class InternalTestPropertyListener extends TestPropertyListenerAdapter {
-        @Override
-        public void propertyValueChanged(String name, String oldValue, String newValue) {
-            updateUiValues();
-        }
-
-        @Override
-        public void propertyAdded(String name) {
-            updateUiValues();
-            RestParamProperty property = getRequest().getParams().getProperty(name);
-            property.addPropertyChangeListener(restParamPropertyChangeListener);
-        }
-
-        @Override
-        public void propertyRemoved(String name) {
-            updateUiValues();
-        }
-
-        @Override
-        public void propertyRenamed(String oldName, String newName) {
-            updateUiValues();
-        }
-    }
-
-
-    private class RestParamPropertyChangeListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            try {
-                if (evt.getPropertyName().equals(XmlBeansRestParamsTestPropertyHolder.PROPERTY_STYLE)) {
-                    RestParamProperty source = (RestParamProperty) evt.getSource();
-                    ((AbstractModelItem) source.getModelItem()).notifyPropertyChanged(evt.getPropertyName(),
-                            evt.getOldValue(), evt.getNewValue());
-                }
-            } catch (XmlValueDisconnectedException exception) {
-                //Do nothing, it must have been removed by another request editor instance under the same resource/method
-            }
-            updateUiValues();
-        }
-
-    }
-
-    private void addPropertyToLevel(String name, String value, ParameterStyle style, ParamLocation location,
-                                    String requestLevelValue) {
+    private void addPropertyToLevel(
+        String name, String value, ParameterStyle style, ParamLocation location, String requestLevelValue
+    ) {
         RestParamsPropertyHolder paramsPropertyHolder = null;
         switch (location) {
             case METHOD:
@@ -249,12 +199,48 @@ public abstract class AbstractRestRequestDesktopPanel<T extends ModelItem, T2 ex
                 getRequest().getResource().removeProperty(propertytName);
                 break;
         }
-
     }
 
+    private class InternalTestPropertyListener extends TestPropertyListenerAdapter {
+        @Override
+        public void propertyAdded(String name) {
+            updateUiValues();
+            RestParamProperty property = getRequest().getParams().getProperty(name);
+            property.addPropertyChangeListener(restParamPropertyChangeListener);
+        }
+
+        @Override
+        public void propertyRemoved(String name) {
+            updateUiValues();
+        }
+
+        @Override
+        public void propertyRenamed(String oldName, String newName) {
+            updateUiValues();
+        }
+
+        @Override
+        public void propertyValueChanged(String name, String oldValue, String newValue) {
+            updateUiValues();
+        }
+    }
+
+    private class RestParamPropertyChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            try {
+                if (evt.getPropertyName().equals(XmlBeansRestParamsTestPropertyHolder.PROPERTY_STYLE)) {
+                    RestParamProperty source = (RestParamProperty)evt.getSource();
+                    ((AbstractModelItem)source.getModelItem()).notifyPropertyChanged(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                }
+            }
+            catch (XmlValueDisconnectedException exception) {
+                //Do nothing, it must have been removed by another request editor instance under the same resource/method
+            }
+            updateUiValues();
+        }
+    }
 
     private class EndpointChangeListener implements PropertyChangeListener {
-
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {

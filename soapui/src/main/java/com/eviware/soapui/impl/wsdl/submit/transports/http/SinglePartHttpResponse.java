@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http;
@@ -39,8 +39,9 @@ public class SinglePartHttpResponse extends BaseHttpResponse {
     private boolean prettyPrint;
     private long responseSize;
 
-    public SinglePartHttpResponse(AbstractHttpRequestInterface<?> httpRequest, ExtendedHttpMethod httpMethod,
-                                  String requestContent, PropertyExpansionContext context) {
+    public SinglePartHttpResponse(
+        AbstractHttpRequestInterface<?> httpRequest, ExtendedHttpMethod httpMethod, String requestContent, PropertyExpansionContext context
+    ) {
         super(httpMethod, httpRequest, context);
 
         if (getRequestContent() == null || !getRequestContent().equals(requestContent)) {
@@ -60,8 +61,7 @@ public class SinglePartHttpResponse extends BaseHttpResponse {
             String charset = httpMethod.getResponseCharSet();
 
             if (contentType != null && contentType.toLowerCase().endsWith("xml")) {
-                if (responseSize > 3 && responseBody[0] == (byte) 239 && responseBody[1] == (byte) 187
-                        && responseBody[2] == (byte) 191) {
+                if (responseSize > 3 && responseBody[0] == (byte)239 && responseBody[1] == (byte)187 && responseBody[2] == (byte)191) {
                     charset = "UTF-8";
                     contentOffset = 3;
                 }
@@ -74,16 +74,20 @@ public class SinglePartHttpResponse extends BaseHttpResponse {
             charset = StringUtils.unquote(charset);
 
             try {
-                responseContent = responseBody.length == 0 ? null : charset == null ? new String(responseBody,
-                        contentOffset, (int) (responseSize - contentOffset)) : new String(responseBody, contentOffset,
-                        (int) (responseSize - contentOffset), charset);
-            } catch (UnsupportedEncodingException e) {
+                responseContent = responseBody.length == 0
+                                  ? null
+                                  : charset == null
+                                    ? new String(responseBody, contentOffset, (int)(responseSize - contentOffset))
+                                    : new String(responseBody, contentOffset, (int)(responseSize - contentOffset), charset);
+            }
+            catch (UnsupportedEncodingException e) {
                 SoapUI.getErrorLog().warn(e.toString());
-                responseContent = new String(responseBody, contentOffset, (int) (responseSize - contentOffset));
+                responseContent = new String(responseBody, contentOffset, (int)(responseSize - contentOffset));
             }
 
             prettyPrint = httpRequest.getSettings().getBoolean(WsdlSettings.PRETTY_PRINT_RESPONSE_MESSAGES);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
@@ -97,24 +101,23 @@ public class SinglePartHttpResponse extends BaseHttpResponse {
         return responseContent;
     }
 
-    protected String getResponseContent() {
-        return responseContent;
-    }
-
     public long getContentLength() {
         return responseSize;
     }
 
-    public String getRequestContent() {
-        return requestContent == null ? super.getRequestContent() : requestContent;
+    protected String getResponseContent() {
+        return responseContent;
     }
 
     public void setResponseContent(String responseContent) {
         String oldContent = this.responseContent;
         this.responseContent = responseContent;
 
-        ((AbstractHttpRequest<?>) getRequest()).notifyPropertyChanged(WsdlRequest.RESPONSE_CONTENT_PROPERTY,
-                oldContent, responseContent);
+        ((AbstractHttpRequest<?>)getRequest()).notifyPropertyChanged(WsdlRequest.RESPONSE_CONTENT_PROPERTY, oldContent, responseContent);
+    }
+
+    public String getRequestContent() {
+        return requestContent == null ? super.getRequestContent() : requestContent;
     }
 
     // public byte[] getRawRequestData()
@@ -126,5 +129,4 @@ public class SinglePartHttpResponse extends BaseHttpResponse {
     // {
     // return responseBody;
     // }
-
 }

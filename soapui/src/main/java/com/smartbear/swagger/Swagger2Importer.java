@@ -1,11 +1,11 @@
 package com.smartbear.swagger;
 
-import com.eviware.soapui.impl.rest.RestService;
 import com.eviware.soapui.impl.rest.RestMethod;
 import com.eviware.soapui.impl.rest.RestRepresentation;
 import com.eviware.soapui.impl.rest.RestRequest;
 import com.eviware.soapui.impl.rest.RestRequestInterface;
 import com.eviware.soapui.impl.rest.RestResource;
+import com.eviware.soapui.impl.rest.RestService;
 import com.eviware.soapui.impl.rest.RestServiceFactory;
 import com.eviware.soapui.impl.rest.support.RestParameter;
 import com.eviware.soapui.impl.rest.support.RestParamsPropertyHolder;
@@ -40,6 +40,9 @@ import io.swagger.models.parameters.RefParameter;
 import io.swagger.models.properties.ObjectProperty;
 import io.swagger.util.Json;
 import io.swagger.util.Yaml;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -48,19 +51,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class Swagger2Importer implements SwaggerImporter {
     /*OT*/ private static final String SAMPLE_GENERATION_FAILED_MESSAGE = "Failed to create the sample. The '%s' media type is incorrect.";
 
-    private static Logger logger = LogManager.getLogger(Swagger2Importer.class);
+    private static final Logger logger = LogManager.getLogger(Swagger2Importer.class);
 
-    private static ObjectMapper yamlMapper;
-    private static ObjectMapper jsonMapper;
-    private final WsdlProject project;
-    private final String defaultMediaType;
-    private Swagger swagger;
+    private static final ObjectMapper yamlMapper;
+    private static final ObjectMapper jsonMapper;
 
     static {
         yamlMapper = Yaml.mapper();
@@ -71,6 +69,10 @@ public class Swagger2Importer implements SwaggerImporter {
         yamlMapper.registerModule(simpleModule);
         jsonMapper.registerModule(simpleModule);
     }
+
+    private final WsdlProject project;
+    private final String defaultMediaType;
+    private Swagger swagger;
 
     public Swagger2Importer(String defaultMediaType) {
         this(null, defaultMediaType);
@@ -91,6 +93,11 @@ public class Swagger2Importer implements SwaggerImporter {
     }
 
     @Override
+    public RestService[] importSwagger(String url, String apiKey) {
+        return importSwagger(url, apiKey, false);
+    }
+
+    @Override
     public RestService[] importSwagger(String url, String apiKey, boolean disableLogger) {
         List<RestService> result = new ArrayList<>();
         Map<String, Object> context = new HashMap<>();
@@ -99,7 +106,8 @@ public class Swagger2Importer implements SwaggerImporter {
         if (url.startsWith("file:")) {
             try {
                 url = new File(new URL(url).toURI()).getAbsolutePath();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -122,11 +130,6 @@ public class Swagger2Importer implements SwaggerImporter {
         ensureEndpoint(restService, url);
 
         return result.toArray(new RestService[result.size()]);
-    }
-
-    @Override
-    public RestService[] importSwagger(String url, String apiKey) {
-        return importSwagger(url, apiKey, false);
     }
 
     private void ensureEndpoint(RestService restService, String url) {
@@ -155,8 +158,7 @@ public class Swagger2Importer implements SwaggerImporter {
                     resource.getOperations().forEach(operation -> {
                         boolean matched = false;
                         for (Parameter existingParameter : operation.getParameters()) {
-                            if (parameter.getIn() != null && parameter.getIn().equals(existingParameter.getIn()) &&
-                                    parameter.getName().equals(existingParameter.getName())) {
+                            if (parameter.getIn() != null && parameter.getIn().equals(existingParameter.getIn()) && parameter.getName().equals(existingParameter.getName())) {
                                 matched = true;
                                 break;
                             }
@@ -165,10 +167,10 @@ public class Swagger2Importer implements SwaggerImporter {
                             operation.getParameters().add(parameter);
                         }
                     });
-                } else {
+                }
+                else {
                     addParameter(parameter, restResource);
                 }
-
             });
         }
 
@@ -208,22 +210,22 @@ public class Swagger2Importer implements SwaggerImporter {
 
         RestMethod method = resource.addNewMethod(operationName);
         method.setMethod(httpMethod);
-        String description = StringUtils.emptyIfNull(operation.getDescription()) +
-                System.getProperty("line.separator") + StringUtils.emptyIfNull(operation.getSummary());
+        String description = StringUtils.emptyIfNull(operation.getDescription()) + System.getProperty("line.separator") + StringUtils.emptyIfNull(operation.getSummary());
         method.setDescription(description);
 
         List<Parameter> parameters = operation.getParameters();
         if (parameters != null) {
             parameters.forEach(parameter -> {
                 if (parameter instanceof BodyParameter) {
-                    addBodyParameter((BodyParameter) parameter, operation, method);
-                } else if (parameter instanceof PathParameter) {
+                    addBodyParameter((BodyParameter)parameter, operation, method);
+                }
+                else if (parameter instanceof PathParameter) {
                     //add path parameters on resource level
                     addParameter(parameter, method.getResource());
-                } else {
+                }
+                else {
                     addParameter(parameter, method);
                 }
-
             });
         }
 
@@ -236,45 +238,43 @@ public class Swagger2Importer implements SwaggerImporter {
             responses.forEach((responseCode, response) -> addResponse(responseCode, response, operation, method));
         }
 
-        if (method.getRepresentations(RestRepresentation.Type.RESPONSE, null) != null
-                && method.getRepresentations(RestRepresentation.Type.RESPONSE, null).length == 0) {
+        if (method.getRepresentations(RestRepresentation.Type.RESPONSE, null) != null && method.getRepresentations(RestRepresentation.Type.RESPONSE, null).length == 0) {
             List<String> produces = operation.getProduces();
             if (produces != null) {
-                produces.forEach(mediaType ->
-                        method.addNewRepresentation(RestRepresentation.Type.RESPONSE).setMediaType(mediaType));
+                produces.forEach(mediaType -> method.addNewRepresentation(RestRepresentation.Type.RESPONSE).setMediaType(mediaType));
             }
         }
 
         List<String> consumes = operation.getConsumes();
         if (consumes != null) {
-            consumes.forEach(mediaType ->
-                    method.addNewRepresentation(RestRepresentation.Type.REQUEST).setMediaType(mediaType));
+            consumes.forEach(mediaType -> method.addNewRepresentation(RestRepresentation.Type.REQUEST).setMediaType(mediaType));
         }
     }
 
     private void addParameter(Parameter parameter, MutableTestPropertyHolder propertyHolder) {
         String parameterName = parameter.getName();
         if (StringUtils.isNullOrEmpty(parameterName) && parameter instanceof RefParameter) {
-            parameterName = ((RefParameter) parameter).get$ref();
+            parameterName = ((RefParameter)parameter).get$ref();
         }
 
         if (StringUtils.isNullOrEmpty(parameterName)) {
-            logger.warn("Can not import property without name or ref [" + parameter.toString() + "]");
-        } else {
-            RestParameter restParameter = (RestParameter) propertyHolder.addProperty(parameterName);
+            logger.warn("Can not import property without name or ref [" + parameter + "]");
+        }
+        else {
+            RestParameter restParameter = (RestParameter)propertyHolder.addProperty(parameterName);
 
             try {
                 restParameter.setStyle(getParameterStyle(parameter));
-            } catch (IllegalArgumentException e) {
+            }
+            catch (IllegalArgumentException e) {
                 logger.error(e.getMessage(), e);
             }
 
             restParameter.setDescription(parameter.getDescription());
             restParameter.setRequired(parameter.getRequired());
 
-            if ((parameter instanceof AbstractSerializableParameter) &&
-                    ((AbstractSerializableParameter) parameter).getDefaultValue() != null) {
-                String defaultValue = ((AbstractSerializableParameter) parameter).getDefaultValue().toString();
+            if ((parameter instanceof AbstractSerializableParameter) && ((AbstractSerializableParameter)parameter).getDefaultValue() != null) {
+                String defaultValue = ((AbstractSerializableParameter)parameter).getDefaultValue().toString();
                 restParameter.setDefaultValue(defaultValue);
                 restParameter.setValue(defaultValue);
             }
@@ -299,17 +299,19 @@ public class Swagger2Importer implements SwaggerImporter {
                 if (bodyParameterModel != null) {
                     ObjectProperty objectProperty = new ObjectProperty(bodyParameterModel.getProperties());
                     if (bodyParameterModel instanceof RefModel) {
-                        RefModel refModel = (RefModel) bodyParameterModel;
+                        RefModel refModel = (RefModel)bodyParameterModel;
                         Model modelDefinition = swagger.getDefinitions().get(refModel.getSimpleRef());
                         if (modelDefinition instanceof ComposedModel) {
                             objectProperty = null;
-                        } else if (modelDefinition != null) {
+                        }
+                        else if (modelDefinition != null) {
                             objectProperty = new ObjectProperty(modelDefinition.getProperties());
                             objectProperty.name(refModel.getSimpleRef());
                         }
                     }
-                    Example output = objectProperty != null ? ExampleBuilder.fromProperty(objectProperty, swagger.getDefinitions()) :
-                            ExampleBuilder.fromModel(null, bodyParameterModel, swagger.getDefinitions(), new HashSet<String>());
+                    Example output = objectProperty != null
+                                     ? ExampleBuilder.fromProperty(objectProperty, swagger.getDefinitions())
+                                     : ExampleBuilder.fromModel(null, bodyParameterModel, swagger.getDefinitions(), new HashSet<String>());
                     if (output != null) {
                         request.setRequestContent(serializeExample(mediaType, output));
                     }
@@ -326,7 +328,8 @@ public class Swagger2Importer implements SwaggerImporter {
 
         if (parameterLocation.equals("path")) {
             parameterLocation = "template";
-        } else if (parameterLocation.equals("formData")) {
+        }
+        else if (parameterLocation.equals("formData")) {
             parameterLocation = "query";
         }
 
@@ -355,7 +358,8 @@ public class Swagger2Importer implements SwaggerImporter {
             if (responseExamples != null && !responseExamples.isEmpty()) {
                 representation.setMediaType(responseExamples.keySet().iterator().next());
             }
-        } else {
+        }
+        else {
             produces.forEach(mediaType -> {
                 RestRepresentation representation = method.addNewRepresentation(RestRepresentation.Type.RESPONSE);
                 representation.setMediaType(mediaType);
@@ -380,7 +384,8 @@ public class Swagger2Importer implements SwaggerImporter {
             if (StringUtils.hasContent(suffix)) {
                 subtype = suffix;
             }
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             logger.warn(String.format(SAMPLE_GENERATION_FAILED_MESSAGE, mediaType));
         }
 
@@ -407,10 +412,10 @@ public class Swagger2Importer implements SwaggerImporter {
         if (mapper != null) {
             try {
                 sampleValue = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
-            } catch (JsonProcessingException e) {
+            }
+            catch (JsonProcessingException e) {
                 logger.error(e.getMessage(), e);
             }
-
         }
         return sampleValue;
     }
@@ -422,23 +427,25 @@ public class Swagger2Importer implements SwaggerImporter {
             if (url.toLowerCase().startsWith("http://") || url.toLowerCase().startsWith("https://")) {
                 try {
                     name = new URL(url).getHost();
-                } catch (MalformedURLException e) {
+                }
+                catch (MalformedURLException e) {
                     throw new RuntimeException(e);
                 }
-
-            } else {
+            }
+            else {
                 int ix = url.lastIndexOf('/');
                 name = ix == -1 || ix == url.length() - 1 ? url : url.substring(ix + 1);
             }
         }
 
-        RestService restService = (RestService) project.addNewInterface(name, RestServiceFactory.REST_TYPE);
+        RestService restService = (RestService)project.addNewInterface(name, RestServiceFactory.REST_TYPE);
 
         String expandedUrl = PathUtils.expandPath(url, project);
         if (new File(expandedUrl).exists()) {
             try {
                 expandedUrl = new File(expandedUrl).toURI().toURL().toString();
-            } catch (MalformedURLException e) {
+            }
+            catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -461,7 +468,8 @@ public class Swagger2Importer implements SwaggerImporter {
             if (restService.getEndpoints().length == 0) {
                 if (url.toLowerCase().startsWith("http") && url.indexOf(':') > 0) {
                     restService.addEndpoint(url.substring(0, url.indexOf(':')).toLowerCase() + "://" + swagger.getHost());
-                } else {
+                }
+                else {
                     restService.addEndpoint("http://" + swagger.getHost());
                 }
             }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -42,14 +42,11 @@ public class JdbcTestStepResult extends WsdlTestStepResult implements AssertedXP
 
     public void setResponse(JdbcResponse response, boolean useSoftReference) {
         if (useSoftReference) {
-            this.softResponse = new SoftReference<JdbcResponse>(response);
-        } else {
+            softResponse = new SoftReference<JdbcResponse>(response);
+        }
+        else {
             this.response = response;
         }
-    }
-
-    public void setRequestContent(String requestContent) {
-        this.requestContent = requestContent;
     }
 
     public void addAssertedXPath(AssertedXPath assertedXPath) {
@@ -65,11 +62,20 @@ public class JdbcTestStepResult extends WsdlTestStepResult implements AssertedXP
         return super.getActions();
     }
 
+    public Operation getOperation() {
+        return null;
+    }
+
     public ModelItem getModelItem() {
         return getTestStep();
     }
 
-    public Operation getOperation() {
+    public long getTimestamp() {
+        return hasResponse() ? getResponse().getTimestamp() : -1;
+    }
+
+    public String getEndpoint() {
+        // TODO Auto-generated method stub
         return null;
     }
 
@@ -77,8 +83,44 @@ public class JdbcTestStepResult extends WsdlTestStepResult implements AssertedXP
         return new StringToStringMap();
     }
 
-    public String getProperty(String name) {
+    public String getRequestContent() {
+        return requestContent != null ? requestContent : hasResponse() ? getResponse().getRequestContent() : null;
+    }
+
+    public void setRequestContent(String requestContent) {
+        this.requestContent = requestContent;
+    }
+
+    public String getResponseContent() {
+        return hasResponse() ? getResponse().getContentAsString() : null;
+    }
+
+    public String getRequestContentAsXml() {
         return null;
+    }
+
+    public String getResponseContentAsXml() {
+        return getResponseContent();
+    }
+
+    public StringToStringsMap getRequestHeaders() {
+        return new StringToStringsMap();
+    }
+
+    public StringToStringsMap getResponseHeaders() {
+        return new StringToStringsMap();
+    }
+
+    public Attachment[] getRequestAttachments() {
+        return new Attachment[0];
+    }
+
+    public Attachment[] getResponseAttachments() {
+        return new Attachment[0];
+    }
+
+    public boolean hasRawData() {
+        return true;
     }
 
     public byte[] getRawRequestData() {
@@ -89,56 +131,12 @@ public class JdbcTestStepResult extends WsdlTestStepResult implements AssertedXP
         return getResponseContent().getBytes();
     }
 
-    public Attachment[] getRequestAttachments() {
-        return new Attachment[0];
-    }
-
     public Attachment[] getRequestAttachmentsForPart(String partName) {
-        return new Attachment[0];
-    }
-
-    public String getRequestContent() {
-        return requestContent != null ? requestContent : hasResponse() ? getResponse().getRequestContent() : null;
-    }
-
-    public JdbcResponse getResponse() {
-        return softResponse != null ? softResponse.get() : response;
-    }
-
-    public String getRequestContentAsXml() {
-        return null;
-    }
-
-    public StringToStringsMap getRequestHeaders() {
-        return new StringToStringsMap();
-    }
-
-    public Attachment[] getResponseAttachments() {
         return new Attachment[0];
     }
 
     public Attachment[] getResponseAttachmentsForPart(String partName) {
         return new Attachment[0];
-    }
-
-    public String getResponseContent() {
-        return hasResponse() ? getResponse().getContentAsString() : null;
-    }
-
-    public String getResponseContentAsXml() {
-        return getResponseContent();
-    }
-
-    public StringToStringsMap getResponseHeaders() {
-        return new StringToStringsMap();
-    }
-
-    public long getTimestamp() {
-        return hasResponse() ? getResponse().getTimestamp() : -1;
-    }
-
-    public boolean hasRawData() {
-        return true;
     }
 
     public boolean hasRequest(boolean ignoreEmpty) {
@@ -149,9 +147,11 @@ public class JdbcTestStepResult extends WsdlTestStepResult implements AssertedXP
         return getResponse() != null;
     }
 
-    public String getEndpoint() {
-        // TODO Auto-generated method stub
-        return null;
+    public JdbcResponse getResponse() {
+        return softResponse != null ? softResponse.get() : response;
     }
 
+    public String getProperty(String name) {
+        return null;
+    }
 }

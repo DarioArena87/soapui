@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema.types;
@@ -51,44 +51,6 @@ public class SimpleType implements Type {
         simpleType = TypeInferrer.getType(xml.getTypeName());
     }
 
-    public SimpleTypeConfig save() {
-        SimpleTypeConfig xml = SimpleTypeConfig.Factory.newInstance();
-        xml.setCompleted(completed);
-        xml.setTypeName(simpleType.schemaType().getName().getLocalPart());
-        return xml;
-    }
-
-    public Type validate(Context context) throws XmlException {
-        XmlCursor cursor = context.getCursor();
-        if (!cursor.isAttr() && (cursor.toFirstAttribute() || cursor.toFirstChild())) {
-            // Element with complex content
-            return new ComplexType(schema, context.getName(), completed);
-        } else if (!context.getAttribute("nil").equals("true")) {
-            String value = "";
-            cursor.toFirstContentToken();
-            if (!cursor.isEnd()) {
-                value = cursor.getTextValue();
-            }
-            if (TypeInferrer.validateSimpleType(value, simpleType)) {
-                return this;
-            }
-            XmlAnySimpleType newType = TypeInferrer.expandTypeForValue(value, simpleType);
-            if (cursor.getName() == null) {
-                cursor.toParent();
-            }
-            if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION, ConflictHandler.Type.TYPE,
-                    cursor.getName(), context.getPath(), "Illegal content '" + value + "'")) {
-                // Switch to other simpleType.
-                // return
-                // context.getSchemaSystem().getType(newType.schemaType().getName());
-                simpleType = newType;
-            } else {
-                throw new XmlException("Invalid value!");
-            }
-        }
-        return this;
-    }
-
     @Override
     public String toString() {
         return "";
@@ -102,8 +64,47 @@ public class SimpleType implements Type {
         return schema;
     }
 
+    public Type validate(Context context) throws XmlException {
+        XmlCursor cursor = context.getCursor();
+        if (!cursor.isAttr() && (cursor.toFirstAttribute() || cursor.toFirstChild())) {
+            // Element with complex content
+            return new ComplexType(schema, context.getName(), completed);
+        }
+        else if (!context.getAttribute("nil").equals("true")) {
+            String value = "";
+            cursor.toFirstContentToken();
+            if (!cursor.isEnd()) {
+                value = cursor.getTextValue();
+            }
+            if (TypeInferrer.validateSimpleType(value, simpleType)) {
+                return this;
+            }
+            XmlAnySimpleType newType = TypeInferrer.expandTypeForValue(value, simpleType);
+            if (cursor.getName() == null) {
+                cursor.toParent();
+            }
+            if (context.getHandler()
+                       .callback(ConflictHandler.Event.MODIFICATION, ConflictHandler.Type.TYPE, cursor.getName(), context.getPath(), "Illegal content '" + value + "'")) {
+                // Switch to other simpleType.
+                // return
+                // context.getSchemaSystem().getType(newType.schemaType().getName());
+                simpleType = newType;
+            }
+            else {
+                throw new XmlException("Invalid value!");
+            }
+        }
+        return this;
+    }
+
     public void setSchema(Schema schema) {
         this.schema = schema;
     }
 
+    public SimpleTypeConfig save() {
+        SimpleTypeConfig xml = SimpleTypeConfig.Factory.newInstance();
+        xml.setCompleted(completed);
+        xml.setTypeName(simpleType.schemaType().getName().getLocalPart());
+        return xml;
+    }
 }

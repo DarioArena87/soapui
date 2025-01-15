@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps;
@@ -46,19 +46,9 @@ import com.eviware.soapui.support.components.JInspectorPanelFactory;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.xml.XmlUtils;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Date;
@@ -68,9 +58,9 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
     private AssertionsPanel assertionsPanel;
     private JTextField portField;
     private JTextField pathField;
-    private InternalTestRunListener testRunListener;
-    private InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
-    private InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
+    private final InternalTestRunListener testRunListener;
+    private final InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
+    private final InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
     private JInspectorPanel inspectorPanel;
     private JComponentInspector<JComponent> assertionInspector;
     private JComponentInspector<JComponent> logInspector;
@@ -96,16 +86,14 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
 
         assertionsPanel = buildAssertionsPanel();
 
-        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions ("
-                + getModelItem().getAssertionCount() + ")", "Assertions for this Request", true);
+        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions (" + getModelItem().getAssertionCount() + ")", "Assertions for this Request", true);
 
         inspectorPanel.addInspector(assertionInspector);
 
         logInspector = new JComponentInspector<JComponent>(buildLogPanel(), "Request Log (0)", "Log of requests", true);
         inspectorPanel.addInspector(logInspector);
 
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildQueryMatchPanel(), "Query/Match",
-                "Query/Match configuration", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildQueryMatchPanel(), "Query/Match", "Query/Match configuration", true));
 
         inspectorPanel.setDefaultDividerLocation(0.6F);
         inspectorPanel.setCurrentInspector("Assertions");
@@ -113,6 +101,63 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
         updateStatusIcon();
 
         return inspectorPanel.getComponent();
+    }
+
+    @Override
+    protected void createToolbar(JXToolBar toolbar) {
+        toolbar.addUnrelatedGap();
+        toolbar.addFixed(new JLabel("Path"));
+        toolbar.addRelatedGap();
+        pathField = new JTextField(getModelItem().getPath(), 15);
+        pathField.getDocument().addDocumentListener(new DocumentListenerAdapter() {
+
+            @Override
+            public void update(Document document) {
+                getModelItem().setPath(pathField.getText());
+            }
+        });
+
+        toolbar.addFixed(pathField);
+
+        toolbar.addUnrelatedGap();
+        toolbar.addFixed(new JLabel("Port"));
+        toolbar.addRelatedGap();
+        portField = new JTextField(String.valueOf(getModelItem().getPort()), 5);
+        portField.getDocument().addDocumentListener(new DocumentListenerAdapter() {
+
+            @Override
+            public void update(Document document) {
+                try {
+                    getModelItem().setPort(Integer.parseInt(portField.getText()));
+                }
+                catch (NumberFormatException e) {
+                }
+            }
+        });
+
+        toolbar.addFixed(portField);
+    }
+
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+
+        pathField.setEnabled(enabled);
+        portField.setEnabled(enabled);
+    }
+
+    @Override
+    public boolean onClose(boolean canCancel) {
+        getModelItem().getTestCase().removeTestRunListener(testRunListener);
+        SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
+        assertionsPanel.release();
+
+        queryEditorModel.release();
+        matchEditorModel.release();
+
+        inspectorPanel.release();
+
+        getModelItem().removeAssertionsListener(assertionsListener);
+        return super.onClose(canCancel);
     }
 
     private void updateStatusIcon() {
@@ -154,38 +199,13 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
         inspectorPanel.setContentComponent(null);
     }
 
-    @Override
-    protected void createToolbar(JXToolBar toolbar) {
-        toolbar.addUnrelatedGap();
-        toolbar.addFixed(new JLabel("Path"));
-        toolbar.addRelatedGap();
-        pathField = new JTextField(getModelItem().getPath(), 15);
-        pathField.getDocument().addDocumentListener(new DocumentListenerAdapter() {
-
-            @Override
-            public void update(Document document) {
-                getModelItem().setPath(pathField.getText());
-            }
-        });
-
-        toolbar.addFixed(pathField);
-
-        toolbar.addUnrelatedGap();
-        toolbar.addFixed(new JLabel("Port"));
-        toolbar.addRelatedGap();
-        portField = new JTextField(String.valueOf(getModelItem().getPort()), 5);
-        portField.getDocument().addDocumentListener(new DocumentListenerAdapter() {
-
-            @Override
-            public void update(Document document) {
-                try {
-                    getModelItem().setPort(Integer.parseInt(portField.getText()));
-                } catch (NumberFormatException e) {
-                }
-            }
-        });
-
-        toolbar.addFixed(portField);
+    public boolean dependsOn(ModelItem modelItem) {
+        return modelItem == getModelItem() ||
+               modelItem == getModelItem().getTestCase() ||
+               modelItem == getModelItem().getOperation() ||
+               modelItem == getModelItem().getOperation().getInterface() ||
+               modelItem == getModelItem().getTestCase().getTestSuite() ||
+               modelItem == getModelItem().getTestCase().getTestSuite().getProject();
     }
 
     private JComponent buildQueryMatchPanel() {
@@ -225,22 +245,6 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
         return toolBar;
     }
 
-    public class SelectFromCurrentAction extends AbstractAction {
-        public SelectFromCurrentAction() {
-            super("Select from current");
-            putValue(Action.SHORT_DESCRIPTION, "Selects the Query XPath expression from the last request Match field");
-        }
-
-        public void actionPerformed(ActionEvent arg0) {
-            if (getModelItem().getLastResult() != null && getModelItem().getLastResult().getMockRequest() != null
-                    && StringUtils.hasContent(getModelItem().getQuery())) {
-                getModelItem().setMatch(
-                        XmlUtils.getXPathValue(getModelItem().getLastResult().getMockRequest().getRequestContent(),
-                                PropertyExpander.expandProperties(getModelItem(), getModelItem().getQuery())));
-            }
-        }
-    }
-
     private AssertionsPanel buildAssertionsPanel() {
         assertionsPanel = new AssertionsPanel(getModelItem()) {
             protected void selectError(AssertionError error) {
@@ -252,77 +256,68 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
         return assertionsPanel;
     }
 
-    @Override
-    public boolean onClose(boolean canCancel) {
-        getModelItem().getTestCase().removeTestRunListener(testRunListener);
-        SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
-        assertionsPanel.release();
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
 
-        queryEditorModel.release();
-        matchEditorModel.release();
-
-        inspectorPanel.release();
-
-        getModelItem().removeAssertionsListener(assertionsListener);
-        return super.onClose(canCancel);
+        if (evt.getPropertyName().equals(WsdlMockResponseTestStep.STATUS_PROPERTY)) {
+            updateStatusIcon();
+        }
     }
 
-    public void setEnabled(boolean enabled) {
-        super.setEnabled(enabled);
+    public class SelectFromCurrentAction extends AbstractAction {
+        public SelectFromCurrentAction() {
+            super("Select from current");
+            putValue(SHORT_DESCRIPTION, "Selects the Query XPath expression from the last request Match field");
+        }
 
-        pathField.setEnabled(enabled);
-        portField.setEnabled(enabled);
-    }
-
-    public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == getModelItem() || modelItem == getModelItem().getTestCase()
-                || modelItem == getModelItem().getOperation() || modelItem == getModelItem().getOperation().getInterface()
-                || modelItem == getModelItem().getTestCase().getTestSuite()
-                || modelItem == getModelItem().getTestCase().getTestSuite().getProject();
+        public void actionPerformed(ActionEvent arg0) {
+            if (getModelItem().getLastResult() != null && getModelItem().getLastResult().getMockRequest() != null && StringUtils.hasContent(getModelItem().getQuery())) {
+                getModelItem().setMatch(XmlUtils.getXPathValue(getModelItem().getLastResult().getMockRequest().getRequestContent(),
+                                                               PropertyExpander.expandProperties(getModelItem(), getModelItem().getQuery())
+                ));
+            }
+        }
     }
 
     public class InternalTestRunListener extends TestRunListenerAdapter {
-        @Override
-        public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-            setEnabled(true);
-        }
-
         @Override
         public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
             setEnabled(false);
         }
 
         @Override
-        public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
-            if (testStep == getModelItem()) {
-                logArea.setText(logArea.getText() + new Date(System.currentTimeMillis()).toString()
-                        + ": Waiting for request on http://127.0.0.1:" + getModelItem().getPort() + getModelItem().getPath()
-                        + "\r\n");
+        public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
+            if (result.getTestStep() == getModelItem()) {
+                String msg = new Date(result.getTimeStamp()) + ": Handled request in " + result.getTimeTaken() + "ms";
+                logArea.setText(logArea.getText() + msg + "\r\n");
             }
         }
 
         @Override
-        public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
-            if (result.getTestStep() == getModelItem()) {
-                String msg = new Date(result.getTimeStamp()).toString() + ": Handled request in " + result.getTimeTaken()
-                        + "ms";
-                logArea.setText(logArea.getText() + msg + "\r\n");
+        public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+            setEnabled(true);
+        }
+
+        @Override
+        public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
+            if (testStep == getModelItem()) {
+                logArea.setText(logArea.getText() + new Date(System.currentTimeMillis()) +
+                                ": Waiting for request on http://127.0.0.1:" +
+                                getModelItem().getPort() +
+                                getModelItem().getPath() +
+                                "\r\n");
             }
         }
     }
 
     private class InternalTestMonitorListener extends TestMonitorListenerAdapter {
-        public void loadTestFinished(LoadTestRunner runner) {
-            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
-        }
-
         public void loadTestStarted(LoadTestRunner runner) {
             if (runner.getLoadTest().getTestCase() == getModelItem().getTestCase()) {
                 setEnabled(false);
             }
         }
 
-        public void securityTestFinished(SecurityTestRunner runner) {
+        public void loadTestFinished(LoadTestRunner runner) {
             setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
 
@@ -332,7 +327,7 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
             }
         }
 
-        public void testCaseFinished(TestCaseRunner runner) {
+        public void securityTestFinished(SecurityTestRunner runner) {
             setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
 
@@ -341,22 +336,17 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
                 setEnabled(false);
             }
         }
-    }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        super.propertyChange(evt);
-
-        if (evt.getPropertyName().equals(WsdlMockResponseTestStep.STATUS_PROPERTY)) {
-            updateStatusIcon();
+        public void testCaseFinished(TestCaseRunner runner) {
+            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
     }
 
     @SuppressWarnings("unused")
     private final class DeclareNamespacesAction extends AbstractAction {
         public DeclareNamespacesAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/declareNs.gif"));
-            putValue(Action.SHORT_DESCRIPTION,
-                    "Declare available response/request namespaces in source/target expressions");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/declareNs.gif"));
+            putValue(SHORT_DESCRIPTION, "Declare available response/request namespaces in source/target expressions");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -364,13 +354,13 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
                 MockResult lastResult = getMockResponse().getMockResult();
                 String content = null;
                 if (lastResult == null) {
-                    if (!UISupport.confirm("Missing last result, declare from default request instead?",
-                            "Declare Namespaces")) {
+                    if (!UISupport.confirm("Missing last result, declare from default request instead?", "Declare Namespaces")) {
                         return;
                     }
 
-                    content = ((WsdlOperation) getMockResponse().getMockOperation().getOperation()).createRequest(true);
-                } else {
+                    content = getMockResponse().getMockOperation().getOperation().createRequest(true);
+                }
+                else {
                     content = lastResult.getMockRequest().getRequestContent();
                 }
 
@@ -380,7 +370,8 @@ public class WsdlMockResponseStepDesktopPanel extends AbstractWsdlMockResponseDe
                 }
 
                 getModelItem().setQuery(XmlUtils.declareXPathNamespaces(content) + path);
-            } catch (Exception e1) {
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1);
             }
         }

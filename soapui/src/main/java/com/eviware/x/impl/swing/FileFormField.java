@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.impl.swing;
@@ -28,21 +28,16 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.event.ActionEvent;
 import java.io.File;
 
 public class FileFormField extends AbstractSwingXFormField<JPanel> implements XFormTextField {
     private final static Logger log = LogManager.getLogger(FileFormField.class);
-
-    private JTextField textField;
     private final FieldType type;
-    private JButton selectDirectoryButton;
+    private final JTextField textField;
+    private final JButton selectDirectoryButton;
     private String projectRoot;
 
     private boolean updating;
@@ -77,18 +72,12 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
         });
     }
 
-    public void setValue(String value) {
-        updating = true;
-        oldValue = null;
-        updateValue(value);
-        updating = false;
-    }
-
     private void updateValue(String value) {
         if (value != null && projectRoot != null && value.startsWith(projectRoot)) {
             if (value.equals(projectRoot)) {
                 value = "";
-            } else if (value.length() > projectRoot.length() + 1) {
+            }
+            else if (value.length() > projectRoot.length() + 1) {
                 value = value.substring(projectRoot.length() + 1);
             }
         }
@@ -109,14 +98,42 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
         return text;
     }
 
-    public void setEnabled(boolean enabled) {
-        textField.setEnabled(enabled);
-        selectDirectoryButton.setEnabled(enabled);
+    public void setValue(String value) {
+        updating = true;
+        oldValue = null;
+        updateValue(value);
+        updating = false;
     }
 
     @Override
     public boolean isEnabled() {
         return textField.isEnabled();
+    }
+
+    public void setEnabled(boolean enabled) {
+        textField.setEnabled(enabled);
+        selectDirectoryButton.setEnabled(enabled);
+    }
+
+    public void setProperty(String name, Object value) {
+        super.setProperty(name, value);
+
+        if (name.equals(ProjectSettings.PROJECT_ROOT) && type == FieldType.PROJECT_FOLDER) {
+            projectRoot = (String)value;
+            log.debug("Set projectRoot to [" + projectRoot + "]");
+        }
+        else if (name.equals(CURRENT_DIRECTORY)) {
+            currentDirectory = (String)value;
+            log.debug("Set currentDirectory to [" + currentDirectory + "]");
+        }
+    }
+
+    public void setWidth(int columns) {
+        textField.setColumns(columns);
+    }
+
+    public String getCurrentDirectory() {
+        return currentDirectory;
     }
 
     public void setCurrentDirectory(String currentDirectory) {
@@ -135,13 +152,14 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
                 if (type == FieldType.FILE_OR_FOLDER) {
                     fileChooser = new JFileChooser();
                     fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                } else if (type == FieldType.FOLDER || type == FieldType.PROJECT_FOLDER) {
+                }
+                else if (type == FieldType.FOLDER || type == FieldType.PROJECT_FOLDER) {
                     fileChooser = new JFileChooser();
                     fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                } else {
+                }
+                else {
                     fileChooser = new JFileChooser();
                 }
-
             }
 
             File file = null;
@@ -156,11 +174,13 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
                 if (!file.isAbsolute()) {
                     if (startingDirectory != null) {
                         file = new File(FilenameUtils.normalize(startingDirectory + File.separator + value));
-                    } else {
+                    }
+                    else {
                         file = file.getAbsoluteFile();
                     }
                 }
-            } else {
+            }
+            else {
                 file = new File((startingDirectory != null) ? startingDirectory : System.getProperty("user.dir", ".")).getAbsoluteFile();
             }
 
@@ -168,10 +188,12 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
                 fileChooser.setSelectedFile(file);
                 if (file.isDirectory()) {
                     fileChooser.setCurrentDirectory(file);
-                } else {
+                }
+                else {
                     fileChooser.setCurrentDirectory(file.getParentFile());
                 }
-            } else {
+            }
+            else {
                 while (file != null && !file.exists()) {
                     file = file.getParentFile();
                 }
@@ -186,25 +208,5 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
                 updateValue(fileChooser.getSelectedFile().getAbsolutePath());
             }
         }
-    }
-
-    public void setProperty(String name, Object value) {
-        super.setProperty(name, value);
-
-        if (name.equals(ProjectSettings.PROJECT_ROOT) && type == FieldType.PROJECT_FOLDER) {
-            projectRoot = (String) value;
-            log.debug("Set projectRoot to [" + projectRoot + "]");
-        } else if (name.equals(CURRENT_DIRECTORY)) {
-            currentDirectory = (String) value;
-            log.debug("Set currentDirectory to [" + currentDirectory + "]");
-        }
-    }
-
-    public void setWidth(int columns) {
-        textField.setColumns(columns);
-    }
-
-    public String getCurrentDirectory() {
-        return currentDirectory;
     }
 }

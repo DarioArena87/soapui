@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.data;
@@ -42,13 +42,13 @@ import java.util.Map;
  */
 
 public class SamplesModel extends AbstractTableModel {
-    private final LoadTest loadTest;
-    private List<TestSample[]> samples = new ArrayList<TestSample[]>();
-    private InternalTestRunListener testRunListener;
-    private InternalTestSuiteListener testSuiteListener;
-    private InternalPropertyChangeListener propertyChangeListener;
-    private TestCase testCase;
     private final static Logger log = LogManager.getLogger(SamplesModel.class);
+    private final LoadTest loadTest;
+    private final List<TestSample[]> samples = new ArrayList<TestSample[]>();
+    private final InternalTestRunListener testRunListener;
+    private final InternalTestSuiteListener testSuiteListener;
+    private final InternalPropertyChangeListener propertyChangeListener;
+    private final TestCase testCase;
 
     public SamplesModel(LoadTest loadTest) {
         this.loadTest = loadTest;
@@ -81,8 +81,7 @@ public class SamplesModel extends AbstractTableModel {
 
     public void addSamples(TestSample[] newSamples) {
         if (newSamples.length != getColumnCount()) {
-            throw new RuntimeException("Invalid number of samples reported: " + newSamples.length + ", expected "
-                    + getColumnCount());
+            throw new RuntimeException("Invalid number of samples reported: " + newSamples.length + ", expected " + getColumnCount());
         }
 
         samples.add(newSamples);
@@ -90,12 +89,12 @@ public class SamplesModel extends AbstractTableModel {
         fireTableRowsInserted(samples.size() - 1, samples.size() - 1);
     }
 
-    public Class<?> getColumnClass(int columnIndex) {
-        return TestSample.class;
-    }
-
     public String getColumnName(int column) {
         return testCase.getTestStepAt(column).getName();
+    }
+
+    public Class<?> getColumnClass(int columnIndex) {
+        return TestSample.class;
     }
 
     public void clear() {
@@ -103,45 +102,6 @@ public class SamplesModel extends AbstractTableModel {
         if (size > 0) {
             samples.clear();
             fireTableRowsDeleted(0, size);
-        }
-    }
-
-    /**
-     * Listener for collecting samples
-     *
-     * @author Ole.Matzura
-     */
-
-    private class InternalTestRunListener extends LoadTestRunListenerAdapter {
-        public void afterTestCase(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                                  TestCaseRunContext runContext) {
-            Map<TestStep, TestSample> samplesMap = new HashMap<TestStep, TestSample>();
-            List<TestStepResult> results = testRunner.getResults();
-
-            for (int c = 0; c < results.size(); c++) {
-                TestStepResult result = results.get(c);
-                if (result == null) {
-                    log.warn("Result [" + c + "] is null in TestCase [" + testCase.getName() + "]");
-                    continue;
-                }
-
-                TestStep testStep = result.getTestStep();
-
-                if (!samplesMap.containsKey(testStep)) {
-                    samplesMap.put(testStep, new TestSample(testStep));
-                }
-
-                samplesMap.get(testStep).addTestStepResult(result);
-            }
-
-            TestCase testCase = loadTest.getTestCase();
-
-            TestSample[] samples = new TestSample[testCase.getTestStepCount()];
-            for (int c = 0; c < samples.length; c++) {
-                samples[c] = samplesMap.get(testCase.getTestStepAt(c));
-            }
-
-            addSamples(samples);
         }
     }
 
@@ -174,8 +134,7 @@ public class SamplesModel extends AbstractTableModel {
 
         public void addTestStepResult(TestStepResult result) {
             if (result.getTestStep() != testStep) {
-                throw new RuntimeException("Trying to add sample for false testStep [" + result.getTestStep().getName()
-                        + "], " + "expecting [" + testStep.getName() + "]");
+                throw new RuntimeException("Trying to add sample for false testStep [" + result.getTestStep().getName() + "], " + "expecting [" + testStep.getName() + "]");
             }
 
             if (results == null) {
@@ -211,6 +170,46 @@ public class SamplesModel extends AbstractTableModel {
         }
     }
 
+    /**
+     * Listener for collecting samples
+     *
+     * @author Ole.Matzura
+     */
+
+    private class InternalTestRunListener extends LoadTestRunListenerAdapter {
+        public void afterTestCase(
+            LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+        ) {
+            Map<TestStep, TestSample> samplesMap = new HashMap<TestStep, TestSample>();
+            List<TestStepResult> results = testRunner.getResults();
+
+            for (int c = 0; c < results.size(); c++) {
+                TestStepResult result = results.get(c);
+                if (result == null) {
+                    log.warn("Result [" + c + "] is null in TestCase [" + testCase.getName() + "]");
+                    continue;
+                }
+
+                TestStep testStep = result.getTestStep();
+
+                if (!samplesMap.containsKey(testStep)) {
+                    samplesMap.put(testStep, new TestSample(testStep));
+                }
+
+                samplesMap.get(testStep).addTestStepResult(result);
+            }
+
+            TestCase testCase = loadTest.getTestCase();
+
+            TestSample[] samples = new TestSample[testCase.getTestStepCount()];
+            for (int c = 0; c < samples.length; c++) {
+                samples[c] = samplesMap.get(testCase.getTestStepAt(c));
+            }
+
+            addSamples(samples);
+        }
+    }
+
     private class InternalTestSuiteListener extends TestSuiteListenerAdapter {
         public void testStepAdded(TestStep testStep, int index) {
             if (testStep.getTestCase() == testCase) {
@@ -223,7 +222,8 @@ public class SamplesModel extends AbstractTableModel {
                     for (int c = 0; c < testSamples.length; c++) {
                         if (c < index) {
                             newSamples[c] = testSamples[c];
-                        } else {
+                        }
+                        else {
                             newSamples[c + 1] = testSamples[c];
                         }
                     }
@@ -246,7 +246,8 @@ public class SamplesModel extends AbstractTableModel {
                     for (int c = 0; c < testSamples.length; c++) {
                         if (c < index) {
                             newSamples[c] = testSamples[c];
-                        } else if (c > index) {
+                        }
+                        else if (c > index) {
                             newSamples[c - 1] = testSamples[c];
                         }
                     }
@@ -264,5 +265,4 @@ public class SamplesModel extends AbstractTableModel {
             fireTableStructureChanged();
         }
     }
-
 }

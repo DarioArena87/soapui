@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.assertions;
@@ -47,17 +47,16 @@ import org.apache.xmlbeans.XmlObject;
  */
 
 public class MaxErrorsAssertion extends AbstractLoadTestAssertion implements Configurable {
+    public static final String MAX_ERRORS_TYPE = "Max Errors";
     private static final String NAME_FIELD = "Name";
     private static final String NAME_ELEMENT = "name";
     private static final String MAX_ABSOLUTE_ERRORS_ELEMENT = "max-absolute-errors";
     private static final String MAX_ABSOLUTE_ERRORS_FIELD = "Max Absolute Errors";
     private static final String MAX_RELATIVE_ERRORS_ELEMENT = "max-relative-errors";
     private static final String MAX_RELATIVE_ERRORS_FIELD = "Max Relative Errors";
-
     private float maxRelativeErrors;
     private int maxAbsoluteErrors;
     private XFormDialog dialog;
-    public static final String MAX_ERRORS_TYPE = "Max Errors";
 
     public MaxErrorsAssertion(LoadTestAssertionConfig assertionConfig, WsdlLoadTest loadTest) {
         super(assertionConfig, loadTest);
@@ -70,49 +69,44 @@ public class MaxErrorsAssertion extends AbstractLoadTestAssertion implements Con
         XmlObject configuration = assertionConfig.getConfiguration();
         XmlObjectConfigurationReader reader = new XmlObjectConfigurationReader(configuration);
 
-        setName(reader.readString(MaxErrorsAssertion.NAME_ELEMENT, "Max Errors"));
+        setName(reader.readString(NAME_ELEMENT, "Max Errors"));
         maxAbsoluteErrors = reader.readInt(MAX_ABSOLUTE_ERRORS_ELEMENT, 100);
-        maxRelativeErrors = reader.readFloat(MAX_RELATIVE_ERRORS_ELEMENT, (float) 0.2);
+        maxRelativeErrors = reader.readFloat(MAX_RELATIVE_ERRORS_ELEMENT, (float)0.2);
         setTargetStep(reader.readString(TEST_STEP_ELEMENT, ALL_TEST_STEPS));
     }
 
-    public String getDescription() {
-        return "testStep: " + getTargetStep() + ", maxAbsoluteErrors: " + maxAbsoluteErrors + ", maxRelativeErrors; "
-                + maxRelativeErrors;
-    }
-
-    public String assertResult(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestStepResult result,
-                               TestCaseRunner testRunner, TestCaseRunContext runContext) {
+    public String assertResult(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestStepResult result, TestCaseRunner testRunner, TestCaseRunContext runContext
+    ) {
         TestStep step = result.getTestStep();
         if (targetStepMatches(step)) {
-            WsdlLoadTest loadTest = (WsdlLoadTest) loadTestRunner.getLoadTest();
+            WsdlLoadTest loadTest = (WsdlLoadTest)loadTestRunner.getLoadTest();
             LoadTestLog loadTestLog = loadTest.getLoadTestLog();
 
             int errorCount = loadTestLog.getErrorCount(step.getName());
             if (maxAbsoluteErrors >= 0 && errorCount > maxAbsoluteErrors) {
-                loadTestRunner.fail("Maximum number of errors [" + maxAbsoluteErrors + "] exceeded for step ["
-                        + step.getName() + "]");
+                loadTestRunner.fail("Maximum number of errors [" + maxAbsoluteErrors + "] exceeded for step [" + step.getName() + "]");
             }
 
             int index = step.getTestCase().getIndexOfTestStep(step);
 
             LoadTestStatistics statisticsModel = loadTest.getStatisticsModel();
             long totalSteps = statisticsModel.getStatistic(index, Statistic.COUNT);
-            float relativeErrors = (float) errorCount / (float) totalSteps;
+            float relativeErrors = (float)errorCount / (float)totalSteps;
 
             if (maxRelativeErrors > 0 && relativeErrors > maxRelativeErrors) {
-                loadTestRunner.fail("Maximum relative number of errors [" + maxRelativeErrors + "] exceeded for step ["
-                        + step.getName() + "]");
+                loadTestRunner.fail("Maximum relative number of errors [" + maxRelativeErrors + "] exceeded for step [" + step.getName() + "]");
             }
         }
 
         return null;
     }
 
-    public String assertResults(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                                TestCaseRunContext runContext) {
+    public String assertResults(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+    ) {
         if (ALL_TEST_STEPS.equals(getTargetStep())) {
-            WsdlLoadTest loadTest = (WsdlLoadTest) loadTestRunner.getLoadTest();
+            WsdlLoadTest loadTest = (WsdlLoadTest)loadTestRunner.getLoadTest();
             LoadTestLog loadTestLog = loadTest.getLoadTestLog();
 
             int errorCount = loadTestLog.getErrorCount(null);
@@ -122,7 +116,7 @@ public class MaxErrorsAssertion extends AbstractLoadTestAssertion implements Con
 
             LoadTestStatistics statisticsModel = loadTest.getStatisticsModel();
             long totalSteps = statisticsModel.getStatistic(LoadTestStatistics.TOTAL, Statistic.COUNT);
-            float relativeErrors = (float) errorCount / (float) totalSteps;
+            float relativeErrors = (float)errorCount / (float)totalSteps;
 
             if (maxRelativeErrors > 0 && relativeErrors > maxRelativeErrors) {
                 loadTestRunner.fail("Maximum relative number of errors [" + maxRelativeErrors + "] exceeded");
@@ -130,6 +124,10 @@ public class MaxErrorsAssertion extends AbstractLoadTestAssertion implements Con
         }
 
         return null;
+    }
+
+    public String getDescription() {
+        return "testStep: " + getTargetStep() + ", maxAbsoluteErrors: " + maxAbsoluteErrors + ", maxRelativeErrors; " + maxRelativeErrors;
     }
 
     public boolean configure() {
@@ -153,7 +151,8 @@ public class MaxErrorsAssertion extends AbstractLoadTestAssertion implements Con
                 maxRelativeErrors = Float.parseFloat(values.get(MAX_RELATIVE_ERRORS_FIELD));
                 setTargetStep(values.get(TEST_STEP_FIELD));
                 setName(values.get(NAME_FIELD));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 UISupport.showErrorMessage(e.getMessage());
             }
 
@@ -171,13 +170,13 @@ public class MaxErrorsAssertion extends AbstractLoadTestAssertion implements Con
 
         form.addTextField(NAME_FIELD, "Name of this assertion", FieldType.TEXT);
         form.addTextField(MAX_ABSOLUTE_ERRORS_FIELD, "Maximum number of errors before failing", FieldType.TEXT);
-        form.addTextField(MAX_RELATIVE_ERRORS_FIELD, "Relative maximum number of errors before failing (0-1)",
-                FieldType.TEXT);
+        form.addTextField(MAX_RELATIVE_ERRORS_FIELD, "Relative maximum number of errors before failing (0-1)", FieldType.TEXT);
         form.addComboBox(TEST_STEP_FIELD, new String[0], "TestStep to assert");
 
-        dialog = builder.buildDialog(
-                builder.buildOkCancelHelpActions(HelpUrls.MAX_ERRORS_LOAD_TEST_ASSERTION_HELP_URL),
-                "Specify options for this Max Errors Assertion", UISupport.OPTIONS_ICON);
+        dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.MAX_ERRORS_LOAD_TEST_ASSERTION_HELP_URL),
+                                     "Specify options for this Max Errors Assertion",
+                                     UISupport.OPTIONS_ICON
+        );
     }
 
     protected void updateConfiguration() {

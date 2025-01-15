@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.loadtest;
@@ -34,19 +34,7 @@ import org.jdesktop.swingx.decorator.FilterPipeline;
 import org.jdesktop.swingx.decorator.PatternFilter;
 import org.jdesktop.swingx.decorator.SortOrder;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelEvent;
@@ -54,8 +42,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -73,18 +60,18 @@ import java.util.List;
 
 public class JLoadTestLogTable extends JPanel {
     private final LoadTestLog loadTestLog;
-    private JXTable logTable;
-    private PatternFilter stepFilter;
-    private PatternFilter typeFilter;
+    private final JXTable logTable;
+    private final PatternFilter stepFilter;
+    private final PatternFilter typeFilter;
     private JComboBox typesFilterComboBox;
     private JComboBox stepsFilterComboBox;
     private JButton clearErrorsButton;
     private JLabel rowCountLabel;
     @SuppressWarnings("unused")
     private JPopupMenu popup;
-    private LoadTestLogTableModel logTableModel;
+    private final LoadTestLogTableModel logTableModel;
     private JButton exportButton;
-    private LogTableModelListener logTableModelListener;
+    private final LogTableModelListener logTableModelListener;
 
     public JLoadTestLogTable(LoadTestLog log) {
         super(new BorderLayout());
@@ -113,8 +100,9 @@ public class JLoadTestLogTable extends JPanel {
         stepFilter = new PatternFilter(".*", 0, 3);
         stepFilter.setAcceptNull(true);
 
-        Filter[] filters = new Filter[]{typeFilter, // regex, matchflags, column
-                stepFilter // regex, matchflags, column
+        Filter[] filters = new Filter[]{
+            typeFilter, // regex, matchflags, column
+            stepFilter // regex, matchflags, column
         };
 
         FilterPipeline pipeline = new FilterPipeline(filters);
@@ -192,7 +180,8 @@ public class JLoadTestLogTable extends JPanel {
 
                 if (ix == 0) {
                     typeFilter.setPattern(".*", 0);
-                } else {
+                }
+                else {
                     typeFilter.setPattern(typesFilterComboBox.getSelectedItem().toString(), 0);
                 }
 
@@ -224,7 +213,8 @@ public class JLoadTestLogTable extends JPanel {
 
                 if (ix == 0) {
                     stepFilter.setPattern(".*", 0);
-                } else {
+                }
+                else {
                     stepFilter.setPattern(stepsFilterComboBox.getSelectedItem().toString(), 0);
                 }
 
@@ -238,32 +228,107 @@ public class JLoadTestLogTable extends JPanel {
         return toolbar; // builder.getPanel();
     }
 
+    public void showPopup(MouseEvent e) {
+        int selectedRow = logTable.rowAtPoint(e.getPoint());
+        if (selectedRow == -1) {
+            return;
+        }
+
+        if (logTable.getSelectedRow() != selectedRow) {
+            logTable.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
+        }
+
+        int row = logTable.convertRowIndexToModel(selectedRow);
+        if (row < 0) {
+            return;
+        }
+
+        LoadTestLogEntry entry = (LoadTestLogEntry)loadTestLog.getElementAt(row);
+        ActionList actions = entry.getActions();
+
+        if (actions == null || actions.getActionCount() == 0) {
+            return;
+        }
+
+        JPopupMenu popup = ActionSupport.buildPopup(actions);
+        popup.setInvoker(logTable);
+
+        popup.setLocation((int)(logTable.getLocationOnScreen().getX() + e.getPoint().getX()), (int)(logTable.getLocationOnScreen().getY() + e.getPoint().getY()));
+        popup.setVisible(true);
+    }
+
+    /*
+     *
+     * private class SelectStepFilterAction extends AbstractAction { private
+     * final String filter;
+     *
+     * public SelectStepFilterAction(String name, String filter) { super(name);
+     * this.filter = filter; }
+     *
+     * public void actionPerformed(ActionEvent e) { stepFilter.setPattern(
+     * filter, 0 ); } }
+     *
+     * private class SelectTypeFilterAction extends AbstractAction { private
+     * final String filter;
+     *
+     * public SelectTypeFilterAction(String name, String filter) { super(name);
+     * this.filter = filter; }
+     *
+     * public void actionPerformed(ActionEvent e) { typeFilter.setPattern(
+     * filter, 0 ); } }
+     */
+
+    private static final class IconTableCellRenderer extends DefaultTableCellRenderer {
+        public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
+        ) {
+            if (value != null) {
+                setIcon((Icon)value);
+            }
+
+            if (isSelected) {
+                setBackground(table.getSelectionBackground());
+                setForeground(table.getSelectionForeground());
+            }
+            else {
+                setBackground(table.getBackground());
+                setForeground(table.getForeground());
+            }
+
+            return this;
+        }
+    }
+
+    private static final class TimestampTableCellRenderer extends DefaultTableCellRenderer {
+
+        private TimestampTableCellRenderer() {
+        }
+
+        public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
+        ) {
+            if (value != null) {
+                setText(DateUtil.formatExtraFull(new Date((Long)value)));
+            }
+
+            if (isSelected) {
+                setBackground(table.getSelectionBackground());
+                setForeground(table.getSelectionForeground());
+            }
+            else {
+                setBackground(table.getBackground());
+                setForeground(table.getForeground());
+            }
+
+            return this;
+        }
+    }
+
     private final class LogTableModelListener implements TableModelListener {
         public void tableChanged(TableModelEvent e) {
             updateRowCountLabel();
         }
     }
-
-	/*
-     *
-	 * private class SelectStepFilterAction extends AbstractAction { private
-	 * final String filter;
-	 * 
-	 * public SelectStepFilterAction(String name, String filter) { super(name);
-	 * this.filter = filter; }
-	 * 
-	 * public void actionPerformed(ActionEvent e) { stepFilter.setPattern(
-	 * filter, 0 ); } }
-	 * 
-	 * private class SelectTypeFilterAction extends AbstractAction { private
-	 * final String filter;
-	 * 
-	 * public SelectTypeFilterAction(String name, String filter) { super(name);
-	 * this.filter = filter; }
-	 * 
-	 * public void actionPerformed(ActionEvent e) { typeFilter.setPattern(
-	 * filter, 0 ); } }
-	 */
 
     private class LoadTestLogTableModel extends AbstractTableModel implements ListDataListener {
         public LoadTestLogTableModel() {
@@ -277,15 +342,27 @@ public class JLoadTestLogTable extends JPanel {
             return 5;
         }
 
-        public Class<?> getColumnClass(int columnIndex) {
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            if (rowIndex == -1) {
+                return null;
+            }
+
+            LoadTestLogEntry entry = (LoadTestLogEntry)loadTestLog.getElementAt(rowIndex);
+
             switch (columnIndex) {
                 case 0:
-                    return ImageIcon.class;
+                    return entry.getIcon();
                 case 1:
-                    return Date.class;
-                default:
-                    return String.class;
+                    return entry.getTimeStamp();
+                case 2:
+                    return entry.getType();
+                case 3:
+                    return entry.getTargetStepName();
+                case 4:
+                    return entry.getMessage();
             }
+
+            return null;
         }
 
         public String getColumnName(int column) {
@@ -305,27 +382,15 @@ public class JLoadTestLogTable extends JPanel {
             return null;
         }
 
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            if (rowIndex == -1) {
-                return null;
-            }
-
-            LoadTestLogEntry entry = (LoadTestLogEntry) loadTestLog.getElementAt(rowIndex);
-
+        public Class<?> getColumnClass(int columnIndex) {
             switch (columnIndex) {
                 case 0:
-                    return entry.getIcon();
+                    return ImageIcon.class;
                 case 1:
-                    return entry.getTimeStamp();
-                case 2:
-                    return entry.getType();
-                case 3:
-                    return entry.getTargetStepName();
-                case 4:
-                    return entry.getMessage();
+                    return Date.class;
+                default:
+                    return String.class;
             }
-
-            return null;
         }
 
         public void intervalAdded(ListDataEvent e) {
@@ -341,52 +406,10 @@ public class JLoadTestLogTable extends JPanel {
         }
     }
 
-    private static final class IconTableCellRenderer extends DefaultTableCellRenderer {
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            if (value != null) {
-                setIcon((Icon) value);
-            }
-
-            if (isSelected) {
-                setBackground(table.getSelectionBackground());
-                setForeground(table.getSelectionForeground());
-            } else {
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
-            }
-
-            return this;
-        }
-    }
-
-    private static final class TimestampTableCellRenderer extends DefaultTableCellRenderer {
-
-        private TimestampTableCellRenderer() {
-        }
-
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            if (value != null) {
-                setText(DateUtil.formatExtraFull(new Date((Long) value)));
-            }
-
-            if (isSelected) {
-                setBackground(table.getSelectionBackground());
-                setForeground(table.getSelectionForeground());
-            } else {
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
-            }
-
-            return this;
-        }
-    }
-
     public class ClearErrorsAction extends AbstractAction {
         public ClearErrorsAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/clear_errors.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Removes all errors from the LoadTest log");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/clear_errors.gif"));
+            putValue(SHORT_DESCRIPTION, "Removes all errors from the LoadTest log");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -407,7 +430,7 @@ public class JLoadTestLogTable extends JPanel {
                     return;
                 }
 
-                LoadTestLogEntry entry = (LoadTestLogEntry) loadTestLog.getElementAt(row);
+                LoadTestLogEntry entry = (LoadTestLogEntry)loadTestLog.getElementAt(row);
                 ActionList actions = entry.getActions();
                 if (actions != null) {
                     actions.performDefaultAction(new ActionEvent(logTable, 0, null));
@@ -426,35 +449,5 @@ public class JLoadTestLogTable extends JPanel {
                 showPopup(e);
             }
         }
-    }
-
-    public void showPopup(MouseEvent e) {
-        int selectedRow = logTable.rowAtPoint(e.getPoint());
-        if (selectedRow == -1) {
-            return;
-        }
-
-        if (logTable.getSelectedRow() != selectedRow) {
-            logTable.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
-        }
-
-        int row = logTable.convertRowIndexToModel(selectedRow);
-        if (row < 0) {
-            return;
-        }
-
-        LoadTestLogEntry entry = (LoadTestLogEntry) loadTestLog.getElementAt(row);
-        ActionList actions = entry.getActions();
-
-        if (actions == null || actions.getActionCount() == 0) {
-            return;
-        }
-
-        JPopupMenu popup = ActionSupport.buildPopup(actions);
-        popup.setInvoker(logTable);
-
-        popup.setLocation((int) (logTable.getLocationOnScreen().getX() + e.getPoint().getX()), (int) (logTable
-                .getLocationOnScreen().getY() + e.getPoint().getY()));
-        popup.setVisible(true);
     }
 }

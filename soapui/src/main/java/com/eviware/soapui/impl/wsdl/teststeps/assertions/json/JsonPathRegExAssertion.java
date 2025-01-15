@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.json;
@@ -32,7 +32,7 @@ import com.eviware.soapui.support.xml.XmlObjectConfigurationBuilder;
 import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
 import junit.framework.Assert;
 
-import javax.swing.JTextArea;
+import javax.swing.*;
 import java.util.regex.PatternSyntaxException;
 
 public class JsonPathRegExAssertion extends JsonPathAssertionBase implements RequestAssertion, ResponseAssertion {
@@ -50,24 +50,23 @@ public class JsonPathRegExAssertion extends JsonPathAssertionBase implements Req
     }
 
     @Override
-    public String getHelpURL() {
-        return HelpUrls.ASSERTION_JSON_REGEX;
-    }
-
-    @Override
-    protected JsonPathRegExAssertion getAssertion() {
-        return this;
-    }
-
-    @Override
-    public String getConfigurationDialogTitle() {
-        return "JSONPath RegEx Match Configuration";
+    public void setPath(String path) {
+        if (path.indexOf("##") > 0) {
+            String[] parts = path.split("##");
+            if (parts.length > 2) {
+                setRegularExpression(parts[2]);
+            }
+            super.setPath(parts[0]);
+        }
+        else {
+            super.setPath(path);
+        }
     }
 
     @Override
     protected void addConfigurationValues(XmlObjectConfigurationBuilder builder) {
         super.addConfigurationValues(builder);
-        builder.add(REG_EX_PROPERTY_NAME, this.regularExpression);
+        builder.add(REG_EX_PROPERTY_NAME, regularExpression);
     }
 
     @Override
@@ -80,6 +79,60 @@ public class JsonPathRegExAssertion extends JsonPathAssertionBase implements Req
     }
 
     @Override
+    protected JsonPathRegExAssertion getAssertion() {
+        return this;
+    }
+
+    @Override
+    public String getConfigurationDialogTitle() {
+        return "JSONPath RegEx Match Configuration";
+    }
+
+    private void setExpectedValueFromSelectedNode(JTextArea contentArea, String stringValue) {
+        if (contentArea != null && contentArea.isVisible()) {
+            contentArea.setText(stringValue);
+        }
+        else {
+            setExpectedContent(stringValue, false);
+        }
+    }
+
+    @Override
+    public String assertContent(String assertableContent, SubmitContext context, String type) throws AssertionException {
+        String path = getPath();
+        try {
+            if (path == null) {
+                return "Missing path for JsonPath assertion";
+            }
+            if (getExpectedContent() == null) {
+                return "Missing content for JsonPath assertion";
+            }
+
+            if (regularExpression == null) {
+                return "Missing RegEx for JsonPath assertion";
+            }
+
+            String expandedPath = PropertyExpander.expandProperties(context, path);
+            String result = readStringValue(assertableContent, expandedPath);
+            Boolean actualValue = Boolean.FALSE;
+            if (result != null && result.matches(regularExpression)) {
+                actualValue = Boolean.TRUE;
+            }
+            String expandedExpectedValue = PropertyExpander.expandProperties(context, getExpectedContent());
+            Assert.assertEquals(expandedExpectedValue, actualValue.toString());
+        }
+        catch (Throwable exception) {
+            throwAssertionException(getPath(), exception);
+        }
+        return type + " matches content for [" + path + "]";
+    }
+
+    @Override
+    public String getHelpURL() {
+        return HelpUrls.ASSERTION_JSON_REGEX;
+    }
+
+    @Override
     public void selectFromCurrent() {
         try {
             String assertableContent = getAssertable().getAssertableContent();
@@ -88,7 +141,7 @@ public class JsonPathRegExAssertion extends JsonPathAssertionBase implements Req
                 return;
             }
 
-            if (StringUtils.isNullOrEmpty(this.regularExpression)) {
+            if (StringUtils.isNullOrEmpty(regularExpression)) {
                 UISupport.showErrorMessage("Missing regular expression");
                 return;
             }
@@ -106,71 +159,25 @@ public class JsonPathRegExAssertion extends JsonPathAssertionBase implements Req
             String stringValue = readStringValue(assertableContent, expandedPath);
             if (stringValue == null) {
                 setExpectedValueFromSelectedNode(contentArea, Boolean.FALSE.toString());
-            } else {
-                try {
-                    String matches = String.valueOf(stringValue.matches(this.regularExpression));
-                    setExpectedValueFromSelectedNode(contentArea, matches);
-                } catch (PatternSyntaxException pse) {
-                    UISupport.showErrorMessage("Invalid regular expression. " + pse.getMessage());
-                    return;
-                }
-
             }
-
-        } catch (Throwable e) {
+            else {
+                try {
+                    String matches = String.valueOf(stringValue.matches(regularExpression));
+                    setExpectedValueFromSelectedNode(contentArea, matches);
+                }
+                catch (PatternSyntaxException pse) {
+                    UISupport.showErrorMessage("Invalid regular expression. " + pse.getMessage());
+                }
+            }
+        }
+        catch (Throwable e) {
             UISupport.showErrorMessage("Invalid JsonPath expression.");
             SoapUI.logError(e);
         }
     }
 
-    @Override
-    public void setPath(String path) {
-        if (path.indexOf("##") > 0) {
-            String[] parts = path.split("##");
-            if (parts.length > 2) {
-                setRegularExpression(parts[2]);
-            }
-            super.setPath(parts[0]);
-        } else {
-            super.setPath(path);
-        }
-    }
-
-    private void setExpectedValueFromSelectedNode(JTextArea contentArea, String stringValue) {
-        if (contentArea != null && contentArea.isVisible()) {
-            contentArea.setText(stringValue);
-        } else {
-            setExpectedContent(stringValue, false);
-        }
-    }
-
-    @Override
-    public String assertContent(String assertableContent, SubmitContext context, String type) throws AssertionException {
-        String path = getPath();
-        try {
-            if (path == null) {
-                return "Missing path for JsonPath assertion";
-            }
-            if (getExpectedContent() == null) {
-                return "Missing content for JsonPath assertion";
-            }
-
-            if (this.regularExpression == null) {
-                return "Missing RegEx for JsonPath assertion";
-            }
-
-            String expandedPath = PropertyExpander.expandProperties(context, path);
-            String result = readStringValue(assertableContent, expandedPath);
-            Boolean actualValue = Boolean.FALSE;
-            if (result != null && result.matches(this.regularExpression)) {
-                actualValue = Boolean.TRUE;
-            }
-            String expandedExpectedValue = PropertyExpander.expandProperties(context, getExpectedContent());
-            Assert.assertEquals(expandedExpectedValue, actualValue.toString());
-        } catch (Throwable exception) {
-            throwAssertionException(getPath(), exception);
-        }
-        return type + " matches content for [" + path + "]";
+    public String getRegularExpression() {
+        return regularExpression;
     }
 
     public void setRegularExpression(String regularExpression) {
@@ -178,14 +185,9 @@ public class JsonPathRegExAssertion extends JsonPathAssertionBase implements Req
         setConfiguration(createConfiguration());
     }
 
-    public String getRegularExpression() {
-        return regularExpression;
-    }
-
     public static class Factory extends JsonAssertionFactory {
         public Factory() {
-            super(JsonPathRegExAssertion.ID, JsonPathRegExAssertion.LABEL, JsonPathRegExAssertion.DESCRIPTION,
-                    JsonPathRegExAssertion.class);
+            super(ID, LABEL, DESCRIPTION, JsonPathRegExAssertion.class);
         }
     }
 }

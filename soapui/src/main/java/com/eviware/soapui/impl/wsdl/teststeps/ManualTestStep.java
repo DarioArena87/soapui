@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -50,16 +50,14 @@ import java.util.List;
  * @author nebojsa.tasic
  */
 
-public class ManualTestStep extends WsdlTestStepWithProperties implements PropertyExpansionContainer
-
-{
-    @SuppressWarnings("unused")
-    private final static Logger log = LogManager.getLogger(WsdlTestRequestStep.class);
-    protected ManualTestStepConfig manualTestStepConfig;
-    private ManualTestStepResult testStepResult;
+public class ManualTestStep extends WsdlTestStepWithProperties implements PropertyExpansionContainer {
     public final static String MANUAL_STEP = ManualTestStep.class.getName() + "@manualstep";
     public static final String STATUS_PROPERTY = WsdlTestRequest.class.getName() + "@status";
+    @SuppressWarnings("unused")
+    private final static Logger log = LogManager.getLogger(WsdlTestRequestStep.class);
     private final boolean forLoadTest;
+    protected ManualTestStepConfig manualTestStepConfig;
+    private ManualTestStepResult testStepResult;
 
     public ManualTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
         super(testCase, config, true, forLoadTest);
@@ -70,10 +68,10 @@ public class ManualTestStep extends WsdlTestStepWithProperties implements Proper
         }
 
         if (getConfig().getConfig() != null) {
-            manualTestStepConfig = (ManualTestStepConfig) getConfig().getConfig().changeType(ManualTestStepConfig.type);
-        } else {
-            manualTestStepConfig = (ManualTestStepConfig) getConfig().addNewConfig().changeType(
-                    ManualTestStepConfig.type);
+            manualTestStepConfig = (ManualTestStepConfig)getConfig().getConfig().changeType(ManualTestStepConfig.type);
+        }
+        else {
+            manualTestStepConfig = (ManualTestStepConfig)getConfig().addNewConfig().changeType(ManualTestStepConfig.type);
         }
 
         addProperty(new DefaultTestStepProperty("Result", true, new DefaultTestStepProperty.PropertyHandlerAdapter() {
@@ -95,16 +93,6 @@ public class ManualTestStep extends WsdlTestStepWithProperties implements Proper
     }
 
     @Override
-    public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
-        beforeSave();
-
-        TestStepConfig config = (TestStepConfig) getConfig().copy();
-        ManualTestStep result = (ManualTestStep) targetTestCase.addTestStep(config);
-
-        return result;
-    }
-
-    @Override
     public void release() {
         super.release();
     }
@@ -116,7 +104,7 @@ public class ManualTestStep extends WsdlTestStepWithProperties implements Proper
         if (!forLoadTest && SoapUI.usingGraphicalEnvironment()) {
             XFormDialog dialog = ADialogBuilder.buildDialog(Form.class);
             dialog.setSize(450, 550);
-            ((JFormDialog) dialog).getDialog().setModalityType(ModalityType.MODELESS);
+            ((JFormDialog)dialog).getDialog().setModalityType(ModalityType.MODELESS);
 
             dialog.setValue(Form.DESCRIPTION, runContext.expand(getDescription()));
             dialog.setValue(Form.EXPECTED_DESULT, runContext.expand(getExpectedResult()));
@@ -134,7 +122,8 @@ public class ManualTestStep extends WsdlTestStepWithProperties implements Proper
 
             if (dialog.getValue(Form.STATUS).equals("Pass")) {
                 testStepResult.setStatus(TestStepStatus.OK);
-            } else if (dialog.getValue(Form.STATUS).equals("Fail")) {
+            }
+            else if (dialog.getValue(Form.STATUS).equals("Fail")) {
                 testStepResult.setStatus(TestStepStatus.FAILED);
             }
 
@@ -143,7 +132,7 @@ public class ManualTestStep extends WsdlTestStepWithProperties implements Proper
                 testStepResult.setResult(result);
             }
 
-            testStepResult.setUrls(((XFormOptionsField) dialog.getFormField(Form.URLS)).getOptions());
+            testStepResult.setUrls(((XFormOptionsField)dialog.getFormField(Form.URLS)).getOptions());
 
             dialog.release();
         }
@@ -156,6 +145,21 @@ public class ManualTestStep extends WsdlTestStepWithProperties implements Proper
     @Override
     public boolean cancel() {
         return true;
+    }
+
+    public void resetConfigOnMove(TestStepConfig config) {
+        super.resetConfigOnMove(config);
+        manualTestStepConfig = (ManualTestStepConfig)config.getConfig().changeType(ManualTestStepConfig.type);
+    }
+
+    @Override
+    public WsdlTestStep clone(WsdlTestCase targetTestCase, String name) {
+        beforeSave();
+
+        TestStepConfig config = (TestStepConfig)getConfig().copy();
+        ManualTestStep result = (ManualTestStep)targetTestCase.addTestStep(config);
+
+        return result;
     }
 
     @Override
@@ -190,27 +194,25 @@ public class ManualTestStep extends WsdlTestStepWithProperties implements Proper
         firePropertyValueChanged("ExpectedResult", old, expectedResult);
     }
 
-    public void resetConfigOnMove(TestStepConfig config) {
-        super.resetConfigOnMove(config);
-        manualTestStepConfig = (ManualTestStepConfig) config.getConfig().changeType(ManualTestStepConfig.type);
-    }
-
     @AForm(description = "", name = "Run Manual TestStep", helpUrl = HelpUrls.MANUALTESTSTEP_HELP_URL)
     protected interface Form {
         @AField(name = "Description", description = "Describes the actions to perform", type = AFieldType.INFORMATION)
-        public final static String DESCRIPTION = "Description";
+        String DESCRIPTION = "Description";
 
         @AField(name = "Expected Result", description = "Describes the actions to perform", type = AFieldType.INFORMATION)
-        public final static String EXPECTED_DESULT = "Expected Result";
+        String EXPECTED_DESULT = "Expected Result";
 
         @AField(name = "Result", description = "an optional result description or value", type = AFieldType.STRINGAREA)
-        public final static String RESULT = "Result";
+        String RESULT = "Result";
 
         @AField(name = "URLs", description = "A list of URLs related to the result", type = AFieldType.STRINGLIST)
-        public final static String URLS = "URLs";
+        String URLS = "URLs";
 
-        @AField(name = "Result Status", description = "The result status", type = AFieldType.ENUMERATION, values = {
-                "Pass", "Fail", "Unknown"})
-        public final static String STATUS = "Result Status";
+        @AField(
+            name = "Result Status", description = "The result status", type = AFieldType.ENUMERATION, values = {
+            "Pass", "Fail", "Unknown"
+        }
+        )
+        String STATUS = "Result Status";
     }
 }

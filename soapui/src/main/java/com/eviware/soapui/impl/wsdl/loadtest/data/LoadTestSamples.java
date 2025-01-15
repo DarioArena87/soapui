@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.data;
@@ -40,12 +40,12 @@ import java.util.List;
  */
 
 public class LoadTestSamples extends AbstractTableModel {
-    private final LoadTest loadTest;
-    private List<List<LoadTestStepSample[]>> samples = new ArrayList<List<LoadTestStepSample[]>>();
-    private List<Long> timestamps = new ArrayList<Long>();
-    private InternalLoadTestRunListener loadTestRunListener = new InternalLoadTestRunListener();
-    private InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
     private final static Logger log = LogManager.getLogger(LoadTestSamples.class);
+    private final LoadTest loadTest;
+    private final List<List<LoadTestStepSample[]>> samples = new ArrayList<List<LoadTestStepSample[]>>();
+    private final List<Long> timestamps = new ArrayList<Long>();
+    private final InternalLoadTestRunListener loadTestRunListener = new InternalLoadTestRunListener();
+    private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
 
     public LoadTestSamples(LoadTest loadTest) {
         this.loadTest = loadTest;
@@ -58,11 +58,6 @@ public class LoadTestSamples extends AbstractTableModel {
         return samples.size();
     }
 
-    public void release() {
-        loadTest.removeLoadTestRunListener(loadTestRunListener);
-        loadTest.getTestCase().getTestSuite().removeTestSuiteListener(testSuiteListener);
-    }
-
     public int getColumnCount() {
         return loadTest.getTestCase().getTestStepCount() + 1;
     }
@@ -71,12 +66,17 @@ public class LoadTestSamples extends AbstractTableModel {
         return columnIndex == 0 ? new Date(timestamps.get(rowIndex)) : samples.get(rowIndex).get(columnIndex - 1);
     }
 
-    public Class<?> getColumnClass(int columnIndex) {
-        return columnIndex == 0 ? Date.class : LoadTestStepSample[].class;
+    public void release() {
+        loadTest.removeLoadTestRunListener(loadTestRunListener);
+        loadTest.getTestCase().getTestSuite().removeTestSuiteListener(testSuiteListener);
     }
 
     public String getColumnName(int columnIndex) {
         return columnIndex == 0 ? "Timestamp" : loadTest.getTestCase().getTestStepAt(columnIndex - 1).getName();
+    }
+
+    public Class<?> getColumnClass(int columnIndex) {
+        return columnIndex == 0 ? Date.class : LoadTestStepSample[].class;
     }
 
     public synchronized void clear() {
@@ -87,25 +87,10 @@ public class LoadTestSamples extends AbstractTableModel {
     }
 
     private final class InternalTestSuiteListener extends TestSuiteListenerAdapter {
-        public void loadTestRemoved(LoadTest loadTest) {
-            if (loadTest.equals(LoadTestSamples.this.loadTest)) {
-                loadTest.removeLoadTestRunListener(loadTestRunListener);
-            }
-        }
-
         public void testStepAdded(TestStep testStep, int index) {
             if (testStep.getTestCase() == loadTest.getTestCase()) {
                 for (List<LoadTestStepSample[]> values : samples) {
                     values.add(index, new LoadTestStepSample[0]);
-                }
-            }
-        }
-
-        public void testStepMoved(TestStep testStep, int fromIndex, int offset) {
-            if (testStep.getTestCase() == loadTest.getTestCase()) {
-                for (List<LoadTestStepSample[]> values : samples) {
-                    LoadTestStepSample[] s = values.remove(fromIndex);
-                    values.add(offset, s);
                 }
             }
         }
@@ -117,11 +102,27 @@ public class LoadTestSamples extends AbstractTableModel {
                 }
             }
         }
+
+        public void loadTestRemoved(LoadTest loadTest) {
+            if (loadTest.equals(LoadTestSamples.this.loadTest)) {
+                loadTest.removeLoadTestRunListener(loadTestRunListener);
+            }
+        }
+
+        public void testStepMoved(TestStep testStep, int fromIndex, int offset) {
+            if (testStep.getTestCase() == loadTest.getTestCase()) {
+                for (List<LoadTestStepSample[]> values : samples) {
+                    LoadTestStepSample[] s = values.remove(fromIndex);
+                    values.add(offset, s);
+                }
+            }
+        }
     }
 
     private class InternalLoadTestRunListener extends LoadTestRunListenerAdapter {
-        public void afterTestCase(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                                  TestCaseRunContext runContext) {
+        public void afterTestCase(
+            LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+        ) {
             long timestamp = System.currentTimeMillis();
             List<LoadTestStepSample[]> s = new ArrayList<LoadTestStepSample[]>();
             List<TestStepResult> testResults = testRunner.getResults();

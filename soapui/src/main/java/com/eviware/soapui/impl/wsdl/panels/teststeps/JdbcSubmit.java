@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps;
@@ -40,34 +40,32 @@ import java.util.concurrent.Future;
 public class JdbcSubmit implements Submit, Runnable {
     public static final String JDBC_ERROR = "JDBC_ERROR";
     public static final String JDBC_TIMEOUT = "JDBC_TIMEOUT";
-    private volatile Future<?> future;
-    private SubmitContext context;
-    private Status status;
-    private SubmitListener[] listeners;
-    private Exception error;
-    private long timestamp;
+    private final JdbcRequest request;
     protected ResultSet resultSet;
     protected PreparedStatement statement;
+    private volatile Future<?> future;
+    private final SubmitContext context;
+    private Status status;
+    private final SubmitListener[] listeners;
+    private Exception error;
+    private long timestamp;
     private Connection connection;
     private long timeTaken;
-    private final JdbcRequest request;
     private JdbcResponse response;
     private String rawSql;
 
     public JdbcSubmit(JdbcRequest request, SubmitContext submitContext, boolean async) {
         this.request = request;
-        this.context = submitContext;
+        context = submitContext;
 
         List<SubmitListener> regListeners = SoapUI.getListenerRegistry().getListeners(SubmitListener.class);
 
         SubmitListener[] submitListeners = request.getSubmitListeners();
-        this.listeners = new SubmitListener[submitListeners.length + regListeners.size()];
-        for (int c = 0; c < submitListeners.length; c++) {
-            this.listeners[c] = submitListeners[c];
-        }
+        listeners = new SubmitListener[submitListeners.length + regListeners.size()];
+        System.arraycopy(submitListeners, 0, listeners, 0, submitListeners.length);
 
         for (int c = 0; c < regListeners.size(); c++) {
-            this.listeners[submitListeners.length + c] = regListeners.get(c);
+            listeners[submitListeners.length + c] = regListeners.get(c);
         }
 
         error = null;
@@ -75,9 +73,36 @@ public class JdbcSubmit implements Submit, Runnable {
 
         if (async) {
             future = SoapUI.getThreadPool().submit(this);
-        } else {
+        }
+        else {
             run();
         }
+    }
+
+    public Request getRequest() {
+        return request;
+    }
+
+    public JdbcResponse getResponse() {
+        return response;
+    }
+
+    public Status waitUntilFinished() {
+        if (future != null) {
+            if (!future.isDone()) {
+                try {
+                    future.get();
+                }
+                catch (Exception e) {
+                    SoapUI.logError(e);
+                }
+            }
+        }
+        else {
+            throw new RuntimeException("cannot wait on null future");
+        }
+
+        return getStatus();
     }
 
     public void cancel() {
@@ -95,42 +120,19 @@ public class JdbcSubmit implements Submit, Runnable {
         for (int i = 0; i < listeners.length; i++) {
             try {
                 listeners[i].afterSubmit(this, context);
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 SoapUI.logError(e);
             }
         }
-    }
-
-    public Exception getError() {
-        return error;
-    }
-
-    public Request getRequest() {
-        return request;
-    }
-
-    public JdbcResponse getResponse() {
-        return response;
     }
 
     public Status getStatus() {
         return status;
     }
 
-    public Status waitUntilFinished() {
-        if (future != null) {
-            if (!future.isDone()) {
-                try {
-                    future.get();
-                } catch (Exception e) {
-                    SoapUI.logError(e);
-                }
-            }
-        } else {
-            throw new RuntimeException("cannot wait on null future");
-        }
-
-        return getStatus();
+    public Exception getError() {
+        return error;
     }
 
     public void run() {
@@ -149,10 +151,12 @@ public class JdbcSubmit implements Submit, Runnable {
             if (status != Status.CANCELED) {
                 status = Status.FINISHED;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             error = e;
-        } finally {
+        }
+        finally {
             if (error != null) {
                 status = Status.ERROR;
             }
@@ -161,7 +165,8 @@ public class JdbcSubmit implements Submit, Runnable {
                 for (int i = 0; i < listeners.length; i++) {
                     try {
                         listeners[i].afterSubmit(this, context);
-                    } catch (Throwable e) {
+                    }
+                    catch (Throwable e) {
                         SoapUI.logError(e);
                     }
                 }
@@ -180,15 +185,15 @@ public class JdbcSubmit implements Submit, Runnable {
             if (statement != null) {
                 statement.cancel();
             }
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             SoapUI.logError(ex);
         }
     }
 
     private void getDatabaseConnection() throws SQLException, SoapUIException {
         JdbcRequestTestStep testStep = request.getTestStep();
-        connection = JdbcUtils.initConnection(context, testStep.getDriver(), testStep.getConnectionString(),
-                testStep.getPassword());
+        connection = JdbcUtils.initConnection(context, testStep.getDriver(), testStep.getConnectionString(), testStep.getPassword());
         // IMPORTANT: setting as readOnly raises an exception in calling stored
         // procedures!
         // connection.setReadOnly( true );
@@ -201,7 +206,8 @@ public class JdbcSubmit implements Submit, Runnable {
             if (testStep.isStoredProcedure()) {
                 timestamp = System.currentTimeMillis();
                 statement.execute();
-            } else {
+            }
+            else {
                 timestamp = System.currentTimeMillis();
                 statement.execute();
             }
@@ -209,10 +215,12 @@ public class JdbcSubmit implements Submit, Runnable {
             if (!StringUtils.isNullOrEmpty(request.getTimeout()) && timeTaken > Long.parseLong(request.getTimeout())) {
                 context.setProperty(JDBC_TIMEOUT, PropertyExpander.expandProperties(context, request.getTimeout()));
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             context.setProperty(JDBC_ERROR, e);
             throw e;
-        } finally {
+        }
+        finally {
             timeTaken = System.currentTimeMillis() - timestamp;
         }
     }
@@ -227,8 +235,8 @@ public class JdbcSubmit implements Submit, Runnable {
             if (!rawSql.startsWith("{call ") && !rawSql.endsWith("}")) {
                 rawSql = "{call " + rawSql + "}";
             }
-
-        } else {
+        }
+        else {
             rawSql = PropertyExpander.expandProperties(context, testStep.getQuery());
         }
         NamedParameterStatement p = new NamedParameterStatement(connection, rawSql);
@@ -245,7 +253,8 @@ public class JdbcSubmit implements Submit, Runnable {
                 String queryTimeout = PropertyExpander.expandProperties(testStep, testStep.getQueryTimeout());
                 statement.setQueryTimeout(Integer.parseInt(queryTimeout));
             }
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             SoapUI.logError(e, "Problem setting timeout");
         }
 
@@ -254,7 +263,8 @@ public class JdbcSubmit implements Submit, Runnable {
                 String maxRows = PropertyExpander.expandProperties(testStep, testStep.getMaxRows());
                 statement.setMaxRows(Integer.parseInt(maxRows));
             }
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             SoapUI.logError(e, "Problem setting maxRows");
         }
         try {
@@ -262,7 +272,8 @@ public class JdbcSubmit implements Submit, Runnable {
                 String fetchSize = PropertyExpander.expandProperties(testStep, testStep.getFetchSize());
                 statement.setFetchSize(Integer.parseInt(fetchSize));
             }
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
             SoapUI.logError(e, "Problem setting fetchSize");
         }
     }
@@ -276,9 +287,11 @@ public class JdbcSubmit implements Submit, Runnable {
             response = new JdbcResponse(request, statement, rawSql);
             response.setTimestamp(timestamp);
             response.setTimeTaken(timeTaken);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
-        } finally {
+        }
+        finally {
             try {
                 if (connection != null) {
                     connection.close();
@@ -289,7 +302,8 @@ public class JdbcSubmit implements Submit, Runnable {
                 if (resultSet != null) {
                     resultSet.close();
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
             }
         }
         return null;

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.resource;
@@ -36,33 +36,19 @@ import com.jgoodies.binding.PresentationModel;
 import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.XmlBeans;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.xml.namespace.QName;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.eviware.soapui.impl.rest.actions.support.NewRestResourceActionBase.ParamLocation;
-
 
 public class RestParamsTable extends JPanel {
     public static final String REST_PARAMS_TABLE = "RestParamsTable";
@@ -78,26 +64,32 @@ public class RestParamsTable extends JPanel {
     protected UpdateParamsAction updateParamsAction = null;
     private PresentationModel<RestParamProperty> paramDetailsModel;
     private SimpleBindingForm detailsForm;
-    private ParamLocation defaultParamLocation;
-    private boolean showEditableButtons;
-    private boolean showDefaultParamsButton;
+    private final ParamLocation defaultParamLocation;
+    private final boolean showEditableButtons;
+    private final boolean showDefaultParamsButton;
     private JSplitPane splitPane;
     private JScrollPane scrollPane;
 
-    public RestParamsTable(RestParamsPropertyHolder params, boolean showInspector, ParamLocation defaultParamLocation,
-                           boolean showEditableButtons, boolean showDefaultParamsButton) {
-        this(params, showInspector, new RestParamsTableModel(params, RestParamsTableModel.Mode.MEDIUM), defaultParamLocation, showEditableButtons,
-                showDefaultParamsButton);
+    public RestParamsTable(
+        RestParamsPropertyHolder params, boolean showInspector, ParamLocation defaultParamLocation, boolean showEditableButtons, boolean showDefaultParamsButton
+    ) {
+        this(params, showInspector, new RestParamsTableModel(params, RestParamsTableModel.Mode.MEDIUM), defaultParamLocation, showEditableButtons, showDefaultParamsButton);
     }
 
-    public RestParamsTable(RestParamsPropertyHolder params, boolean showInspector, RestParamsTableModel model,
-                           ParamLocation defaultParamLocation, boolean showEditableButtons, boolean showDefaultParamsButton) {
+    public RestParamsTable(
+        RestParamsPropertyHolder params,
+        boolean showInspector,
+        RestParamsTableModel model,
+        ParamLocation defaultParamLocation,
+        boolean showEditableButtons,
+        boolean showDefaultParamsButton
+    ) {
         super(new BorderLayout());
         this.defaultParamLocation = defaultParamLocation;
         this.showEditableButtons = showEditableButtons;
         this.showDefaultParamsButton = showDefaultParamsButton;
         this.params = params;
-        this.paramsTableModel = model;
+        paramsTableModel = model;
         init(showInspector);
     }
 
@@ -115,6 +107,24 @@ public class RestParamsTable extends JPanel {
             }
 
             @Override
+            public Component prepareEditor(TableCellEditor editor, int row, int column) {
+                Component component = super.prepareEditor(editor, row, column);
+                if (getColumnClass(column) == ParameterStyle.class) {
+                    RestParamProperty parameter = paramsTableModel.getParameterAt(row);
+                    JComboBox comboBox = (JComboBox)((DefaultCellEditor)editor).getComponent();
+                    comboBox.setModel(getStylesForLocation(parameter.getParamLocation()));
+                    super.prepareEditor(editor, row, column);
+                }
+                if (getColumnClass(column) == ParamLocation.class) {
+                    RestParamProperty parameter = paramsTableModel.getParameterAt(row);
+                    JComboBox comboBox = (JComboBox)((DefaultCellEditor)editor).getComponent();
+                    comboBox.setModel(getLocationForParameter(parameter.getStyle()));
+                    super.prepareEditor(editor, row, column);
+                }
+                return component;
+            }
+
+            @Override
             public void removeEditor() {
                 TableCellEditor editor = getCellEditor();
                 // must be called here to remove the editor and to avoid an infinite
@@ -124,24 +134,6 @@ public class RestParamsTable extends JPanel {
                 if (editor != null) {
                     editor.cancelCellEditing();
                 }
-            }
-
-            @Override
-            public Component prepareEditor(TableCellEditor editor, int row, int column) {
-                Component component = super.prepareEditor(editor, row, column);
-                if (getColumnClass(column) == ParameterStyle.class) {
-                    RestParamProperty parameter = paramsTableModel.getParameterAt(row);
-                    JComboBox comboBox = (JComboBox) ((DefaultCellEditor) editor).getComponent();
-                    comboBox.setModel(getStylesForLocation(parameter.getParamLocation()));
-                    super.prepareEditor(editor, row, column);
-                }
-                if (getColumnClass(column) == ParamLocation.class) {
-                    RestParamProperty parameter = paramsTableModel.getParameterAt(row);
-                    JComboBox comboBox = (JComboBox) ((DefaultCellEditor) editor).getComponent();
-                    comboBox.setModel(getLocationForParameter(parameter.getStyle()));
-                    super.prepareEditor(editor, row, column);
-                }
-                return component;
             }
         };
         paramsTable.setName(REST_PARAMS_TABLE);
@@ -154,17 +146,13 @@ public class RestParamsTable extends JPanel {
         movePropertyDownAction = new MovePropertyDownAction(paramsTable, params, "Moves selected parameter down one row");
         movePropertyUpAction = new MovePropertyUpAction(paramsTable, params, "Moves selected parameter up one row");
 
-
         if (showEditableButtons) {
             initEditableButtons();
         }
 
-
         paramsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        paramsTable.setDefaultEditor(ParameterStyle.class, new DefaultCellEditor(
-                new JComboBox(getStylesForLocation(ParamLocation.RESOURCE))));
-        paramsTable.setDefaultEditor(ParamLocation.class, new DefaultCellEditor(
-                new JComboBox(ParamLocation.values())));
+        paramsTable.setDefaultEditor(ParameterStyle.class, new DefaultCellEditor(new JComboBox(getStylesForLocation(ParamLocation.RESOURCE))));
+        paramsTable.setDefaultEditor(ParamLocation.class, new DefaultCellEditor(new JComboBox(ParamLocation.values())));
         // Workaround: for some reason the lower part of text gets clipped on some platforms
         paramsTable.setRowHeight(25);
         paramsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -186,7 +174,8 @@ public class RestParamsTable extends JPanel {
                         updateDetailsFormWith(selectedParameter);
                         detailsForm.setEnabled(true);
                     }
-                } else {
+                }
+                else {
                     if (paramDetailsModel != null) {
                         detailsForm.setEnabled(false);
                         updateDetailsFormWith(null);
@@ -203,35 +192,41 @@ public class RestParamsTable extends JPanel {
             splitPane = UISupport.createVerticalSplit(scrollPane, buildDetails());
             add(splitPane, BorderLayout.CENTER);
             splitPane.setResizeWeight(0.7);
-        } else {
+        }
+        else {
             add(scrollPane, BorderLayout.CENTER);
         }
     }
 
     private DefaultComboBoxModel getStylesForLocation(ParamLocation paramLocation) {
         if (paramLocation == ParamLocation.METHOD) {
-            return new DefaultComboBoxModel(
-                    new ParameterStyle[]{ParameterStyle.QUERY, ParameterStyle.HEADER, ParameterStyle.MATRIX, ParameterStyle.PLAIN});
-        } else {
-            return new DefaultComboBoxModel(
-                    new ParameterStyle[]{ParameterStyle.QUERY, ParameterStyle.TEMPLATE, ParameterStyle.HEADER, ParameterStyle.MATRIX, ParameterStyle.PLAIN});
+            return new DefaultComboBoxModel(new ParameterStyle[]{ParameterStyle.QUERY, ParameterStyle.HEADER, ParameterStyle.MATRIX, ParameterStyle.PLAIN});
+        }
+        else {
+            return new DefaultComboBoxModel(new ParameterStyle[]{
+                ParameterStyle.QUERY,
+                ParameterStyle.TEMPLATE,
+                ParameterStyle.HEADER,
+                ParameterStyle.MATRIX,
+                ParameterStyle.PLAIN
+            });
         }
     }
 
     private DefaultComboBoxModel getLocationForParameter(ParameterStyle style) {
         if (style != ParameterStyle.TEMPLATE) {
-            return new DefaultComboBoxModel(
-                    new ParamLocation[]{ParamLocation.RESOURCE, ParamLocation.METHOD});
-        } else {
-            return new DefaultComboBoxModel(
-                    new ParamLocation[]{ParamLocation.RESOURCE});
+            return new DefaultComboBoxModel(new ParamLocation[]{ParamLocation.RESOURCE, ParamLocation.METHOD});
+        }
+        else {
+            return new DefaultComboBoxModel(new ParamLocation[]{ParamLocation.RESOURCE});
         }
     }
 
     private void updateDetailsFormWith(RestParamProperty selectedParameter) {
         try {
             paramDetailsModel.setBean(selectedParameter);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             splitPane.setBottomComponent(buildDetails());
             paramDetailsModel.setBean(selectedParameter);
         }
@@ -247,7 +242,6 @@ public class RestParamsTable extends JPanel {
         addParamAction = new AddParamAction(paramsTable, params, "Adds a parameter to the parameter table");
         removeParamAction = new RemovePropertyAction(paramsTable, params, "Removes the selected parameter");
         updateParamsAction = new UpdateParamsAction();
-
     }
 
     private JComponent buildDetails() {
@@ -268,8 +262,7 @@ public class RestParamsTable extends JPanel {
         optionsFormComponent.setPreferredSize(new Dimension(350, 100));
         detailsForm.appendComponent("options", "Options", optionsFormComponent);
         detailsForm.appendTextField("description", "Description", "A short description of the parameter");
-        detailsForm.appendCheckBox("disableUrlEncoding", "Disable Encoding",
-                "Disables URL-Encoding of the parameter value");
+        detailsForm.appendCheckBox("disableUrlEncoding", "Disable Encoding", "Disables URL-Encoding of the parameter value");
 
         detailsForm.addSpace(5);
 
@@ -318,15 +311,13 @@ public class RestParamsTable extends JPanel {
 
         toolbar.addGlue();
 
-
         toolbar.add(UISupport.createToolbarButton(new ShowOnlineHelpAction(HelpUrls.HTTP_REQUEST_PARAMS_HELP_URL)));
-
 
         return toolbar;
     }
 
     private boolean inMinimalMode() {
-        RestParamsTableModel tableModel = (RestParamsTableModel) getParamsTable().getModel();
+        RestParamsTableModel tableModel = (RestParamsTableModel)getParamsTable().getModel();
         return tableModel.isInMinimalMode();
     }
 
@@ -345,30 +336,38 @@ public class RestParamsTable extends JPanel {
             if (paramsTable.getValueAt(i, 0).equals(parameterName)) {
                 paramsTable.setRowSelectionInterval(i, i);
                 paramsTable.editCellAt(i, 1);
-                JTextField editorComponent = (JTextField) paramsTable.getEditorComponent();
+                JTextField editorComponent = (JTextField)paramsTable.getEditorComponent();
                 editorComponent.grabFocus();
                 editorComponent.selectAll();
                 scrollIntoPosition(i, paramsTable.getRowCount());
                 return;
             }
         }
-
     }
 
     private void scrollIntoPosition(int selectedIndex, int numOfIndices) {
-        scrollIntoPosition((double) selectedIndex / numOfIndices);
+        scrollIntoPosition((double)selectedIndex / numOfIndices);
     }
 
     private void scrollIntoPosition(double percent) {
         int maximumScrollPosition = scrollPane.getVerticalScrollBar().getMaximum();
-        int requestedScrollPosition = (int) Math.round(maximumScrollPosition * percent);
+        int requestedScrollPosition = (int)Math.round(maximumScrollPosition * percent);
         scrollPane.getVerticalScrollBar().setValue(requestedScrollPosition);
+    }
+
+    public void setParams(RestParamsPropertyHolder params) {
+        this.params = params;
+        paramsTableModel.setParams(params);
+    }
+
+    public void refresh() {
+        paramsTableModel.fireTableDataChanged();
     }
 
     private class UpdateParamsAction extends AbstractAction {
         private UpdateParamsAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/update-request-parameters-from-url.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Updates params from a specified URL");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/update-request-parameters-from-url.png"));
+            putValue(SHORT_DESCRIPTION, "Updates params from a specified URL");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -378,11 +377,15 @@ public class RestParamsTable extends JPanel {
             }
 
             try {
-                RestUtils.extractParams(str, params, false,
-                        defaultParamLocation == ParamLocation.RESOURCE
-                                ? RestUtils.TemplateExtractionOption.EXTRACT_TEMPLATE_PARAMETERS
-                                : RestUtils.TemplateExtractionOption.IGNORE_TEMPLATE_PARAMETERS);
-            } catch (Exception e1) {
+                RestUtils.extractParams(str,
+                                        params,
+                                        false,
+                                        defaultParamLocation == ParamLocation.RESOURCE
+                                        ? RestUtils.TemplateExtractionOption.EXTRACT_TEMPLATE_PARAMETERS
+                                        : RestUtils.TemplateExtractionOption.IGNORE_TEMPLATE_PARAMETERS
+                );
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1);
             }
         }
@@ -391,8 +394,8 @@ public class RestParamsTable extends JPanel {
     private class UseDefaultParamsAction extends AbstractAction {
         public UseDefaultParamsAction() {
             super(REVERT_PARAMETER_VALUES);
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/default_properties.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Reverts all current parameters to default values");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/default_properties.gif"));
+            putValue(SHORT_DESCRIPTION, "Reverts all current parameters to default values");
             setEnabled(false);
         }
 
@@ -403,14 +406,5 @@ public class RestParamsTable extends JPanel {
                 }
             }
         }
-    }
-
-    public void setParams(RestParamsPropertyHolder params) {
-        this.params = params;
-        paramsTableModel.setParams(params);
-    }
-
-    public void refresh() {
-        paramsTableModel.fireTableDataChanged();
     }
 }

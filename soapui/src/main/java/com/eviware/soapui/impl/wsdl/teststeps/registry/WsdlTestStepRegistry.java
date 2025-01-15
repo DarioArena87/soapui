@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.registry;
@@ -31,7 +31,15 @@ import java.util.List;
 
 public class WsdlTestStepRegistry implements SoapUIFactoryRegistryListener {
     private static WsdlTestStepRegistry instance;
-    private List<WsdlTestStepFactory> factories = new ArrayList<WsdlTestStepFactory>();
+    private final List<WsdlTestStepFactory> factories = new ArrayList<WsdlTestStepFactory>();
+
+    public static synchronized WsdlTestStepRegistry getInstance() {
+        if (instance == null) {
+            instance = new WsdlTestStepRegistry();
+        }
+
+        return instance;
+    }
 
     public WsdlTestStepRegistry() {
         addFactory(new WsdlTestRequestStepFactory());
@@ -62,7 +70,7 @@ public class WsdlTestStepRegistry implements SoapUIFactoryRegistryListener {
             addFactory(factory);
         }
 
-        SoapUI.getFactoryRegistry().addFactoryRegistryListener( this );
+        SoapUI.getFactoryRegistry().addFactoryRegistryListener(this);
     }
 
     public WsdlTestStepFactory getFactory(String type) {
@@ -79,7 +87,8 @@ public class WsdlTestStepRegistry implements SoapUIFactoryRegistryListener {
         int replaceIndex = removeFactory(factory.getType());
         if (replaceIndex == -1) {
             factories.add(factory);
-        } else {
+        }
+        else {
             factories.add(replaceIndex, factory);
         }
     }
@@ -96,14 +105,6 @@ public class WsdlTestStepRegistry implements SoapUIFactoryRegistryListener {
         return -1;
     }
 
-    public static synchronized WsdlTestStepRegistry getInstance() {
-        if (instance == null) {
-            instance = new WsdlTestStepRegistry();
-        }
-
-        return instance;
-    }
-
     public WsdlTestStepFactory[] getFactories() {
         return factories.toArray(new WsdlTestStepFactory[factories.size()]);
     }
@@ -114,13 +115,15 @@ public class WsdlTestStepRegistry implements SoapUIFactoryRegistryListener {
 
     @Override
     public void factoryAdded(Class<?> factoryType, Object factory) {
-        if( factory instanceof WsdlTestStepFactory )
-            addFactory((WsdlTestStepFactory) factory);
+        if (factory instanceof WsdlTestStepFactory) {
+            addFactory((WsdlTestStepFactory)factory);
+        }
     }
 
     @Override
     public void factoryRemoved(Class<?> factoryType, Object factory) {
-        if( factory instanceof WsdlTestStepFactory )
-            removeFactory(((WsdlTestStepFactory) factory).getType());
+        if (factory instanceof WsdlTestStepFactory) {
+            removeFactory(((WsdlTestStepFactory)factory).getType());
+        }
     }
 }

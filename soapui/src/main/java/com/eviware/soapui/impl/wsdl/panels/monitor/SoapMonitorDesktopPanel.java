@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.monitor;
@@ -25,26 +25,24 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.ui.support.DefaultDesktopPanel;
 
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 
 public class SoapMonitorDesktopPanel extends DefaultDesktopPanel implements SoapMonitorContainer {
-    private SoapMonitor soapMonitor;
     private final WsdlProject project;
+    private final SoapMonitor soapMonitor;
 
-    public SoapMonitorDesktopPanel(WsdlProject project, int sourcePort, String incomingRequestWss,
-                                   String incomingResponseWss, boolean setAsProxy, String sslEndpoint) {
+    public SoapMonitorDesktopPanel(
+        WsdlProject project, int sourcePort, String incomingRequestWss, String incomingResponseWss, boolean setAsProxy, String sslEndpoint
+    ) {
         super("HTTP Monitor [" + project.getName() + "]", null, new JPanel(new BorderLayout()));
         this.project = project;
 
-        JPanel p = (JPanel) getComponent();
+        JPanel p = (JPanel)getComponent();
         JTabbedPane tabs = new JTabbedPane();
 
         JXToolBar toolbar = UISupport.createToolbar();
-        soapMonitor = new SoapMonitor(project, sourcePort, incomingRequestWss, incomingResponseWss, toolbar, setAsProxy,
-                sslEndpoint);
+        soapMonitor = new SoapMonitor(project, sourcePort, incomingRequestWss, incomingResponseWss, toolbar, setAsProxy, sslEndpoint);
 
         tabs.add(soapMonitor, "Traffic Log");
 

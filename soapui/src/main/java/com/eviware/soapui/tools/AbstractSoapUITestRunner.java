@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.tools;
@@ -42,8 +42,72 @@ public abstract class AbstractSoapUITestRunner extends AbstractSoapUIRunner impl
         super(title);
     }
 
+    public String getProjectPassword() {
+        return projectPassword;
+    }
+
     public void setProjectPassword(String projectPassword) {
         this.projectPassword = projectPassword;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    /**
+     * Sets the endpoint to use for all test requests
+     *
+     * @param endpoint the endpoint to use for all test requests
+     */
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint.trim();
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    /**
+     * Sets the domain to use for any authentications
+     *
+     * @param domain the domain to use for any authentications
+     */
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * Sets the password to use for any authentications
+     *
+     * @param password the password to use for any authentications
+     */
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * Sets the username to use for any authentications
+     *
+     * @param username the username to use for any authentications
+     */
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getHost() {
+        return host;
     }
 
     /**
@@ -57,24 +121,8 @@ public abstract class AbstractSoapUITestRunner extends AbstractSoapUIRunner impl
         this.host = host;
     }
 
-    /**
-     * Sets the domain to use for any authentications
-     *
-     * @param domain the domain to use for any authentications
-     */
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    /**
-     * Sets the password to use for any authentications
-     *
-     * @param password the password to use for any authentications
-     */
-
-    public void setPassword(String password) {
-        this.password = password;
+    public String getWssPasswordType() {
+        return wssPasswordType;
     }
 
     /**
@@ -89,63 +137,17 @@ public abstract class AbstractSoapUITestRunner extends AbstractSoapUIRunner impl
         this.wssPasswordType = wssPasswordType;
     }
 
-    /**
-     * Sets the username to use for any authentications
-     *
-     * @param username the username to use for any authentications
-     */
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getProjectPassword() {
-        return projectPassword;
-    }
-
-    /**
-     * Sets the endpoint to use for all test requests
-     *
-     * @param endpoint the endpoint to use for all test requests
-     */
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint.trim();
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public String getWssPasswordType() {
-        return wssPasswordType;
-    }
-
     protected void prepareRequestStep(HttpRequestTestStep requestStep) {
         AbstractHttpRequest<?> httpRequest = requestStep.getHttpRequest();
         if (StringUtils.hasContent(endpoint)) {
             httpRequest.setEndpoint(endpoint);
-        } else if (StringUtils.hasContent(host)) {
+        }
+        else if (StringUtils.hasContent(host)) {
             try {
                 String ep = Tools.replaceHost(httpRequest.getEndpoint(), host);
                 httpRequest.setEndpoint(ep);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.error("Failed to set host on endpoint", e);
             }
         }
@@ -165,9 +167,7 @@ public abstract class AbstractSoapUITestRunner extends AbstractSoapUIRunner impl
         if (httpRequest instanceof WsdlRequest) {
 
             if (wssPasswordType != null && wssPasswordType.length() > 0) {
-                ((WsdlRequest) httpRequest)
-                        .setWssPasswordType(wssPasswordType.equals("Digest") ? WsdlTestRequest.PW_TYPE_DIGEST
-                                : WsdlTestRequest.PW_TYPE_TEXT);
+                ((WsdlRequest)httpRequest).setWssPasswordType(wssPasswordType.equals("Digest") ? WsdlTestRequest.PW_TYPE_DIGEST : WsdlTestRequest.PW_TYPE_TEXT);
             }
         }
     }
@@ -175,25 +175,25 @@ public abstract class AbstractSoapUITestRunner extends AbstractSoapUIRunner impl
     public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
     }
 
+    public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+    }
+
     public final void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext) {
     }
 
     public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep currentStep) {
         if (currentStep instanceof HttpRequestTestStep) {
-            prepareRequestStep((HttpRequestTestStep) currentStep);
-        } else if (currentStep instanceof WsdlRunTestCaseTestStep) {
-            ((WsdlRunTestCaseTestStep) currentStep).addTestRunListener(this);
+            prepareRequestStep((HttpRequestTestStep)currentStep);
+        }
+        else if (currentStep instanceof WsdlRunTestCaseTestStep) {
+            ((WsdlRunTestCaseTestStep)currentStep).addTestRunListener(this);
         }
     }
 
     public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
         TestStep currentStep = runContext.getCurrentStep();
         if (currentStep instanceof WsdlRunTestCaseTestStep) {
-            ((WsdlRunTestCaseTestStep) currentStep).removeTestRunListener(this);
+            ((WsdlRunTestCaseTestStep)currentStep).removeTestRunListener(this);
         }
     }
-
-    public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-    }
-
 }

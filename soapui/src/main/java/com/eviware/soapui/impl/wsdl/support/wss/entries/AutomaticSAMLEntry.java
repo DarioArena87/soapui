@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.entries;
@@ -44,12 +44,7 @@ import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
 import org.apache.xml.security.signature.XMLSignature;
 import org.w3c.dom.Document;
 
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -57,8 +52,8 @@ import java.util.List;
 
 /**
  * @author Erik R. Yverling
- *         <p/>
- *         Used to generate a SAML assertion using various input components
+ * <p/>
+ * Used to generate a SAML assertion using various input components
  */
 public class AutomaticSAMLEntry extends WssEntryBase {
     public static final String TYPE = "SAML (Form)";
@@ -103,7 +98,98 @@ public class AutomaticSAMLEntry extends WssEntryBase {
     private SAMLAttributeValuesTable samlAttributeValuesTable;
 
     public void init(WSSEntryConfig config, OutgoingWss container) {
-        super.init(config, container, TYPE);
+        init(config, container, TYPE);
+    }
+
+    @Override
+    protected JComponent buildUI() {
+        wssContainerListener = new InternalWssContainerListener();
+        getWssContainer().addWssContainerListener(wssContainerListener);
+
+        form = new SimpleBindingForm(new PresentationModel<SignatureEntry>(this));
+
+        form.addSpace(5);
+
+        form.appendComboBox("samlVersion", "SAML version", new String[]{SAML_VERSION_1, SAML_VERSION_2}, "Choose the SAML version");
+
+        signedCheckBox = form.appendCheckBox("signed", "Signed", null);
+        signedCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                checkSigned();
+            }
+        });
+
+        form.appendComboBox("assertionType",
+                            "Assertion type",
+                            new String[]{AUTHENTICATION_ASSERTION_TYPE, ATTRIBUTE_ASSERTION_TYPE, AUTHORIZATION_ASSERTION_TYPE},
+                            "Choose the type of assertion"
+            )
+            .addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    checkAssertionType();
+                }
+            });
+
+        confirmationMethodComboBox = form.appendComboBox("confirmationMethod",
+                                                         "Confirmation method",
+                                                         new String[]{SENDER_VOUCHES_CONFIRMATION_METHOD},
+                                                         "Choose the confirmation method"
+        );
+
+        cryptoComboBox = form.appendComboBox("crypto",
+                                             "Keystore",
+                                             new KeystoresComboBoxModel(getWssContainer(), getWssContainer().getCryptoByName(crypto), true),
+                                             "Selects the Keystore containing the key to use for signing the SAML message"
+        );
+
+        cryptoComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                // FIXME This cases the drop down to be blank when changing keystore
+                keyAliasComboBoxModel.update(getWssContainer().getCryptoByName(crypto));
+            }
+        });
+
+        keyAliasComboBoxModel = new KeyAliasComboBoxModel(getWssContainer().getCryptoByName(crypto));
+        keyAliasComboBox = form.appendComboBox("username", "Alias", keyAliasComboBoxModel, "The alias for the key to use for encryption");
+
+        passwordField = form.appendPasswordField("password", "Password", "The certificate password");
+
+        form.appendTextField("issuer", "Issuer", "The issuer");
+
+        form.appendTextField("subjectName", "Subject Name", "The subject qualifier");
+
+        form.appendTextField("subjectQualifier", "Subject Qualifier", "The subject qualifier");
+
+        form.appendComboBox("digestAlgorithm", "Digest Algorithm", new String[]{
+            MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA1,
+            MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA256,
+            MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA384,
+            MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA512
+        }, "Set the digest algorithm to use");
+
+        form.appendComboBox("signatureAlgorithm", "Signature Algorithm", new String[]{
+            WSConstants.RSA,
+            WSConstants.DSA,
+            XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256,
+            XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384,
+            XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512,
+            XMLSignature.ALGO_ID_MAC_HMAC_SHA1,
+            XMLSignature.ALGO_ID_MAC_HMAC_SHA256,
+            XMLSignature.ALGO_ID_MAC_HMAC_SHA384,
+            XMLSignature.ALGO_ID_MAC_HMAC_SHA512
+        }, "Set the name of the signature encryption algorithm to use");
+
+        attributeNameTextField = form.appendTextField("attributeName", "Attribute name", "The name of the attribute");
+
+        samlAttributeValuesTable = new SAMLAttributeValuesTable(attributeValues, this);
+        form.append("Attribute values", samlAttributeValuesTable);
+
+        initComponentsEnabledState();
+
+        return new JScrollPane(form.getPanel());
     }
 
     // FIXME How can we make FindBugs that these fields will always be initialized and be able to add NonNull annotations?
@@ -140,82 +226,13 @@ public class AutomaticSAMLEntry extends WssEntryBase {
     }
 
     @Override
-    protected JComponent buildUI() {
-        wssContainerListener = new InternalWssContainerListener();
-        getWssContainer().addWssContainerListener(wssContainerListener);
-
-        form = new SimpleBindingForm(new PresentationModel<SignatureEntry>(this));
-
-        form.addSpace(5);
-
-        form.appendComboBox("samlVersion", "SAML version", new String[]{SAML_VERSION_1, SAML_VERSION_2},
-                "Choose the SAML version");
-
-        signedCheckBox = form.appendCheckBox("signed", "Signed", null);
-        signedCheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                checkSigned();
-            }
-
-        });
-
-        form.appendComboBox("assertionType", "Assertion type",
-                new String[]{AUTHENTICATION_ASSERTION_TYPE, ATTRIBUTE_ASSERTION_TYPE, AUTHORIZATION_ASSERTION_TYPE},
-                "Choose the type of assertion").addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                checkAssertionType();
-            }
-
-        });
-
-        confirmationMethodComboBox = form.appendComboBox("confirmationMethod", "Confirmation method",
-                new String[]{SENDER_VOUCHES_CONFIRMATION_METHOD}, "Choose the confirmation method");
-
-        cryptoComboBox = form.appendComboBox("crypto", "Keystore", new KeystoresComboBoxModel(getWssContainer(),
-                getWssContainer().getCryptoByName(crypto), true),
-                "Selects the Keystore containing the key to use for signing the SAML message");
-
-        cryptoComboBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                // FIXME This cases the drop down to be blank when changing keystore
-                keyAliasComboBoxModel.update(getWssContainer().getCryptoByName(crypto));
-            }
-        });
-
-        keyAliasComboBoxModel = new KeyAliasComboBoxModel(getWssContainer().getCryptoByName(crypto));
-        keyAliasComboBox = form.appendComboBox("username", "Alias", keyAliasComboBoxModel,
-                "The alias for the key to use for encryption");
-
-        passwordField = form.appendPasswordField("password", "Password", "The certificate password");
-
-        form.appendTextField("issuer", "Issuer", "The issuer");
-
-        form.appendTextField("subjectName", "Subject Name", "The subject qualifier");
-
-        form.appendTextField("subjectQualifier", "Subject Qualifier", "The subject qualifier");
-
-        form.appendComboBox("digestAlgorithm", "Digest Algorithm", new String[]{
-                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA1, MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA256,
-                MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA384, MessageDigestAlgorithm.ALGO_ID_DIGEST_SHA512},
-                "Set the digest algorithm to use");
-
-        form.appendComboBox("signatureAlgorithm", "Signature Algorithm", new String[]{WSConstants.RSA,
-                WSConstants.DSA, XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA256, XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA384,
-                XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA512, XMLSignature.ALGO_ID_MAC_HMAC_SHA1,
-                XMLSignature.ALGO_ID_MAC_HMAC_SHA256, XMLSignature.ALGO_ID_MAC_HMAC_SHA384,
-                XMLSignature.ALGO_ID_MAC_HMAC_SHA512}, "Set the name of the signature encryption algorithm to use");
-
-        attributeNameTextField = form.appendTextField("attributeName", "Attribute name", "The name of the attribute");
-
-        samlAttributeValuesTable = new SAMLAttributeValuesTable(attributeValues, this);
-        form.append("Attribute values", samlAttributeValuesTable);
-
-        initComponentsEnabledState();
-
-        return new JScrollPane(form.getPanel());
+    protected void addPropertyExpansions(PropertyExpansionsResult result) {
+        super.addPropertyExpansions(result);
+        result.extractAndAddAll(this, "issuer");
+        result.extractAndAddAll(this, "subjectName");
+        result.extractAndAddAll(this, "subjectQualifier");
+        result.extractAndAddAll(this, "attributeName");
+        // TODO Add property expansion refactoring for attributesValues, as with HttpTestRequestStep
     }
 
     private void initComponentsEnabledState() {
@@ -225,15 +242,16 @@ public class AutomaticSAMLEntry extends WssEntryBase {
 
     private void checkSigned() {
         if (!signed) {
-            form.setComboBoxItems("confirmationMethod", confirmationMethodComboBox,
-                    new String[]{SENDER_VOUCHES_CONFIRMATION_METHOD});
+            form.setComboBoxItems("confirmationMethod", confirmationMethodComboBox, new String[]{SENDER_VOUCHES_CONFIRMATION_METHOD});
             confirmationMethodComboBox.setSelectedIndex(0);
             cryptoComboBox.setEnabled(false);
             keyAliasComboBox.setEnabled(false);
             passwordField.setEnabled(false);
-        } else {
+        }
+        else {
             form.setComboBoxItems("confirmationMethod", confirmationMethodComboBox, new String[]{
-                    SENDER_VOUCHES_CONFIRMATION_METHOD, HOLDER_OF_KEY_CONFIRMATION_METHOD});
+                SENDER_VOUCHES_CONFIRMATION_METHOD, HOLDER_OF_KEY_CONFIRMATION_METHOD
+            });
             cryptoComboBox.setEnabled(true);
             keyAliasComboBox.setEnabled(true);
             passwordField.setEnabled(true);
@@ -245,14 +263,16 @@ public class AutomaticSAMLEntry extends WssEntryBase {
             signed = false;
             signedCheckBox.setSelected(false);
             signedCheckBox.setEnabled(false);
-        } else {
+        }
+        else {
             signedCheckBox.setEnabled(true);
         }
 
         if (assertionType.equals(ATTRIBUTE_ASSERTION_TYPE)) {
             attributeNameTextField.setEnabled(true);
             samlAttributeValuesTable.setEnabled(true);
-        } else {
+        }
+        else {
             attributeNameTextField.setEnabled(false);
             samlAttributeValuesTable.setEnabled(false);
         }
@@ -268,53 +288,57 @@ public class AutomaticSAMLEntry extends WssEntryBase {
 
                 if (samlVersion.equals(SAML_VERSION_1)) {
                     callbackHandler = new SAML1CallbackHandler(assertionType, confirmationMethod);
-                } else if (samlVersion.equals(SAML_VERSION_2)) {
+                }
+                else if (samlVersion.equals(SAML_VERSION_2)) {
                     callbackHandler = new SAML2CallbackHandler(assertionType, confirmationMethod);
-                } else {
+                }
+                else {
                     throw new IllegalArgumentException(NOT_A_VALID_SAML_VERSION);
                 }
                 AssertionWrapper assertion = createAssertion(context, samlParms, callbackHandler);
                 wsSecSAMLToken.build(doc, assertion, secHeader);
-            } else {
+            }
+            else {
                 WSSecSignatureSAML wsSecSignatureSAML = new WSSecSignatureSAML();
                 WssCrypto wssCrypto = getWssContainer().getCryptoByName(crypto, true);
                 String alias = context.expand(getUsername());
 
                 if (wssCrypto == null) {
                     throw new RuntimeException("Missing keystore [" + crypto + "] for signature entry");
-                } else if (Strings.isNullOrEmpty(alias)) {
+                }
+                else if (Strings.isNullOrEmpty(alias)) {
                     throw new RuntimeException(" No alias was provided for the keystore '" + crypto + "'. Please check your SAML (Form) configurations");
                 }
 
                 if (samlVersion.equals(SAML_VERSION_1)) {
-                    callbackHandler = new SAML1CallbackHandler(wssCrypto.getCrypto(), alias,
-                            assertionType, confirmationMethod);
-                } else if (samlVersion.equals(SAML_VERSION_2)) {
-                    callbackHandler = new SAML2CallbackHandler(wssCrypto.getCrypto(), alias,
-                            assertionType, confirmationMethod);
-                } else {
+                    callbackHandler = new SAML1CallbackHandler(wssCrypto.getCrypto(), alias, assertionType, confirmationMethod);
+                }
+                else if (samlVersion.equals(SAML_VERSION_2)) {
+                    callbackHandler = new SAML2CallbackHandler(wssCrypto.getCrypto(), alias, assertionType, confirmationMethod);
+                }
+                else {
                     throw new IllegalArgumentException(NOT_A_VALID_SAML_VERSION);
                 }
 
                 AssertionWrapper assertion = createAssertion(context, samlParms, callbackHandler);
 
-                assertion.signAssertion(context.expand(getUsername()), context.expand(getPassword()),
-                        wssCrypto.getCrypto(), false);
+                assertion.signAssertion(context.expand(getUsername()), context.expand(getPassword()), wssCrypto.getCrypto(), false);
 
                 wsSecSignatureSAML.setUserInfo(context.expand(getUsername()), context.expand(getPassword()));
 
                 if (confirmationMethod.equals(SENDER_VOUCHES_CONFIRMATION_METHOD)) {
                     wsSecSignatureSAML.setKeyIdentifierType(WSConstants.BST_DIRECT_REFERENCE);
 
-                    wsSecSignatureSAML.build(doc, null, assertion, wssCrypto.getCrypto(), context.expand(getUsername()),
-                            context.expand(getPassword()), secHeader);
-                } else if (confirmationMethod.equals(HOLDER_OF_KEY_CONFIRMATION_METHOD)) {
+                    wsSecSignatureSAML.build(doc, null, assertion, wssCrypto.getCrypto(), context.expand(getUsername()), context.expand(getPassword()), secHeader);
+                }
+                else if (confirmationMethod.equals(HOLDER_OF_KEY_CONFIRMATION_METHOD)) {
                     wsSecSignatureSAML.setDigestAlgo(digestAlgorithm);
 
                     if (assertionType.equals(AUTHENTICATION_ASSERTION_TYPE)) {
                         wsSecSignatureSAML.setKeyIdentifierType(WSConstants.BST_DIRECT_REFERENCE);
                         wsSecSignatureSAML.setSignatureAlgorithm(signatureAlgorithm);
-                    } else if (assertionType.equals(ATTRIBUTE_ASSERTION_TYPE)) {
+                    }
+                    else if (assertionType.equals(ATTRIBUTE_ASSERTION_TYPE)) {
 
                         wsSecSignatureSAML.setKeyIdentifierType(WSConstants.X509_KEY_IDENTIFIER);
                         wsSecSignatureSAML.setSignatureAlgorithm(signatureAlgorithm);
@@ -326,14 +350,15 @@ public class AutomaticSAMLEntry extends WssEntryBase {
                     wsSecSignatureSAML.build(doc, wssCrypto.getCrypto(), assertion, null, null, null, secHeader);
                 }
             }
-
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
 
-    private AssertionWrapper createAssertion(PropertyExpansionContext context, SAMLParms samlParms,
-                                             SAMLCallbackHandler callbackHandler) throws WSSecurityException {
+    private AssertionWrapper createAssertion(
+        PropertyExpansionContext context, SAMLParms samlParms, SAMLCallbackHandler callbackHandler
+    ) throws WSSecurityException {
         if (assertionType.equals(ATTRIBUTE_ASSERTION_TYPE)) {
             callbackHandler.setCustomAttributeName(context.expand(attributeName));
             callbackHandler.setCustomAttributeValues(extractValueColumnValues(attributeValues, context));
@@ -362,16 +387,6 @@ public class AutomaticSAMLEntry extends WssEntryBase {
         if (wssContainerListener != null) {
             getWssContainer().removeWssContainerListener(wssContainerListener);
         }
-    }
-
-    @Override
-    protected void addPropertyExpansions(PropertyExpansionsResult result) {
-        super.addPropertyExpansions(result);
-        result.extractAndAddAll(this, "issuer");
-        result.extractAndAddAll(this, "subjectName");
-        result.extractAndAddAll(this, "subjectQualifier");
-        result.extractAndAddAll(this, "attributeName");
-        // TODO Add property expansion refactoring for attributesValues, as with HttpTestRequestStep
     }
 
     public String getSamlVersion() {

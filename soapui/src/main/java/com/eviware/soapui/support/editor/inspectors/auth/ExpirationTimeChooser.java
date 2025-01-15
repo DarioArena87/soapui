@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.auth;
@@ -20,16 +20,8 @@ import com.eviware.soapui.config.TimeUnitConfig;
 import com.eviware.soapui.impl.rest.OAuth2Profile;
 import org.apache.commons.lang.WordUtils;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JTextField;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -39,15 +31,16 @@ class ExpirationTimeChooser extends JPanel {
     static final String MANUAL_EXPIRATION_RADIO_NAME = "manualExpirationRadio";
     static final String TIME_FIELD_NAME = "timeField";
     static final String TIME_UNIT_COMBO_NAME = "timeUnitCombo";
-    private static final String[] TIME_UNIT_OPTIONS = new String[]{"Seconds",
-            "Minutes", "Hours"};
+    private static final String[] TIME_UNIT_OPTIONS = new String[]{
+        "Seconds", "Minutes", "Hours"
+    };
     private static final int TIME_FIELD_CHARACTER_LIMIT = 9;
 
     private JRadioButton serverExpirationTimeOption;
     private JRadioButton manualExpirationTimeOption;
     private JTextField timeTextField;
     private JComboBox timeUnitCombo;
-    private OAuth2Profile profile;
+    private final OAuth2Profile profile;
 
     ExpirationTimeChooser(OAuth2Profile profile) {
         this.profile = profile;
@@ -107,7 +100,8 @@ class ExpirationTimeChooser extends JPanel {
         String manualAccessTokenExpirationTime = profile.getManualAccessTokenExpirationTime();
         if (manualAccessTokenExpirationTime == null) {
             timeTextField.setText("");
-        } else {
+        }
+        else {
             timeTextField.setText(manualAccessTokenExpirationTime);
         }
         return timeTextField;
@@ -117,7 +111,6 @@ class ExpirationTimeChooser extends JPanel {
         JComboBox timeUnitCombo = new JComboBox(TIME_UNIT_OPTIONS);
         timeUnitCombo.setName(TIME_UNIT_COMBO_NAME);
         timeUnitCombo.setEnabled(enableManualTimeControls);
-
 
         TimeUnitConfig.Enum timeUnit = profile.getManualAccessTokenExpirationTimeUnit();
         timeUnitCombo.setSelectedItem(WordUtils.capitalize(timeUnit.toString().toLowerCase()));
@@ -130,7 +123,8 @@ class ExpirationTimeChooser extends JPanel {
         String serverIssuedExpirationTimeLabel;
         if (serverIssuedExpirationTime > 0) {
             serverIssuedExpirationTimeLabel = getMostLegibleTimeString(serverIssuedExpirationTime);
-        } else {
+        }
+        else {
             serverIssuedExpirationTimeLabel = "No expiration.";
         }
 
@@ -155,7 +149,8 @@ class ExpirationTimeChooser extends JPanel {
 
         if (profile.useManualAccessTokenExpirationTime()) {
             manualExpirationTimeOption.setSelected(true);
-        } else {
+        }
+        else {
             serverExpirationTimeOption.setSelected(true);
         }
     }
@@ -163,9 +158,11 @@ class ExpirationTimeChooser extends JPanel {
     private String getMostLegibleTimeString(long seconds) {
         if (seconds % 3600 == 0) {
             return seconds / 3600 + " hour(s)";
-        } else if (seconds % 60 == 0) {
+        }
+        else if (seconds % 60 == 0) {
             return seconds / 60 + " minute(s)";
-        } else {
+        }
+        else {
             return seconds + " second(s)";
         }
     }

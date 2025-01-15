@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.log;
@@ -26,7 +26,7 @@ import com.eviware.soapui.security.result.SecurityTestStepResult;
 import com.eviware.soapui.security.scan.AbstractSecurityScan;
 import org.apache.commons.collections.list.TreeList;
 
-import javax.swing.AbstractListModel;
+import javax.swing.*;
 import java.lang.ref.SoftReference;
 import java.util.Collections;
 import java.util.List;
@@ -38,8 +38,8 @@ import java.util.List;
  */
 @SuppressWarnings({"serial", "unchecked"})
 public class SecurityTestLogModel extends AbstractListModel {
-    private List<Object> items = Collections.synchronizedList(new TreeList());
-    private List<SoftReference<SecurityResult>> results = Collections.synchronizedList(new TreeList());
+    private final List<Object> items = Collections.synchronizedList(new TreeList());
+    private final List<SoftReference<SecurityResult>> results = Collections.synchronizedList(new TreeList());
     private int maxSize = 100;
     private int stepCount;
     private int checkCount;
@@ -47,17 +47,18 @@ public class SecurityTestLogModel extends AbstractListModel {
     private int currentCheckEntriesCount;
     private int currentStepEntriesCount;
 
-    public synchronized Object getElementAt(int arg0) {
-        try {
-            return items.get(arg0);
-        } catch (Throwable e) {
-            return null;
-        }
-    }
-
     @Override
     public int getSize() {
         return items.size();
+    }
+
+    public synchronized Object getElementAt(int arg0) {
+        try {
+            return items.get(arg0);
+        }
+        catch (Throwable e) {
+            return null;
+        }
     }
 
     public synchronized void addText(String msg) {
@@ -98,20 +99,23 @@ public class SecurityTestLogModel extends AbstractListModel {
             fireIntervalAdded(this, size, items.size() - 1);
             enforceMaxSize();
             return true;
-        } else {
+        }
+        else {
             return false;
         }
     }
 
     // called after whole security teststep finished to delete start line in case
     // only errors are beeing displayed
-    public synchronized void updateSecurityTestStepResult(SecurityTestStepResult result, boolean errorsOnly,
-                                                          boolean hasChecksToProcess, boolean startStepLogEntryAdded) {
+    public synchronized void updateSecurityTestStepResult(
+        SecurityTestStepResult result, boolean errorsOnly, boolean hasChecksToProcess, boolean startStepLogEntryAdded
+    ) {
         int startStepIndex = 0;
         if (items.size() > currentStepEntriesCount) {
             if (currentStepEntriesCount > 0) {
                 startStepIndex = items.size() - currentStepEntriesCount;
-            } else {
+            }
+            else {
                 startStepIndex = items.size();
             }
         }
@@ -125,21 +129,23 @@ public class SecurityTestLogModel extends AbstractListModel {
             }
             if (startStepIndex > 0 && size > 0) {
                 fireIntervalRemoved(this, startStepIndex, size);
-            } else {
+            }
+            else {
                 fireIntervalRemoved(this, 0, size);
             }
-        } else if (startStepLogEntryAdded) {
+        }
+        else if (startStepLogEntryAdded) {
 
             try {
                 if (startStepIndex > 0 && startStepIndex < maxSize) {
                     String statusToDisplay = getStatusToDisplay(result.getExecutionProgressStatus());
-                    items.set(startStepIndex, "Step " + stepCount + " [" + result.getTestStep().getName() + "] "
-                            + statusToDisplay + ": took " + result.getTimeTaken() + " ms");
+                    items.set(startStepIndex, "Step " + stepCount + " [" + result.getTestStep().getName() + "] " + statusToDisplay + ": took " + result.getTimeTaken() + " ms");
                     SoftReference<SecurityResult> stepResultRef = new SoftReference<SecurityResult>(result);
                     results.set(startStepIndex, stepResultRef);
                     fireContentsChanged(this, startStepIndex, startStepIndex);
                 }
-            } catch (IndexOutOfBoundsException e) {
+            }
+            catch (IndexOutOfBoundsException e) {
                 // when log max size is exceeded skip updating the raw since it
                 // won't be visible anyway
             }
@@ -193,7 +199,8 @@ public class SecurityTestLogModel extends AbstractListModel {
         if (items.size() > currentCheckEntriesCount) {
             if (currentCheckEntriesCount > 0) {
                 startCheckIndex = items.size() - currentCheckEntriesCount;
-            } else {
+            }
+            else {
                 startCheckIndex = items.size();
             }
         }
@@ -208,17 +215,23 @@ public class SecurityTestLogModel extends AbstractListModel {
             }
             if (startCheckIndex > 0) {
                 fireIntervalRemoved(this, startCheckIndex, size);
-            } else {
+            }
+            else {
                 fireIntervalRemoved(this, startCheckIndex, size);
             }
-
-        } else {
+        }
+        else {
             SecurityScan securityCheck = securityCheckResult.getSecurityScan();
             securityCheckResult.detectMissingItems();
             StringBuilder outStr = new StringBuilder("SecurityScan ");
             String statusToDisplay = getStatusToDisplay(securityCheckResult.getExecutionProgressStatus());
-            outStr.append(checkCount).append(" [").append(securityCheck.getName()).append("] ").append(
-                    statusToDisplay).append(", took = ").append(securityCheckResult.getTimeTaken());
+            outStr.append(checkCount)
+                  .append(" [")
+                  .append(securityCheck.getName())
+                  .append("] ")
+                  .append(statusToDisplay)
+                  .append(", took = ")
+                  .append(securityCheckResult.getTimeTaken());
             try {
                 if (startCheckIndex > 0 && startCheckIndex < maxSize) {
                     items.set(startCheckIndex, outStr.toString());
@@ -227,11 +240,11 @@ public class SecurityTestLogModel extends AbstractListModel {
                     currentCheckEntriesCount = 0;
                     fireContentsChanged(this, startCheckIndex, startCheckIndex);
                 }
-            } catch (IndexOutOfBoundsException e) {
+            }
+            catch (IndexOutOfBoundsException e) {
                 // when log max size is exceeded skip updating the raw since it
                 // won't be visible anyway
             }
-
         }
     }
 
@@ -288,7 +301,7 @@ public class SecurityTestLogModel extends AbstractListModel {
             if (result != null) {
                 SecurityResult referent = result.get();
                 if (referent instanceof SecurityScanResult) {
-                    if (((SecurityScanResult) referent).getSecurityScan() == check) {
+                    if (((SecurityScanResult)referent).getSecurityScan() == check) {
                         return i;
                     }
                 }

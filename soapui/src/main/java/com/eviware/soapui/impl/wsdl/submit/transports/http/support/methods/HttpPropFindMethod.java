@@ -11,18 +11,16 @@ import java.net.URI;
 public class HttpPropFindMethod extends HttpEntityEnclosingRequestBase {
 
     public HttpPropFindMethod() {
-        super();
     }
 
-    public HttpPropFindMethod(final URI uri) {
-        super();
+    public HttpPropFindMethod(URI uri) {
         setURI(uri);
     }
 
     /**
      * @throws IllegalArgumentException if the uri is invalid.
      */
-    public HttpPropFindMethod(final String uri) {
+    public HttpPropFindMethod(String uri) {
         this(URI.create(uri));
     }
 

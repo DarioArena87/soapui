@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.metrics;
@@ -23,23 +23,24 @@ import org.apache.http.io.HttpTransportMetrics;
 import java.util.Date;
 
 public class SoapUIMetrics extends HttpConnectionMetricsImpl {
-    private long timestamp = -1;
-    private int httpStatus = -1;
-    private long contentLength = -1;
-
-    private String httpMethod = "";
-    private String ipAddress = "";
-    private int port = -1;
-
     private final Stopwatch readTimer;
     private final Stopwatch totalTimer;
     private final Stopwatch DNSTimer;
     private final Stopwatch connectTimer;
     private final Stopwatch timeToFirstByteTimer;
-
+    private long timestamp = -1;
+    private int httpStatus = -1;
+    private long contentLength = -1;
+    private String httpMethod = "";
+    private String ipAddress = "";
+    private int port = -1;
     private boolean done = false;
 
-    public SoapUIMetrics(final HttpTransportMetrics inTransportMetric, final HttpTransportMetrics outTransportMetric) {
+    public static String formatTimestamp(long timestamp) {
+        return DateUtil.formatFull(new Date(timestamp));
+    }
+
+    public SoapUIMetrics(HttpTransportMetrics inTransportMetric, HttpTransportMetrics outTransportMetric) {
         super(inTransportMetric, outTransportMetric);
         readTimer = new NanoStopwatch();
         totalTimer = new NanoStopwatch();
@@ -63,10 +64,6 @@ public class SoapUIMetrics extends HttpConnectionMetricsImpl {
 
     public boolean isDone() {
         return done;
-    }
-
-    public static String formatTimestamp(long timestamp) {
-        return DateUtil.formatFull(new Date(timestamp));
     }
 
     public Stopwatch getDNSTimer() {
@@ -93,12 +90,12 @@ public class SoapUIMetrics extends HttpConnectionMetricsImpl {
         return timestamp;
     }
 
-    public String getFormattedTimeStamp() {
-        return DateUtil.formatFull(new Date(getTimestamp()));
-    }
-
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getFormattedTimeStamp() {
+        return DateUtil.formatFull(new Date(getTimestamp()));
     }
 
     public int getHttpStatus() {
@@ -140,21 +137,15 @@ public class SoapUIMetrics extends HttpConnectionMetricsImpl {
     public void setPort(int port, int defaultPort) {
         if (port != -1) {
             this.port = port;
-        } else {
+        }
+        else {
             this.port = defaultPort;
         }
     }
 
     @Override
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("timestamp:").append(getFormattedTimeStamp()).append(";status:").append(getHttpStatus())
-                .append(";length:").append(getContentLength()).append(";DNS time:")
-                .append(getDNSTimer().getDuration()).append(" ms;connect time:")
-                .append(getConnectTimer().getDuration()).append(" ms;time to first byte:")
-                .append(getTimeToFirstByteTimer().getDuration()).append(" ms;read time:")
-                .append(getReadTimer().getDuration()).append(" ms;total time:").append(getTotalTimer().getDuration());
-        return sb.toString();
+    public int hashCode() {
+        return toString().hashCode();
     }
 
     @Override
@@ -165,14 +156,29 @@ public class SoapUIMetrics extends HttpConnectionMetricsImpl {
         if (!(o instanceof SoapUIMetrics)) {
             return false;
         }
-        SoapUIMetrics that = (SoapUIMetrics) o;
+        SoapUIMetrics that = (SoapUIMetrics)o;
 
-        return this.toString().equals(that.toString());
+        return toString().equals(that.toString());
     }
 
     @Override
-    public int hashCode() {
-        return toString().hashCode();
+    public String toString() {
+        String sb = "timestamp:" +
+                    getFormattedTimeStamp() +
+                    ";status:" +
+                    getHttpStatus() +
+                    ";length:" +
+                    getContentLength() +
+                    ";DNS time:" +
+                    getDNSTimer().getDuration() +
+                    " ms;connect time:" +
+                    getConnectTimer().getDuration() +
+                    " ms;time to first byte:" +
+                    getTimeToFirstByteTimer().getDuration() +
+                    " ms;read time:" +
+                    getReadTimer().getDuration() +
+                    " ms;total time:" +
+                    getTotalTimer().getDuration();
+        return sb;
     }
-
 }

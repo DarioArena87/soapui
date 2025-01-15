@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.resolver;
@@ -29,14 +29,8 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JList;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -44,8 +38,8 @@ import java.util.List;
 public class ChooseAnotherTestCase implements Resolver {
 
     private boolean resolved;
-    private WsdlRunTestCaseTestStep runTestStep;
-    private WsdlProject project;
+    private final WsdlRunTestCaseTestStep runTestStep;
+    private final WsdlProject project;
     private WsdlTestCase pickedTestCase;
 
     public ChooseAnotherTestCase(WsdlRunTestCaseTestStep wsdlRunTestCaseTestStep) {
@@ -53,22 +47,9 @@ public class ChooseAnotherTestCase implements Resolver {
         project = runTestStep.getTestCase().getTestSuite().getProject();
     }
 
-    public String getDescription() {
-        return "Choose another test step";
-    }
-
     @Override
     public String toString() {
         return getDescription();
-    }
-
-    public String getResolvedPath() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public boolean isResolved() {
-        return resolved;
     }
 
     public boolean resolve() {
@@ -78,13 +59,30 @@ public class ChooseAnotherTestCase implements Resolver {
         return resolved;
     }
 
+    public boolean isResolved() {
+        return resolved;
+    }
+
+    public String getResolvedPath() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public String getDescription() {
+        return "Choose another test step";
+    }
+
+    public WsdlTestCase getPickedTestCase() {
+        return pickedTestCase;
+    }
+
     @SuppressWarnings("serial")
     private class TestCaseChangeDialog extends JDialog {
 
         private JComboBox tSuiteStepCombo;
         private JComboBox tCaseCombo;
-        private JButton okBtn = new JButton(" Ok ");
-        private JButton cancelBtn = new JButton(" Cancel ");
+        private final JButton okBtn = new JButton(" Ok ");
+        private final JButton cancelBtn = new JButton(" Cancel ");
 
         public TestCaseChangeDialog(String title) {
             super(UISupport.getMainFrame(), title, true);
@@ -92,8 +90,7 @@ public class ChooseAnotherTestCase implements Resolver {
         }
 
         private void init() {
-            FormLayout layout = new FormLayout("right:pref, 4dlu, 30dlu, 5dlu, 30dlu, min ",
-                    "min, pref, 4dlu, pref, 4dlu, pref, min");
+            FormLayout layout = new FormLayout("right:pref, 4dlu, 30dlu, 5dlu, 30dlu, min ", "min, pref, 4dlu, pref, 4dlu, pref, min");
             CellConstraints cc = new CellConstraints();
             PanelBuilder panel = new PanelBuilder(layout);
             panel.addLabel("Interface:", cc.xy(1, 2));
@@ -109,7 +106,7 @@ public class ChooseAnotherTestCase implements Resolver {
             tSuiteStepCombo.setSelectedIndex(0);
             panel.add(tSuiteStepCombo, cc.xyw(3, 2, 3));
 
-            tCaseCombo = new JComboBox(((TestSuite) tSuiteStepCombo.getSelectedItem()).getTestCaseList().toArray());
+            tCaseCombo = new JComboBox(((TestSuite)tSuiteStepCombo.getSelectedItem()).getTestCaseList().toArray());
             tCaseCombo.setRenderer(new TestCaseComboRender());
 
             panel.addLabel("Operation:", cc.xy(1, 4));
@@ -121,32 +118,29 @@ public class ChooseAnotherTestCase implements Resolver {
             tSuiteStepCombo.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
-                    Interface iface = project.getInterfaceByName(((TestSuite) tSuiteStepCombo.getSelectedItem())
-                            .getName());
+                    Interface iface = project.getInterfaceByName(((TestSuite)tSuiteStepCombo.getSelectedItem()).getName());
                     tCaseCombo.removeAllItems();
                     if (iface != null) {
                         tCaseCombo.setEnabled(true);
                         for (Operation op : iface.getOperationList()) {
                             tCaseCombo.addItem(op);
                         }
-                    } else {
+                    }
+                    else {
                         tCaseCombo.setEnabled(false);
                     }
-
                 }
-
             });
 
             okBtn.addActionListener(new ActionListener() {
 
                 public void actionPerformed(ActionEvent e) {
 
-                    pickedTestCase = (WsdlTestCase) tCaseCombo.getSelectedItem();
+                    pickedTestCase = (WsdlTestCase)tCaseCombo.getSelectedItem();
                     runTestStep.setTargetTestCase(pickedTestCase);
                     resolved = true;
                     setVisible(false);
                 }
-
             });
 
             cancelBtn.addActionListener(new ActionListener() {
@@ -155,29 +149,29 @@ public class ChooseAnotherTestCase implements Resolver {
                     resolved = false;
                     setVisible(false);
                 }
-
             });
 
             setLocationRelativeTo(UISupport.getParentFrame(this));
             panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            this.add(panel.getPanel());
+            add(panel.getPanel());
         }
 
         public void showAndChoose() {
-            this.pack();
-            this.setVisible(true);
+            pack();
+            setVisible(true);
         }
     }
 
     @SuppressWarnings("serial")
     private class TestSuiteComboRenderer extends DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
             Component result = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
             if (value instanceof TestSuite) {
-                TestSuite item = (TestSuite) value;
+                TestSuite item = (TestSuite)value;
                 setIcon(item.getIcon());
                 setText(item.getName());
             }
@@ -190,23 +184,18 @@ public class ChooseAnotherTestCase implements Resolver {
     private class TestCaseComboRender extends DefaultListCellRenderer {
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
             Component result = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
             if (value instanceof TestCase) {
-                TestCase item = (TestCase) value;
+                TestCase item = (TestCase)value;
                 setIcon(item.getIcon());
                 setText(item.getName());
             }
 
             return result;
         }
-
     }
-
-    public WsdlTestCase getPickedTestCase() {
-        return pickedTestCase;
-    }
-
 }

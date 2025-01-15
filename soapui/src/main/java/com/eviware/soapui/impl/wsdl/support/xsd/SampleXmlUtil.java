@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.xsd;
@@ -50,8 +50,10 @@ import org.apache.xmlbeans.soap.SOAPArrayType;
 import org.apache.xmlbeans.soap.SchemaWSDLArrayType;
 
 import javax.xml.namespace.QName;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -66,12 +68,234 @@ import java.util.Set;
  */
 
 public class SampleXmlUtil {
-    private boolean _soapEnc;
+    // a bit from the Aenid
+    public static final String[] WORDS = new String[]{
+        "ipsa",
+        "iovis",
+        "rapidum",
+        "iaculata",
+        "e",
+        "nubibus",
+        "ignem",
+        "disiecitque",
+        "rates",
+        "evertitque",
+        "aequora",
+        "ventis",
+        "illum",
+        "exspirantem",
+        "transfixo",
+        "pectore",
+        "flammas",
+        "turbine",
+        "corripuit",
+        "scopuloque",
+        "infixit",
+        "acuto",
+        "ast",
+        "ego",
+        "quae",
+        "divum",
+        "incedo",
+        "regina",
+        "iovisque",
+        "et",
+        "soror",
+        "et",
+        "coniunx",
+        "una",
+        "cum",
+        "gente",
+        "tot",
+        "annos",
+        "bella",
+        "gero",
+        "et",
+        "quisquam",
+        "numen",
+        "iunonis",
+        "adorat",
+        "praeterea",
+        "aut",
+        "supplex",
+        "aris",
+        "imponet",
+        "honorem",
+        "talia",
+        "flammato",
+        "secum",
+        "dea",
+        "corde",
+        "volutans",
+        "nimborum",
+        "in",
+        "patriam",
+        "loca",
+        "feta",
+        "furentibus",
+        "austris",
+        "aeoliam",
+        "venit",
+        "hic",
+        "vasto",
+        "rex",
+        "aeolus",
+        "antro",
+        "luctantis",
+        "ventos",
+        "tempestatesque",
+        "sonoras",
+        "imperio",
+        "premit",
+        "ac",
+        "vinclis",
+        "et",
+        "carcere",
+        "frenat",
+        "illi",
+        "indignantes",
+        "magno",
+        "cum",
+        "murmure",
+        "montis",
+        "circum",
+        "claustra",
+        "fremunt",
+        "celsa",
+        "sedet",
+        "aeolus",
+        "arce",
+        "sceptra",
+        "tenens",
+        "mollitque",
+        "animos",
+        "et",
+        "temperat",
+        "iras",
+        "ni",
+        "faciat",
+        "maria",
+        "ac",
+        "terras",
+        "caelumque",
+        "profundum",
+        "quippe",
+        "ferant",
+        "rapidi",
+        "secum",
+        "verrantque",
+        "per",
+        "auras",
+        "sed",
+        "pater",
+        "omnipotens",
+        "speluncis",
+        "abdidit",
+        "atris",
+        "hoc",
+        "metuens",
+        "molemque",
+        "et",
+        "montis",
+        "insuper",
+        "altos",
+        "imposuit",
+        "regemque",
+        "dedit",
+        "qui",
+        "foedere",
+        "certo",
+        "et",
+        "premere",
+        "et",
+        "laxas",
+        "sciret",
+        "dare",
+        "iussus",
+        "habenas",
+        };
+    public static final QName XSI_TYPE = new QName("http://www.w3.org/2001/XMLSchema-instance", "type");
+    public static final QName ENC_ARRAYTYPE = new QName("http://schemas.xmlsoap.org/soap/encoding/", "arrayType");
+    private static final String[] DNS1 = new String[]{"corp", "your", "my", "sample", "company", "test", "any"};
+    private static final String[] DNS2 = new String[]{"com", "org", "com", "gov", "org", "com", "org", "com", "edu"};
+    private static final QName HREF = new QName("href");
+    private static final QName ID = new QName("id");
+    private static final QName ENC_OFFSET = new QName("http://schemas.xmlsoap.org/soap/encoding/", "offset");
+    public static final Set<QName> SKIPPED_SOAP_ATTRS = new HashSet<QName>(Arrays.asList(HREF, ID, ENC_OFFSET));
+    Random _picker = new Random(1);
+    private final boolean _soapEnc;
     private boolean _exampleContent = false;
     private boolean _typeComment = false;
-    private Set<QName> excludedTypes = new HashSet<QName>();
+    private final Set<QName> excludedTypes = new HashSet<QName>();
     private Map<QName, String[]> multiValues = null;
     private boolean _skipComments;
+    private boolean ignoreOptional;
+    private final ArrayList<SchemaType> _typeStack = new ArrayList<SchemaType>();
+
+    public static String createSampleForElement(SchemaGlobalElement element) {
+        XmlObject xml = XmlObject.Factory.newInstance();
+
+        XmlCursor c = xml.newCursor();
+        c.toNextToken();
+        c.beginElement(element.getName());
+
+        new SampleXmlUtil(false).createSampleForType(element.getType(), c);
+
+        c.dispose();
+
+        XmlOptions options = new XmlOptions();
+        options.put(XmlOptions.SAVE_PRETTY_PRINT);
+        options.put(XmlOptions.SAVE_PRETTY_PRINT_INDENT, 3);
+        options.put(XmlOptions.SAVE_AGGRESSIVE_NAMESPACES);
+        options.setSaveOuter();
+        String result = xml.xmlText(options);
+
+        return result;
+    }
+
+    public static String createSampleForType(SchemaType sType) {
+        XmlObject object = XmlObject.Factory.newInstance();
+        XmlCursor cursor = object.newCursor();
+        // Skip the document node
+        cursor.toNextToken();
+        // Using the type and the cursor, call the utility method to get a
+        // sample XML payload for that Schema element
+        new SampleXmlUtil(false).createSampleForType(sType, cursor);
+        // Cursor now contains the sample payload
+        // Pretty print the result. Note that the cursor is positioned at the
+        // end of the doc so we use the original xml object that the cursor was
+        // created upon to do the xmlText() against.
+
+        cursor.dispose();
+        XmlOptions options = new XmlOptions();
+        options.put(XmlOptions.SAVE_PRETTY_PRINT);
+        options.put(XmlOptions.SAVE_PRETTY_PRINT_INDENT, 3);
+        options.put(XmlOptions.SAVE_AGGRESSIVE_NAMESPACES);
+        options.setSaveOuter();
+        String result = object.xmlText(options);
+
+        return result;
+    }
+
+    /**
+     * Cracks a combined QName of the form URL:localname
+     */
+    public static QName crackQName(String qName) {
+        String ns;
+        String name;
+
+        int index = qName.lastIndexOf(':');
+        if (index >= 0) {
+            ns = qName.substring(0, index);
+            name = qName.substring(index + 1);
+        }
+        else {
+            ns = "";
+            name = qName;
+        }
+
+        return new QName(ns, name);
+    }
 
     public SampleXmlUtil(boolean soapEnc) {
         _soapEnc = soapEnc;
@@ -127,55 +351,6 @@ public class SampleXmlUtil {
 
         return result;
     }
-
-    public static String createSampleForElement(SchemaGlobalElement element) {
-        XmlObject xml = XmlObject.Factory.newInstance();
-
-        XmlCursor c = xml.newCursor();
-        c.toNextToken();
-        c.beginElement(element.getName());
-
-        new SampleXmlUtil(false).createSampleForType(element.getType(), c);
-
-        c.dispose();
-
-        XmlOptions options = new XmlOptions();
-        options.put(XmlOptions.SAVE_PRETTY_PRINT);
-        options.put(XmlOptions.SAVE_PRETTY_PRINT_INDENT, 3);
-        options.put(XmlOptions.SAVE_AGGRESSIVE_NAMESPACES);
-        options.setSaveOuter();
-        String result = xml.xmlText(options);
-
-        return result;
-    }
-
-    public static String createSampleForType(SchemaType sType) {
-        XmlObject object = XmlObject.Factory.newInstance();
-        XmlCursor cursor = object.newCursor();
-        // Skip the document node
-        cursor.toNextToken();
-        // Using the type and the cursor, call the utility method to get a
-        // sample XML payload for that Schema element
-        new SampleXmlUtil(false).createSampleForType(sType, cursor);
-        // Cursor now contains the sample payload
-        // Pretty print the result. Note that the cursor is positioned at the
-        // end of the doc so we use the original xml object that the cursor was
-        // created upon to do the xmlText() against.
-
-        cursor.dispose();
-        XmlOptions options = new XmlOptions();
-        options.put(XmlOptions.SAVE_PRETTY_PRINT);
-        options.put(XmlOptions.SAVE_PRETTY_PRINT_INDENT, 3);
-        options.put(XmlOptions.SAVE_AGGRESSIVE_NAMESPACES);
-        options.setSaveOuter();
-        String result = object.xmlText(options);
-
-        return result;
-    }
-
-    Random _picker = new Random(1);
-
-    private boolean ignoreOptional;
 
     /**
      * Cursor position Before: <theElement>^</theElement> After:
@@ -237,7 +412,8 @@ public class SampleXmlUtil {
                     }
                     break;
             }
-        } finally {
+        }
+        finally {
             _typeStack.remove(_typeStack.size() - 1);
         }
     }
@@ -258,25 +434,23 @@ public class SampleXmlUtil {
         // swaRef
         if (sType.getName() != null) {
             if (sType.getName().equals(new QName("http://ws-i.org/profiles/basic/1.1/xsd", "swaRef"))) {
-                return "cid:" + (long) (System.currentTimeMillis() * Math.random());
+                return "cid:" + (long)(System.currentTimeMillis() * Math.random());
             }
 
             // xmime base64
             if (sType.getName().equals(new QName("http://www.w3.org/2005/05/xmlmime", "base64Binary"))) {
-                return "cid:" + (long) (System.currentTimeMillis() * Math.random());
+                return "cid:" + (long)(System.currentTimeMillis() * Math.random());
             }
 
             // xmime hexBinary
             if (sType.getName().equals(new QName("http://www.w3.org/2005/05/xmlmime", "hexBinary"))) {
-                return "cid:" + (long) (System.currentTimeMillis() * Math.random());
+                return "cid:" + (long)(System.currentTimeMillis() * Math.random());
             }
         }
 
         SchemaType primitiveType = sType.getPrimitiveType();
-        if (primitiveType != null
-                && (primitiveType.getBuiltinTypeCode() == SchemaType.BTC_BASE_64_BINARY || primitiveType
-                .getBuiltinTypeCode() == SchemaType.BTC_HEX_BINARY)) {
-            return "cid:" + (long) (System.currentTimeMillis() * Math.random());
+        if (primitiveType != null && (primitiveType.getBuiltinTypeCode() == SchemaType.BTC_BASE_64_BINARY || primitiveType.getBuiltinTypeCode() == SchemaType.BTC_HEX_BINARY)) {
+            return "cid:" + (long)(System.currentTimeMillis() * Math.random());
         }
 
         // if( sType != null )
@@ -333,10 +507,7 @@ public class SampleXmlUtil {
 
             case SchemaType.BTC_BASE_64_BINARY: {
                 String result = null;
-                try {
-                    result = new String(Base64.encode(formatToLength(pick(WORDS), sType).getBytes("utf-8")));
-                } catch (java.io.UnsupportedEncodingException e) {
-                }
+                result = new String(Base64.encode(formatToLength(pick(WORDS), sType).getBytes(StandardCharsets.UTF_8)));
                 return result;
             }
 
@@ -344,8 +515,7 @@ public class SampleXmlUtil {
                 return HexBin.encode(formatToLength(pick(WORDS), sType));
 
             case SchemaType.BTC_ANY_URI:
-                return formatToLength("http://www." + pick(DNS1) + "." + pick(DNS2) + "/" + pick(WORDS) + "/"
-                        + pick(WORDS), sType);
+                return formatToLength("http://www." + pick(DNS1) + "." + pick(DNS2) + "/" + pick(WORDS) + "/" + pick(WORDS), sType);
 
             case SchemaType.BTC_QNAME:
                 return formatToLength("qname", sType);
@@ -422,28 +592,8 @@ public class SampleXmlUtil {
             case SchemaType.BTC_G_DAY:
             case SchemaType.BTC_G_MONTH:
                 return formatDate(sType);
-
         }
     }
-
-    // a bit from the Aenid
-    public static final String[] WORDS = new String[]{"ipsa", "iovis", "rapidum", "iaculata", "e", "nubibus", "ignem",
-            "disiecitque", "rates", "evertitque", "aequora", "ventis", "illum", "exspirantem", "transfixo", "pectore",
-            "flammas", "turbine", "corripuit", "scopuloque", "infixit", "acuto", "ast", "ego", "quae", "divum", "incedo",
-            "regina", "iovisque", "et", "soror", "et", "coniunx", "una", "cum", "gente", "tot", "annos", "bella", "gero",
-            "et", "quisquam", "numen", "iunonis", "adorat", "praeterea", "aut", "supplex", "aris", "imponet", "honorem",
-            "talia", "flammato", "secum", "dea", "corde", "volutans", "nimborum", "in", "patriam", "loca", "feta",
-            "furentibus", "austris", "aeoliam", "venit", "hic", "vasto", "rex", "aeolus", "antro", "luctantis", "ventos",
-            "tempestatesque", "sonoras", "imperio", "premit", "ac", "vinclis", "et", "carcere", "frenat", "illi",
-            "indignantes", "magno", "cum", "murmure", "montis", "circum", "claustra", "fremunt", "celsa", "sedet",
-            "aeolus", "arce", "sceptra", "tenens", "mollitque", "animos", "et", "temperat", "iras", "ni", "faciat",
-            "maria", "ac", "terras", "caelumque", "profundum", "quippe", "ferant", "rapidi", "secum", "verrantque", "per",
-            "auras", "sed", "pater", "omnipotens", "speluncis", "abdidit", "atris", "hoc", "metuens", "molemque", "et",
-            "montis", "insuper", "altos", "imposuit", "regemque", "dedit", "qui", "foedere", "certo", "et", "premere",
-            "et", "laxas", "sciret", "dare", "iussus", "habenas",};
-
-    private static final String[] DNS1 = new String[]{"corp", "your", "my", "sample", "company", "test", "any"};
-    private static final String[] DNS2 = new String[]{"com", "org", "com", "gov", "org", "com", "org", "com", "edu"};
 
     private int pick(int n) {
         return _picker.nextInt(n);
@@ -476,27 +626,29 @@ public class SampleXmlUtil {
     private String pickDigits(int digits) {
         StringBuffer sb = new StringBuffer();
         while (digits-- > 0) {
-            sb.append(Integer.toString(pick(10)));
+            sb.append(pick(10));
         }
         return sb.toString();
     }
 
     private int pickLength(SchemaType sType) {
-        XmlInteger length = (XmlInteger) sType.getFacet(SchemaType.FACET_LENGTH);
+        XmlInteger length = (XmlInteger)sType.getFacet(SchemaType.FACET_LENGTH);
         if (length != null) {
             return length.getBigIntegerValue().intValue();
         }
-        XmlInteger min = (XmlInteger) sType.getFacet(SchemaType.FACET_MIN_LENGTH);
-        XmlInteger max = (XmlInteger) sType.getFacet(SchemaType.FACET_MAX_LENGTH);
+        XmlInteger min = (XmlInteger)sType.getFacet(SchemaType.FACET_MIN_LENGTH);
+        XmlInteger max = (XmlInteger)sType.getFacet(SchemaType.FACET_MAX_LENGTH);
         int minInt, maxInt;
         if (min == null) {
             minInt = 0;
-        } else {
+        }
+        else {
             minInt = min.getBigIntegerValue().intValue();
         }
         if (max == null) {
             maxInt = Integer.MAX_VALUE;
-        } else {
+        }
+        else {
             maxInt = max.getBigIntegerValue().intValue();
         }
         // We try to keep the length of the array within reasonable limits,
@@ -522,9 +674,9 @@ public class SampleXmlUtil {
     private String formatToLength(String s, SchemaType sType) {
         String result = s;
         try {
-            SimpleValue min = (SimpleValue) sType.getFacet(SchemaType.FACET_LENGTH);
+            SimpleValue min = (SimpleValue)sType.getFacet(SchemaType.FACET_LENGTH);
             if (min == null) {
-                min = (SimpleValue) sType.getFacet(SchemaType.FACET_MIN_LENGTH);
+                min = (SimpleValue)sType.getFacet(SchemaType.FACET_MIN_LENGTH);
             }
             if (min != null) {
                 int len = min.getIntValue();
@@ -532,9 +684,9 @@ public class SampleXmlUtil {
                     result = result + result;
                 }
             }
-            SimpleValue max = (SimpleValue) sType.getFacet(SchemaType.FACET_LENGTH);
+            SimpleValue max = (SimpleValue)sType.getFacet(SchemaType.FACET_LENGTH);
             if (max == null) {
-                max = (SimpleValue) sType.getFacet(SchemaType.FACET_MAX_LENGTH);
+                max = (SimpleValue)sType.getFacet(SchemaType.FACET_MAX_LENGTH);
             }
             if (max != null) {
                 int len = max.getIntValue();
@@ -542,7 +694,8 @@ public class SampleXmlUtil {
                     result = result.substring(0, len);
                 }
             }
-        } catch (Exception e) // intValue can be out of range
+        }
+        catch (Exception e) // intValue can be out of range
         {
         }
         return result;
@@ -551,12 +704,12 @@ public class SampleXmlUtil {
     private String formatDecimal(String start, SchemaType sType) {
         BigDecimal result = new BigDecimal(start);
         XmlDecimal xmlD;
-        xmlD = (XmlDecimal) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        xmlD = (XmlDecimal)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
         BigDecimal min = xmlD != null ? xmlD.getBigDecimalValue() : null;
-        xmlD = (XmlDecimal) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        xmlD = (XmlDecimal)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
         BigDecimal max = xmlD != null ? xmlD.getBigDecimalValue() : null;
         boolean minInclusive = true, maxInclusive = true;
-        xmlD = (XmlDecimal) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        xmlD = (XmlDecimal)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
         if (xmlD != null) {
             BigDecimal minExcl = xmlD.getBigDecimalValue();
             if (min == null || min.compareTo(minExcl) < 0) {
@@ -564,7 +717,7 @@ public class SampleXmlUtil {
                 minInclusive = false;
             }
         }
-        xmlD = (XmlDecimal) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        xmlD = (XmlDecimal)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
         if (xmlD != null) {
             BigDecimal maxExcl = xmlD.getBigDecimalValue();
             if (max == null || max.compareTo(maxExcl) > 0) {
@@ -572,7 +725,7 @@ public class SampleXmlUtil {
                 maxInclusive = false;
             }
         }
-        xmlD = (XmlDecimal) sType.getFacet(SchemaType.FACET_TOTAL_DIGITS);
+        xmlD = (XmlDecimal)sType.getFacet(SchemaType.FACET_TOTAL_DIGITS);
         int totalDigits = -1;
         if (xmlD != null) {
             totalDigits = xmlD.getBigDecimalValue().intValue();
@@ -599,12 +752,13 @@ public class SampleXmlUtil {
         boolean maxOk = sigMax < 0 || sigMax == 0 && maxInclusive;
 
         // Compute the minimum increment
-        xmlD = (XmlDecimal) sType.getFacet(SchemaType.FACET_FRACTION_DIGITS);
+        xmlD = (XmlDecimal)sType.getFacet(SchemaType.FACET_FRACTION_DIGITS);
         int fractionDigits = -1;
         BigDecimal increment;
         if (xmlD == null) {
             increment = new BigDecimal(1);
-        } else {
+        }
+        else {
             fractionDigits = xmlD.getBigDecimalValue().intValue();
             if (fractionDigits > 0) {
                 StringBuffer sb = new StringBuffer("0.");
@@ -613,28 +767,34 @@ public class SampleXmlUtil {
                 }
                 sb.append('1');
                 increment = new BigDecimal(sb.toString());
-            } else {
+            }
+            else {
                 increment = new BigDecimal(1);
             }
         }
 
         if (minOk && maxOk) {
             // OK
-        } else if (minOk && !maxOk) {
+        }
+        else if (minOk && !maxOk) {
             // TOO BIG
             if (maxInclusive) {
                 result = max;
-            } else {
+            }
+            else {
                 result = max.subtract(increment);
             }
-        } else if (!minOk && maxOk) {
+        }
+        else if (!minOk && maxOk) {
             // TOO SMALL
             if (minInclusive) {
                 result = min;
-            } else {
+            }
+            else {
                 result = min.add(increment);
             }
-        } else {
+        }
+        else {
             // MIN > MAX!!
         }
 
@@ -649,10 +809,12 @@ public class SampleXmlUtil {
         if (fractionDigits > 0) {
             if (totalDigits >= 0) {
                 result.setScale(Math.max(fractionDigits, totalDigits - digits));
-            } else {
+            }
+            else {
                 result.setScale(fractionDigits);
             }
-        } else if (fractionDigits == 0) {
+        }
+        else if (fractionDigits == 0) {
             result.setScale(0);
         }
 
@@ -660,33 +822,32 @@ public class SampleXmlUtil {
     }
 
     private String formatDuration(SchemaType sType) {
-        XmlDuration d = (XmlDuration) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+        XmlDuration d = (XmlDuration)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
         GDuration minInclusive = null;
         if (d != null) {
             minInclusive = d.getGDurationValue();
         }
 
-        d = (XmlDuration) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+        d = (XmlDuration)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
         GDuration maxInclusive = null;
         if (d != null) {
             maxInclusive = d.getGDurationValue();
         }
 
-        d = (XmlDuration) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+        d = (XmlDuration)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
         GDuration minExclusive = null;
         if (d != null) {
             minExclusive = d.getGDurationValue();
         }
 
-        d = (XmlDuration) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+        d = (XmlDuration)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
         GDuration maxExclusive = null;
         if (d != null) {
             maxExclusive = d.getGDurationValue();
         }
 
         GDurationBuilder gdurb = new GDurationBuilder();
-        @SuppressWarnings("unused")
-        BigInteger min, max;
+        @SuppressWarnings("unused") BigInteger min, max;
 
         gdurb.setSecond(pick(800000));
         gdurb.setMonth(pick(20));
@@ -799,29 +960,28 @@ public class SampleXmlUtil {
     }
 
     private String formatDate(SchemaType sType) {
-        GDateBuilder gdateb = new GDateBuilder(new Date(1000L * pick(365 * 24 * 60 * 60) + (30L + pick(20)) * 365
-                * 24 * 60 * 60 * 1000));
+        GDateBuilder gdateb = new GDateBuilder(new Date(1000L * pick(365 * 24 * 60 * 60) + (30L + pick(20)) * 365 * 24 * 60 * 60 * 1000));
         GDate min = null, max = null;
 
         // Find the min and the max according to the type
         switch (sType.getPrimitiveType().getBuiltinTypeCode()) {
             case SchemaType.BTC_DATE_TIME: {
-                XmlDateTime x = (XmlDateTime) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+                XmlDateTime x = (XmlDateTime)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
                 if (x != null) {
                     min = x.getGDateValue();
                 }
-                x = (XmlDateTime) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+                x = (XmlDateTime)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
                 if (x != null) {
                     if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
                         min = x.getGDateValue();
                     }
                 }
 
-                x = (XmlDateTime) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+                x = (XmlDateTime)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
                 if (x != null) {
                     max = x.getGDateValue();
                 }
-                x = (XmlDateTime) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+                x = (XmlDateTime)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
                 if (x != null) {
                     if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
                         max = x.getGDateValue();
@@ -830,22 +990,22 @@ public class SampleXmlUtil {
                 break;
             }
             case SchemaType.BTC_TIME: {
-                XmlTime x = (XmlTime) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+                XmlTime x = (XmlTime)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
                 if (x != null) {
                     min = x.getGDateValue();
                 }
-                x = (XmlTime) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+                x = (XmlTime)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
                 if (x != null) {
                     if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
                         min = x.getGDateValue();
                     }
                 }
 
-                x = (XmlTime) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+                x = (XmlTime)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
                 if (x != null) {
                     max = x.getGDateValue();
                 }
-                x = (XmlTime) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+                x = (XmlTime)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
                 if (x != null) {
                     if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
                         max = x.getGDateValue();
@@ -854,22 +1014,22 @@ public class SampleXmlUtil {
                 break;
             }
             case SchemaType.BTC_DATE: {
-                XmlDate x = (XmlDate) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+                XmlDate x = (XmlDate)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
                 if (x != null) {
                     min = x.getGDateValue();
                 }
-                x = (XmlDate) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+                x = (XmlDate)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
                 if (x != null) {
                     if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
                         min = x.getGDateValue();
                     }
                 }
 
-                x = (XmlDate) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+                x = (XmlDate)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
                 if (x != null) {
                     max = x.getGDateValue();
                 }
-                x = (XmlDate) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+                x = (XmlDate)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
                 if (x != null) {
                     if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
                         max = x.getGDateValue();
@@ -878,22 +1038,22 @@ public class SampleXmlUtil {
                 break;
             }
             case SchemaType.BTC_G_YEAR_MONTH: {
-                XmlGYearMonth x = (XmlGYearMonth) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+                XmlGYearMonth x = (XmlGYearMonth)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
                 if (x != null) {
                     min = x.getGDateValue();
                 }
-                x = (XmlGYearMonth) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+                x = (XmlGYearMonth)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
                 if (x != null) {
                     if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
                         min = x.getGDateValue();
                     }
                 }
 
-                x = (XmlGYearMonth) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+                x = (XmlGYearMonth)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
                 if (x != null) {
                     max = x.getGDateValue();
                 }
-                x = (XmlGYearMonth) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+                x = (XmlGYearMonth)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
                 if (x != null) {
                     if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
                         max = x.getGDateValue();
@@ -902,22 +1062,22 @@ public class SampleXmlUtil {
                 break;
             }
             case SchemaType.BTC_G_YEAR: {
-                XmlGYear x = (XmlGYear) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+                XmlGYear x = (XmlGYear)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
                 if (x != null) {
                     min = x.getGDateValue();
                 }
-                x = (XmlGYear) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+                x = (XmlGYear)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
                 if (x != null) {
                     if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
                         min = x.getGDateValue();
                     }
                 }
 
-                x = (XmlGYear) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+                x = (XmlGYear)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
                 if (x != null) {
                     max = x.getGDateValue();
                 }
-                x = (XmlGYear) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+                x = (XmlGYear)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
                 if (x != null) {
                     if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
                         max = x.getGDateValue();
@@ -926,22 +1086,22 @@ public class SampleXmlUtil {
                 break;
             }
             case SchemaType.BTC_G_MONTH_DAY: {
-                XmlGMonthDay x = (XmlGMonthDay) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+                XmlGMonthDay x = (XmlGMonthDay)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
                 if (x != null) {
                     min = x.getGDateValue();
                 }
-                x = (XmlGMonthDay) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+                x = (XmlGMonthDay)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
                 if (x != null) {
                     if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
                         min = x.getGDateValue();
                     }
                 }
 
-                x = (XmlGMonthDay) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+                x = (XmlGMonthDay)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
                 if (x != null) {
                     max = x.getGDateValue();
                 }
-                x = (XmlGMonthDay) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+                x = (XmlGMonthDay)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
                 if (x != null) {
                     if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
                         max = x.getGDateValue();
@@ -950,22 +1110,22 @@ public class SampleXmlUtil {
                 break;
             }
             case SchemaType.BTC_G_DAY: {
-                XmlGDay x = (XmlGDay) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+                XmlGDay x = (XmlGDay)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
                 if (x != null) {
                     min = x.getGDateValue();
                 }
-                x = (XmlGDay) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+                x = (XmlGDay)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
                 if (x != null) {
                     if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
                         min = x.getGDateValue();
                     }
                 }
 
-                x = (XmlGDay) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+                x = (XmlGDay)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
                 if (x != null) {
                     max = x.getGDateValue();
                 }
-                x = (XmlGDay) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+                x = (XmlGDay)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
                 if (x != null) {
                     if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
                         max = x.getGDateValue();
@@ -974,22 +1134,22 @@ public class SampleXmlUtil {
                 break;
             }
             case SchemaType.BTC_G_MONTH: {
-                XmlGMonth x = (XmlGMonth) sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
+                XmlGMonth x = (XmlGMonth)sType.getFacet(SchemaType.FACET_MIN_INCLUSIVE);
                 if (x != null) {
                     min = x.getGDateValue();
                 }
-                x = (XmlGMonth) sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
+                x = (XmlGMonth)sType.getFacet(SchemaType.FACET_MIN_EXCLUSIVE);
                 if (x != null) {
                     if (min == null || min.compareToGDate(x.getGDateValue()) <= 0) {
                         min = x.getGDateValue();
                     }
                 }
 
-                x = (XmlGMonth) sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
+                x = (XmlGMonth)sType.getFacet(SchemaType.FACET_MAX_INCLUSIVE);
                 if (x != null) {
                     max = x.getGDateValue();
                 }
-                x = (XmlGMonth) sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
+                x = (XmlGMonth)sType.getFacet(SchemaType.FACET_MAX_EXCLUSIVE);
                 if (x != null) {
                     if (max == null || max.compareToGDate(x.getGDateValue()) >= 0) {
                         max = x.getGDateValue();
@@ -1006,14 +1166,16 @@ public class SampleXmlUtil {
                 c.add(Calendar.HOUR_OF_DAY, pick(8));
                 gdateb = new GDateBuilder(c);
             }
-        } else if (min == null && max != null) {
+        }
+        else if (min == null && max != null) {
             if (max.compareToGDate(gdateb) <= 0) {
                 // Reset the date to max - (1-8) hours
                 Calendar c = gdateb.getCalendar();
-                c.add(Calendar.HOUR_OF_DAY, 0 - pick(8));
+                c.add(Calendar.HOUR_OF_DAY, -pick(8));
                 gdateb = new GDateBuilder(c);
             }
-        } else if (min != null && max != null) {
+        }
+        else if (min != null && max != null) {
             if (min.compareToGDate(gdateb) >= 0 || max.compareToGDate(gdateb) <= 0) {
                 // Find a date between the two
                 Calendar c = min.getCalendar();
@@ -1050,25 +1212,6 @@ public class SampleXmlUtil {
             sType = sType.getBaseType();
         }
         return sType;
-    }
-
-    /**
-     * Cracks a combined QName of the form URL:localname
-     */
-    public static QName crackQName(String qName) {
-        String ns;
-        String name;
-
-        int index = qName.lastIndexOf(':');
-        if (index >= 0) {
-            ns = qName.substring(0, index);
-            name = qName.substring(index + 1);
-        } else {
-            ns = "";
-            name = qName;
-        }
-
-        return new QName(ns, name);
     }
 
     /**
@@ -1133,12 +1276,15 @@ public class SampleXmlUtil {
                 // be repeated " + minOccurs + " or more times");
                 if (minOccurs == 0) {
                     xmlc.insertComment("Zero or more repetitions:");
-                } else {
+                }
+                else {
                     xmlc.insertComment(minOccurs + " or more repetitions:");
                 }
-            } else if (sp.getIntMaxOccurs() > 1) {
-                xmlc.insertComment(minOccurs + " to " + String.valueOf(sp.getMaxOccurs()) + " repetitions:");
-            } else {
+            }
+            else if (sp.getIntMaxOccurs() > 1) {
+                xmlc.insertComment(minOccurs + " to " + sp.getMaxOccurs() + " repetitions:");
+            }
+            else {
                 xmlc.insertComment("Optional:");
             }
         }
@@ -1155,7 +1301,8 @@ public class SampleXmlUtil {
         String elementOrTypeName = null;
         if (sp.getParticleType() == SchemaParticle.ELEMENT) {
             elementOrTypeName = "Element (" + sp.getName().getLocalPart() + ")";
-        } else {
+        }
+        else {
             elementOrTypeName = printParticleType(sp.getParticleType());
         }
         return elementOrTypeName;
@@ -1163,7 +1310,7 @@ public class SampleXmlUtil {
 
     private void processElement(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
         // cast as schema local element
-        SchemaLocalElement element = (SchemaLocalElement) sp;
+        SchemaLocalElement element = (SchemaLocalElement)sp;
 
         // Add comment about type
         addElementTypeAndRestricionsComment(element, xmlc);
@@ -1190,9 +1337,11 @@ public class SampleXmlUtil {
         }
         if (values != null) {
             xmlc.insertChars(StringUtils.join(values, ","));
-        } else if (sp.isDefault()) {
+        }
+        else if (sp.isDefault()) {
             xmlc.insertChars(sp.getDefaultText());
-        } else {
+        }
+        else {
             createSampleForType(element.getType(), xmlc);
         }
         // -> <elem>stuff</elem>^
@@ -1204,34 +1353,12 @@ public class SampleXmlUtil {
         for (int i = 0; i < Math.abs(numToMove); i++) {
             if (numToMove < 0) {
                 xmlc.toPrevToken();
-            } else {
+            }
+            else {
                 xmlc.toNextToken();
             }
         }
     }
-
-    private static final String formatQName(XmlCursor xmlc, QName qName) {
-        XmlCursor parent = xmlc.newCursor();
-        parent.toParent();
-        String prefix = parent.prefixForNamespace(qName.getNamespaceURI());
-        parent.dispose();
-        String name;
-        if (prefix == null || prefix.length() == 0) {
-            name = qName.getLocalPart();
-        } else {
-            name = prefix + ":" + qName.getLocalPart();
-        }
-        return name;
-    }
-
-    private static final QName HREF = new QName("href");
-    private static final QName ID = new QName("id");
-    public static final QName XSI_TYPE = new QName("http://www.w3.org/2001/XMLSchema-instance", "type");
-    public static final QName ENC_ARRAYTYPE = new QName("http://schemas.xmlsoap.org/soap/encoding/", "arrayType");
-    private static final QName ENC_OFFSET = new QName("http://schemas.xmlsoap.org/soap/encoding/", "offset");
-
-    public static final Set<QName> SKIPPED_SOAP_ATTRS = new HashSet<QName>(Arrays.asList(new QName[]{HREF, ID,
-            ENC_OFFSET}));
 
     private void processAttributes(SchemaType stype, XmlCursor xmlc) {
         if (_soapEnc) {
@@ -1258,11 +1385,9 @@ public class SampleXmlUtil {
                     continue;
                 }
                 if (ENC_ARRAYTYPE.equals(attr.getName())) {
-                    SOAPArrayType arrayType = ((SchemaWSDLArrayType) stype.getAttributeModel().getAttribute(
-                            attr.getName())).getWSDLArrayType();
+                    SOAPArrayType arrayType = ((SchemaWSDLArrayType)stype.getAttributeModel().getAttribute(attr.getName())).getWSDLArrayType();
                     if (arrayType != null) {
-                        xmlc.insertAttributeWithValue(attr.getName(),
-                                formatQName(xmlc, arrayType.getQName()) + arrayType.soap11DimensionString());
+                        xmlc.insertAttributeWithValue(attr.getName(), formatQName(xmlc, arrayType.getQName()) + arrayType.soap11DimensionString());
                     }
                     continue;
                 }
@@ -1301,7 +1426,7 @@ public class SampleXmlUtil {
     private void processChoice(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
         SchemaParticle[] spc = sp.getParticleChildren();
         if (!_skipComments) {
-            xmlc.insertComment("You have a CHOICE of the next " + String.valueOf(spc.length) + " items at this level");
+            xmlc.insertComment("You have a CHOICE of the next " + spc.length + " items at this level");
         }
 
         for (int i = 0; i < spc.length; i++) {
@@ -1312,7 +1437,7 @@ public class SampleXmlUtil {
     private void processAll(SchemaParticle sp, XmlCursor xmlc, boolean mixed) {
         SchemaParticle[] spc = sp.getParticleChildren();
         if (!_skipComments) {
-            xmlc.insertComment("You may enter the following " + String.valueOf(spc.length) + " items in any order");
+            xmlc.insertComment("You may enter the following " + spc.length + " items in any order");
         }
 
         for (int i = 0; i < spc.length; i++) {
@@ -1328,19 +1453,6 @@ public class SampleXmlUtil {
             xmlc.insertComment("You may enter ANY elements at this point");
         }
         // xmlc.insertElement("AnyElement");
-    }
-
-    /**
-     * This method will get the base type for the schema type
-     */
-
-    @SuppressWarnings("unused")
-    private static QName getClosestName(SchemaType sType) {
-        while (sType.getName() == null) {
-            sType = sType.getBaseType();
-        }
-
-        return sType.getName();
     }
 
     private String printParticleType(int particleType) {
@@ -1370,8 +1482,6 @@ public class SampleXmlUtil {
 
         return returnParticleType.toString();
     }
-
-    private ArrayList<SchemaType> _typeStack = new ArrayList<SchemaType>();
 
     public boolean isIgnoreOptional() {
         return ignoreOptional;
@@ -1403,10 +1513,38 @@ public class SampleXmlUtil {
 
             if (type.isAnonymousType()) {
                 xmlc.insertComment("anonymous type" + info);
-            } else {
+            }
+            else {
                 xmlc.insertComment("type: " + type.getName().getLocalPart() + info);
             }
         }
     }
 
+    private static final String formatQName(XmlCursor xmlc, QName qName) {
+        XmlCursor parent = xmlc.newCursor();
+        parent.toParent();
+        String prefix = parent.prefixForNamespace(qName.getNamespaceURI());
+        parent.dispose();
+        String name;
+        if (prefix == null || prefix.length() == 0) {
+            name = qName.getLocalPart();
+        }
+        else {
+            name = prefix + ":" + qName.getLocalPart();
+        }
+        return name;
+    }
+
+    /**
+     * This method will get the base type for the schema type
+     */
+
+    @SuppressWarnings("unused")
+    private static QName getClosestName(SchemaType sType) {
+        while (sType.getName() == null) {
+            sType = sType.getBaseType();
+        }
+
+        return sType.getName();
+    }
 }

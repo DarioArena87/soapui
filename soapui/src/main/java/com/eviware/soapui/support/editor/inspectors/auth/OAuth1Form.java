@@ -12,25 +12,8 @@ import com.jgoodies.binding.PresentationModel;
 import com.jgoodies.binding.adapter.Bindings;
 
 import javax.annotation.Nonnull;
-import javax.swing.AbstractAction;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.MouseInfo;
-import java.awt.Point;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -55,7 +38,7 @@ public class OAuth1Form extends AbstractAuthenticationForm implements OAuth1Toke
     private final Color FAIL_COLOR = new Color(0xffcccc);
     private final AbstractXmlInspector inspector;
     private final OAuth1TokenStatusChangeManager statusChangeManager;
-    private OAuth1Profile profile;
+    private final OAuth1Profile profile;
     private JPanel formPanel;
     private boolean disclosureButtonDisabled;
     private boolean isMouseOnDisclosureLabel;
@@ -75,7 +58,6 @@ public class OAuth1Form extends AbstractAuthenticationForm implements OAuth1Toke
     private SoapUIMainWindowFocusListener mainWindowFocusListener;
 
     public OAuth1Form(OAuth1Profile profile, AbstractXmlInspector inspector) {
-        super();
         this.profile = profile;
         this.inspector = inspector;
         statusChangeManager = new OAuth1TokenStatusChangeManager(this);
@@ -147,8 +129,7 @@ public class OAuth1Form extends AbstractAuthenticationForm implements OAuth1Toke
         accessTokenField = createTokenField("accessToken");
         accessTokenStatusIcon = createTokenStatusIcon();
         accessTokenStatusText = createAccessTokenStatusText();
-        JPanel accessTokenRowPanel =
-                createAccessTokenRowPanel(accessTokenField, accessTokenStatusIcon, accessTokenStatusText);
+        JPanel accessTokenRowPanel = createAccessTokenRowPanel(accessTokenField, accessTokenStatusIcon, accessTokenStatusText);
         oAuth1Form.append(ACCESS_TOKEN_LABEL, accessTokenRowPanel);
         oAuth1Form.addInputFieldHintText(messages.get("OAuth1Form.AccessTokenField.Hint"));
 
@@ -160,8 +141,7 @@ public class OAuth1Form extends AbstractAuthenticationForm implements OAuth1Toke
         secretTokenField = createTokenField("tokenSecret");
         secretTokenStatusIcon = createTokenStatusIcon();
         secretTokenStatusText = createAccessTokenStatusText();
-        JPanel secretTokenRowPanel =
-                createAccessTokenRowPanel(secretTokenField, secretTokenStatusIcon, secretTokenStatusText);
+        JPanel secretTokenRowPanel = createAccessTokenRowPanel(secretTokenField, secretTokenStatusIcon, secretTokenStatusText);
         oAuth1Form.append(TOKEN_SECRET_LABEL, secretTokenRowPanel);
         oAuth1Form.addInputFieldHintText(messages.get("OAuth1Form.SecretTokenField.Hint"));
 
@@ -175,7 +155,7 @@ public class OAuth1Form extends AbstractAuthenticationForm implements OAuth1Toke
         oAuth1Form.addLeftComponent(advancedOptionsButton);
 
         accessTokenForm = new OAuth1GetTokenForm(profile);
-        final JDialog accessTokenFormDialog = accessTokenForm.getComponent();
+        JDialog accessTokenFormDialog = accessTokenForm.getComponent();
 
         disclosureButton.addMouseListener(new DisclosureButtonMouseListener(accessTokenFormDialog, disclosureButton));
 
@@ -224,30 +204,35 @@ public class OAuth1Form extends AbstractAuthenticationForm implements OAuth1Toke
 
     private Font scaledFont(JComponent component, float scale) {
         Font currentFont = component.getFont();
-        return currentFont.deriveFont((float) currentFont.getSize() * scale);
+        return currentFont.deriveFont((float)currentFont.getSize() * scale);
     }
 
     private void setAccessTokenFormDialogBoundsBelowTheButton(Point disclosureButtonLocation, JDialog accessTokenFormDialog, int disclosureButtonHeight) {
-        accessTokenFormDialog.setLocation((int) disclosureButtonLocation.getX() - ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET,
-                (int) disclosureButtonLocation.getY() + disclosureButtonHeight);
+        accessTokenFormDialog.setLocation((int)disclosureButtonLocation.getX() - ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET,
+                                          (int)disclosureButtonLocation.getY() + disclosureButtonHeight
+        );
     }
 
     private void setAccessTokenFormDialogBoundsAboveTheButton(Point disclosureButtonLocation, JDialog accessTokenFormDialog) {
-        accessTokenFormDialog.setLocation((int) disclosureButtonLocation.getX() - ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET,
-                (int) disclosureButtonLocation.getY() - accessTokenFormDialog.getHeight());
+        accessTokenFormDialog.setLocation((int)disclosureButtonLocation.getX() - ACCESS_TOKEN_DIALOG_HORIZONTAL_OFFSET,
+                                          (int)disclosureButtonLocation.getY() - accessTokenFormDialog.getHeight()
+        );
     }
 
     private void setAccessTokenStatusFeedback(AccessTokenStatusConfig.Enum status) {
         if (status == AccessTokenStatusConfig.UNKNOWN) {
             setAccessTokenDefaultFeedback();
-        } else if (status == AccessTokenStatusConfig.ENTERED_MANUALLY) {
+        }
+        else if (status == AccessTokenStatusConfig.ENTERED_MANUALLY) {
             setAccessTokenEnteredManuallyFeedback();
-        } else if (status == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER) {
+        }
+        else if (status == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER) {
             setAccessTokenSuccessfulFeedback();
-        } else if (status == AccessTokenStatusConfig.EXPIRED
-                || status == AccessTokenStatusConfig.RETRIEVAL_CANCELED) {
+        }
+        else if (status == AccessTokenStatusConfig.EXPIRED || status == AccessTokenStatusConfig.RETRIEVAL_CANCELED) {
             setAccessTokenFailedFeedback();
-        } else {
+        }
+        else {
             setAccessTokenDefaultFeedback();
         }
     }
@@ -255,14 +240,17 @@ public class OAuth1Form extends AbstractAuthenticationForm implements OAuth1Toke
     private void setSecretTokenStatusFeedback(AccessTokenStatusConfig.Enum status) {
         if (status == AccessTokenStatusConfig.UNKNOWN) {
             setSecretTokenDefaultFeedback();
-        } else if (status == AccessTokenStatusConfig.ENTERED_MANUALLY) {
+        }
+        else if (status == AccessTokenStatusConfig.ENTERED_MANUALLY) {
             setSecretTokenEnteredManuallyFeedback();
-        } else if (status == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER) {
+        }
+        else if (status == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER) {
             setSecretTokenSuccessfulFeedback();
-        } else if (status == AccessTokenStatusConfig.EXPIRED
-                || status == AccessTokenStatusConfig.RETRIEVAL_CANCELED) {
+        }
+        else if (status == AccessTokenStatusConfig.EXPIRED || status == AccessTokenStatusConfig.RETRIEVAL_CANCELED) {
             setSecretTokenFailedFeedback();
-        } else {
+        }
+        else {
             setSecretTokenDefaultFeedback();
         }
     }
@@ -366,14 +354,15 @@ public class OAuth1Form extends AbstractAuthenticationForm implements OAuth1Toke
                 return;
             }
 
-            JLabel source = (JLabel) e.getSource();
+            JLabel source = (JLabel)e.getSource();
             Point disclosureButtonLocation = source.getLocationOnScreen();
             accessTokenFormDialog.pack();
             accessTokenFormDialog.setVisible(true);
             disclosureButton.setIcon(UISupport.createImageIcon("/pop-down-close.png"));
             if (UISupport.isEnoughSpaceAvailableBelowComponent(disclosureButtonLocation, accessTokenFormDialog.getHeight(), source.getHeight())) {
                 setAccessTokenFormDialogBoundsBelowTheButton(disclosureButtonLocation, accessTokenFormDialog, source.getHeight());
-            } else {
+            }
+            else {
                 setAccessTokenFormDialogBoundsAboveTheButton(disclosureButtonLocation, accessTokenFormDialog);
             }
         }

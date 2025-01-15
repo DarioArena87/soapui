@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.registry;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractRegistry<T1 extends RegistryEntry<T2, T3>, T2 extends RegistryEntryConfig, T3 extends Object> {
-    private Map<String, Class<? extends T1>> registry = new HashMap<String, Class<? extends T1>>();
+    private final Map<String, Class<? extends T1>> registry = new HashMap<String, Class<? extends T1>>();
 
     public void mapType(String type, Class<? extends T1> clazz) {
         registry.put(type, clazz);
@@ -38,7 +38,8 @@ public abstract class AbstractRegistry<T1 extends RegistryEntry<T2, T3>, T2 exte
             T2 config = addNewConfig(parent);
             config.setType(type);
             return build(config, parent);
-        } else {
+        }
+        else {
             throw new RuntimeException("Invalid type [" + type + "]");
         }
     }
@@ -55,7 +56,8 @@ public abstract class AbstractRegistry<T1 extends RegistryEntry<T2, T3>, T2 exte
             T1 entry = clazz.newInstance();
             entry.init(config, parent);
             return entry;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 

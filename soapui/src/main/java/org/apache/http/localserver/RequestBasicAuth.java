@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -41,23 +41,21 @@
 
 package org.apache.http.localserver;
 
-import java.io.IOException;
-
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.protocol.HttpContext;
 
+import java.io.IOException;
+
 public class RequestBasicAuth implements HttpRequestInterceptor {
     private final BasicAuthTokenExtractor authTokenExtractor;
 
     public RequestBasicAuth() {
-        super();
-        this.authTokenExtractor = new BasicAuthTokenExtractor();
+        authTokenExtractor = new BasicAuthTokenExtractor();
     }
 
-    public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
-        context.setAttribute("creds", this.authTokenExtractor.extract(request));
+    public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
+        context.setAttribute("creds", authTokenExtractor.extract(request));
     }
-
 }

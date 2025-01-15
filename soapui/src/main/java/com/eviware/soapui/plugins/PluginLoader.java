@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.plugins;
@@ -44,8 +44,9 @@ public class PluginLoader extends LoaderBase {
 
     public static Logger log = LogManager.getLogger(PluginLoader.class);
 
-    public PluginLoader(SoapUIFactoryRegistry factoryRegistry,
-                        SoapUIActionRegistry actionRegistry, ListenerRegistry listenerRegistry) {
+    public PluginLoader(
+        SoapUIFactoryRegistry factoryRegistry, SoapUIActionRegistry actionRegistry, ListenerRegistry listenerRegistry
+    ) {
         super(listenerRegistry, actionRegistry, factoryRegistry);
     }
 
@@ -77,7 +78,8 @@ public class PluginLoader extends LoaderBase {
         if (pluginClasses.isEmpty()) {
             log.warn("No plugin classes found in JAR file " + pluginFile);
             throw new MissingPluginClassException("No plugin class found in " + pluginFile);
-        } else if (pluginClasses.size() > 1) {
+        }
+        else if (pluginClasses.size() > 1) {
             throw new InvalidPluginException("Multiple plugin classes found in " + pluginFile + ": " + pluginClasses);
         }
         return pluginClasses.iterator().next();
@@ -89,13 +91,18 @@ public class PluginLoader extends LoaderBase {
             Version minimumSoapUIOSVersion = Version.fromString(configurationAnnotation.minimumSoapUIVersion());
             Version installedSoapUIOSVersion = Version.fromString(SoapUI.SOAPUI_VERSION);
             if (minimumSoapUIOSVersion.compareTo(installedSoapUIOSVersion) > 0) {
-                throw new InvalidPluginException("Plugin " + configurationAnnotation.name() + " requires version " +
-                        minimumSoapUIOSVersion + " of SoapUI OS. Current application version: " + installedSoapUIOSVersion);
+                throw new InvalidPluginException("Plugin " +
+                                                 configurationAnnotation.name() +
+                                                 " requires version " +
+                                                 minimumSoapUIOSVersion +
+                                                 " of SoapUI OS. Current application version: " +
+                                                 installedSoapUIOSVersion);
             }
             Plugin plugin;
             if (Plugin.class.isAssignableFrom(pluginClass)) {
-                plugin = (Plugin) pluginClass.newInstance();
-            } else {
+                plugin = (Plugin)pluginClass.newInstance();
+            }
+            else {
                 plugin = new EmptyPlugin(configurationAnnotation);
             }
 
@@ -109,15 +116,18 @@ public class PluginLoader extends LoaderBase {
             }
 
             return plugin;
-        } catch (InvalidPluginException e) {
+        }
+        catch (InvalidPluginException e) {
             throw e;
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             throw new InvalidPluginException("Error loading plugin " + pluginClass, e);
         }
     }
 
-    private LoadedPlugin createLoadedPluginInstance(Plugin plugin, Collection<SoapUIFactory> factories, List<SoapUIAction> actions,
-                                                    List<Class<? extends SoapUIListener>> listeners) {
+    private LoadedPlugin createLoadedPluginInstance(
+        Plugin plugin, Collection<SoapUIFactory> factories, List<SoapUIAction> actions, List<Class<? extends SoapUIListener>> listeners
+    ) {
         LoadedPlugin loadedPlugin = new LoadedPlugin(plugin, factories, actions, listeners);
         for (SoapUIFactory factory : factories) {
             if (factory instanceof PluginAware) {
@@ -132,11 +142,11 @@ public class PluginLoader extends LoaderBase {
         return loadedPlugin;
     }
 
-    private Collection<SoapUIFactory> loadPluginFactories(Plugin plugin, boolean autoDetect, Reflections jarFileScanner)
-            throws IllegalAccessException, InstantiationException {
+    private Collection<SoapUIFactory> loadPluginFactories(Plugin plugin, boolean autoDetect, Reflections jarFileScanner) throws IllegalAccessException, InstantiationException {
         Collection<SoapUIFactory> factories = new HashSet<SoapUIFactory>(plugin.getFactories());
-        if (!factories.isEmpty())
+        if (!factories.isEmpty()) {
             registerFactories(factories);
+        }
 
         if (autoDetect) {
             factories.addAll(loadFactories(jarFileScanner));
@@ -145,11 +155,15 @@ public class PluginLoader extends LoaderBase {
         return factories;
     }
 
-
-    private List<Class<? extends SoapUIListener>> loadPluginListeners(Plugin plugin, boolean autoDetect, Reflections jarFileScanner) throws IllegalAccessException, InstantiationException {
+    private List<Class<? extends SoapUIListener>> loadPluginListeners(
+        Plugin plugin,
+        boolean autoDetect,
+        Reflections jarFileScanner
+    ) throws IllegalAccessException, InstantiationException {
         List<Class<? extends SoapUIListener>> listeners = new ArrayList<Class<? extends SoapUIListener>>(plugin.getListeners());
-        if (!listeners.isEmpty())
+        if (!listeners.isEmpty()) {
             registerListeners(listeners);
+        }
 
         if (autoDetect) {
             listeners.addAll(loadListeners(jarFileScanner));
@@ -158,11 +172,11 @@ public class PluginLoader extends LoaderBase {
         return listeners;
     }
 
-    private List<SoapUIAction> loadPluginActions(Plugin plugin, boolean autoDetect, Reflections jarFileScanner)
-            throws InstantiationException, IllegalAccessException {
+    private List<SoapUIAction> loadPluginActions(Plugin plugin, boolean autoDetect, Reflections jarFileScanner) throws InstantiationException, IllegalAccessException {
         List<SoapUIAction> actions = new ArrayList<SoapUIAction>(plugin.getActions());
-        if (!actions.isEmpty())
+        if (!actions.isEmpty()) {
             registerActions(actions);
+        }
 
         if (autoDetect) {
             actions.addAll(loadActions(jarFileScanner));
@@ -194,13 +208,6 @@ public class PluginLoader extends LoaderBase {
         return pluginInfo;
     }
 
-    private static void addDependency(PluginInfo pluginInfo, PluginDependency dependencyAnnotation) {
-        if (dependencyAnnotation != null) {
-            PluginId id = new PluginId(dependencyAnnotation.groupId(), dependencyAnnotation.name());
-            pluginInfo.addDependency(new PluginInfo(id, Version.fromString(dependencyAnnotation.minimumVersion()), "", ""));
-        }
-    }
-
     static PluginInfo readPluginInfoFromAnnotation(PluginConfiguration annotation) {
         PluginId id = new PluginId(annotation.groupId(), annotation.name());
         Version version = Version.fromString(annotation.version());
@@ -208,6 +215,12 @@ public class PluginLoader extends LoaderBase {
         return new PluginInfo(id, version, annotation.description(), infoUrl);
     }
 
+    private static void addDependency(PluginInfo pluginInfo, PluginDependency dependencyAnnotation) {
+        if (dependencyAnnotation != null) {
+            PluginId id = new PluginId(dependencyAnnotation.groupId(), dependencyAnnotation.name());
+            pluginInfo.addDependency(new PluginInfo(id, Version.fromString(dependencyAnnotation.minimumVersion()), "", ""));
+        }
+    }
 
     // due to Reflections internals (or my misunderstanding of them) this class has to be
     // named as its superclass
@@ -216,20 +229,22 @@ public class PluginLoader extends LoaderBase {
         public boolean acceptsInput(String file) {
             if (file.endsWith(".groovy")) {
                 return true;
-            } else {
+            }
+            else {
                 return super.acceptsInput(file);
             }
         }
     }
 
-    private class LoadedPlugin implements Plugin{
+    private class LoadedPlugin implements Plugin {
         private final Plugin plugin;
         private final Collection<SoapUIFactory> factories;
         private final List<SoapUIAction> actions;
         private final List<Class<? extends SoapUIListener>> listeners;
 
-        public LoadedPlugin(Plugin plugin, Collection<SoapUIFactory> factories, List<SoapUIAction> actions,
-                            List<Class<? extends SoapUIListener>> listeners) {
+        public LoadedPlugin(
+            Plugin plugin, Collection<SoapUIFactory> factories, List<SoapUIAction> actions, List<Class<? extends SoapUIListener>> listeners
+        ) {
             this.plugin = plugin;
             this.factories = factories;
             this.actions = actions;
@@ -284,7 +299,7 @@ public class PluginLoader extends LoaderBase {
 
     private class EmptyPlugin implements Plugin {
 
-        private PluginInfo pluginInfo;
+        private final PluginInfo pluginInfo;
 
         private EmptyPlugin(PluginConfiguration annotation) {
             pluginInfo = readPluginInfoFromAnnotation(annotation);

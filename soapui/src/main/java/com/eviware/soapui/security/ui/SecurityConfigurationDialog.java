@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.ui;
@@ -31,16 +31,8 @@ import com.eviware.x.form.support.ADialogBuilder;
 import com.eviware.x.form.support.XFormRadioGroup;
 import com.eviware.x.impl.swing.JFormDialog;
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 
 public class SecurityConfigurationDialog extends SimpleDialog {
     private SecurityScan securityCheck;
@@ -84,7 +76,8 @@ public class SecurityConfigurationDialog extends SimpleDialog {
             }
 
             mainPanel.add(topPanel);
-        } else {
+        }
+        else {
             mainPanel.setLayout(new BorderLayout());
             mainPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -97,8 +90,8 @@ public class SecurityConfigurationDialog extends SimpleDialog {
         }
 
         Dimension prefSize = mainPanel.getPreferredSize();
-        int prefHeight = (int) (prefSize.getHeight() + 170);
-        int prefWidth = (int) Math.max(prefSize.getWidth(), 600);
+        int prefHeight = (int)(prefSize.getHeight() + 170);
+        int prefWidth = (int)Math.max(prefSize.getWidth(), 600);
 
         mainPanel.setPreferredSize(new Dimension(prefWidth, prefHeight));
 
@@ -107,10 +100,18 @@ public class SecurityConfigurationDialog extends SimpleDialog {
         return mainPanel;
     }
 
+    @Override
+    protected boolean handleOk() {
+        result = true;
+        return true;
+    }
+
     protected Component buildParametersTable() {
-        parametersTable = new SecurityCheckedParametersTablePanel(new SecurityParametersTableModel(
-                ((AbstractSecurityScanWithProperties) securityCheck).getParameterHolder()), securityCheck.getTestStep()
-                .getProperties(), (AbstractSecurityScanWithProperties) securityCheck);
+        parametersTable = new SecurityCheckedParametersTablePanel(
+            new SecurityParametersTableModel(((AbstractSecurityScanWithProperties)securityCheck).getParameterHolder()),
+            securityCheck.getTestStep().getProperties(),
+            (AbstractSecurityScanWithProperties)securityCheck
+        );
 
         parametersTable.setPreferredSize(new Dimension(400, 150));
         parametersTable.setMinimumSize(new Dimension(400, 150));
@@ -139,16 +140,18 @@ public class SecurityConfigurationDialog extends SimpleDialog {
     protected Component buildStrategyTab() {
         strategyDialog = ADialogBuilder.buildDialog(SecurityConfigurationDialogBuilder.Strategy.class, null);
 
-        XFormRadioGroup strategy = (XFormRadioGroup) strategyDialog.getFormField(Strategy.STRATEGY);
-        final String[] strategyOptions = new String[]{"One by One", "All At Once"};
+        XFormRadioGroup strategy = (XFormRadioGroup)strategyDialog.getFormField(Strategy.STRATEGY);
+        String[] strategyOptions = new String[]{"One by One", "All At Once"};
         strategy.setOptions(strategyOptions);
 
         if (securityCheck.getExecutionStrategy().getStrategy() == StrategyTypeConfig.NO_STRATEGY) {
             strategy.setEnabled(false);
-        } else {
+        }
+        else {
             if (securityCheck.getExecutionStrategy().getStrategy() == StrategyTypeConfig.ONE_BY_ONE) {
                 strategy.setValue(strategyOptions[0]);
-            } else {
+            }
+            else {
                 strategy.setValue(strategyOptions[1]);
             }
         }
@@ -164,10 +167,10 @@ public class SecurityConfigurationDialog extends SimpleDialog {
 
                 if (newValue.equals(strategyOptions[0])) {
                     securityCheck.getExecutionStrategy().setStrategy(StrategyTypeConfig.ONE_BY_ONE);
-                } else {
+                }
+                else {
                     securityCheck.getExecutionStrategy().setStrategy(StrategyTypeConfig.ALL_AT_ONCE);
                 }
-
             }
         });
 
@@ -184,7 +187,8 @@ public class SecurityConfigurationDialog extends SimpleDialog {
                     }
                     Integer.valueOf(newValue);
                     securityCheck.getExecutionStrategy().setDelay(Integer.valueOf(newValue));
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     UISupport.showErrorMessage("Delay value must be integer number");
                 }
             }
@@ -208,13 +212,7 @@ public class SecurityConfigurationDialog extends SimpleDialog {
             }
         });
 
-        return ((JFormDialog) strategyDialog).getPanel();
-    }
-
-    @Override
-    protected boolean handleOk() {
-        result = true;
-        return true;
+        return ((JFormDialog)strategyDialog).getPanel();
     }
 
     public boolean configure() {

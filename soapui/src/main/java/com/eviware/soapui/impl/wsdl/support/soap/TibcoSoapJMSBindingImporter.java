@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.soap;
@@ -45,16 +45,14 @@ public class TibcoSoapJMSBindingImporter extends AbstractSoapBindingImporter {
     public boolean canImport(Binding binding) {
         List<?> list = binding.getExtensibilityElements();
         SOAPBinding soapBinding = WsdlUtils.getExtensiblityElement(list, SOAPBinding.class);
-        return soapBinding == null ? false : soapBinding.getTransportURI().startsWith(
-                "http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS");
+        return soapBinding != null && soapBinding.getTransportURI().startsWith("http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS");
     }
 
     @SuppressWarnings("unchecked")
     public WsdlInterface importBinding(WsdlProject project, WsdlContext wsdlContext, Binding binding) throws Exception {
-        String name = project.getSettings().getBoolean(WsdlSettings.NAME_WITH_BINDING) ? binding.getQName()
-                .getLocalPart() : binding.getPortType().getQName().getLocalPart();
+        String name = project.getSettings().getBoolean(WsdlSettings.NAME_WITH_BINDING) ? binding.getQName().getLocalPart() : binding.getPortType().getQName().getLocalPart();
 
-        WsdlInterface iface = (WsdlInterface) project.addNewInterface(name, WsdlInterfaceFactory.WSDL_TYPE);
+        WsdlInterface iface = (WsdlInterface)project.addNewInterface(name, WsdlInterfaceFactory.WSDL_TYPE);
         iface.setBindingName(binding.getQName());
         iface.setSoapVersion(SoapVersion.Soap12);
 
@@ -68,12 +66,13 @@ public class TibcoSoapJMSBindingImporter extends AbstractSoapBindingImporter {
         Collections.sort(list, new BindingOperationComparator());
 
         for (Iterator<BindingOperation> iter = list.iterator(); iter.hasNext(); ) {
-            BindingOperation operation = (BindingOperation) iter.next();
+            BindingOperation operation = iter.next();
 
             // sanity check
             if (operation.getOperation() == null || operation.getOperation().isUndefined()) {
                 log.error("BindingOperation [" + operation.getName() + "] is missing or referring to an invalid operation");
-            } else {
+            }
+            else {
                 log.info("importing operation " + operation.getName());
                 iface.addNewOperation(operation);
             }
@@ -83,5 +82,4 @@ public class TibcoSoapJMSBindingImporter extends AbstractSoapBindingImporter {
 
         return iface;
     }
-
 }

@@ -1,53 +1,53 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.form;
 
 public interface XFormField {
-    public final static String CURRENT_DIRECTORY = XFormField.class.getName() + "@currentDirectory";
+    String CURRENT_DIRECTORY = XFormField.class.getName() + "@currentDirectory";
 
-    public void setValue(String value);
+    String getValue();
 
-    public String getValue();
+    void setValue(String value);
 
-    public void setEnabled(boolean enabled);
+    boolean isEnabled();
 
-    public boolean isEnabled();
+    void setEnabled(boolean enabled);
 
-    public void setRequired(boolean required, String message);
+    void setRequired(boolean required, String message);
 
-    public boolean isRequired();
+    boolean isRequired();
 
-    public void setToolTip(String tooltip);
+    void setToolTip(String tooltip);
 
-    public void addFormFieldListener(XFormFieldListener listener);
+    void addFormFieldListener(XFormFieldListener listener);
 
-    public void removeFieldListener(XFormFieldListener listener);
+    void removeFieldListener(XFormFieldListener listener);
 
-    public void addFormFieldValidator(XFormFieldValidator validator);
+    void addFormFieldValidator(XFormFieldValidator validator);
 
-    public void removeFormFieldValidator(XFormFieldValidator validator);
+    void removeFormFieldValidator(XFormFieldValidator validator);
 
-    public void addComponentEnabler(XFormField tf, String value);
+    void addComponentEnabler(XFormField tf, String value);
 
-    public void setProperty(String name, Object value);
+    void setProperty(String name, Object value);
 
-    public Object getProperty(String name);
+    Object getProperty(String name);
 
-    public ValidationMessage[] validate();
+    ValidationMessage[] validate();
 
     boolean isVisible();
 }

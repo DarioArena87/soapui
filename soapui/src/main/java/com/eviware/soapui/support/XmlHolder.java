@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -26,10 +26,11 @@ import org.w3c.dom.Node;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public class XmlHolder implements Map<String, Object> {
-    private XmlObject xmlObject;
+    private final XmlObject xmlObject;
     private StringToStringMap declaredNamespaces;
     private PropertyExpansionContext context;
     private String propertyRef;
@@ -98,7 +99,8 @@ public class XmlHolder implements Map<String, Object> {
             for (String prefix : declaredNamespaces.keySet()) {
                 xpath = "declare namespace " + prefix + "='" + declaredNamespaces.get(prefix) + "';\n" + xpath;
             }
-        } else if (!xpath.trim().startsWith("declare namespace")) {
+        }
+        else if (!xpath.trim().startsWith("declare namespace")) {
             xpath = XmlUtils.declareXPathNamespaces(xmlObject) + xpath;
         }
         return xpath;
@@ -114,7 +116,8 @@ public class XmlHolder implements Map<String, Object> {
             if (cursor.toNextSelection()) {
                 XmlUtils.setNodeValue(cursor.getDomNode(), value == null ? null : value.toString());
             }
-        } finally {
+        }
+        finally {
             cursor.dispose();
         }
     }
@@ -149,13 +152,19 @@ public class XmlHolder implements Map<String, Object> {
         return XmlUtils.prettyPrintXml(xmlObject);
     }
 
-    public void clear() {
+    public int size() {
+        return 0;
+    }
+
+    public boolean isEmpty() {
+        return false;
     }
 
     public boolean containsKey(Object key) {
         try {
             return getDomNode(key.toString()) != null;
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             e.printStackTrace();
             return false;
         }
@@ -164,14 +173,11 @@ public class XmlHolder implements Map<String, Object> {
     public boolean containsValue(Object value) {
         try {
             return getNodeValue(value.toString()) != null;
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             e.printStackTrace();
             return false;
         }
-    }
-
-    public Set<java.util.Map.Entry<String, Object>> entrySet() {
-        return null;
     }
 
     public Object get(Object key) {
@@ -179,28 +185,24 @@ public class XmlHolder implements Map<String, Object> {
             String str = key.toString();
             if (str.equals("prettyXml")) {
                 return getPrettyXml();
-            } else if (str.equals("xmlObject")) {
+            }
+            else if (str.equals("xmlObject")) {
                 return getXmlObject();
-            } else if (str.equals("namespaces")) {
+            }
+            else if (str.equals("namespaces")) {
                 return getNamespaces();
-            } else if (str.equals("xml")) {
+            }
+            else if (str.equals("xml")) {
                 return getXml();
             }
 
             String[] nodeValues = getNodeValues(str);
             return nodeValues != null && nodeValues.length == 1 ? nodeValues[0] : nodeValues;
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             e.printStackTrace();
             return null;
         }
-    }
-
-    public boolean isEmpty() {
-        return false;
-    }
-
-    public Set<String> keySet() {
-        return null;
     }
 
     public String put(String key, Object value) {
@@ -208,10 +210,25 @@ public class XmlHolder implements Map<String, Object> {
             String result = getNodeValue(key);
             setNodeValue(key, value == null ? null : value.toString());
             return result;
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public Object remove(Object key) {
+        try {
+            Node node = getDomNode(key.toString());
+            if (node != null) {
+                node.getParentNode().removeChild(node);
+            }
+        }
+        catch (XmlException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     public void putAll(Map<? extends String, ? extends Object> t) {
@@ -224,24 +241,18 @@ public class XmlHolder implements Map<String, Object> {
         }
     }
 
-    public Object remove(Object key) {
-        try {
-            Node node = getDomNode(key.toString());
-            if (node != null) {
-                node.getParentNode().removeChild(node);
-            }
-        } catch (XmlException e) {
-            e.printStackTrace();
-        }
+    public void clear() {
+    }
 
+    public Set<String> keySet() {
         return null;
     }
 
-    public int size() {
-        return 0;
+    public Collection<Object> values() {
+        return null;
     }
 
-    public Collection<Object> values() {
+    public Set<Entry<String, Object>> entrySet() {
         return null;
     }
 }

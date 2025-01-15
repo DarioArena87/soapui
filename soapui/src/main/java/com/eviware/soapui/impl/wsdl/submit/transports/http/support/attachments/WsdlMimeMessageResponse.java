@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.attachments;
@@ -52,11 +52,12 @@ import java.util.Vector;
 public class WsdlMimeMessageResponse extends MimeMessageResponse implements WsdlResponse {
     private Vector<Object> wssResult;
 
-    public WsdlMimeMessageResponse(WsdlRequest httpRequest, ExtendedHttpMethod httpMethod, String requestContent,
-                                   PropertyExpansionContext context) {
+    public WsdlMimeMessageResponse(
+        WsdlRequest httpRequest, ExtendedHttpMethod httpMethod, String requestContent, PropertyExpansionContext context
+    ) {
         super(httpRequest, httpMethod, requestContent, context);
 
-        WsdlRequest wsdlRequest = (WsdlRequest) httpRequest;
+        WsdlRequest wsdlRequest = httpRequest;
         processIncomingWss(wsdlRequest, context);
 
         String multipartType = null;
@@ -86,7 +87,7 @@ public class WsdlMimeMessageResponse extends MimeMessageResponse implements Wsdl
     }
 
     private void processIncomingWss(AbstractHttpRequestInterface<?> wsdlRequest, PropertyExpansionContext context) {
-        IncomingWss incomingWss = (IncomingWss) context.getProperty(WssRequestFilter.INCOMING_WSS_PROPERTY);
+        IncomingWss incomingWss = (IncomingWss)context.getProperty(WssRequestFilter.INCOMING_WSS_PROPERTY);
         if (incomingWss != null) {
             try {
                 Document document = XmlUtils.parseXml(getMmSupport().getResponseContent());
@@ -96,7 +97,8 @@ public class WsdlMimeMessageResponse extends MimeMessageResponse implements Wsdl
                     XmlUtils.serializePretty(document, writer);
                     getMmSupport().setResponseContent(writer.toString());
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 if (wssResult == null) {
                     wssResult = new Vector<Object>();
                 }
@@ -110,15 +112,14 @@ public class WsdlMimeMessageResponse extends MimeMessageResponse implements Wsdl
             // XmlObject xmlObject = XmlObject.Factory.parse( getContentAsString()
             // );
             XmlObject xmlObject = XmlUtils.createXmlObject(getContentAsString());
-            XmlObject[] includes = xmlObject
-                    .selectPath("declare namespace xop='http://www.w3.org/2004/08/xop/include'; //xop:Include");
+            XmlObject[] includes = xmlObject.selectPath("declare namespace xop='http://www.w3.org/2004/08/xop/include'; //xop:Include");
 
             for (XmlObject include : includes) {
-                Element elm = (Element) include.getDomNode();
+                Element elm = (Element)include.getDomNode();
                 String href = elm.getAttribute("href");
                 // substing(4) - removing the "cid:" prefix
                 Attachment attachment = getMmSupport().getAttachmentWithContentId("<" + URLDecoder.decode(href.substring(4), "UTF-8") + ">");
-                
+
                 if (attachment != null) {
                     ByteArrayOutputStream data = Tools.readAll(attachment.getInputStream(), 0);
                     byte[] byteArray = data.toByteArray();
@@ -132,10 +133,8 @@ public class WsdlMimeMessageResponse extends MimeMessageResponse implements Wsdl
                     Node parentNode = elm.getParentNode();
 
                     if (schemaType.isNoType()) {
-                        SchemaTypeSystem typeSystem = wsdlRequest.getOperation().getInterface().getWsdlContext()
-                                .getSchemaTypeSystem();
-                        SchemaGlobalElement schemaElement = typeSystem.findElement(new QName(parentNode.getNamespaceURI(),
-                                parentNode.getLocalName()));
+                        SchemaTypeSystem typeSystem = wsdlRequest.getOperation().getInterface().getWsdlContext().getSchemaTypeSystem();
+                        SchemaGlobalElement schemaElement = typeSystem.findElement(new QName(parentNode.getNamespaceURI(), parentNode.getLocalName()));
                         if (schemaElement != null) {
                             schemaType = schemaElement.getType();
                         }
@@ -145,7 +144,8 @@ public class WsdlMimeMessageResponse extends MimeMessageResponse implements Wsdl
 
                     if (SchemaUtils.isInstanceOf(schemaType, XmlHexBinary.type)) {
                         txt = new String(Hex.encodeHex(byteArray));
-                    } else {
+                    }
+                    else {
                         txt = new String(Base64.encodeBase64(byteArray));
                     }
 
@@ -154,18 +154,18 @@ public class WsdlMimeMessageResponse extends MimeMessageResponse implements Wsdl
             }
 
             getMmSupport().setResponseContent(xmlObject.toString());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
 
     @Override
     public WsdlRequest getRequest() {
-        return (WsdlRequest) super.getRequest();
+        return (WsdlRequest)super.getRequest();
     }
 
     public Vector<?> getWssResult() {
         return wssResult;
     }
-
 }

@@ -21,6 +21,7 @@ public interface NavigatorNodesExpandStateProvider {
 
     /**
      * called to take historical modelItem node state
+     *
      * @param modelItem
      * @return
      */

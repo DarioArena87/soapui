@@ -50,6 +50,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,8 +66,85 @@ public class MockAsWarServlet extends HttpServlet {
     protected WsdlProject project;
     long maxResults;
     List<MockResult> results = new TreeList();
-    private List<LogEvent> events = new TreeList();
     boolean enableWebUI;
+    private final List<LogEvent> events = new TreeList();
+
+    protected void initProject(String path) throws XmlException, IOException, SoapUIException {
+        project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(path);
+    }
+
+    protected String initMockServiceParameters() {
+        try {
+            if (StringUtils.hasContent(getInitParameter("listeners"))) {
+                logger.info("Init listeners");
+                try {
+                    System.setProperty("soapui.ext.listeners", getServletContext().getRealPath(getInitParameter("listeners")));
+                }
+                catch (Exception e) {
+                    logger.info("Listeners not set! Reason : " + e.getMessage());
+                }
+            }
+            else {
+                logger.info("Listeners not set!");
+            }
+
+            if (StringUtils.hasContent(getInitParameter("actions"))) {
+                logger.info("Init actions");
+                try {
+                    System.setProperty("soapui.ext.actions", getServletContext().getRealPath(getInitParameter("actions")));
+                }
+                catch (Exception e) {
+                    logger.info("Actions not set! Reason : " + e.getMessage());
+                }
+            }
+            else {
+                logger.info("Actions not set!");
+            }
+
+            if (SoapUI.getSoapUICore() == null) {
+                if (StringUtils.hasContent(getInitParameter("soapUISettings"))) {
+                    logger.info("Init settings");
+                    SoapUI.setSoapUICore(new MockServletSoapUICore(getServletContext(), getInitParameter("soapUISettings")), true);
+                }
+                else {
+                    logger.info("Settings not set!");
+                    SoapUI.setSoapUICore(new MockServletSoapUICore(getServletContext()), true);
+                }
+            }
+            else {
+                logger.info("SoapUI core already exists, reusing existing one");
+            }
+
+            if (StringUtils.hasContent(getInitParameter("enableWebUI"))) {
+                if ("true".equals(getInitParameter("enableWebUI"))) {
+                    logger.info("WebUI ENABLED");
+                    enableWebUI = true;
+                }
+                else {
+                    logger.info("WebUI DISABLED");
+                    enableWebUI = false;
+                }
+            }
+        }
+        catch (Exception e) {
+            logger.info("Property set with error!" + e.getMessage());
+        }
+        try {
+            maxResults = Integer.parseInt(getInitParameter("maxResults"));
+        }
+        catch (NumberFormatException ex) {
+            maxResults = 1000;
+        }
+
+        Logging.addAppender(Logging.ensureGroovyLog().getName(), new GroovyLogAppender());
+
+        return getInitParameter("mockServiceEndpoint");
+    }
+
+    public void destroy() {
+        super.destroy();
+        getMockServletCore().stop();
+    }
 
     public void init() throws ServletException {
         super.init();
@@ -90,7 +168,7 @@ public class MockAsWarServlet extends HttpServlet {
             for (MockService mockService : project.getMockServiceList()) {
                 logger.info("Starting mock service [" + mockService.getName() + "]");
                 if (StringUtils.hasContent(mockServiceEndpoint)) {
-                    ((WsdlMockService) mockService).setMockServiceEndpoint(mockServiceEndpoint);
+                    ((WsdlMockService)mockService).setMockServiceEndpoint(mockServiceEndpoint);
                 }
 
                 mockService.start();
@@ -100,98 +178,28 @@ public class MockAsWarServlet extends HttpServlet {
                 logger.info("Starting REST mock service [" + mockService.getName() + "]");
                 mockService.start();
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
         }
     }
 
-    protected void initProject(String path) throws XmlException, IOException, SoapUIException {
-        project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(path);
-    }
-
-    protected String initMockServiceParameters() {
-        try {
-            if (StringUtils.hasContent(getInitParameter("listeners"))) {
-                logger.info("Init listeners");
-                try {
-                    System.setProperty("soapui.ext.listeners", getServletContext().getRealPath(getInitParameter("listeners")));
-                } catch (Exception e) {
-                    logger.info("Listeners not set! Reason : " + e.getMessage());
-                }
-            } else {
-                logger.info("Listeners not set!");
-            }
-
-            if (StringUtils.hasContent(getInitParameter("actions"))) {
-                logger.info("Init actions");
-                try {
-                    System.setProperty("soapui.ext.actions", getServletContext().getRealPath(getInitParameter("actions")));
-                } catch (Exception e) {
-                    logger.info("Actions not set! Reason : " + e.getMessage());
-                }
-            } else {
-                logger.info("Actions not set!");
-            }
-
-            if (SoapUI.getSoapUICore() == null) {
-                if (StringUtils.hasContent(getInitParameter("soapUISettings"))) {
-                    logger.info("Init settings");
-                    SoapUI.setSoapUICore(
-                            new MockServletSoapUICore(getServletContext(), getInitParameter("soapUISettings")), true);
-                } else {
-                    logger.info("Settings not set!");
-                    SoapUI.setSoapUICore(new MockServletSoapUICore(getServletContext()), true);
-                }
-            } else {
-                logger.info("SoapUI core already exists, reusing existing one");
-            }
-
-            if (StringUtils.hasContent(getInitParameter("enableWebUI"))) {
-                if ("true".equals(getInitParameter("enableWebUI"))) {
-                    logger.info("WebUI ENABLED");
-                    enableWebUI = true;
-                } else {
-                    logger.info("WebUI DISABLED");
-                    enableWebUI = false;
-                }
-            }
-
-        } catch (Exception e) {
-            logger.info("Property set with error!" + e.getMessage());
-        }
-        try {
-            maxResults = Integer.parseInt(getInitParameter("maxResults"));
-        } catch (NumberFormatException ex) {
-            maxResults = 1000;
-        }
-
-        Logging.addAppender(Logging.ensureGroovyLog().getName(), new GroovyLogAppender());
-
-        return getInitParameter("mockServiceEndpoint");
-    }
-
-    public void destroy() {
-        super.destroy();
-        getMockServletCore().stop();
-    }
-
     protected MockAsWarCoreInterface getMockServletCore() {
-        return (MockAsWarCoreInterface) SoapUI.getSoapUICore();
+        return (MockAsWarCoreInterface)SoapUI.getSoapUICore();
     }
 
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-            IOException {
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             getMockServletCore().dispatchRequest(request, response);
-        } catch (DispatchException ex) {
+        }
+        catch (DispatchException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
     }
 
     private void printResult(PrintWriter out, MockResult result) {
 
-        out.print("<h4>Details for MockResult at " + new java.util.Date(result.getTimestamp()) + " ("
-                + result.getTimeTaken() + "ms)</h4>");
+        out.print("<h4>Details for MockResult at " + new Date(result.getTimestamp()) + " (" + result.getTimeTaken() + "ms)</h4>");
 
         out.println("<hr/><p><b>Request Headers</b>:</p>");
         out.print("<table border=\"1\"><tr><td>Header</td><td>Value</td></tr>");
@@ -203,8 +211,7 @@ public class MockAsWarServlet extends HttpServlet {
         }
         out.println("</table>");
 
-        out.println("<hr/><b>Incoming Request</b>:<br/><pre>"
-                + XmlUtils.entitize(result.getMockRequest().getRequestContent()) + "</pre>");
+        out.println("<hr/><b>Incoming Request</b>:<br/><pre>" + XmlUtils.entitize(result.getMockRequest().getRequestContent()) + "</pre>");
 
         out.println("<hr/><p><b>Response Headers</b>:</p>");
         out.print("<table border\"1\"><tr><td>Header</td><td>Value</td></tr>");
@@ -219,155 +226,22 @@ public class MockAsWarServlet extends HttpServlet {
         out.println("<hr/><b>Returned Response</b>:<pre>" + XmlUtils.entitize(result.getResponseContent()) + "</pre>");
     }
 
-    class MockServletSoapUICore extends DefaultSoapUICore implements MockEngine, MockAsWarCoreInterface {
-        private final ServletContext servletContext;
-        private List<MockRunner> mockRunners = new ArrayList<MockRunner>();
-
-        public MockServletSoapUICore(ServletContext servletContext, String soapUISettings) {
-            super(servletContext.getRealPath("/"), servletContext.getRealPath(soapUISettings));
-            this.servletContext = servletContext;
-        }
-
-        /*
-         * (non-Javadoc)
-         *
-         * @see
-         * com.eviware.soapui.mockaswar.MockAsWarCoreInterface#dispatchRequest
-         * (javax.servlet.http.HttpServletRequest,
-         * javax.servlet.http.HttpServletResponse)
-         */
-        @Override
-        public void dispatchRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException,
-                IOException {
-            String pathInfo = request.getPathInfo();
-            if (pathInfo == null) {
-                pathInfo = "";
-            }
-
-            MockRunner mockRunner = getMatchedMockRunner(getMockRunners(), pathInfo);
-
-            if (mockRunner != null) {
-                MockResult result = mockRunner.dispatchRequest(request, response);
-
-                if (maxResults > 0) {
-                    synchronized (results) {
-                        while (maxResults > 0 && results.size() > maxResults) {
-                            results.remove(0);
-                        }
-                        if (result != null) {
-                            results.add(result);
-                        }
-                    }
-                }
-                return;
-            }
-
-            if (enableWebUI) {
-                String realPath = servletContext.getRealPath(pathInfo);
-                File file = realPath == null ? null : new File(realPath);
-                if (file != null && file.exists() && file.isFile()) {
-                    FileInputStream in = new FileInputStream(file);
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    long length = file.length();
-                    response.setContentLength((int) length);
-                    response.setContentType(ContentTypeHandler.getContentTypeFromFilename(file.getName()));
-                    Tools.readAndWrite(in, length, response.getOutputStream());
-                    in.close();
-                } else if (pathInfo.equals("/master")) {
-                    printMaster(request, response, mockRunners);
-                } else if (pathInfo.equals("/detail")) {
-                    printDetail(request, response);
-                } else if (pathInfo.equals("/log")) {
-                    printLog(request, response);
-                } else {
-                    printFrameset(request, response);
-                }
-            } else {
-                printDisabledLogFrameset(request, response);
-            }
-        }
-
-        private MockRunner getMatchedMockRunner(MockRunner[] mockRunners, String pathInfo) {
-
-            MockRunner mockRunner = null;
-            String bestMatchedRootPath = "";
-
-            for (MockRunner runner : mockRunners) {
-                String mockServicePath = runner.getMockContext().getMockService().getPath();
-                if (pathInfo.startsWith(mockServicePath) && mockServicePath.length() > bestMatchedRootPath.length()) {
-                    bestMatchedRootPath = mockServicePath;
-                    mockRunner = runner;
-                }
-            }
-
-            return mockRunner;
-
-        }
-
-        /*
-         * (non-Javadoc)
-         *
-         * @see com.eviware.soapui.mockaswar.MockAsWarCoreInterface#stop()
-         */
-        @Override
-        public void stop() {
-            for (MockRunner mockRunner : getMockRunners()) {
-                mockRunner.stop();
-            }
-        }
-
-        public MockServletSoapUICore(ServletContext servletContext) {
-            super(servletContext.getRealPath("/"), null);
-            this.servletContext = servletContext;
-        }
-
-        @Override
-        protected MockEngine buildMockEngine() {
-            return this;
-        }
-
-        public MockRunner[] getMockRunners() {
-            return mockRunners.toArray(new MockRunner[mockRunners.size()]);
-        }
-
-        public boolean hasRunningMock(MockService mockService) {
-            for (MockRunner runner : mockRunners) {
-                if (runner.getMockContext().getMockService() == mockService) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public void startMockService(MockRunner runner) throws Exception {
-            mockRunners.add(runner);
-        }
-
-        public void stopMockService(MockRunner runner) {
-            mockRunners.remove(runner);
-        }
-    }
-
-    public void printMaster(HttpServletRequest request, HttpServletResponse response, List<MockRunner> mockRunners)
-            throws IOException {
+    public void printMaster(HttpServletRequest request, HttpServletResponse response, List<MockRunner> mockRunners) throws IOException {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("text/html");
 
         PrintWriter out = response.getWriter();
         startHtmlPage(out, "MockService Log Table", "15");
 
-        out.print("<img src=\"header_logo.png\"><h3>SoapUI MockServices Log for project [" + project.getName()
-                + "]</h3>" + "<p style=\"text-align: left\">WSDLs:");
+        out.print("<img src=\"header_logo.png\"><h3>SoapUI MockServices Log for project [" + project.getName() + "]</h3>" + "<p style=\"text-align: left\">WSDLs:");
 
         for (MockRunner mockRunner : mockRunners) {
-            String overviewUrl = ((WsdlMockRunner) mockRunner).getOverviewUrl();
+            String overviewUrl = ((WsdlMockRunner)mockRunner).getOverviewUrl();
             if (overviewUrl.startsWith("/")) {
                 overviewUrl = overviewUrl.substring(1);
             }
 
-            out.print(" [<a target=\"new\" href=\"" + overviewUrl + "\">" + mockRunner.getMockContext().getMockService().getName()
-                    + "</a>]");
+            out.print(" [<a target=\"new\" href=\"" + overviewUrl + "\">" + mockRunner.getMockContext().getMockService().getName() + "</a>]");
         }
 
         out.print("</p>");
@@ -389,8 +263,7 @@ public class MockAsWarServlet extends HttpServlet {
 
             if (result != null) {
                 out.print("<tr><td>" + (cnt++) + "</td>");
-                out.print("<td><a target=\"detail\" href=\"detail?" + result.hashCode() + "\">"
-                        + new java.util.Date(result.getTimestamp()) + "</a></td>");
+                out.print("<td><a target=\"detail\" href=\"detail?" + result.hashCode() + "\">" + new Date(result.getTimestamp()) + "</a></td>");
                 out.print("<td>" + result.getTimeTaken() + "</td>");
                 out.print("<td>" + result.getMockOperation().getName() + "</td>");
                 if (result.getMockResponse() != null) {
@@ -404,7 +277,6 @@ public class MockAsWarServlet extends HttpServlet {
 
         out.print("</body></html>");
         out.flush();
-
     }
 
     private void startHtmlPage(PrintWriter out, String title, String refresh) {
@@ -459,7 +331,8 @@ public class MockAsWarServlet extends HttpServlet {
 
         try {
             id = Integer.parseInt(request.getQueryString());
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e) {
         }
 
         if (id > 0) {
@@ -477,26 +350,6 @@ public class MockAsWarServlet extends HttpServlet {
 
         out.print("</body></html>");
         out.flush();
-    }
-
-    private class GroovyLogAppender extends AbstractAppender {
-        static final String GROOVY_LOG_APPENDER_NAME = "GROOVY_LOG_APPENDER";
-
-        GroovyLogAppender() {
-            super(GROOVY_LOG_APPENDER_NAME, null, PatternLayout.createDefaultLayout());
-        }
-
-        @Override
-        public void append(LogEvent event) {
-            events.add(event);
-        }
-
-        public void close() {
-        }
-
-        public boolean requiresLayout() {
-            return false;
-        }
     }
 
     public void printLog(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -521,7 +374,7 @@ public class MockAsWarServlet extends HttpServlet {
         for (LogEvent event : events) {
 
             out.print("<tr><td>" + (cnt++) + "</td>");
-            out.print("<td>" + new java.util.Date(event.getTimeMillis()) + "</td>");
+            out.print("<td>" + new Date(event.getTimeMillis()) + "</td>");
             out.print("<td>" + event.getMessage().getFormattedMessage() + "</td></tr>");
         }
 
@@ -529,5 +382,158 @@ public class MockAsWarServlet extends HttpServlet {
 
         out.print("</body></html>");
         out.flush();
+    }
+
+    class MockServletSoapUICore extends DefaultSoapUICore implements MockEngine, MockAsWarCoreInterface {
+        private final ServletContext servletContext;
+        private final List<MockRunner> mockRunners = new ArrayList<MockRunner>();
+
+        public MockServletSoapUICore(ServletContext servletContext, String soapUISettings) {
+            super(servletContext.getRealPath("/"), servletContext.getRealPath(soapUISettings));
+            this.servletContext = servletContext;
+        }
+
+        public MockServletSoapUICore(ServletContext servletContext) {
+            super(servletContext.getRealPath("/"), null);
+            this.servletContext = servletContext;
+        }
+
+        /*
+         * (non-Javadoc)
+         *
+         * @see
+         * com.eviware.soapui.mockaswar.MockAsWarCoreInterface#dispatchRequest
+         * (javax.servlet.http.HttpServletRequest,
+         * javax.servlet.http.HttpServletResponse)
+         */
+        @Override
+        public void dispatchRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException, IOException {
+            String pathInfo = request.getPathInfo();
+            if (pathInfo == null) {
+                pathInfo = "";
+            }
+
+            MockRunner mockRunner = getMatchedMockRunner(getMockRunners(), pathInfo);
+
+            if (mockRunner != null) {
+                MockResult result = mockRunner.dispatchRequest(request, response);
+
+                if (maxResults > 0) {
+                    synchronized (results) {
+                        while (maxResults > 0 && results.size() > maxResults) {
+                            results.remove(0);
+                        }
+                        if (result != null) {
+                            results.add(result);
+                        }
+                    }
+                }
+                return;
+            }
+
+            if (enableWebUI) {
+                String realPath = servletContext.getRealPath(pathInfo);
+                File file = realPath == null ? null : new File(realPath);
+                if (file != null && file.exists() && file.isFile()) {
+                    FileInputStream in = new FileInputStream(file);
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    long length = file.length();
+                    response.setContentLength((int)length);
+                    response.setContentType(ContentTypeHandler.getContentTypeFromFilename(file.getName()));
+                    Tools.readAndWrite(in, length, response.getOutputStream());
+                    in.close();
+                }
+                else if (pathInfo.equals("/master")) {
+                    printMaster(request, response, mockRunners);
+                }
+                else if (pathInfo.equals("/detail")) {
+                    printDetail(request, response);
+                }
+                else if (pathInfo.equals("/log")) {
+                    printLog(request, response);
+                }
+                else {
+                    printFrameset(request, response);
+                }
+            }
+            else {
+                printDisabledLogFrameset(request, response);
+            }
+        }
+
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.eviware.soapui.mockaswar.MockAsWarCoreInterface#stop()
+         */
+        @Override
+        public void stop() {
+            for (MockRunner mockRunner : getMockRunners()) {
+                mockRunner.stop();
+            }
+        }
+
+        private MockRunner getMatchedMockRunner(MockRunner[] mockRunners, String pathInfo) {
+
+            MockRunner mockRunner = null;
+            String bestMatchedRootPath = "";
+
+            for (MockRunner runner : mockRunners) {
+                String mockServicePath = runner.getMockContext().getMockService().getPath();
+                if (pathInfo.startsWith(mockServicePath) && mockServicePath.length() > bestMatchedRootPath.length()) {
+                    bestMatchedRootPath = mockServicePath;
+                    mockRunner = runner;
+                }
+            }
+
+            return mockRunner;
+        }
+
+        @Override
+        protected MockEngine buildMockEngine() {
+            return this;
+        }
+
+        public boolean hasRunningMock(MockService mockService) {
+            for (MockRunner runner : mockRunners) {
+                if (runner.getMockContext().getMockService() == mockService) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void startMockService(MockRunner runner) throws Exception {
+            mockRunners.add(runner);
+        }
+
+        public void stopMockService(MockRunner runner) {
+            mockRunners.remove(runner);
+        }
+
+        public MockRunner[] getMockRunners() {
+            return mockRunners.toArray(new MockRunner[mockRunners.size()]);
+        }
+    }
+
+    private class GroovyLogAppender extends AbstractAppender {
+        static final String GROOVY_LOG_APPENDER_NAME = "GROOVY_LOG_APPENDER";
+
+        GroovyLogAppender() {
+            super(GROOVY_LOG_APPENDER_NAME, null, PatternLayout.createDefaultLayout());
+        }
+
+        @Override
+        public void append(LogEvent event) {
+            events.add(event);
+        }
+
+        public void close() {
+        }
+
+        public boolean requiresLayout() {
+            return false;
+        }
     }
 }

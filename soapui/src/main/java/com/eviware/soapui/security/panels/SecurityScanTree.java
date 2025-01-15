@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.panels;
@@ -20,7 +20,7 @@ import com.eviware.soapui.model.security.SecurityScan;
 import com.eviware.soapui.model.testsuite.TestStep;
 import com.eviware.soapui.security.SecurityTest;
 
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -28,8 +28,8 @@ import javax.swing.tree.TreePath;
 @SuppressWarnings("serial")
 public class SecurityScanTree extends DefaultTreeModel {
 
-    private SecurityTest securityTest;
-    private SecurityTreeRootNode treeNode;
+    private final SecurityTest securityTest;
+    private final SecurityTreeRootNode treeNode;
 
     public SecurityScanTree(SecurityTest securityTest, SecurityTreeRootNode treeNode) {
         super(treeNode);
@@ -39,9 +39,8 @@ public class SecurityScanTree extends DefaultTreeModel {
     }
 
     public void insertNodeInto(TestStep testStep) {
-        TestStepNode testStepNode = new TestStepNode((SecurityTreeRootNode) root, testStep, securityTest
-                .getSecurityScansMap().get(testStep.getId()));
-        insertNodeInto(testStepNode, (MutableTreeNode) root, root.getChildCount());
+        TestStepNode testStepNode = new TestStepNode((SecurityTreeRootNode)root, testStep, securityTest.getSecurityScansMap().get(testStep.getId()));
+        insertNodeInto(testStepNode, (MutableTreeNode)root, root.getChildCount());
         nodeStructureChanged(root);
     }
 
@@ -56,7 +55,7 @@ public class SecurityScanTree extends DefaultTreeModel {
      */
     protected TestStepNode getTestStepNode(TestStep testStep) {
         for (int cnt = 0; cnt < root.getChildCount(); cnt++) {
-            TestStepNode node = (TestStepNode) root.getChildAt(cnt);
+            TestStepNode node = (TestStepNode)root.getChildAt(cnt);
             if (node.getTestStep().getId().equals(testStep.getId())) {
                 return node;
             }
@@ -67,7 +66,7 @@ public class SecurityScanTree extends DefaultTreeModel {
     protected SecurityScanNode getSecurityScanNode(SecurityScan securityCheck) {
         TestStepNode testStepNode = getTestStepNode(securityCheck.getTestStep());
         for (int cnt = 0; cnt < testStepNode.getChildCount(); cnt++) {
-            SecurityScanNode node = (SecurityScanNode) testStepNode.getChildAt(cnt);
+            SecurityScanNode node = (SecurityScanNode)testStepNode.getChildAt(cnt);
             if (node.getSecurityScan().getType().equals(securityCheck.getType())) {
                 return node;
             }
@@ -109,7 +108,7 @@ public class SecurityScanTree extends DefaultTreeModel {
         TestStepNode node = getTestStepNode(testStep);
         int index2 = getIndexOfChild(root, node);
         removeNodeFromParent(node);
-        insertNodeInto(node, (MutableTreeNode) root, index2 + offset);
+        insertNodeInto(node, (MutableTreeNode)root, index2 + offset);
 
         return new TreePath(node.getPath());
     }
@@ -119,5 +118,4 @@ public class SecurityScanTree extends DefaultTreeModel {
             securityTest.removePropertyChangeListener(treeNode);
         }
     }
-
 }

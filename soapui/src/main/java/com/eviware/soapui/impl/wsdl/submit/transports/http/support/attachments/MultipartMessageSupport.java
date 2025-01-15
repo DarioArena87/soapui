@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.attachments;
@@ -44,12 +44,13 @@ import java.util.List;
 public class MultipartMessageSupport {
     private final List<BodyPartAttachment> attachments = new ArrayList<BodyPartAttachment>();
     private Attachment rootPart;
-    private MimeMessage message;
+    private final MimeMessage message;
     private String responseContent;
     private boolean prettyPrint;
 
-    public MultipartMessageSupport(DataSource dataSource, String rootPartId, AbstractHttpOperation operation,
-                                   boolean isRequest, boolean prettyPrint) throws MessagingException {
+    public MultipartMessageSupport(
+        DataSource dataSource, String rootPartId, AbstractHttpOperation operation, boolean isRequest, boolean prettyPrint
+    ) throws MessagingException {
         this.prettyPrint = prettyPrint;
         MimeMultipart mp = new MimeMultipart(dataSource);
         message = new MimeMessage(AttachmentUtils.JAVAMAIL_SESSION);
@@ -70,13 +71,15 @@ public class MultipartMessageSupport {
                 for (int i = 0; i < mp2.getCount(); i++) {
                     attachments.add(new BodyPartAttachment(mp2.getBodyPart(i), operation, isRequest, attachmentType));
                 }
-            } else {
+            }
+            else {
                 BodyPartAttachment attachment = new BodyPartAttachment(bodyPart, operation, isRequest, attachmentType);
 
                 String[] contentIdHeaders = bodyPart.getHeader("Content-ID");
                 if (contentIdHeaders != null && contentIdHeaders.length > 0 && contentIdHeaders[0].equals(rootPartId)) {
                     rootPart = attachment;
-                } else {
+                }
+                else {
                     attachments.add(attachment);
                 }
             }
@@ -88,7 +91,7 @@ public class MultipartMessageSupport {
         }
 
         if (rootPart != null) {
-            ((BodyPartAttachment) rootPart).setAttachmentType(AttachmentType.CONTENT);
+            ((BodyPartAttachment)rootPart).setAttachmentType(AttachmentType.CONTENT);
         }
     }
 
@@ -139,7 +142,8 @@ public class MultipartMessageSupport {
                             int ix2 = contentType.indexOf(";", ix);
 
                             charset = ix2 == -1 ? contentType.substring(ix + 8) : contentType.substring(ix + 8, ix2);
-                        } catch (Throwable e) {
+                        }
+                        catch (Throwable e) {
                             SoapUI.logError(e);
                         }
                     }
@@ -148,7 +152,7 @@ public class MultipartMessageSupport {
                     if (ix > 0) {
                         contentType = contentType.substring(0, ix);
                         if (contentType.toLowerCase().endsWith("xml")) {
-                            if (data.length > 3 && data[0] == (byte) 239 && data[1] == (byte) 187 && data[2] == (byte) 191) {
+                            if (data.length > 3 && data[0] == (byte)239 && data[1] == (byte)187 && data[2] == (byte)191) {
                                 charset = "UTF-8";
                                 contentOffset = 3;
                             }
@@ -157,8 +161,7 @@ public class MultipartMessageSupport {
 
                     charset = StringUtils.unquote(charset);
 
-                    responseContent = charset == null ? new String(data) : new String(data, contentOffset,
-                            (int) (data.length - contentOffset), charset);
+                    responseContent = charset == null ? new String(data) : new String(data, contentOffset, data.length - contentOffset, charset);
                 }
 
                 if (responseContent == null) {
@@ -166,12 +169,17 @@ public class MultipartMessageSupport {
                 }
 
                 return responseContent;
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
 
         return responseContent;
+    }
+
+    public void setResponseContent(String responseContent) {
+        this.responseContent = responseContent;
     }
 
     public String getContentAsString() {
@@ -185,10 +193,6 @@ public class MultipartMessageSupport {
         }
 
         return responseContent;
-    }
-
-    public void setResponseContent(String responseContent) {
-        this.responseContent = responseContent;
     }
 
     public Attachment getAttachmentWithContentId(String contentId) {

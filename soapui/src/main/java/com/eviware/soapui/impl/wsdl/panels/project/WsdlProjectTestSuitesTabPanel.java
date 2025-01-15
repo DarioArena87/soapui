@@ -41,34 +41,22 @@ import com.eviware.soapui.support.components.JInspectorPanelFactory;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.types.StringToObjectMap;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WsdlProjectTestSuitesTabPanel extends JPanel {
     private final WsdlProject project;
-    private JProgressBar progressBar;
-    private JProjectTestSuiteList testSuiteList;
-    private RunAction runAction = new RunAction();
-    private CancelAction cancelAction = new CancelAction();
-    private JToggleButton sequentialButton;
-    private JToggleButton parallellButton;
     private final InternalProjectListener testSuiteListener = new InternalProjectListener();
     private final InternalTestSuiteRunListener testSuiteRunListener = new InternalTestSuiteRunListener();
+    private JProgressBar progressBar;
+    private JProjectTestSuiteList testSuiteList;
+    private final RunAction runAction = new RunAction();
+    private final CancelAction cancelAction = new CancelAction();
+    private JToggleButton sequentialButton;
+    private JToggleButton parallellButton;
     private JTestRunLog testRunLog;
     private GroovyEditorComponent tearDownGroovyEditor;
     private GroovyEditorComponent setupGroovyEditor;
@@ -104,8 +92,7 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
     }
 
     protected void addInspectors(JInspectorPanel inspectorPanel) {
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildRunLog(), "TestSuite Log",
-                "Log of executed TestSuites, TestCases and TestSteps", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildRunLog(), "TestSuite Log", "Log of executed TestSuites, TestCases and TestSteps", true));
     }
 
     private JComponent buildRunLog() {
@@ -190,10 +177,8 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
     }
 
     protected void addTabs(JTabbedPane tabs, JInspectorPanel inspectorPanel) {
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildSetupScriptPanel(), "Setup Script",
-                "Script to run before running TestSuites"));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildTearDownScriptPanel(), "TearDown Script",
-                "Script to run after running TestSuites"));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildSetupScriptPanel(), "Setup Script", "Script to run before running TestSuites"));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildTearDownScriptPanel(), "TearDown Script", "Script to run after running TestSuites"));
     }
 
     protected GroovyEditorComponent buildTearDownScriptPanel() {
@@ -219,8 +204,7 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
 
     private Component buildTestCaseListToolbar() {
         JXToolBar toolbar = UISupport.createToolbar();
-        SwingActionDelegate addTestSuiteDelegate = SwingActionDelegate.createDelegate(
-                AddNewTestSuiteAction.SOAPUI_ACTION_ID, project, null, "/test_suite.png");
+        SwingActionDelegate addTestSuiteDelegate = SwingActionDelegate.createDelegate(AddNewTestSuiteAction.SOAPUI_ACTION_ID, project, null, "/test_suite.png");
 //        addTestSuiteDelegate.getMapping().setParam(SoapUIActions.CREATE_TEST_SUITE_FROM_PROJECT_PANEL);
 
         toolbar.add(UISupport.createToolbarButton(addTestSuiteDelegate));
@@ -262,6 +246,10 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
         progressBar.setForeground(projectRunner.isFailed() ? Color.RED : Color.GREEN.darker());
     }
 
+    public WsdlProjectRunner getProjectRunner() {
+        return projectRunner;
+    }
+
     private final class InternalProjectListener extends ProjectListenerAdapter {
         public void testSuiteAdded(TestSuite testSuite) {
             runAction.setEnabled(project.getTestSuiteCount() > 0);
@@ -274,8 +262,8 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
 
     private class RunAction extends AbstractAction {
         public RunAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Runs the selected TestSuites");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Runs the selected TestSuites");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -285,8 +273,8 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
 
     private class CancelAction extends AbstractAction {
         public CancelAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/stop.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Cancels ongoing TestSuite runs");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/stop.png"));
+            putValue(SHORT_DESCRIPTION, "Cancels ongoing TestSuite runs");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -299,12 +287,34 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
             super(new String[]{"log", "runner", "context", "project"}, project, "Setup");
         }
 
+        @Override
+        public Action createRunAction() {
+            return new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        MockProjectRunner runner = new MockProjectRunner(project);
+                        project.runBeforeRunScript((ProjectRunContext)runner.getRunContext(), runner);
+                    }
+                    catch (Exception e1) {
+                        UISupport.showErrorMessage(e1);
+                    }
+                }
+            };
+        }
+
         public String getScript() {
             return project.getBeforeRunScript();
         }
 
         public void setScript(String text) {
             project.setBeforeRunScript(text);
+        }
+    }
+
+    private class TearDownScriptGroovyEditorModel extends AbstractGroovyEditorModel {
+        public TearDownScriptGroovyEditorModel() {
+            super(new String[]{"log", "runner", "context", "project"}, project, "TearDown");
         }
 
         @Override
@@ -314,18 +324,13 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     try {
                         MockProjectRunner runner = new MockProjectRunner(project);
-                        project.runBeforeRunScript((ProjectRunContext) runner.getRunContext(), runner);
-                    } catch (Exception e1) {
+                        project.runAfterRunScript((ProjectRunContext)runner.getRunContext(), runner);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
             };
-        }
-    }
-
-    private class TearDownScriptGroovyEditorModel extends AbstractGroovyEditorModel {
-        public TearDownScriptGroovyEditorModel() {
-            super(new String[]{"log", "runner", "context", "project"}, project, "TearDown");
         }
 
         public String getScript() {
@@ -335,37 +340,15 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
         public void setScript(String text) {
             project.setAfterRunScript(text);
         }
-
-        @Override
-        public Action createRunAction() {
-            return new AbstractAction() {
-
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        MockProjectRunner runner = new MockProjectRunner(project);
-                        project.runAfterRunScript((ProjectRunContext) runner.getRunContext(), runner);
-                    } catch (Exception e1) {
-                        UISupport.showErrorMessage(e1);
-                    }
-                }
-            };
-        }
     }
 
     private class InternalTestSuiteRunListener implements ProjectRunListener {
         private TestRunLogTestSuiteRunListener runLogListener;
-        private AtomicInteger finishCount = new AtomicInteger();
+        private final AtomicInteger finishCount = new AtomicInteger();
 
-        public void afterRun(ProjectRunner testScenarioRunner, ProjectRunContext runContext) {
-            if (testScenarioRunner != projectRunner) {
-                return;
-            }
-
-            WsdlProjectTestSuitesTabPanel.this.afterRun();
-        }
-
-        public void afterTestSuite(ProjectRunner testScenarioRunner, ProjectRunContext runContext,
-                                   TestSuiteRunner testRunner) {
+        public void afterTestSuite(
+            ProjectRunner testScenarioRunner, ProjectRunContext runContext, TestSuiteRunner testRunner
+        ) {
             if (testScenarioRunner != projectRunner) {
                 return;
             }
@@ -380,6 +363,20 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
 
             if (project.getRunType() == TestSuiteRunType.SEQUENTIAL) {
                 testRunner.getTestSuite().removeTestSuiteRunListener(runLogListener);
+            }
+        }
+
+        public void beforeTestSuite(
+            ProjectRunner testScenarioRunner, ProjectRunContext runContext, TestSuite testRunnable
+        ) {
+            if (testScenarioRunner != projectRunner) {
+                return;
+            }
+
+            progressBar.setString("Running " + testRunnable.getName());
+
+            if (project.getRunType() == TestSuiteRunType.SEQUENTIAL) {
+                testRunnable.addTestSuiteRunListener(runLogListener);
             }
         }
 
@@ -408,21 +405,12 @@ public class WsdlProjectTestSuitesTabPanel extends JPanel {
             }
         }
 
-        public void beforeTestSuite(ProjectRunner testScenarioRunner, ProjectRunContext runContext,
-                                    TestSuite testRunnable) {
+        public void afterRun(ProjectRunner testScenarioRunner, ProjectRunContext runContext) {
             if (testScenarioRunner != projectRunner) {
                 return;
             }
 
-            progressBar.setString("Running " + testRunnable.getName());
-
-            if (project.getRunType() == TestSuiteRunType.SEQUENTIAL) {
-                testRunnable.addTestSuiteRunListener(runLogListener);
-            }
+            WsdlProjectTestSuitesTabPanel.this.afterRun();
         }
-    }
-
-    public WsdlProjectRunner getProjectRunner() {
-        return projectRunner;
     }
 }

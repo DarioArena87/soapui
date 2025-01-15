@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.mockoperation.actions;
@@ -23,8 +23,7 @@ import com.eviware.soapui.model.iface.MessagePart.FaultPart;
 import com.eviware.soapui.model.mock.MockResponse;
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,12 +40,12 @@ public class CreateFaultWsdlMockResponseAction extends AbstractAction {
     public CreateFaultWsdlMockResponseAction(MockResponse mockResponse) {
         super("Create Fault");
         this.mockResponse = mockResponse;
-        putValue(Action.SMALL_ICON, UISupport.createImageIcon("/create_empty_fault.gif"));
-        putValue(Action.SHORT_DESCRIPTION, "Creates an SOAP Fault response");
+        putValue(SMALL_ICON, UISupport.createImageIcon("/create_empty_fault.gif"));
+        putValue(SHORT_DESCRIPTION, "Creates an SOAP Fault response");
     }
 
     public void actionPerformed(ActionEvent e) {
-        WsdlOperation operation = (WsdlOperation) mockResponse.getMockOperation().getOperation();
+        WsdlOperation operation = (WsdlOperation)mockResponse.getMockOperation().getOperation();
         if (operation == null) {
             UISupport.showErrorMessage("Missing operation for this mock response");
             return;
@@ -64,10 +63,11 @@ public class CreateFaultWsdlMockResponseAction extends AbstractAction {
 
                 String faultName = UISupport.prompt("Select fault detail to generate", "Create Fault", names);
                 if (faultName != null) {
-                    FaultPart faultPart = (FaultPart) faultParts[names.indexOf(faultName)];
+                    FaultPart faultPart = (FaultPart)faultParts[names.indexOf(faultName)];
                     mockResponse.setResponseContent(iface.getMessageBuilder().buildFault(faultPart));
                 }
-            } else {
+            }
+            else {
                 mockResponse.setResponseContent(iface.getMessageBuilder().buildEmptyFault());
             }
         }

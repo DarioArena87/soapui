@@ -1,22 +1,21 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support.http;
 
-import com.eviware.soapui.impl.rest.panels.request.views.json.actions.FormatJsonAction;
 import com.eviware.soapui.impl.rest.panels.resource.RestParamsTable;
 import com.eviware.soapui.impl.rest.panels.resource.RestParamsTableModel;
 import com.eviware.soapui.impl.rest.support.RestParamProperty;
@@ -36,19 +35,9 @@ import com.eviware.soapui.support.xml.XmlUtils;
 import net.sf.json.JSON;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -58,15 +47,14 @@ import static com.eviware.soapui.impl.rest.actions.support.NewRestResourceAction
 import static com.eviware.soapui.support.JsonUtil.seemsToBeJsonContentType;
 
 @SuppressWarnings("unchecked")
-public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDocument> implements
-        PropertyChangeListener {
+public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDocument> implements PropertyChangeListener {
     private final HttpRequestInterface<?> httpRequest;
+    protected RestParamsTable paramsTable;
     private RSyntaxTextArea contentEditor;
     private boolean updatingRequest;
     private JComponent panel;
     private JComboBox mediaTypeCombo;
     private JSplitPane split;
-    protected RestParamsTable paramsTable;
     private JCheckBox postQueryCheckBox;
 
     public HttpRequestContentView(HttpRequestMessageEditor httpRequestMessageEditor, HttpRequestInterface<?> httpRequest) {
@@ -82,6 +70,18 @@ public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDoc
         }
 
         return panel;
+    }
+
+    public void setEditable(boolean enabled) {
+        contentEditor.setEnabled(enabled && httpRequest.hasRequestBody());
+        contentEditor.setEditable(enabled && httpRequest.hasRequestBody());
+        mediaTypeCombo.setEnabled(enabled && !httpRequest.isPostQueryString());
+        postQueryCheckBox.setEnabled(enabled);
+    }
+
+    @Override
+    public int getSupportScoreForContentType(String contentType) {
+        return 0;
     }
 
     protected void buildComponent() {
@@ -102,18 +102,13 @@ public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDoc
 
     protected RestParamsTable buildParamsTable() {
         RestParamsTableModel restParamsTableModel = new RestParamsTableModel(httpRequest.getParams()) {
-            @Override
-            public String getColumnName(int column) {
-                return column == 0 ? "Name" : "Value";
-            }
-
             public int getColumnCount() {
                 return 2;
             }
 
-            public Object getValueAt(int rowIndex, int columnIndex) {
-                RestParamProperty prop = params.getPropertyAt(rowIndex);
-                return columnIndex == 0 ? prop.getName() : prop.getValue();
+            @Override
+            public String getColumnName(int column) {
+                return column == 0 ? "Name" : "Value";
             }
 
             @Override
@@ -121,19 +116,18 @@ public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDoc
                 RestParamProperty prop = params.getPropertyAt(rowIndex);
                 if (columnIndex == 0) {
                     prop.setName(value.toString());
-                } else {
+                }
+                else {
                     prop.setValue(value.toString());
                 }
             }
+
+            public Object getValueAt(int rowIndex, int columnIndex) {
+                RestParamProperty prop = params.getPropertyAt(rowIndex);
+                return columnIndex == 0 ? prop.getName() : prop.getValue();
+            }
         };
         return new RestParamsTable(httpRequest.getParams(), false, restParamsTableModel, ParamLocation.RESOURCE, true, false);
-    }
-
-    @Override
-    public void release() {
-        super.release();
-        httpRequest.removePropertyChangeListener(this);
-        paramsTable.release();
     }
 
     public HttpRequestInterface<?> getRestRequest() {
@@ -226,21 +220,24 @@ public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDoc
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(AbstractHttpRequest.REQUEST_PROPERTY) && !updatingRequest) {
             updatingRequest = true;
-            String requestBodyAsXml = (String) evt.getNewValue();
-            String mediaType = (String) mediaTypeCombo.getSelectedItem();
-            if (XmlUtils.seemsToBeXml(requestBodyAsXml) &&
-                    seemsToBeJsonContentType(mediaType)) {
+            String requestBodyAsXml = (String)evt.getNewValue();
+            String mediaType = (String)mediaTypeCombo.getSelectedItem();
+            if (XmlUtils.seemsToBeXml(requestBodyAsXml) && seemsToBeJsonContentType(mediaType)) {
                 JSON jsonObject = new JsonXmlSerializer().read(requestBodyAsXml);
                 contentEditor.setText(jsonObject.toString(3, 0));
-            } else {
+            }
+            else {
                 contentEditor.setText(requestBodyAsXml);
             }
             updatingRequest = false;
-        } else if (evt.getPropertyName().equals("method")) {
+        }
+        else if (evt.getPropertyName().equals("method")) {
             fixRequestPanel();
-        } else if (evt.getPropertyName().equals(Request.MEDIA_TYPE)) {
+        }
+        else if (evt.getPropertyName().equals(Request.MEDIA_TYPE)) {
             mediaTypeCombo.setSelectedItem(evt.getNewValue());
-        } else if (evt.getPropertyName().equals(AbstractHttpRequest.ATTACHMENTS_PROPERTY)) {
+        }
+        else if (evt.getPropertyName().equals(AbstractHttpRequest.ATTACHMENTS_PROPERTY)) {
             mediaTypeCombo.setModel(new DefaultComboBoxModel(getRequestMediaTypes()));
             mediaTypeCombo.setSelectedItem(httpRequest.getMediaType());
         }
@@ -249,6 +246,13 @@ public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDoc
         if (paramsTable != null) {
             paramsTable.refresh();
         }
+    }
+
+    @Override
+    public void release() {
+        super.release();
+        httpRequest.removePropertyChangeListener(this);
+        paramsTable.release();
     }
 
     private void fixRequestPanel() {
@@ -262,12 +266,14 @@ public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDoc
                     // wait for panel to get shown..
                     if (panel.getHeight() == 0) {
                         SwingUtilities.invokeLater(this);
-                    } else {
+                    }
+                    else {
                         split.setDividerLocation(0.5F);
                     }
                 }
             });
-        } else {
+        }
+        else {
             panel.remove(split);
             panel.add(paramsTable);
         }
@@ -277,20 +283,7 @@ public class HttpRequestContentView extends AbstractXmlEditorView<HttpRequestDoc
         return false;
     }
 
-    public void setEditable(boolean enabled) {
-        contentEditor.setEnabled(enabled && httpRequest.hasRequestBody());
-        contentEditor.setEditable(enabled && httpRequest.hasRequestBody());
-        mediaTypeCombo.setEnabled(enabled && !httpRequest.isPostQueryString());
-        postQueryCheckBox.setEnabled(enabled);
-    }
-
-    @Override
-    public int getSupportScoreForContentType(String contentType ) {
-        return 0;
-    }
-
     public RestParamsTable getParamsTable() {
         return paramsTable;
     }
-
 }

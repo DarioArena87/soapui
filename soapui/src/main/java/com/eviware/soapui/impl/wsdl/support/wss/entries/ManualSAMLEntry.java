@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.entries;
@@ -37,14 +37,13 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author Erik R. Yverling
- *         <p/>
- *         Used to create a manual SAML assertion using a test editor field
+ * <p/>
+ * Used to create a manual SAML assertion using a test editor field
  */
 
 public class ManualSAMLEntry extends WssEntryBase {
@@ -55,7 +54,7 @@ public class ManualSAMLEntry extends WssEntryBase {
     private RSyntaxTextArea editor;
 
     public void init(WSSEntryConfig config, OutgoingWss container) {
-        super.init(config, container, TYPE);
+        init(config, container, TYPE);
     }
 
     @Override
@@ -77,7 +76,6 @@ public class ManualSAMLEntry extends WssEntryBase {
             public void update(javax.swing.text.Document document) {
                 samlAssertion = editor.getText();
                 saveConfig();
-
             }
         });
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -88,12 +86,17 @@ public class ManualSAMLEntry extends WssEntryBase {
     @Override
     protected void load(XmlObjectConfigurationReader reader) {
         samlAssertion = reader.readString("samlAssertion", null);
-
     }
 
     @Override
     protected void save(XmlObjectConfigurationBuilder builder) {
         builder.add("samlAssertion", samlAssertion);
+    }
+
+    @Override
+    protected void addPropertyExpansions(PropertyExpansionsResult result) {
+        super.addPropertyExpansions(result);
+        result.extractAndAddAll("samlAssertion");
     }
 
     public void process(WSSecHeader secHeader, Document doc, PropertyExpansionContext context) {
@@ -112,7 +115,8 @@ public class ManualSAMLEntry extends WssEntryBase {
             AssertionWrapper assertion = new AssertionWrapper(samlAssertionRootElement);
             WSSecSAMLToken wsSign = new WSSecSAMLToken();
             wsSign.build(doc, assertion, secHeader);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
@@ -128,11 +132,5 @@ public class ManualSAMLEntry extends WssEntryBase {
         if (editor != null) {
             editor.setText(samlAssertion);
         }
-    }
-
-    @Override
-    protected void addPropertyExpansions(PropertyExpansionsResult result) {
-        super.addPropertyExpansions(result);
-        result.extractAndAddAll("samlAssertion");
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.dnd;
@@ -30,6 +30,11 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 
 public abstract class AbstractSoapUIDropTarget implements DropTargetListener {
+    public static void addDropTarget(Component component, AbstractSoapUIDropTarget target) {
+        DropTarget dropTarget = new DropTarget(component, target);
+        dropTarget.setDefaultActions(DnDConstants.ACTION_COPY_OR_MOVE);
+    }
+
     public AbstractSoapUIDropTarget() {
     }
 
@@ -39,21 +44,26 @@ public abstract class AbstractSoapUIDropTarget implements DropTargetListener {
         }
     }
 
-    public void dragExit(DropTargetEvent dtde) {
-    }
-
     public void dragOver(DropTargetDragEvent dtde) {
         if (!isAcceptable(dtde.getTransferable(), dtde.getLocation())) {
             dtde.rejectDrag();
-        } else {
+        }
+        else {
             dtde.acceptDrag(dtde.getDropAction());
         }
+    }
+
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+    }
+
+    public void dragExit(DropTargetEvent dtde) {
     }
 
     public void drop(DropTargetDropEvent dtde) {
         if (!isAcceptable(dtde.getTransferable(), dtde.getLocation())) {
             dtde.rejectDrop();
-        } else {
+        }
+        else {
             try {
                 Object testCase = getTransferData(dtde.getTransferable());
                 if (testCase != null) {
@@ -63,7 +73,8 @@ public abstract class AbstractSoapUIDropTarget implements DropTargetListener {
 
                     dtde.dropComplete(true);
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -72,9 +83,6 @@ public abstract class AbstractSoapUIDropTarget implements DropTargetListener {
     protected abstract boolean handleDrop(Object target, Point point);
 
     protected abstract boolean isAcceptable(Object target, Point point);
-
-    public void dropActionChanged(DropTargetDragEvent dtde) {
-    }
 
     public boolean isAcceptable(Transferable transferable, Point point) {
         return isAcceptable(getTransferData(transferable), point);
@@ -88,17 +96,13 @@ public abstract class AbstractSoapUIDropTarget implements DropTargetListener {
             if (flavor.isMimeTypeEqual(DataFlavor.javaJVMLocalObjectMimeType)) {
                 try {
                     return transferable.getTransferData(flavor);
-                } catch (Exception ex) {
+                }
+                catch (Exception ex) {
                     SoapUI.logError(ex);
                 }
             }
         }
 
         return null;
-    }
-
-    public static void addDropTarget(Component component, AbstractSoapUIDropTarget target) {
-        DropTarget dropTarget = new DropTarget(component, target);
-        dropTarget.setDefaultActions(DnDConstants.ACTION_COPY_OR_MOVE);
     }
 }

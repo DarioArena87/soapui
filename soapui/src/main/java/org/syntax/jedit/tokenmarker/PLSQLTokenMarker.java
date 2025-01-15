@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
@@ -25,10 +25,7 @@ import org.syntax.jedit.KeywordMap;
  * @version $Id: PLSQLTokenMarker.java,v 1.9 1999/12/13 03:40:30 sp Exp $
  */
 public class PLSQLTokenMarker extends SQLTokenMarker {
-    // public members
-    public PLSQLTokenMarker() {
-        super(getKeywordMap(), true);
-    }
+    private static KeywordMap plsqlKeywords;
 
     public static KeywordMap getKeywordMap() {
         if (plsqlKeywords == null) {
@@ -41,6 +38,11 @@ public class PLSQLTokenMarker extends SQLTokenMarker {
             addSystemTables();
         }
         return plsqlKeywords;
+    }
+
+    // public members
+    public PLSQLTokenMarker() {
+        super(getKeywordMap(), true);
     }
 
     private static void addKeywords() {
@@ -310,7 +312,6 @@ public class PLSQLTokenMarker extends SQLTokenMarker {
         plsqlKeywords.add("DBMS_OUTPUT", Token.KEYWORD1);
         plsqlKeywords.add("PUT_LINE", Token.KEYWORD1);
         plsqlKeywords.add("ENABLE", Token.KEYWORD1);
-
     }
 
     private static void addDataTypes() {
@@ -357,12 +358,10 @@ public class PLSQLTokenMarker extends SQLTokenMarker {
         plsqlKeywords.add("varbinary", Token.KEYWORD1);
         plsqlKeywords.add("varchar", Token.KEYWORD1);
         plsqlKeywords.add("varchar2", Token.KEYWORD1);
-
     }
 
     private static void addSystemFunctions() {
         plsqlKeywords.add("SYSDATE", Token.KEYWORD2);
-
     }
 
     private static void addOperators() {
@@ -382,7 +381,6 @@ public class PLSQLTokenMarker extends SQLTokenMarker {
         plsqlKeywords.add("START", Token.OPERATOR);
         plsqlKeywords.add("UNION", Token.OPERATOR);
         plsqlKeywords.add("WITH", Token.OPERATOR);
-
     }
 
     private static void addSystemStoredProcedures() {
@@ -392,6 +390,4 @@ public class PLSQLTokenMarker extends SQLTokenMarker {
     private static void addSystemTables() {
         plsqlKeywords.add("backupfile", Token.KEYWORD3);
     }
-
-    private static KeywordMap plsqlKeywords;
 }

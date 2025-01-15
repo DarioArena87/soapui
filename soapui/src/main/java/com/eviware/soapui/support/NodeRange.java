@@ -19,8 +19,9 @@ public class NodeRange {
         this(startLine, -1);
     }
 
-    public String toString() {
-        return startLine + "-" + endLine;
+    @Override
+    public int hashCode() {
+        return Objects.hash(startLine, endLine);
     }
 
     @Override
@@ -29,12 +30,11 @@ public class NodeRange {
             return false;
         }
 
-        NodeRange nodeRange = (NodeRange) obj;
+        NodeRange nodeRange = (NodeRange)obj;
         return Objects.equals(startLine, nodeRange.startLine) && Objects.equals(endLine, nodeRange.endLine);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(startLine, endLine);
+    public String toString() {
+        return startLine + "-" + endLine;
     }
 }

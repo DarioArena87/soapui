@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema.content;
@@ -35,7 +35,7 @@ import javax.xml.namespace.QName;
  * @author Dain Nilsson
  */
 public class SimpleContent implements Content {
-    private Schema schema;
+    private final Schema schema;
     private XmlAnySimpleType simpleType;
 
     public SimpleContent(Schema schema, String initialValue) {
@@ -53,12 +53,6 @@ public class SimpleContent implements Content {
         simpleType = TypeInferrer.getType(xml.getTypeName());
     }
 
-    public SimpleContentConfig save() {
-        SimpleContentConfig xml = SimpleContentConfig.Factory.newInstance();
-        xml.setTypeName(simpleType.schemaType().getName().getLocalPart());
-        return xml;
-    }
-
     public Content validate(Context context) throws XmlException {
         XmlCursor cursor = context.getCursor();
         String value = "";
@@ -70,11 +64,15 @@ public class SimpleContent implements Content {
         }
         if (!TypeInferrer.validateSimpleType(value, simpleType)) {
             XmlAnySimpleType newSimpleType = TypeInferrer.expandTypeForValue(value, simpleType);
-            if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION, ConflictHandler.Type.TYPE,
-                    new QName(schema.getNamespace(), context.getAttribute("typeName")), context.getPath(),
-                    "Illegal value.")) {
+            if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION,
+                                              ConflictHandler.Type.TYPE,
+                                              new QName(schema.getNamespace(), context.getAttribute("typeName")),
+                                              context.getPath(),
+                                              "Illegal value."
+            )) {
                 simpleType = newSimpleType;
-            } else {
+            }
+            else {
                 throw new XmlException("Illegal content!");
             }
         }
@@ -86,11 +84,27 @@ public class SimpleContent implements Content {
             return attrs;
         }
         String xsdns = schema.getPrefixForNamespace(Settings.xsdns);
-        StringBuilder s = new StringBuilder("<" + xsdns + ":simpleContent><" + xsdns + ":extension base=\"" + xsdns
-                + ":" + simpleType.schemaType().getName().getLocalPart() + "\">");
-        s.append(attrs);
-        s.append("</" + xsdns + ":extension></" + xsdns + ":simpleContent>");
-        return s.toString();
+        String s = "<" +
+                   xsdns +
+                   ":simpleContent><" +
+                   xsdns +
+                   ":extension base=\"" +
+                   xsdns +
+                   ":" +
+                   simpleType.schemaType().getName().getLocalPart() +
+                   "\">" +
+                   attrs +
+                   "</" +
+                   xsdns +
+                   ":extension></" +
+                   xsdns +
+                   ":simpleContent>";
+        return s;
     }
 
+    public SimpleContentConfig save() {
+        SimpleContentConfig xml = SimpleContentConfig.Factory.newInstance();
+        xml.setTypeName(simpleType.schemaType().getName().getLocalPart());
+        return xml;
+    }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes;
@@ -40,11 +40,11 @@ import java.util.List;
  */
 
 public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
-    private TestStepsTreeNode testStepsNode;
-    private LoadTestsTreeNode loadTestsNode;
-    private SecurityTestsTreeNode securityTestsNode;
-    private PropertiesTreeNode<?> propertiesTreeNode;
-    private List<SoapUITreeNode> childNodes = new ArrayList<SoapUITreeNode>();
+    private final TestStepsTreeNode testStepsNode;
+    private final LoadTestsTreeNode loadTestsNode;
+    private final SecurityTestsTreeNode securityTestsNode;
+    private final PropertiesTreeNode<?> propertiesTreeNode;
+    private final List<SoapUITreeNode> childNodes = new ArrayList<SoapUITreeNode>();
 
     public TestCaseTreeNode(TestCase testCase, SoapUITreeModel treeModel) {
         super(testCase, testCase.getTestSuite(), treeModel);
@@ -66,18 +66,6 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
         childNodes.add(securityTestsNode);
     }
 
-    public void release() {
-        super.release();
-
-        for (SoapUITreeNode treeNode : childNodes) {
-            if (!(treeNode instanceof PropertiesTreeNode)) {
-                getTreeModel().unmapModelItem(treeNode.getModelItem());
-            }
-
-            treeNode.release();
-        }
-    }
-
     public int getChildCount() {
         int propMod = getTreeModel().isShowProperties() ? 0 : 1;
         return childNodes.size() - propMod;
@@ -97,6 +85,18 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
         return childNodes.indexOf(child) - propMod;
     }
 
+    public void release() {
+        super.release();
+
+        for (SoapUITreeNode treeNode : childNodes) {
+            if (!(treeNode instanceof PropertiesTreeNode)) {
+                getTreeModel().unmapModelItem(treeNode.getModelItem());
+            }
+
+            treeNode.release();
+        }
+    }
+
     public LoadTestsTreeNode getLoadTestsNode() {
         return loadTestsNode;
     }
@@ -113,8 +113,36 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
         return getModelItem();
     }
 
+    public void testStepInserted(TestStep testStep, int index) {
+        testStepsNode.testStepInserted(testStep, index);
+    }
+
+    public void testStepRemoved(TestStep testStep, int index) {
+        testStepsNode.testStepRemoved(testStep, index);
+    }
+
+    public void loadTestInserted(LoadTest loadTest) {
+        loadTestsNode.loadTestInserted(loadTest);
+    }
+
+    public void loadTestRemoved(LoadTest loadTest) {
+        loadTestsNode.loadTestRemoved(loadTest);
+    }
+
+    public void testStepMoved(TestStep testStep, int fromIndex, int offset) {
+        testStepsNode.testStepMoved(testStep, fromIndex, offset);
+    }
+
+    public void securityTestInserted(SecurityTest securityTest) {
+        securityTestsNode.securityTestInserted(securityTest);
+    }
+
+    public void securityTestRemoved(SecurityTest securityTest) {
+        securityTestsNode.securityTestRemoved(securityTest);
+    }
+
     public class TestStepsTreeNode extends AbstractTreeNode<WsdlTestStepsModelItem> {
-        private List<TestStepTreeNode> testStepNodes = new ArrayList<TestStepTreeNode>();
+        private final List<TestStepTreeNode> testStepNodes = new ArrayList<TestStepTreeNode>();
 
         protected TestStepsTreeNode() {
             super(new WsdlTestStepsModelItem(getTestCase()));
@@ -147,6 +175,14 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
             return TestCaseTreeNode.this;
         }
 
+        public void release() {
+            for (TestStepTreeNode testStepNode : testStepNodes) {
+                testStepNode.release();
+            }
+
+            getModelItem().release();
+        }
+
         public void testStepInserted(TestStep testStep, int index) {
             TestStepTreeNode testStepTreeNode = createTestStepTreeNode(testStep);
             testStepNodes.add(index, testStepTreeNode);
@@ -159,7 +195,8 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
             if (testStepNodes.contains(treeNode)) {
                 getTreeModel().notifyNodeRemoved(treeNode);
                 testStepNodes.remove(treeNode);
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing unkown testStep");
             }
         }
@@ -172,25 +209,16 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
         public ActionList getActions() {
             return ActionListBuilder.buildActions("TestStepsTreeNodeActions", TestCaseTreeNode.this.getModelItem());
         }
-
-        public void release() {
-            for (TestStepTreeNode testStepNode : testStepNodes) {
-                testStepNode.release();
-            }
-
-            getModelItem().release();
-        }
     }
 
     public class LoadTestsTreeNode extends AbstractTreeNode<WsdlLoadTestsModelItem> {
-        private List<LoadTestTreeNode> loadTestNodes = new ArrayList<LoadTestTreeNode>();
+        private final List<LoadTestTreeNode> loadTestNodes = new ArrayList<LoadTestTreeNode>();
 
         protected LoadTestsTreeNode() {
             super(new WsdlLoadTestsModelItem(getTestCase()));
 
             for (int c = 0; c < getTestCase().getLoadTestCount(); c++) {
-                loadTestNodes
-                        .add(new LoadTestTreeNode(getTestCase().getLoadTestAt(c), getModelItem(), getTreeModel()));
+                loadTestNodes.add(new LoadTestTreeNode(getTestCase().getLoadTestAt(c), getModelItem(), getTreeModel()));
             }
 
             getTreeModel().mapModelItems(loadTestNodes);
@@ -212,6 +240,12 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
             return TestCaseTreeNode.this;
         }
 
+        public void release() {
+            for (LoadTestTreeNode loadTestNode : loadTestNodes) {
+                loadTestNode.release();
+            }
+        }
+
         public void loadTestInserted(LoadTest loadTest) {
             LoadTestTreeNode loadTestTreeNode = new LoadTestTreeNode(loadTest, getModelItem(), getTreeModel());
             loadTestNodes.add(loadTestTreeNode);
@@ -224,14 +258,9 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
             if (loadTestNodes.contains(treeNode)) {
                 getTreeModel().notifyNodeRemoved(treeNode);
                 loadTestNodes.remove(treeNode);
-            } else {
-                throw new RuntimeException("Removing unkown loadTest");
             }
-        }
-
-        public void release() {
-            for (LoadTestTreeNode loadTestNode : loadTestNodes) {
-                loadTestNode.release();
+            else {
+                throw new RuntimeException("Removing unkown loadTest");
             }
         }
 
@@ -241,14 +270,13 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
     }
 
     public class SecurityTestsTreeNode extends AbstractTreeNode<SecurityTestsModelItem> {
-        private List<SecurityTestTreeNode> securityTestNodes = new ArrayList<SecurityTestTreeNode>();
+        private final List<SecurityTestTreeNode> securityTestNodes = new ArrayList<SecurityTestTreeNode>();
 
         protected SecurityTestsTreeNode() {
             super(new SecurityTestsModelItem(getTestCase()));
 
             for (int c = 0; c < getTestCase().getSecurityTestCount(); c++) {
-                securityTestNodes.add(new SecurityTestTreeNode(getTestCase().getSecurityTestAt(c), getModelItem(),
-                        getTreeModel()));
+                securityTestNodes.add(new SecurityTestTreeNode(getTestCase().getSecurityTestAt(c), getModelItem(), getTreeModel()));
             }
 
             getTreeModel().mapModelItems(securityTestNodes);
@@ -270,9 +298,14 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
             return TestCaseTreeNode.this;
         }
 
+        public void release() {
+            for (SecurityTestTreeNode securityTestNode : securityTestNodes) {
+                securityTestNode.release();
+            }
+        }
+
         public void securityTestInserted(SecurityTest securityTest) {
-            SecurityTestTreeNode securityTestTreeNode = new SecurityTestTreeNode(securityTest, getModelItem(),
-                    getTreeModel());
+            SecurityTestTreeNode securityTestTreeNode = new SecurityTestTreeNode(securityTest, getModelItem(), getTreeModel());
             securityTestNodes.add(securityTestTreeNode);
             getTreeModel().notifyNodeInserted(securityTestTreeNode);
             getTreeModel().notifyNodeChanged(this);
@@ -283,49 +316,14 @@ public class TestCaseTreeNode extends AbstractModelItemTreeNode<TestCase> {
             if (securityTestNodes.contains(treeNode)) {
                 getTreeModel().notifyNodeRemoved(treeNode);
                 securityTestNodes.remove(treeNode);
-            } else {
-                throw new RuntimeException("Removing unkown loadTest");
             }
-        }
-
-        public void release() {
-            for (SecurityTestTreeNode securityTestNode : securityTestNodes) {
-                securityTestNode.release();
+            else {
+                throw new RuntimeException("Removing unkown loadTest");
             }
         }
 
         public ActionList getActions() {
             return ActionListBuilder.buildActions("SecurityTestsTreeNodeActions", TestCaseTreeNode.this.getModelItem());
         }
-    }
-
-    public void testStepInserted(TestStep testStep, int index) {
-        testStepsNode.testStepInserted(testStep, index);
-    }
-
-    public void testStepRemoved(TestStep testStep, int index) {
-        testStepsNode.testStepRemoved(testStep, index);
-    }
-
-    public void loadTestInserted(LoadTest loadTest) {
-        loadTestsNode.loadTestInserted(loadTest);
-    }
-
-    public void loadTestRemoved(LoadTest loadTest) {
-        loadTestsNode.loadTestRemoved(loadTest);
-    }
-
-    public void testStepMoved(TestStep testStep, int fromIndex, int offset) {
-        testStepsNode.testStepMoved(testStep, fromIndex, offset);
-    }
-
-    public void securityTestInserted(SecurityTest securityTest) {
-        securityTestsNode.securityTestInserted(securityTest);
-
-    }
-
-    public void securityTestRemoved(SecurityTest securityTest) {
-        securityTestsNode.securityTestRemoved(securityTest);
-
     }
 }

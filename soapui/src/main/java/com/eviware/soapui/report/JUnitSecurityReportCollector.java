@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.report;
@@ -43,15 +43,15 @@ import java.util.List;
 
 public class JUnitSecurityReportCollector extends JUnitReportCollector implements SecurityTestRunListener {
     @Override
-    public void afterOriginalStep(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                  SecurityTestStepResult result) {
+    public void beforeRun(TestCaseRunner testRunner, SecurityTestRunContext runContext) {
+
     }
 
     @Override
     public void afterRun(TestCaseRunner testRunner, SecurityTestRunContext runContext) {
         TestCase testCase = testRunner.getTestCase();
 
-        SecurityTest securityTest = ((SecurityTestRunner) testRunner).getSecurityTest();
+        SecurityTest securityTest = ((SecurityTestRunner)testRunner).getSecurityTest();
 
         JUnitReport report = new JUnitReport();
         report.setIncludeTestProperties(includeTestPropertiesInReport);
@@ -69,8 +69,7 @@ public class JUnitSecurityReportCollector extends JUnitReportCollector implement
                     HashMap<String, String> testProperties = getTestPropertiesAsHashMap(securityTest);
 
                     List<SecurityScanRequestResult> resultList = scanResult.getSecurityRequestResultList();
-                    Testcase secTestCase = report.addTestCase(ts.getName() + " - " + scanResult.getSecurityScanName(),
-                            scanResult.getTimeTaken(), testProperties);
+                    Testcase secTestCase = report.addTestCase(ts.getName() + " - " + scanResult.getSecurityScanName(), scanResult.getTimeTaken(), testProperties);
 
                     secTestCase.setPackage(testCase.getTestSuite().getProject().getName());
 
@@ -78,9 +77,7 @@ public class JUnitSecurityReportCollector extends JUnitReportCollector implement
                         SecurityScanRequestResult scanRequestResult = resultList.get(i);
                         if (scanRequestResult.getStatus() == ResultStatus.FAILED) {
                             StringBuffer result = new StringBuffer();
-                            result.append("<pre>")
-                                    .append(XmlUtils.entitize(scanRequestResult.getChangedParamsInfo(i + 1)))
-                                    .append("</pre>");
+                            result.append("<pre>").append(XmlUtils.entitize(scanRequestResult.getChangedParamsInfo(i + 1))).append("</pre>");
 
                             for (String message : scanRequestResult.getMessages()) {
                                 result.append("<pre>").append(XmlUtils.entitize(message)).append("</pre>");
@@ -101,14 +98,7 @@ public class JUnitSecurityReportCollector extends JUnitReportCollector implement
     }
 
     @Override
-    public void afterSecurityScan(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                  SecurityScanResult securityScanResult) {
-
-    }
-
-    @Override
-    public void afterSecurityScanRequest(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                         SecurityScanRequestResult securityScanReqResult) {
+    public void beforeStep(TestCaseRunner testRunner, SecurityTestRunContext runContext, TestStepResult testStepResult) {
     }
 
     @Override
@@ -116,16 +106,27 @@ public class JUnitSecurityReportCollector extends JUnitReportCollector implement
     }
 
     @Override
-    public void beforeRun(TestCaseRunner testRunner, SecurityTestRunContext runContext) {
+    public void afterOriginalStep(
+        TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityTestStepResult result
+    ) {
+    }
+
+    @Override
+    public void beforeSecurityScan(
+        TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScan securityScan
+    ) {
+    }
+
+    @Override
+    public void afterSecurityScan(
+        TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScanResult securityScanResult
+    ) {
 
     }
 
     @Override
-    public void beforeSecurityScan(TestCaseRunner testRunner, SecurityTestRunContext runContext,
-                                   SecurityScan securityScan) {
-    }
-
-    @Override
-    public void beforeStep(TestCaseRunner testRunner, SecurityTestRunContext runContext, TestStepResult testStepResult) {
+    public void afterSecurityScanRequest(
+        TestCaseRunner testRunner, SecurityTestRunContext runContext, SecurityScanRequestResult securityScanReqResult
+    ) {
     }
 }

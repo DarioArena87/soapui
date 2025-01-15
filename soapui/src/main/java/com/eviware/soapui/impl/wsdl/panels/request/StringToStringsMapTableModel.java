@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.request;
@@ -32,12 +32,13 @@ import java.util.List;
 public class StringToStringsMapTableModel extends AbstractTableModel implements TableModel {
     private final String keyCaption;
     private final String valueCaption;
-    private List<NameValuePair> keyList = new ArrayList<NameValuePair>();
     private final boolean editable;
+    private final List<NameValuePair> keyList = new ArrayList<NameValuePair>();
     private StringToStringsMap data;
 
-    public StringToStringsMapTableModel(StringToStringsMap data, String keyCaption, String valueCaption,
-                                        boolean editable) {
+    public StringToStringsMapTableModel(
+        StringToStringsMap data, String keyCaption, String valueCaption, boolean editable
+    ) {
         this.data = data;
         this.keyCaption = keyCaption;
         this.valueCaption = valueCaption;
@@ -46,20 +47,16 @@ public class StringToStringsMapTableModel extends AbstractTableModel implements 
         setData(data);
     }
 
-    public int getColumnCount() {
-        return 2;
-    }
-
     public String getColumnName(int arg0) {
         return arg0 == 0 ? keyCaption : valueCaption;
     }
 
-    public boolean isCellEditable(int arg0, int arg1) {
-        return editable;
-    }
-
     public Class<?> getColumnClass(int arg0) {
         return String.class;
+    }
+
+    public boolean isCellEditable(int arg0, int arg1) {
+        return editable;
     }
 
     public void setValueAt(Object arg0, int arg1, int arg2) {
@@ -70,8 +67,8 @@ public class StringToStringsMapTableModel extends AbstractTableModel implements 
             data.get(nvpair.getKey()).remove(nvpair.getIndex());
             nvpair.setKey(String.valueOf(arg0));
             data.put(nvpair.getKey(), nvpair.getIndex());
-
-        } else if (arg2 == 1) {
+        }
+        else if (arg2 == 1) {
             data.replace(nvpair.getKey(), nvpair.getIndex(), String.valueOf(arg0));
             nvpair.setValue(String.valueOf(arg0));
         }
@@ -81,6 +78,10 @@ public class StringToStringsMapTableModel extends AbstractTableModel implements 
 
     public int getRowCount() {
         return keyList.size();
+    }
+
+    public int getColumnCount() {
+        return 2;
     }
 
     public Object getValueAt(int arg0, int arg1) {
@@ -123,17 +124,16 @@ public class StringToStringsMapTableModel extends AbstractTableModel implements 
         private String value;
 
         public NameValuePair(String key, String value) {
-            super();
             this.key = key;
             this.value = value;
         }
 
-        public void setKey(String key) {
-            this.key = key;
-        }
-
         public String getKey() {
             return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
         }
 
         public void setValue(String value) {

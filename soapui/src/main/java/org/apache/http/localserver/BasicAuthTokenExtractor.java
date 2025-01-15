@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -53,7 +53,7 @@ import org.apache.http.util.EncodingUtils;
 
 public class BasicAuthTokenExtractor {
 
-    public String extract(final HttpRequest request) throws HttpException {
+    public String extract(HttpRequest request) throws HttpException {
         String auth = null;
 
         Header h = request.getFirstHeader(AUTH.WWW_AUTH_RESP);
@@ -76,12 +76,12 @@ public class BasicAuthTokenExtractor {
                     byte[] credsRaw = EncodingUtils.getAsciiBytes(s);
                     BinaryDecoder codec = new Base64();
                     auth = EncodingUtils.getAsciiString(codec.decode(credsRaw));
-                } catch (DecoderException ex) {
+                }
+                catch (DecoderException ex) {
                     throw new ProtocolException("Malformed BASIC credentials");
                 }
             }
         }
         return auth;
     }
-
 }

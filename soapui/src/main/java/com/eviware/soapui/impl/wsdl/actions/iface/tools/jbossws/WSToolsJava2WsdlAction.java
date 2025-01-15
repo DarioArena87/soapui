@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.jbossws;
@@ -82,10 +82,8 @@ public class WSToolsJava2WsdlAction extends AbstractToolsAction<WsdlProject> {
 
         mainForm.addTextField(ENDPOINT, "Serice Endpoint Interface", XForm.FieldType.JAVA_CLASS);
         mainForm.addTextField(SERVICE_NAME, "The name of the generated Service", XForm.FieldType.TEXT);
-        mainForm
-                .addComboBox(STYLE, new String[]{Style.DOCUMENT.toString(), Style.RPC.toString()}, "The style to use");
-        mainForm.addComboBox(PARAMETER_STYLE,
-                new String[]{ParameterStyle.BARE.toString(), ParameterStyle.WRAPPED.toString()}, "The style to use");
+        mainForm.addComboBox(STYLE, new String[]{Style.DOCUMENT.toString(), Style.RPC.toString()}, "The style to use");
+        mainForm.addComboBox(PARAMETER_STYLE, new String[]{ParameterStyle.BARE.toString(), ParameterStyle.WRAPPED.toString()}, "The style to use");
         mainForm.addTextField(CLASSPATH, "Classpath to use", XForm.FieldType.PROJECT_FOLDER);
         mainForm.addTextField(OUTPUT, "The root directory for all emitted files.", XForm.FieldType.PROJECT_FOLDER);
         mainForm.addTextField(MAPPING, "mapping file to generate", XForm.FieldType.PROJECT_FILE);
@@ -104,8 +102,7 @@ public class WSToolsJava2WsdlAction extends AbstractToolsAction<WsdlProject> {
             }
         });
 
-        return builder.buildDialog(actions, "Specify arguments for JBossWS wstools java2wsdl functionality",
-                UISupport.TOOL_ICON);
+        return builder.buildDialog(actions, "Specify arguments for JBossWS wstools java2wsdl functionality", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, WsdlProject project) throws Exception {
@@ -190,7 +187,7 @@ public class WSToolsJava2WsdlAction extends AbstractToolsAction<WsdlProject> {
             super(builder, "JBossWS wstools", modelItem);
             this.outDir = outDir;
             this.serviceName = serviceName;
-            this.project = modelItem;
+            project = modelItem;
         }
 
         protected void afterRun(RunnerContext context) {
@@ -199,17 +196,16 @@ public class WSToolsJava2WsdlAction extends AbstractToolsAction<WsdlProject> {
             }
 
             try {
-                String wsdlUrl = "file:" + outDir.getAbsolutePath() + File.separatorChar + "wsdl" + File.separatorChar
-                        + serviceName + ".wsdl";
+                String wsdlUrl = "file:" + outDir.getAbsolutePath() + File.separatorChar + "wsdl" + File.separatorChar + serviceName + ".wsdl";
                 Interface[] ifaces = WsdlInterfaceFactory.importWsdl(project, wsdlUrl, true);
 
                 if (ifaces.length > 0) {
                     context.log("Added Interface [" + ifaces[0].getName() + "] to project");
-                    ifaces[0].getSettings().setString(WSToolsRegenerateJava2WsdlAction.class.getName() + "@values",
-                            getDialog().getValues().toXml());
+                    ifaces[0].getSettings().setString(WSToolsRegenerateJava2WsdlAction.class.getName() + "@values", getDialog().getValues().toXml());
                     UISupport.select(ifaces[0]);
                 }
-            } catch (SoapUIException e) {
+            }
+            catch (SoapUIException e) {
                 SoapUI.logError(e);
             }
         }

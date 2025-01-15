@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.data.actions;
@@ -20,8 +20,7 @@ import com.eviware.soapui.SoapUI;
 import com.eviware.soapui.impl.wsdl.panels.loadtest.JStatisticsGraph;
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -39,9 +38,9 @@ public class ExportStatisticsHistoryAction extends AbstractAction {
     private final JStatisticsGraph graph;
 
     public ExportStatisticsHistoryAction(JStatisticsGraph statisticsGraph) {
-        this.graph = statisticsGraph;
-        putValue(Action.SMALL_ICON, UISupport.createImageIcon("/export.png"));
-        putValue(Action.SHORT_DESCRIPTION, "Export statistics history to a file");
+        graph = statisticsGraph;
+        putValue(SMALL_ICON, UISupport.createImageIcon("/export.png"));
+        putValue(SHORT_DESCRIPTION, "Export statistics history to a file");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -60,7 +59,8 @@ public class ExportStatisticsHistoryAction extends AbstractAction {
             int cnt = exportToFile(file, model);
 
             UISupport.showInfoMessage("Saved " + cnt + " rows to file [" + file.getName() + "]");
-        } catch (IOException e1) {
+        }
+        catch (IOException e1) {
             SoapUI.logError(e1);
         }
     }

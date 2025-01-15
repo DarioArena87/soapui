@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -40,17 +40,13 @@ public class ProxyPrefs implements Prefs {
     public static final String USERNAME = "Username";
     public static final String PASSWORD = "Password";
     public static final String EXCLUDES = "Excludes";
-
+    private final String title;
     private JTextField hostTextField;
     private JTextField portTextField;
     private JTextField userTextField;
     private JPasswordField passwordTextField;
     private JTextField excludesTextField;
-
     private SimpleForm proxyPrefForm;
-
-    private final String title;
-
     private JRadioButton automatic;
     private JRadioButton none;
     private JRadioButton manual;
@@ -59,10 +55,6 @@ public class ProxyPrefs implements Prefs {
 
     public ProxyPrefs(String title) {
         this.title = title;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     public SimpleForm getForm() {
@@ -76,9 +68,64 @@ public class ProxyPrefs implements Prefs {
             proxyPrefForm.appendSeparator();
             userTextField = proxyPrefForm.appendTextField(USERNAME, "proxy username to use");
             passwordTextField = proxyPrefForm.appendPasswordField(PASSWORD, "proxy password to use");
-
         }
         return proxyPrefForm;
+    }
+
+    public void setFormValues(Settings settings) {
+        getForm().setValues(getValues(settings));
+        if (!settings.getBoolean(ProxySettings.ENABLE_PROXY)) {
+            none.setSelected(true);
+            setManualProxyTextFieldsEnabled(false, false);
+        }
+        else if (settings.getBoolean(ProxySettings.AUTO_PROXY)) {
+            automatic.setSelected(true);
+            autoProxy = true;
+            setManualProxyTextFieldsEnabled(true, false);
+        }
+        else {
+            manual.setSelected(true);
+            autoProxy = false;
+            setManualProxyTextFieldsEnabled(true, true);
+        }
+        autoProxy = settings.getBoolean(ProxySettings.AUTO_PROXY);
+    }
+
+    public void getFormValues(Settings settings) {
+        StringToStringMap values = new StringToStringMap();
+        proxyPrefForm.getValues(values);
+        storeValues(values, settings);
+    }
+
+    public void storeValues(StringToStringMap values, Settings settings) {
+        String proxyHost = values.get(HOST);
+        String proxyPort = values.get(PORT);
+        settings.setString(ProxySettings.HOST, proxyHost);
+        settings.setString(ProxySettings.PORT, proxyPort);
+        settings.setString(ProxySettings.USERNAME, values.get(USERNAME));
+        settings.setString(ProxySettings.PASSWORD, values.get(PASSWORD));
+        settings.setString(ProxySettings.EXCLUDES, values.get(EXCLUDES));
+        boolean enableProxy = !none.isSelected();
+        if (!autoProxy && (StringUtils.isNullOrEmpty(proxyHost) || StringUtils.isNullOrEmpty(proxyPort))) {
+            enableProxy = false;
+        }
+        settings.setBoolean(ProxySettings.ENABLE_PROXY, enableProxy);
+        settings.setBoolean(ProxySettings.AUTO_PROXY, autoProxy);
+        SoapUI.updateProxyFromSettings();
+    }
+
+    public StringToStringMap getValues(Settings settings) {
+        StringToStringMap values = new StringToStringMap();
+        values.put(HOST, settings.getString(ProxySettings.HOST, ""));
+        values.put(PORT, settings.getString(ProxySettings.PORT, ""));
+        values.put(USERNAME, settings.getString(ProxySettings.USERNAME, ""));
+        values.put(PASSWORD, settings.getString(ProxySettings.PASSWORD, ""));
+        values.put(EXCLUDES, settings.getString(ProxySettings.EXCLUDES, ""));
+        return values;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     private void addProxySettingRadioButtons() {
@@ -127,55 +174,4 @@ public class ProxyPrefs implements Prefs {
         passwordTextField.setEnabled(userPasswordEnabled);
         excludesTextField.setEnabled(otherFieldsEnabled);
     }
-
-    public void getFormValues(Settings settings) {
-        StringToStringMap values = new StringToStringMap();
-        proxyPrefForm.getValues(values);
-        storeValues(values, settings);
-    }
-
-    public StringToStringMap getValues(Settings settings) {
-        StringToStringMap values = new StringToStringMap();
-        values.put(HOST, settings.getString(ProxySettings.HOST, ""));
-        values.put(PORT, settings.getString(ProxySettings.PORT, ""));
-        values.put(USERNAME, settings.getString(ProxySettings.USERNAME, ""));
-        values.put(PASSWORD, settings.getString(ProxySettings.PASSWORD, ""));
-        values.put(EXCLUDES, settings.getString(ProxySettings.EXCLUDES, ""));
-        return values;
-    }
-
-    public void setFormValues(Settings settings) {
-        getForm().setValues(getValues(settings));
-        if (!settings.getBoolean(ProxySettings.ENABLE_PROXY)) {
-            none.setSelected(true);
-            setManualProxyTextFieldsEnabled(false, false);
-        } else if (settings.getBoolean(ProxySettings.AUTO_PROXY)) {
-            automatic.setSelected(true);
-            autoProxy = true;
-            setManualProxyTextFieldsEnabled(true, false);
-        } else {
-            manual.setSelected(true);
-            autoProxy = false;
-            setManualProxyTextFieldsEnabled(true, true);
-        }
-        autoProxy = settings.getBoolean(ProxySettings.AUTO_PROXY);
-    }
-
-    public void storeValues(StringToStringMap values, Settings settings) {
-        String proxyHost = values.get(HOST);
-        String proxyPort = values.get(PORT);
-        settings.setString(ProxySettings.HOST, proxyHost);
-        settings.setString(ProxySettings.PORT, proxyPort);
-        settings.setString(ProxySettings.USERNAME, values.get(USERNAME));
-        settings.setString(ProxySettings.PASSWORD, values.get(PASSWORD));
-        settings.setString(ProxySettings.EXCLUDES, values.get(EXCLUDES));
-        boolean enableProxy = !none.isSelected();
-        if (!autoProxy && (StringUtils.isNullOrEmpty(proxyHost) || StringUtils.isNullOrEmpty(proxyPort))) {
-            enableProxy = false;
-        }
-        settings.setBoolean(ProxySettings.ENABLE_PROXY, enableProxy);
-        settings.setBoolean(ProxySettings.AUTO_PROXY, autoProxy);
-        SoapUI.updateProxyFromSettings();
-    }
-
 }

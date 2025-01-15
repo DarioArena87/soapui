@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.dotnet;
@@ -41,19 +41,18 @@ import java.io.File;
  */
 
 public class DotNetWsdlAction extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "DotNetWsdlAction";
     private static final String OUTPUT = "output directory";
     private static final String LANGUAGE = "language";
     private static final String SERVER = "serverInterface";
     private static final String NAMESPACE = "namespace";
     private static final String PROTOCOL = "protocol";
-
     private static final String SHARETYPES = "sharetypes";
     private static final String FIELDS = "fields";
     private static final String ORDER = "order";
     private static final String ENABLEDATABINDING = "enableDataBinding";
     private static final String URLKEY = "url key";
     private static final String BASEURL = "base url";
-
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
     private static final String DOMAIN = "domain";
@@ -61,7 +60,6 @@ public class DotNetWsdlAction extends AbstractToolsAction<Interface> {
     private static final String PROXYUSERNAME = "proxy username";
     private static final String PROXYPASSWORD = "proxy password";
     private static final String PROXYDOMAIN = "proxy domain";
-    public static final String SOAPUI_ACTION_ID = "DotNetWsdlAction";
 
     public DotNetWsdlAction() {
         super(".NET 2.0 Artifacts", "Generates .NET 2.0 artifacts using wsdl.exe");
@@ -85,8 +83,7 @@ public class DotNetWsdlAction extends AbstractToolsAction<Interface> {
         mainForm.addCheckBox(SERVER, "(Generates interfaces for server-side implementation of an ASP.Net Web Service)");
         mainForm.addComboBox(LANGUAGE, new String[]{"CS", "VB", "JS", "VJS", "CPP"}, "add scope to deploy.wsdd");
 
-        mainForm.addComboBox(PROTOCOL, new String[]{"SOAP", "SOAP12", "HttpGet", "HttpPost"},
-                "override the default protocol to implement");
+        mainForm.addComboBox(PROTOCOL, new String[]{"SOAP", "SOAP12", "HttpGet", "HttpPost"}, "override the default protocol to implement");
 
         XForm advForm = builder.createForm("Advanced");
 
@@ -94,8 +91,7 @@ public class DotNetWsdlAction extends AbstractToolsAction<Interface> {
         advForm.addCheckBox(FIELDS, "(generate fields instead of properties)");
         advForm.addCheckBox(ORDER, "(generate explicit order identifiers on particle members)");
         advForm.addCheckBox(ENABLEDATABINDING, "(implement INotifyPropertyChanged interface on all generated types)");
-        advForm.addTextField(URLKEY, "configuration key to use in the code generation to read the default URL value",
-                XForm.FieldType.URL);
+        advForm.addTextField(URLKEY, "configuration key to use in the code generation to read the default URL value", XForm.FieldType.URL);
         advForm.addTextField(BASEURL, "base url to use when calculating the url fragment", XForm.FieldType.URL);
 
         XForm httpForm = builder.createForm("HTTP settings");
@@ -109,8 +105,7 @@ public class DotNetWsdlAction extends AbstractToolsAction<Interface> {
 
         buildArgsForm(builder, false, "wsdl.exe");
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.DOTNET_HELP_URL, modelItem),
-                "Specify arguments for .NET 2 wsdl.exe", UISupport.TOOL_ICON);
+        return builder.buildDialog(buildDefaultActions(HelpUrls.DOTNET_HELP_URL, modelItem), "Specify arguments for .NET 2 wsdl.exe", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes;
@@ -34,10 +34,10 @@ import java.util.List;
  */
 
 public class MockServiceTreeNode extends AbstractModelItemTreeNode<MockService> {
-    private ReorderPropertyChangeListener propertyChangeListener = new ReorderPropertyChangeListener();
-    private List<MockOperationTreeNode> mockOperationNodes = new ArrayList<MockOperationTreeNode>();
-    private InternalMockServiceListener mockServiceListener;
-    private PropertiesTreeNode<?> propertiesTreeNode;
+    private final ReorderPropertyChangeListener propertyChangeListener = new ReorderPropertyChangeListener();
+    private final List<MockOperationTreeNode> mockOperationNodes = new ArrayList<MockOperationTreeNode>();
+    private final InternalMockServiceListener mockServiceListener;
+    private final PropertiesTreeNode<?> propertiesTreeNode;
 
     public MockServiceTreeNode(MockService mockService, SoapUITreeModel treeModel) {
         super(mockService, mockService.getProject(), treeModel);
@@ -57,19 +57,6 @@ public class MockServiceTreeNode extends AbstractModelItemTreeNode<MockService> 
         getTreeModel().mapModelItem(propertiesTreeNode);
     }
 
-    public void release() {
-        super.release();
-
-        getModelItem().removeMockServiceListener(mockServiceListener);
-
-        for (MockOperationTreeNode treeNode : mockOperationNodes) {
-            treeNode.getModelItem().removePropertyChangeListener(propertyChangeListener);
-            treeNode.release();
-        }
-
-        propertiesTreeNode.release();
-    }
-
     public MockService getMockService() {
         return getModelItem();
     }
@@ -77,6 +64,11 @@ public class MockServiceTreeNode extends AbstractModelItemTreeNode<MockService> 
     public int getChildCount() {
         int propMod = getTreeModel().isShowProperties() ? 1 : 0;
         return mockOperationNodes.size() + propMod;
+    }
+
+    public SoapUITreeNode getChildNode(int index) {
+        int propMod = getTreeModel().isShowProperties() ? 1 : 0;
+        return index == 0 && propMod == 1 ? propertiesTreeNode : mockOperationNodes.get(index - propMod);
     }
 
     public int getIndexOfChild(Object child) {
@@ -89,9 +81,17 @@ public class MockServiceTreeNode extends AbstractModelItemTreeNode<MockService> 
         return ix == -1 ? ix : ix + propMod;
     }
 
-    public SoapUITreeNode getChildNode(int index) {
-        int propMod = getTreeModel().isShowProperties() ? 1 : 0;
-        return index == 0 && propMod == 1 ? propertiesTreeNode : mockOperationNodes.get(index - propMod);
+    public void release() {
+        super.release();
+
+        getModelItem().removeMockServiceListener(mockServiceListener);
+
+        for (MockOperationTreeNode treeNode : mockOperationNodes) {
+            treeNode.getModelItem().removePropertyChangeListener(propertyChangeListener);
+            treeNode.release();
+        }
+
+        propertiesTreeNode.release();
     }
 
     private final class InternalMockServiceListener implements MockServiceListener {
@@ -108,27 +108,28 @@ public class MockServiceTreeNode extends AbstractModelItemTreeNode<MockService> 
                 getTreeModel().notifyNodeRemoved(treeNode);
                 mockOperation.removePropertyChangeListener(propertyChangeListener);
                 mockOperationNodes.remove(treeNode);
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing unkown mockOperation");
             }
         }
 
         public void mockResponseAdded(MockResponse mockResponse) {
-            MockOperationTreeNode operationTreeNode = (MockOperationTreeNode) getTreeModel().getTreeNode(
-                    mockResponse.getMockOperation());
+            MockOperationTreeNode operationTreeNode = (MockOperationTreeNode)getTreeModel().getTreeNode(mockResponse.getMockOperation());
             if (operationTreeNode != null) {
                 operationTreeNode.mockResponseAdded(mockResponse);
-            } else {
+            }
+            else {
                 throw new RuntimeException("Adding mockResponse to unknwown MockOperation");
             }
         }
 
         public void mockResponseRemoved(MockResponse mockResponse) {
-            MockOperationTreeNode operationTreeNode = (MockOperationTreeNode) getTreeModel().getTreeNode(
-                    mockResponse.getMockOperation());
+            MockOperationTreeNode operationTreeNode = (MockOperationTreeNode)getTreeModel().getTreeNode(mockResponse.getMockOperation());
             if (operationTreeNode != null) {
                 operationTreeNode.mockResponseRemoved(mockResponse);
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing mockResponse from unknown MockOperation");
             }
         }

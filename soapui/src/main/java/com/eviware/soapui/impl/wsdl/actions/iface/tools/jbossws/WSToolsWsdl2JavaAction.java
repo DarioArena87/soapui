@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.jbossws;
@@ -78,7 +78,7 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
 
     @Override
     public boolean applies(Interface target) {
-        Interface iface = (Interface) target;
+        Interface iface = target;
         return !iface.getProject().hasNature(Project.JBOSSWS_NATURE_ID);
     }
 
@@ -92,7 +92,8 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
         if (!hasEjbLink && !hasServletLink) {
             ejbLinkField.setEnabled(true);
             servletLinkField.setEnabled(true);
-        } else {
+        }
+        else {
             ejbLinkField.setEnabled(hasEjbLink && !hasServletLink);
             servletLinkField.setEnabled(hasServletLink && !hasEjbLink);
 
@@ -119,8 +120,7 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
         mainForm.addNameSpaceTable(NAMESPACE_MAPPING, modelItem);
 
         mainForm.addSeparator("webservices.xml generation options");
-        ejbLinkField = mainForm.addTextField(EJB_LINK, "The ejb-jar.xml ejb-link for Stateless Session Bean endpoints",
-                XForm.FieldType.TEXT);
+        ejbLinkField = mainForm.addTextField(EJB_LINK, "The ejb-jar.xml ejb-link for Stateless Session Bean endpoints", XForm.FieldType.TEXT);
         ejbLinkField.addFormFieldListener(new XFormFieldListener() {
             public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
                 servletLinkField.setEnabled(newValue.length() == 0);
@@ -128,8 +128,7 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
             }
         });
 
-        servletLinkField = mainForm.addTextField(SERVLET_LINK,
-                "The web.xml servlet-link that is used by Java Service Endpoints (WAR)", XForm.FieldType.TEXT);
+        servletLinkField = mainForm.addTextField(SERVLET_LINK, "The web.xml servlet-link that is used by Java Service Endpoints (WAR)", XForm.FieldType.TEXT);
         servletLinkField.addFormFieldListener(new XFormFieldListener() {
             public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
                 ejbLinkField.setEnabled(newValue.length() == 0);
@@ -142,10 +141,8 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
         buildArgsForm(builder, false, "wstools");
 
         ActionList actions = buildDefaultActions(HelpUrls.WSTOOLS_HELP_URL, modelItem);
-        actions.addAction(new JBossWSShowConfigFileAction("JBossWS Wsdl2Java",
-                "Contents of generated wsconfig.xml file", modelItem));
-        return builder.buildDialog(actions, "Specify arguments for JBossWS wstools wsdl2java functionality",
-                UISupport.TOOL_ICON);
+        actions.addAction(new JBossWSShowConfigFileAction("JBossWS Wsdl2Java", "Contents of generated wsconfig.xml file", modelItem));
+        return builder.buildDialog(actions, "Specify arguments for JBossWS wstools wsdl2java functionality", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {
@@ -171,8 +168,7 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
         toolHost.run(new ProcessToolRunner(builder, "JBossWS wstools", modelItem, args));
     }
 
-    private ArgumentBuilder buildArgs(StringToStringMap values, boolean isWindows, Interface modelItem)
-            throws IOException {
+    private ArgumentBuilder buildArgs(StringToStringMap values, boolean isWindows, Interface modelItem) throws IOException {
         values.put(OUTPUT, Tools.ensureDir(values.get(OUTPUT), ""));
 
         ArgumentBuilder builder = new ArgumentBuilder(values);
@@ -208,7 +204,8 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
                     entry.setPackage(namespaceEntry.getValue());
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
@@ -218,13 +215,15 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
         try {
             new URL(wsdlUrl);
             wsdl2Java.setLocation(wsdlUrl);
-        } catch (MalformedURLException e) {
-            ((Element) wsdl2Java.getDomNode()).setAttribute("file", wsdlUrl);
+        }
+        catch (MalformedURLException e) {
+            ((Element)wsdl2Java.getDomNode()).setAttribute("file", wsdlUrl);
         }
 
         if (values.getBoolean(UNWRAP)) {
             wsdl2Java.setParameterStyle(ParameterStyle.BARE);
-        } else {
+        }
+        else {
             wsdl2Java.setParameterStyle(ParameterStyle.WRAPPED);
         }
 
@@ -232,13 +231,14 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
             WsxmlType webservices = wsdl2Java.addNewWebservices();
             webservices.setEjbLink(values.get(EJB_LINK));
             webservices.setAppend(values.getBoolean(APPEND));
-        } else if (values.get(SERVLET_LINK) != null && values.get(SERVLET_LINK).length() > 0) {
+        }
+        else if (values.get(SERVLET_LINK) != null && values.get(SERVLET_LINK).length() > 0) {
             WsxmlType webservices = wsdl2Java.addNewWebservices();
             webservices.setServletLink(values.get(SERVLET_LINK));
             webservices.setAppend(values.getBoolean(APPEND));
         }
 
-        String mappingFile = values.get(MAPPING).toString().trim();
+        String mappingFile = values.get(MAPPING).trim();
         if (mappingFile.length() > 0) {
             wsdl2Java.addNewMapping().setFile(mappingFile);
         }
@@ -258,5 +258,4 @@ public class WSToolsWsdl2JavaAction extends AbstractToolsAction<Interface> {
             return configDocument.toString();
         }
     }
-
 }

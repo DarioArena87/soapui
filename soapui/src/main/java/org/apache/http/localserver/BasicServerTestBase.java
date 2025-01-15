@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -41,10 +41,10 @@
 
 package org.apache.http.localserver;
 
-import java.net.InetSocketAddress;
-
 import org.apache.http.HttpHost;
 import org.junit.After;
+
+import java.net.InetSocketAddress;
 
 /**
  * Base class for tests using {@link LocalTestServer}. The server will not be
@@ -72,5 +72,4 @@ public abstract class BasicServerTestBase {
         InetSocketAddress address = localServer.getServiceAddress();
         return new HttpHost(address.getHostName(), address.getPort(), "http");
     }
-
 }

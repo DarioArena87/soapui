@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.report;
@@ -37,9 +37,9 @@ import java.io.IOException;
 
 /**
  * @author Erik R. Yverling
- *         <p/>
- *         Creates a report from the test case run log after a test has been
- *         run.
+ * <p/>
+ * Creates a report from the test case run log after a test has been
+ * run.
  */
 public class TestCaseRunLogReport extends TestRunListenerAdapter {
     private static final String TEST_CASE_RUN_WAS_TERMINATED_UNEXPECTEDLY_MESSAGE = "TestCase run was terminated unexpectedly";
@@ -47,14 +47,11 @@ public class TestCaseRunLogReport extends TestRunListenerAdapter {
     private static final String TIMEOUT_MESSAGE = "The TestStep was interrupted due to a timeout";
 
     private static final String REPORT_FILE_NAME = "test_case_run_log_report.xml";
-
-    private TestCaseRunLogDocumentConfig testCaseRunLogDocumentConfig;
-    private TestCaseRunLog testCaseRunLog;
-    private final String outputFolder;
-    private long startTime;
-
     private final static Logger log = LogManager.getLogger(TestCaseRunLogReport.class);
-
+    private final String outputFolder;
+    private final TestCaseRunLogDocumentConfig testCaseRunLogDocumentConfig;
+    private final TestCaseRunLog testCaseRunLog;
+    private long startTime;
     private boolean testRunHasFinished = false;
 
     private TestStep currentTestStep;
@@ -66,6 +63,25 @@ public class TestCaseRunLogReport extends TestRunListenerAdapter {
         testCaseRunLog = testCaseRunLogDocumentConfig.addNewTestCaseRunLog();
 
         initShutDownHook();
+    }
+
+    @Override
+    public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+        super.beforeRun(testRunner, runContext);
+
+        startTime = System.currentTimeMillis();
+    }
+
+    @Override
+    public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+        testCaseRunLog.setTestCase((testRunner.getTestCase().getName()));
+        testCaseRunLog.setTimeTaken(Long.toString(testRunner.getTimeTaken()));
+        testCaseRunLog.setStatus(testRunner.getStatus().toString());
+        testCaseRunLog.setTimeStamp(SoapUIMetrics.formatTimestamp(startTime));
+
+        testRunHasFinished = true;
+
+        saveReportToFile();
     }
 
     @Override
@@ -82,8 +98,7 @@ public class TestCaseRunLogReport extends TestRunListenerAdapter {
         currentTestCaseRunLogTestStepConfig.setMessageArray(result.getMessages());
         currentTestCaseRunLogTestStepConfig.setTimestamp(SoapUIMetrics.formatTimestamp(result.getTimeStamp()));
 
-        ExtendedHttpMethod httpMethod = (ExtendedHttpMethod) runContext
-                .getProperty(BaseHttpRequestTransport.HTTP_METHOD);
+        ExtendedHttpMethod httpMethod = (ExtendedHttpMethod)runContext.getProperty(BaseHttpRequestTransport.HTTP_METHOD);
 
         if (httpMethod != null && result.getTestStep() instanceof HttpRequestTestStep) {
             currentTestCaseRunLogTestStepConfig.setEndpoint(httpMethod.getURI().toString());
@@ -96,8 +111,7 @@ public class TestCaseRunLogReport extends TestRunListenerAdapter {
             currentTestCaseRunLogTestStepConfig.setTotalTime(String.valueOf(metrics.getTotalTimer().getDuration()));
             currentTestCaseRunLogTestStepConfig.setDnsTime(String.valueOf(metrics.getDNSTimer().getDuration()));
             currentTestCaseRunLogTestStepConfig.setConnectTime(String.valueOf(metrics.getConnectTimer().getDuration()));
-            currentTestCaseRunLogTestStepConfig.setTimeToFirstByte(String.valueOf(metrics.getTimeToFirstByteTimer()
-                    .getDuration()));
+            currentTestCaseRunLogTestStepConfig.setTimeToFirstByte(String.valueOf(metrics.getTimeToFirstByteTimer().getDuration()));
             currentTestCaseRunLogTestStepConfig.setHttpMethod(metrics.getHttpMethod());
             currentTestCaseRunLogTestStepConfig.setIpAddress(metrics.getIpAddress());
             //currentTestCaseRunLogTestStepConfig.setPort( metrics.getPort() );
@@ -107,25 +121,6 @@ public class TestCaseRunLogReport extends TestRunListenerAdapter {
         if (error != null) {
             currentTestCaseRunLogTestStepConfig.setErrorMessage(error.getMessage());
         }
-    }
-
-    @Override
-    public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-        testCaseRunLog.setTestCase((testRunner.getTestCase().getName()));
-        testCaseRunLog.setTimeTaken(Long.toString(testRunner.getTimeTaken()));
-        testCaseRunLog.setStatus(testRunner.getStatus().toString());
-        testCaseRunLog.setTimeStamp(SoapUIMetrics.formatTimestamp(startTime));
-
-        testRunHasFinished = true;
-
-        saveReportToFile();
-    }
-
-    @Override
-    public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-        super.beforeRun(testRunner, runContext);
-
-        startTime = System.currentTimeMillis();
     }
 
     private void initShutDownHook() {
@@ -147,13 +142,13 @@ public class TestCaseRunLogReport extends TestRunListenerAdapter {
     }
 
     private void saveReportToFile() {
-        final File newFile = new File(outputFolder, REPORT_FILE_NAME);
+        File newFile = new File(outputFolder, REPORT_FILE_NAME);
         try {
             testCaseRunLogDocumentConfig.save(newFile);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             log.error("Could not write " + REPORT_FILE_NAME + " to disk");
             SoapUI.logError(e);
         }
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.iface;
@@ -25,47 +25,47 @@ import com.eviware.soapui.model.ModelItem;
  */
 
 public interface Request extends ModelItem {
-    public final String REQUEST_PROPERTY = "request";
-    public final String ENDPOINT_PROPERTY = "endpoint";
-    public final String ENCODING_PROPERTY = "encoding";
-    public final String MEDIA_TYPE = "mediaType";
+    String REQUEST_PROPERTY = "request";
+    String ENDPOINT_PROPERTY = "endpoint";
+    String ENCODING_PROPERTY = "encoding";
+    String MEDIA_TYPE = "mediaType";
 
-    public String getRequestContent();
+    String getRequestContent();
 
-    public void setEndpoint(String string);
+    String getEndpoint();
 
-    public String getEndpoint();
+    void setEndpoint(String string);
 
-    public String getEncoding();
+    String getEncoding();
 
-    public String getTimeout();
+    void setEncoding(String string);
 
-    public void setEncoding(String string);
+    String getTimeout();
 
-    public Operation getOperation();
+    Operation getOperation();
 
-    public void addSubmitListener(SubmitListener listener);
+    void addSubmitListener(SubmitListener listener);
 
-    public void removeSubmitListener(SubmitListener listener);
+    void removeSubmitListener(SubmitListener listener);
 
-    public Submit submit(SubmitContext submitContext, boolean async) throws SubmitException;
+    Submit submit(SubmitContext submitContext, boolean async) throws SubmitException;
 
-    public Attachment[] getAttachments();
+    Attachment[] getAttachments();
 
-    public MessagePart[] getRequestParts();
+    MessagePart[] getRequestParts();
 
-    public MessagePart[] getResponseParts();
+    MessagePart[] getResponseParts();
 
-    public String getUsername();
+    String getUsername();
 
-    public String getPassword();
+    String getPassword();
 
-    public String getAuthType();
+    String getAuthType();
 
-    public boolean dependsOn(ModelItem modelItem);
+    boolean dependsOn(ModelItem modelItem);
 
     @SuppressWarnings("serial")
-    public static class SubmitException extends Exception {
+    class SubmitException extends Exception {
         public SubmitException(String msg) {
             super(msg);
         }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock;
@@ -52,20 +52,14 @@ import java.util.Set;
  */
 
 public class WsdlMockService extends AbstractMockService<WsdlMockOperation, MockServiceConfig> {
-    private static final String REQUIRE_SOAP_VERSION = WsdlMockService.class.getName() + "@require-soap-version";
-    private static final String REQUIRE_SOAP_ACTION = WsdlMockService.class.getName() + "@require-soap-action";
-
     public static final String INCOMING_WSS = WsdlMockService.class.getName() + "@incoming-wss";
     public static final String OUTGOING_WSS = WsdlMockService.class.getName() + "@outgoing-wss";
-
-    private WsdlMockOperation faultMockOperation;
-    private String mockServiceEndpoint;
     public static final String ICON_NAME = "/soap_virt.png";
     public static final String STRING_ID = "MOCK";
-
-    public String getStringID() {
-        return STRING_ID;
-    }
+    private static final String REQUIRE_SOAP_VERSION = WsdlMockService.class.getName() + "@require-soap-version";
+    private static final String REQUIRE_SOAP_ACTION = WsdlMockService.class.getName() + "@require-soap-action";
+    private WsdlMockOperation faultMockOperation;
+    private String mockServiceEndpoint;
 
     public WsdlMockService(Project project, MockServiceConfig config) {
         super(config, project, ICON_NAME);
@@ -91,10 +85,9 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
         setPropertiesConfig(getConfig().getProperties());
 
         if (getConfig().isSetFaultMockOperation()) {
-            faultMockOperation = (WsdlMockOperation) getMockOperationByName(getConfig().getFaultMockOperation());
+            faultMockOperation = (WsdlMockOperation)getMockOperationByName(getConfig().getFaultMockOperation());
         }
     }
-
 
     public WsdlMockOperation getMockOperation(Operation operation) {
         for (int c = 0; c < getMockOperationCount(); c++) {
@@ -115,7 +108,7 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
 
         MockOperationConfig config = getConfig().addNewMockOperation();
         config.setName(operation.getName());
-        WsdlMockOperation mockOperation = new WsdlMockOperation(this, config, (WsdlOperation) operation);
+        WsdlMockOperation mockOperation = new WsdlMockOperation(this, config, (WsdlOperation)operation);
 
         addMockOperation(mockOperation);
         fireMockOperationAdded(mockOperation);
@@ -123,26 +116,15 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
         return mockOperation;
     }
 
-    public void setPort(int port) {
-        String oldEndpoint = getLocalEndpoint();
-
-        int oldPort = getPort();
-        if (port != oldPort) {
-            super.setPort(port);
-
-            for (WsdlInterface iface : getMockedInterfaces()) {
-                if (Arrays.asList(iface.getEndpoints()).contains(oldEndpoint)) {
-                    iface.changeEndpoint(oldEndpoint, getLocalEndpoint());
-                }
-            }
-        }
+    public String getStringID() {
+        return STRING_ID;
     }
 
     public WsdlInterface[] getMockedInterfaces() {
         Set<WsdlInterface> result = new HashSet<WsdlInterface>();
 
         for (MockOperation mockOperation : getMockOperationList()) {
-            WsdlOperation operation = (WsdlOperation) mockOperation.getOperation();
+            WsdlOperation operation = (WsdlOperation)mockOperation.getOperation();
             if (operation != null) {
                 result.add(operation.getInterface());
             }
@@ -152,37 +134,8 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
     }
 
     @Override
-    public void release() {
-        super.release();
-
-        for (MockOperation operation : getMockOperationList()) {
-            operation.release();
-        }
-    }
-
-    @Override
-    public String getIconName() {
-        return ICON_NAME;
-    }
-
-    @Override
     public MockDispatcher createDispatcher(WsdlMockRunContext mockContext) {
         return new WsdlMockDispatcher(this, mockContext);
-    }
-
-    public void setPath(String path) {
-        String oldEndpoint = getLocalEndpoint();
-
-        String oldPath = getPath();
-        if (!path.equals(oldPath)) {
-            super.setPath(path);
-
-            for (WsdlInterface iface : getMockedInterfaces()) {
-                if (Arrays.asList(iface.getEndpoints()).contains(oldEndpoint)) {
-                    iface.changeEndpoint(oldEndpoint, getLocalEndpoint());
-                }
-            }
-        }
     }
 
     public WsdlMockOperation getFaultMockOperation() {
@@ -195,14 +148,10 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
             if (getConfig().isSetFaultMockOperation()) {
                 getConfig().unsetFaultMockOperation();
             }
-        } else {
+        }
+        else {
             getConfig().setFaultMockOperation(faultMockOperation.getName());
         }
-    }
-
-
-    public String getHost() {
-        return getConfig().getHost();
     }
 
     public boolean isRequireSoapVersion() {
@@ -253,9 +202,8 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
         List<WsdlOperation> result = new ArrayList<WsdlOperation>();
 
         for (MockOperation mockOperation : mockOperations) {
-            result.add((WsdlOperation) mockOperation.getOperation());
+            result.add((WsdlOperation)mockOperation.getOperation());
         }
-
 
         return result;
     }
@@ -271,8 +219,7 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
         mockOperation.release();
         getConfig().removeMockOperation(ix);
 
-        MockOperationConfig newConfig = (MockOperationConfig) getConfig().insertNewMockOperation(ix)
-                .set(reloadedMockOperation).changeType(MockOperationConfig.type);
+        MockOperationConfig newConfig = (MockOperationConfig)getConfig().insertNewMockOperation(ix).set(reloadedMockOperation).changeType(MockOperationConfig.type);
         WsdlMockOperation newOperation = new WsdlMockOperation(this, newConfig);
         mockOperations.add(ix, newOperation);
         newOperation.afterLoad();
@@ -281,8 +228,9 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
 
     public void export(File file) {
         try {
-            this.getConfig().newCursor().save(file);
-        } catch (IOException e) {
+            getConfig().newCursor().save(file);
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -297,13 +245,13 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
 
         try {
             mockOperationNewConfig = MockOperationDocumentConfig.Factory.parse(file).getMockOperation();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
         if (mockOperationNewConfig != null) {
-            MockOperationConfig newConfig = (MockOperationConfig) getConfig().addNewMockOperation()
-                    .set(mockOperationNewConfig).changeType(TestCaseConfig.type);
+            MockOperationConfig newConfig = (MockOperationConfig)getConfig().addNewMockOperation().set(mockOperationNewConfig).changeType(TestCaseConfig.type);
             WsdlMockOperation newMockOperation = new WsdlMockOperation(this, newConfig);
             ModelSupport.createNewIds(newMockOperation);
             newMockOperation.afterLoad();
@@ -311,15 +259,14 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
             fireMockOperationAdded(newMockOperation);
 
             resolveImportedMockOperation(newMockOperation);
-
-        } else {
+        }
+        else {
             UISupport.showErrorMessage("Not valid mock operation xml");
         }
     }
 
     private void resolveImportedMockOperation(WsdlMockOperation mockOperation) {
-        ResolveDialog resolver = new ResolveDialog("Validate MockOperation", "Checks MockOperation for inconsistencies",
-                null);
+        ResolveDialog resolver = new ResolveDialog("Validate MockOperation", "Checks MockOperation for inconsistencies", null);
         resolver.setShowOkMessage(false);
         resolver.resolve(mockOperation);
     }
@@ -346,14 +293,61 @@ public class WsdlMockService extends AbstractMockService<WsdlMockOperation, Mock
             host = "127.0.0.1";
         }
 
-        int port = (int) (getSettings().getBoolean(SSLSettings.ENABLE_MOCK_SSL) ? getSettings().getLong(
-                SSLSettings.MOCK_PORT, 443) : getPort());
+        int port = (int)(getSettings().getBoolean(SSLSettings.ENABLE_MOCK_SSL) ? getSettings().getLong(SSLSettings.MOCK_PORT, 443) : getPort());
 
         return getProtocol() + host + ":" + port + getPath();
     }
 
     public boolean canIAddAMockOperation(WsdlMockOperation mockOperation) {
-        return this.getConfig().getMockOperationList().contains(mockOperation.getConfig());
+        return getConfig().getMockOperationList().contains(mockOperation.getConfig());
+    }
+
+    public String getHost() {
+        return getConfig().getHost();
+    }
+
+    public void setPort(int port) {
+        String oldEndpoint = getLocalEndpoint();
+
+        int oldPort = getPort();
+        if (port != oldPort) {
+            super.setPort(port);
+
+            for (WsdlInterface iface : getMockedInterfaces()) {
+                if (Arrays.asList(iface.getEndpoints()).contains(oldEndpoint)) {
+                    iface.changeEndpoint(oldEndpoint, getLocalEndpoint());
+                }
+            }
+        }
+    }
+
+    public void setPath(String path) {
+        String oldEndpoint = getLocalEndpoint();
+
+        String oldPath = getPath();
+        if (!path.equals(oldPath)) {
+            super.setPath(path);
+
+            for (WsdlInterface iface : getMockedInterfaces()) {
+                if (Arrays.asList(iface.getEndpoints()).contains(oldEndpoint)) {
+                    iface.changeEndpoint(oldEndpoint, getLocalEndpoint());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void release() {
+        super.release();
+
+        for (MockOperation operation : getMockOperationList()) {
+            operation.release();
+        }
+    }
+
+    @Override
+    public String getIconName() {
+        return ICON_NAME;
     }
 
     @Override

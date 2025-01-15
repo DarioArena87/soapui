@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest;
@@ -89,26 +89,24 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
     public static final String MAXASSERTIONERRORS_PROPERTY = WsdlLoadTest.class.getName() + "@max-assertion-errors";
     public final static String SETUP_SCRIPT_PROPERTY = WsdlTestCase.class.getName() + "@setupScript";
     public final static String TEARDOWN_SCRIPT_PROPERTY = WsdlTestCase.class.getName() + "@tearDownScript";
-
-    private final static Logger logger = LogManager.getLogger(WsdlLoadTest.class);
     public static final int DEFAULT_STRATEGY_INTERVAL = 500;
     public static final String ICON_NAME = "/loadTest.png";
+    private final static Logger logger = LogManager.getLogger(WsdlLoadTest.class);
+    private final InternalTestRunListener internalTestRunListener = new InternalTestRunListener();
 
-    private InternalTestRunListener internalTestRunListener = new InternalTestRunListener();
-
-    private WsdlTestCase testCase;
-    private LoadTestStatistics statisticsModel;
+    private final WsdlTestCase testCase;
+    private final LoadTestStatistics statisticsModel;
     private LoadStrategy loadStrategy = new BurstLoadStrategy(this);
-    private LoadTestLog loadTestLog;
+    private final LoadTestLog loadTestLog;
 
-    private LoadStrategyConfigurationChangeListener loadStrategyListener = new LoadStrategyConfigurationChangeListener();
-    private List<LoadTestAssertion> assertions = new ArrayList<LoadTestAssertion>();
-    private ConfigurationChangePropertyListener configurationChangeListener = new ConfigurationChangePropertyListener();
-    private Set<LoadTestListener> loadTestListeners = new HashSet<LoadTestListener>();
-    private Set<LoadTestRunListener> loadTestRunListeners = new HashSet<LoadTestRunListener>();
-    private List<LoadTestLogErrorEntry> assertionErrors = new TreeList();
+    private final LoadStrategyConfigurationChangeListener loadStrategyListener = new LoadStrategyConfigurationChangeListener();
+    private final List<LoadTestAssertion> assertions = new ArrayList<LoadTestAssertion>();
+    private final ConfigurationChangePropertyListener configurationChangeListener = new ConfigurationChangePropertyListener();
+    private final Set<LoadTestListener> loadTestListeners = new HashSet<LoadTestListener>();
+    private final Set<LoadTestRunListener> loadTestRunListeners = new HashSet<LoadTestRunListener>();
+    private final List<LoadTestLogErrorEntry> assertionErrors = new TreeList();
     private WsdlLoadTestRunner runner;
-    private StatisticsLogger statisticsLogger = new StatisticsLogger();
+    private final StatisticsLogger statisticsLogger = new StatisticsLogger();
     private SoapUIScriptEngine setupScriptEngine;
     private SoapUIScriptEngine tearDownScriptEngine;
     @SuppressWarnings("unused")
@@ -166,7 +164,8 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
             if (assertion != null) {
                 assertions.add(assertion);
                 assertion.addPropertyChangeListener(LoadTestAssertion.CONFIGURATION_PROPERTY, configurationChangeListener);
-            } else {
+            }
+            else {
                 logger.warn("Failed to build LoadTestAssertion from getConfig() [" + assertionConfig + "]");
             }
         }
@@ -199,8 +198,7 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
 
         // set close-connections to same as global so override works ok
         if (!getSettings().isSet(HttpSettings.CLOSE_CONNECTIONS)) {
-            getSettings().setBoolean(HttpSettings.CLOSE_CONNECTIONS,
-                    SoapUI.getSettings().getBoolean(HttpSettings.CLOSE_CONNECTIONS));
+            getSettings().setBoolean(HttpSettings.CLOSE_CONNECTIONS, SoapUI.getSettings().getBoolean(HttpSettings.CLOSE_CONNECTIONS));
         }
     }
 
@@ -226,7 +224,7 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
             statisticsLogger.logStatistics("ThreadCount change from " + oldCount + " to " + threadCount);
         }
 
-        getConfig().setThreadCount((int) threadCount);
+        getConfig().setThreadCount((int)threadCount);
         notifyPropertyChanged(THREADCOUNT_PROPERTY, oldCount, threadCount);
     }
 
@@ -299,9 +297,7 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
     public void setHistoryLimit(long historyLimit) {
         long oldLimit = getHistoryLimit();
         getConfig().setHistoryLimit(historyLimit);
-        if (historyLimit == 0)
-
-        {
+        if (historyLimit == 0) {
             notifyPropertyChanged(HISTORYLIMIT_PROPERTY, oldLimit, historyLimit);
         }
     }
@@ -403,90 +399,14 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
         return runner;
     }
 
-    private class InternalTestRunListener extends LoadTestRunListenerAdapter {
-        @Override
-        public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-            statisticsLogger.finish();
-        }
+    public void addLoadTestRunListener(LoadTestRunListener listener) {
+        loadTestRunListeners.add(listener);
+        loadTestRunListenersArray = null;
+    }
 
-        @Override
-        public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-            statisticsLogger.init(context);
-
-            if (getStatisticsLogInterval() > 0) {
-                statisticsLogger.start();
-            }
-        }
-
-        @Override
-        public void afterTestCase(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                                  TestCaseRunContext runContext) {
-            if (!assertions.isEmpty()) {
-                for (LoadTestAssertion assertion : assertions) {
-                    String error = assertion.assertResults(loadTestRunner, context, testRunner, runContext);
-                    if (error != null) {
-                        int threadIndex = 0;
-
-                        try {
-                            threadIndex = Integer.parseInt(runContext.getProperty("ThreadIndex").toString());
-                        } catch (Throwable t) {
-                        }
-
-                        loadTestLog.addEntry(new LoadTestLogErrorEntry(assertion.getName(), error, assertion.getIcon(),
-                                threadIndex));
-                        statisticsModel.addError(LoadTestStatistics.TOTAL);
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void afterTestStep(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                                  TestCaseRunContext runContext, TestStepResult result) {
-            boolean added = false;
-
-            if (!assertions.isEmpty()) {
-                for (LoadTestAssertion assertion : assertions) {
-                    String error = assertion.assertResult(loadTestRunner, context, result, testRunner, runContext);
-                    if (error != null) {
-                        int indexOfTestStep = testRunner.getTestCase().getIndexOfTestStep(result.getTestStep());
-                        int threadIndex = 0;
-
-                        try {
-                            threadIndex = Integer.parseInt(runContext.getProperty("ThreadIndex").toString());
-                        } catch (Throwable t) {
-                        }
-
-                        LoadTestLogErrorEntry errorEntry = new LoadTestLogErrorEntry(assertion.getName(), error, result,
-                                assertion.getIcon(), threadIndex);
-
-                        loadTestLog.addEntry(errorEntry);
-                        statisticsModel.addError(indexOfTestStep);
-
-                        long maxAssertionErrors = getMaxAssertionErrors();
-                        if (maxAssertionErrors > 0) {
-                            synchronized (assertionErrors) {
-                                assertionErrors.add(errorEntry);
-                                while (assertionErrors.size() > maxAssertionErrors) {
-                                    assertionErrors.remove(0).discard();
-                                }
-                            }
-                        }
-
-                        added = true;
-                    }
-                }
-            }
-
-            // discard if set to discard and there were no errors
-            if (!added) {
-                if (getTestCase().getDiscardOkResults() || getTestCase().getMaxResults() == 0) {
-                    result.discard();
-                } else if (getTestCase().getMaxResults() > 0 && testRunner instanceof WsdlTestCaseRunner) {
-                    ((WsdlTestCaseRunner) testRunner).enforceMaxResults(getTestCase().getMaxResults());
-                }
-            }
-        }
+    public void removeLoadTestRunListener(LoadTestRunListener listener) {
+        loadTestRunListeners.remove(listener);
+        loadTestRunListenersArray = null;
     }
 
     public LoadStrategy getLoadStrategy() {
@@ -505,18 +425,12 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
         getConfig().getLoadStrategy().setConfig(loadStrategy.getConfig());
     }
 
-    private class LoadStrategyConfigurationChangeListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            getConfig().getLoadStrategy().setConfig(loadStrategy.getConfig());
-        }
-    }
-
     public LoadTestAssertion addAssertion(String type, String targetStep, boolean showConfig) {
         LoadTestAssertion assertion = LoadTestAssertionRegistry.createAssertion(type, this);
         assertion.setTargetStep(targetStep);
 
         if (assertion instanceof Configurable && showConfig) {
-            if (!((Configurable) assertion).configure()) {
+            if (!((Configurable)assertion).configure()) {
                 return null;
             }
         }
@@ -536,7 +450,8 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
             try {
                 assertions.remove(ix);
                 fireAssertionRemoved(assertion);
-            } finally {
+            }
+            finally {
                 assertion.removePropertyChangeListener(configurationChangeListener);
                 assertion.release();
                 getConfig().removeAssertion(ix);
@@ -579,15 +494,6 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
         return null;
     }
 
-    private class ConfigurationChangePropertyListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            int ix = assertions.indexOf(evt.getSource());
-            if (ix >= 0) {
-                getConfig().getAssertionArray(ix).set(assertions.get(ix).getConfiguration());
-            }
-        }
-    }
-
     public LoadTestLog getLoadTestLog() {
         return loadTestLog;
     }
@@ -604,20 +510,9 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
         loadTestListeners.remove(listener);
     }
 
-    public void addLoadTestRunListener(LoadTestRunListener listener) {
-        loadTestRunListeners.add(listener);
-        loadTestRunListenersArray = null;
-    }
-
-    public void removeLoadTestRunListener(LoadTestRunListener listener) {
-        loadTestRunListeners.remove(listener);
-        loadTestRunListenersArray = null;
-    }
-
     public LoadTestRunListener[] getLoadTestRunListeners() {
         if (loadTestRunListenersArray == null) {
-            loadTestRunListenersArray = loadTestRunListeners
-                    .toArray(new LoadTestRunListener[loadTestRunListeners.size()]);
+            loadTestRunListenersArray = loadTestRunListeners.toArray(new LoadTestRunListener[loadTestRunListeners.size()]);
         }
 
         return loadTestRunListenersArray;
@@ -661,116 +556,8 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
         }
     }
 
-    public class StatisticsLogger implements Runnable {
-        private boolean stopped;
-        private List<PrintWriter> writers = new ArrayList<PrintWriter>();
-        private long startTime;
-
-        public void run() {
-            stopped = false;
-
-            while (!stopped && getStatisticsLogInterval() > 0) {
-                try {
-                    long statisticsInterval = getStatisticsLogInterval();
-                    Thread.sleep(statisticsInterval);
-                    if (!stopped) {
-                        logStatistics("Interval");
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        public void start() {
-            new Thread(this, "Statistics Logger for LoadTest [" + getName() + "]").start();
-        }
-
-        public void init(LoadTestRunContext context) {
-            writers.clear();
-
-            String statisticsLogFolder = context.expand(getStatisticsLogFolder());
-            if (StringUtils.isNullOrEmpty(statisticsLogFolder)) {
-                return;
-            }
-
-            File folder = new File(statisticsLogFolder);
-            if (!folder.exists()) {
-                if (!folder.mkdirs()) {
-                    SoapUI.logError(new Exception("Failed to create statistics log folder [" + statisticsLogFolder + "]"));
-                    return;
-                }
-            }
-
-            for (int c = 0; c < testCase.getTestStepCount(); c++) {
-                try {
-                    WsdlTestStep testStep = testCase.getTestStepAt(c);
-                    String fileName = StringUtils.createFileName(testStep.getName(), '_') + ".log";
-                    PrintWriter writer = new PrintWriter(new File(folder, fileName));
-                    writers.add(writer);
-                    addHeaders(writer);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                    writers.add(null);
-                }
-            }
-
-            // and one writer for the testcase..
-            try {
-                String fileName = StringUtils.createFileName(testCase.getName(), '_') + ".log";
-                writers.add(new PrintWriter(new File(folder, fileName)));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            startTime = System.nanoTime();
-        }
-
-        private void addHeaders(PrintWriter writer) {
-            writer.print("date,threads,elapsed,min,max,avg,last,cnt,tps,bytes,bps,err,reason\n");
-        }
-
-        public void finish() {
-            stopped = true;
-
-            logStatistics("Finished");
-            for (PrintWriter writer : writers) {
-                if (writer != null) {
-                    writer.close();
-                }
-            }
-        }
-
-        private synchronized void logStatistics(String trigger) {
-            if (writers.isEmpty()) {
-                return;
-            }
-
-            long timestamp = System.nanoTime();
-            String elapsedString = String.valueOf((timestamp - startTime) / 1000000);
-            String dateString = new Date().toString();
-            String threadCountString = String.valueOf(getThreadCount());
-
-            StringList[] snapshot = statisticsModel.getSnapshot();
-            for (int c = 0; c < snapshot.length; c++) {
-                PrintWriter writer = writers.get(c);
-                if (writer == null) {
-                    continue;
-                }
-
-                StringList values = snapshot[c];
-                writer.append(dateString).append(',');
-                writer.append(threadCountString).append(',');
-                writer.append(elapsedString);
-
-                for (String value : values) {
-                    writer.append(',').append(value);
-                }
-
-                writer.append(',').append(trigger).append('\n');
-                writer.flush();
-            }
-        }
+    public String getSetupScript() {
+        return getConfig().isSetSetupScript() ? getConfig().getSetupScript().getStringValue() : null;
     }
 
     public void setSetupScript(String script) {
@@ -788,8 +575,8 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
         notifyPropertyChanged(SETUP_SCRIPT_PROPERTY, oldScript, script);
     }
 
-    public String getSetupScript() {
-        return getConfig().isSetSetupScript() ? getConfig().getSetupScript().getStringValue() : null;
+    public String getTearDownScript() {
+        return getConfig().isSetTearDownScript() ? getConfig().getTearDownScript().getStringValue() : null;
     }
 
     public void setTearDownScript(String script) {
@@ -805,10 +592,6 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
         }
 
         notifyPropertyChanged(TEARDOWN_SCRIPT_PROPERTY, oldScript, script);
-    }
-
-    public String getTearDownScript() {
-        return getConfig().isSetTearDownScript() ? getConfig().getTearDownScript().getStringValue() : null;
     }
 
     public Object runSetupScript(LoadTestRunContext runContext, LoadTestRunner runner) throws Exception {
@@ -864,5 +647,224 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
     public TestRunner run(StringToObjectMap context, boolean async) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    private class InternalTestRunListener extends LoadTestRunListenerAdapter {
+        @Override
+        public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+            statisticsLogger.init(context);
+
+            if (getStatisticsLogInterval() > 0) {
+                statisticsLogger.start();
+            }
+        }
+
+        @Override
+        public void afterTestStep(
+            LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result
+        ) {
+            boolean added = false;
+
+            if (!assertions.isEmpty()) {
+                for (LoadTestAssertion assertion : assertions) {
+                    String error = assertion.assertResult(loadTestRunner, context, result, testRunner, runContext);
+                    if (error != null) {
+                        int indexOfTestStep = testRunner.getTestCase().getIndexOfTestStep(result.getTestStep());
+                        int threadIndex = 0;
+
+                        try {
+                            threadIndex = Integer.parseInt(runContext.getProperty("ThreadIndex").toString());
+                        }
+                        catch (Throwable t) {
+                        }
+
+                        LoadTestLogErrorEntry errorEntry = new LoadTestLogErrorEntry(assertion.getName(), error, result, assertion.getIcon(), threadIndex);
+
+                        loadTestLog.addEntry(errorEntry);
+                        statisticsModel.addError(indexOfTestStep);
+
+                        long maxAssertionErrors = getMaxAssertionErrors();
+                        if (maxAssertionErrors > 0) {
+                            synchronized (assertionErrors) {
+                                assertionErrors.add(errorEntry);
+                                while (assertionErrors.size() > maxAssertionErrors) {
+                                    assertionErrors.remove(0).discard();
+                                }
+                            }
+                        }
+
+                        added = true;
+                    }
+                }
+            }
+
+            // discard if set to discard and there were no errors
+            if (!added) {
+                if (getTestCase().getDiscardOkResults() || getTestCase().getMaxResults() == 0) {
+                    result.discard();
+                }
+                else if (getTestCase().getMaxResults() > 0 && testRunner instanceof WsdlTestCaseRunner) {
+                    ((WsdlTestCaseRunner)testRunner).enforceMaxResults(getTestCase().getMaxResults());
+                }
+            }
+        }
+
+        @Override
+        public void afterTestCase(
+            LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+        ) {
+            if (!assertions.isEmpty()) {
+                for (LoadTestAssertion assertion : assertions) {
+                    String error = assertion.assertResults(loadTestRunner, context, testRunner, runContext);
+                    if (error != null) {
+                        int threadIndex = 0;
+
+                        try {
+                            threadIndex = Integer.parseInt(runContext.getProperty("ThreadIndex").toString());
+                        }
+                        catch (Throwable t) {
+                        }
+
+                        loadTestLog.addEntry(new LoadTestLogErrorEntry(assertion.getName(), error, assertion.getIcon(), threadIndex));
+                        statisticsModel.addError(LoadTestStatistics.TOTAL);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+            statisticsLogger.finish();
+        }
+    }
+
+    private class LoadStrategyConfigurationChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            getConfig().getLoadStrategy().setConfig(loadStrategy.getConfig());
+        }
+    }
+
+    private class ConfigurationChangePropertyListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            int ix = assertions.indexOf(evt.getSource());
+            if (ix >= 0) {
+                getConfig().getAssertionArray(ix).set(assertions.get(ix).getConfiguration());
+            }
+        }
+    }
+
+    public class StatisticsLogger implements Runnable {
+        private boolean stopped;
+        private final List<PrintWriter> writers = new ArrayList<PrintWriter>();
+        private long startTime;
+
+        public void run() {
+            stopped = false;
+
+            while (!stopped && getStatisticsLogInterval() > 0) {
+                try {
+                    long statisticsInterval = getStatisticsLogInterval();
+                    Thread.sleep(statisticsInterval);
+                    if (!stopped) {
+                        logStatistics("Interval");
+                    }
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void start() {
+            new Thread(this, "Statistics Logger for LoadTest [" + getName() + "]").start();
+        }
+
+        public void init(LoadTestRunContext context) {
+            writers.clear();
+
+            String statisticsLogFolder = context.expand(getStatisticsLogFolder());
+            if (StringUtils.isNullOrEmpty(statisticsLogFolder)) {
+                return;
+            }
+
+            File folder = new File(statisticsLogFolder);
+            if (!folder.exists()) {
+                if (!folder.mkdirs()) {
+                    SoapUI.logError(new Exception("Failed to create statistics log folder [" + statisticsLogFolder + "]"));
+                    return;
+                }
+            }
+
+            for (int c = 0; c < testCase.getTestStepCount(); c++) {
+                try {
+                    WsdlTestStep testStep = testCase.getTestStepAt(c);
+                    String fileName = StringUtils.createFileName(testStep.getName(), '_') + ".log";
+                    PrintWriter writer = new PrintWriter(new File(folder, fileName));
+                    writers.add(writer);
+                    addHeaders(writer);
+                }
+                catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    writers.add(null);
+                }
+            }
+
+            // and one writer for the testcase..
+            try {
+                String fileName = StringUtils.createFileName(testCase.getName(), '_') + ".log";
+                writers.add(new PrintWriter(new File(folder, fileName)));
+            }
+            catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            startTime = System.nanoTime();
+        }
+
+        private void addHeaders(PrintWriter writer) {
+            writer.print("date,threads,elapsed,min,max,avg,last,cnt,tps,bytes,bps,err,reason\n");
+        }
+
+        public void finish() {
+            stopped = true;
+
+            logStatistics("Finished");
+            for (PrintWriter writer : writers) {
+                if (writer != null) {
+                    writer.close();
+                }
+            }
+        }
+
+        private synchronized void logStatistics(String trigger) {
+            if (writers.isEmpty()) {
+                return;
+            }
+
+            long timestamp = System.nanoTime();
+            String elapsedString = String.valueOf((timestamp - startTime) / 1000000);
+            String dateString = new Date().toString();
+            String threadCountString = String.valueOf(getThreadCount());
+
+            StringList[] snapshot = statisticsModel.getSnapshot();
+            for (int c = 0; c < snapshot.length; c++) {
+                PrintWriter writer = writers.get(c);
+                if (writer == null) {
+                    continue;
+                }
+
+                StringList values = snapshot[c];
+                writer.append(dateString).append(',');
+                writer.append(threadCountString).append(',');
+                writer.append(elapsedString);
+
+                for (String value : values) {
+                    writer.append(',').append(value);
+                }
+
+                writer.append(',').append(trigger).append('\n');
+                writer.flush();
+            }
+        }
     }
 }

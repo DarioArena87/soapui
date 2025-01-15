@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.ui;
@@ -31,14 +31,10 @@ import com.eviware.x.impl.swing.JComboBoxFormField;
 import org.apache.xmlbeans.SchemaType;
 import org.jdesktop.swingx.JXTable;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableRowSorter;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,11 +49,11 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class InvalidTypesTable extends JPanel {
 
-    private InvalidTypeTableModel model;
+    private final InvalidTypeTableModel model;
     private JXTable table;
     private JXToolBar toolbar;
 
-    private Map<String, Integer> typeMap = new HashMap<String, Integer>() {
+    private final Map<String, Integer> typeMap = new HashMap<String, Integer>() {
         {
             put("STRING", SchemaType.BTC_STRING);
             put("NORMALIZED_STRING", SchemaType.BTC_NORMALIZED_STRING);
@@ -88,12 +84,11 @@ public class InvalidTypesTable extends JPanel {
             put("G_MONTH", SchemaType.BTC_G_MONTH);
             put("G_MONTH_DAY", SchemaType.BTC_G_MONTH_DAY);
             put("G_DAY", SchemaType.BTC_G_DAY);
-
         }
     };
 
     public InvalidTypesTable(InvalidSecurityScanConfig invalidTypeConfig) {
-        this.model = new InvalidTypeTableModel(invalidTypeConfig);
+        model = new InvalidTypeTableModel(invalidTypeConfig);
         init();
     }
 
@@ -112,58 +107,64 @@ public class InvalidTypesTable extends JPanel {
         table.toggleSortOrder(0);
         add(new JScrollPane(table), BorderLayout.CENTER);
         setPreferredSize(new Dimension(100, 200));
+    }
 
+    @AForm(description = "Add new type", name = "Add new type", helpUrl = HelpUrls.SECURITY_SCANS_OVERVIEW)
+    protected interface AddParameterActionDialog {
+
+        @AField(description = "Choose Type", name = "Choose type", type = AFieldType.ENUMERATION)
+        String TYPE = "Choose type";
+
+        @AField(description = "Set a value", name = "Value", type = AFieldType.STRING)
+        String VALUE = "Value";
     }
 
     private class RemoveTypeAction extends AbstractAction {
 
         public RemoveTypeAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Removes type from security scan");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
+            putValue(SHORT_DESCRIPTION, "Removes type from security scan");
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             model.removeRows(table.getSelectedRows());
         }
-
     }
 
     private class AddNewTypeAction extends AbstractAction {
 
         public AddNewTypeAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/add.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Adds new type to use in security scan");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds new type to use in security scan");
         }
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
             XFormDialog dialog = ADialogBuilder.buildDialog(AddParameterActionDialog.class);
-            JComboBoxFormField chooser = (JComboBoxFormField) dialog.getFormField(AddParameterActionDialog.TYPE);
+            JComboBoxFormField chooser = (JComboBoxFormField)dialog.getFormField(AddParameterActionDialog.TYPE);
             chooser.setOptions(typeMap.keySet().toArray(new String[0]));
             if (dialog.show()) {
                 model.addNewType(typeMap.get(chooser.getValue()), dialog.getValue(AddParameterActionDialog.VALUE));
             }
         }
-
     }
 
     private class InvalidTypeTableModel extends AbstractTableModel {
 
-        private InvalidSecurityScanConfig data;
-        private String[] columns = {"Type Name", "Type Value"};
+        private final InvalidSecurityScanConfig data;
+        private final String[] columns = {"Type Name", "Type Value"};
 
         public InvalidTypeTableModel(InvalidSecurityScanConfig invalidTypeConfig) {
-            this.data = invalidTypeConfig;
+            data = invalidTypeConfig;
         }
 
         public void removeRows(int[] selectedRows) {
-            @SuppressWarnings("rawtypes")
-            List toRemove = new ArrayList();
+            @SuppressWarnings("rawtypes") List toRemove = new ArrayList();
             /*
-			 * since we are using TableRowSorter you need to cpnvert between view
-			 * and model.
-			 */
+             * since we are using TableRowSorter you need to cpnvert between view
+             * and model.
+             */
             for (int i = 0; i < selectedRows.length; i++) {
                 selectedRows[i] = table.convertRowIndexToModel(selectedRows[i]);
             }
@@ -183,6 +184,11 @@ public class InvalidTypesTable extends JPanel {
         }
 
         @Override
+        public String getColumnName(int column) {
+            return columns[column];
+        }
+
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return columnIndex == 1;
         }
@@ -191,19 +197,9 @@ public class InvalidTypesTable extends JPanel {
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             SchemaTypeForSecurityScanConfig paramType = data.getTypesListList().get(rowIndex);
 
-            paramType.setValue((String) aValue);
+            paramType.setValue((String)aValue);
 
             fireTableDataChanged();
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            return columns[column];
-        }
-
-        @Override
-        public int getColumnCount() {
-            return 2;
         }
 
         @Override
@@ -215,10 +211,16 @@ public class InvalidTypesTable extends JPanel {
         }
 
         @Override
+        public int getColumnCount() {
+            return 2;
+        }
+
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (columnIndex == 0) {
                 return getTypeName(data.getTypesListList().get(rowIndex).getType());
-            } else {
+            }
+            else {
                 return data.getTypesListList().get(rowIndex).getValue();
             }
         }
@@ -312,15 +314,5 @@ public class InvalidTypesTable extends JPanel {
             }
             return result;
         }
-    }
-
-    @AForm(description = "Add new type", name = "Add new type", helpUrl = HelpUrls.SECURITY_SCANS_OVERVIEW)
-    protected interface AddParameterActionDialog {
-
-        @AField(description = "Choose Type", name = "Choose type", type = AFieldType.ENUMERATION)
-        public final static String TYPE = "Choose type";
-
-        @AField(description = "Set a value", name = "Value", type = AFieldType.STRING)
-        public final static String VALUE = "Value";
     }
 }

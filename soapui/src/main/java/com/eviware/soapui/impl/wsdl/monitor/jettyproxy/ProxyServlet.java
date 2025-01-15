@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.monitor.jettyproxy;
@@ -64,6 +64,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -71,13 +72,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ProxyServlet implements Servlet {
-    protected ServletConfig config;
-    protected ServletContext context;
-    protected WsdlProject project;
-    protected HttpContext httpState = new BasicHttpContext();
-    protected Settings settings;
-    protected final SoapMonitorListenerCallBack listenerCallBack;
-    private ContentTypes includedContentTypes = SoapMonitorAction.defaultContentTypes();
     static HashSet<String> dontProxyHeaders = new HashSet<String>();
 
     static {
@@ -93,32 +87,31 @@ public class ProxyServlet implements Servlet {
         dontProxyHeaders.add("content-length");
     }
 
-    public ProxyServlet(final WsdlProject project, final SoapMonitorListenerCallBack listenerCallBack) {
+    protected final SoapMonitorListenerCallBack listenerCallBack;
+    protected ServletConfig config;
+    protected ServletContext context;
+    protected WsdlProject project;
+    protected HttpContext httpState = new BasicHttpContext();
+    protected Settings settings;
+    private ContentTypes includedContentTypes = SoapMonitorAction.defaultContentTypes();
+
+    public ProxyServlet(WsdlProject project, SoapMonitorListenerCallBack listenerCallBack) {
         this.listenerCallBack = listenerCallBack;
         this.project = project;
         settings = project.getSettings();
     }
 
-    public void destroy() {
-    }
-
-    public ServletConfig getServletConfig() {
-        return config;
-    }
-
-    public String getServletInfo() {
-        return "SoapUI Monitor";
-    }
-
     public void setIncludedContentTypes(ContentTypes includedContentTypes) {
-        this.includedContentTypes = includedContentTypes != null
-                ? includedContentTypes
-                : SoapMonitorAction.defaultContentTypes();
+        this.includedContentTypes = includedContentTypes != null ? includedContentTypes : SoapMonitorAction.defaultContentTypes();
     }
 
     public void init(ServletConfig config) throws ServletException {
         this.config = config;
-        this.context = config.getServletContext();
+        context = config.getServletContext();
+    }
+
+    public ServletConfig getServletConfig() {
+        return config;
     }
 
     public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
@@ -128,34 +121,47 @@ public class ProxyServlet implements Servlet {
         }
 
         ExtendedHttpMethod method;
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletRequest httpRequest = (HttpServletRequest)request;
         if (httpRequest.getMethod().equals("GET")) {
             method = new ExtendedGetMethod();
-        } else if (httpRequest.getMethod().equals("POST")) {
+        }
+        else if (httpRequest.getMethod().equals("POST")) {
             method = new ExtendedPostMethod();
-        } else if (httpRequest.getMethod().equals("PUT")) {
+        }
+        else if (httpRequest.getMethod().equals("PUT")) {
             method = new ExtendedPutMethod();
-        } else if (httpRequest.getMethod().equals("DELETE")) {
+        }
+        else if (httpRequest.getMethod().equals("DELETE")) {
             method = new ExtendedDeleteMethod();
-        } else if (httpRequest.getMethod().equals("HEAD")) {
+        }
+        else if (httpRequest.getMethod().equals("HEAD")) {
             method = new ExtendedHeadMethod();
-        } else if (httpRequest.getMethod().equals("OPTIONS")) {
+        }
+        else if (httpRequest.getMethod().equals("OPTIONS")) {
             method = new ExtendedOptionsMethod();
-        } else if (httpRequest.getMethod().equals("TRACE")) {
+        }
+        else if (httpRequest.getMethod().equals("TRACE")) {
             method = new ExtendedTraceMethod();
-        } else if (httpRequest.getMethod().equals("PATCH")) {
+        }
+        else if (httpRequest.getMethod().equals("PATCH")) {
             method = new ExtendedPatchMethod();
-        } else if (httpRequest.getMethod().equals("PROPFIND")) {
+        }
+        else if (httpRequest.getMethod().equals("PROPFIND")) {
             method = new ExtendedPropFindMethod();
-        } else if (httpRequest.getMethod().equals("LOCK")) {
+        }
+        else if (httpRequest.getMethod().equals("LOCK")) {
             method = new ExtendedLockMethod();
-        } else if (httpRequest.getMethod().equals("UNLOCK")) {
+        }
+        else if (httpRequest.getMethod().equals("UNLOCK")) {
             method = new ExtendedUnlockMethod();
-        } else if (httpRequest.getMethod().equals("COPY")) {
+        }
+        else if (httpRequest.getMethod().equals("COPY")) {
             method = new ExtendedCopyMethod();
-        } else if (httpRequest.getMethod().equals("PURGE")) {
+        }
+        else if (httpRequest.getMethod().equals("PURGE")) {
             method = new ExtendedPurgeMethod();
-        } else {
+        }
+        else {
             method = new ExtendedGenericMethod(httpRequest.getMethod());
         }
 
@@ -166,7 +172,7 @@ public class ProxyServlet implements Servlet {
             requestBody = Tools.readAll(request.getInputStream(), 0);
             ByteArrayEntity entity = new ByteArrayEntity(requestBody.toByteArray());
             entity.setContentType(request.getContentType());
-            ((HttpEntityEnclosingRequest) method).setEntity(entity);
+            ((HttpEntityEnclosingRequest)method).setEntity(entity);
         }
 
         // for this create ui server and port, properties.
@@ -191,10 +197,9 @@ public class ProxyServlet implements Servlet {
 
         // copy headers
         boolean xForwardedFor = false;
-        @SuppressWarnings("unused")
-        Enumeration<?> headerNames = httpRequest.getHeaderNames();
+        @SuppressWarnings("unused") Enumeration<?> headerNames = httpRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
-            String hdr = (String) headerNames.nextElement();
+            String hdr = (String)headerNames.nextElement();
             String lhdr = hdr.toLowerCase();
 
             if (dontProxyHeaders.contains(lhdr)) {
@@ -206,7 +211,7 @@ public class ProxyServlet implements Servlet {
 
             Enumeration<?> vals = httpRequest.getHeaders(hdr);
             while (vals.hasMoreElements()) {
-                String val = (String) vals.nextElement();
+                String val = (String)vals.nextElement();
                 if (val != null) {
                     method.setHeader(lhdr, val);
                     xForwardedFor |= "X-Forwarded-For".equalsIgnoreCase(hdr);
@@ -229,16 +234,18 @@ public class ProxyServlet implements Servlet {
         if (httpRequest.getServletPath() != null) {
             url.append(httpRequest.getServletPath());
             try {
-                method.setURI(new java.net.URI(url.toString().replaceAll(" ", "%20")));
-            } catch (URISyntaxException e) {
+                method.setURI(new URI(url.toString().replaceAll(" ", "%20")));
+            }
+            catch (URISyntaxException e) {
                 SoapUI.logError(e);
             }
 
             if (httpRequest.getQueryString() != null) {
                 url.append("?" + httpRequest.getQueryString());
                 try {
-                    method.setURI(new java.net.URI(url.toString()));
-                } catch (URISyntaxException e) {
+                    method.setURI(new URI(url.toString()));
+                }
+                catch (URISyntaxException e) {
                     SoapUI.logError(e);
                 }
             }
@@ -254,7 +261,8 @@ public class ProxyServlet implements Servlet {
                 httpState = new BasicHttpContext();
             }
             HttpClientSupport.execute(method, httpState);
-        } else {
+        }
+        else {
             HttpClientSupport.execute(method);
         }
 
@@ -268,22 +276,19 @@ public class ProxyServlet implements Servlet {
         capturedData.setRawResponseData(getResponseToBytes(method, capturedData.getRawResponseBody()));
         byte[] decompressedResponseBody = method.getDecompressedResponseBody();
         capturedData.setResponseContent(decompressedResponseBody != null ? new String(decompressedResponseBody) : "");
-        capturedData.setResponseStatusCode(method.hasHttpResponse() ? method.getHttpResponse().getStatusLine()
-                .getStatusCode() : null);
-        capturedData.setResponseStatusLine(method.hasHttpResponse() ? method.getHttpResponse().getStatusLine()
-                .toString() : null);
+        capturedData.setResponseStatusCode(method.hasHttpResponse() ? method.getHttpResponse().getStatusLine().getStatusCode() : null);
+        capturedData.setResponseStatusLine(method.hasHttpResponse() ? method.getHttpResponse().getStatusLine().toString() : null);
 
         listenerCallBack.fireAfterProxy(project, request, response, method, capturedData);
 
-        ((HttpServletResponse) response).setStatus(method.hasHttpResponse() ? method.getHttpResponse()
-                .getStatusLine().getStatusCode() : null);
+        ((HttpServletResponse)response).setStatus(method.hasHttpResponse() ? method.getHttpResponse().getStatusLine().getStatusCode() : null);
 
         if (!response.isCommitted()) {
             StringToStringsMap responseHeaders = capturedData.getResponseHeaders();
             // capturedData = null;
 
             // copy headers to response
-            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+            HttpServletResponse httpServletResponse = (HttpServletResponse)response;
             for (Map.Entry<String, List<String>> headerEntry : responseHeaders.entrySet()) {
                 for (String header : headerEntry.getValue()) {
                     httpServletResponse.addHeader(headerEntry.getKey(), header);
@@ -300,6 +305,13 @@ public class ProxyServlet implements Servlet {
                 listenerCallBack.fireAddMessageExchange(capturedData);
             }
         }
+    }
+
+    public String getServletInfo() {
+        return "SoapUI Monitor";
+    }
+
+    public void destroy() {
     }
 
     protected boolean contentTypeMatches(ExtendedHttpMethod method) {
@@ -337,7 +349,8 @@ public class ProxyServlet implements Servlet {
                 if (res != null) {
                     out.write(res);
                 }
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -353,7 +366,8 @@ public class ProxyServlet implements Servlet {
             if (requestBody != null) {
                 out.write(requestBody.toByteArray());
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
 
@@ -363,9 +377,9 @@ public class ProxyServlet implements Servlet {
     protected void setProtocolversion(ExtendedHttpMethod postMethod, String protocolVersion) {
         if (protocolVersion.equals(HttpVersion.HTTP_1_1.toString())) {
             postMethod.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-        } else if (protocolVersion.equals(HttpVersion.HTTP_1_0.toString())) {
+        }
+        else if (protocolVersion.equals(HttpVersion.HTTP_1_0.toString())) {
             postMethod.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
         }
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.xfire;
@@ -46,6 +46,7 @@ import java.io.IOException;
  */
 
 public class XFireAction extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "XFireAction";
     private static final String PACKAGE = "Package";
     private static final String OUTPUT = "Output Directory";
     private static final String BINDING = "Binding";
@@ -56,10 +57,15 @@ public class XFireAction extends AbstractToolsAction<Interface> {
     private static final String OVERWRITE = "Overwrite previously generated files";
     private static final String EXPLICIT_ANNOTATION = "Explicit Annotations";
     private static final String SERVER_STUBS = "Generate Server Stubs";
-    public static final String SOAPUI_ACTION_ID = "XFireAction";
 
     public XFireAction() {
         super("XFire 1.X Stubs", "Generates XFire 1.X stubs using the wsgen utility");
+    }
+
+    protected StringToStringMap initValues(Interface modelItem, Object param) {
+        StringToStringMap values = super.initValues(modelItem, param);
+        values.putIfMissing(BINDING, "jaxb");
+        return values;
     }
 
     protected XFormDialog buildDialog(Interface modelItem) {
@@ -69,15 +75,11 @@ public class XFireAction extends AbstractToolsAction<Interface> {
         addWSDLFields(mainForm, modelItem);
 
         mainForm.addTextField(OUTPUT, "Root directory for all emitted files.", XForm.FieldType.PROJECT_FOLDER);
-        mainForm.addTextField(PACKAGE, "Package for generated classes", XForm.FieldType.JAVA_PACKAGE).setRequired(
-                true, "Package is required");
-        XFormField bindingCombo = mainForm.addComboBox(BINDING, new String[]{"jaxb", "xmlbeans"},
-                "Binding framework to use");
+        mainForm.addTextField(PACKAGE, "Package for generated classes", XForm.FieldType.JAVA_PACKAGE).setRequired(true, "Package is required");
+        XFormField bindingCombo = mainForm.addComboBox(BINDING, new String[]{"jaxb", "xmlbeans"}, "Binding framework to use");
 
-        XFormTextField cpField = mainForm.addTextField(CLASSPATH, "Classpath to generated xmlbeans for binding",
-                XForm.FieldType.PROJECT_FILE);
-        XFormTextField extBindingsField = mainForm.addTextField(EXTERNAL_BINDINGS, "External jaxb binding file(s)",
-                XForm.FieldType.PROJECT_FILE);
+        XFormTextField cpField = mainForm.addTextField(CLASSPATH, "Classpath to generated xmlbeans for binding", XForm.FieldType.PROJECT_FILE);
+        XFormTextField extBindingsField = mainForm.addTextField(EXTERNAL_BINDINGS, "External jaxb binding file(s)", XForm.FieldType.PROJECT_FILE);
         bindingCombo.addComponentEnabler(cpField, "xmlbeans");
         bindingCombo.addComponentEnabler(extBindingsField, "jaxb");
 
@@ -89,14 +91,7 @@ public class XFireAction extends AbstractToolsAction<Interface> {
 
         buildArgsForm(builder, true, "WsGen");
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.XFIRE_HELP_URL, modelItem),
-                "Specify arguments for XFire 1.X WsGen", UISupport.TOOL_ICON);
-    }
-
-    protected StringToStringMap initValues(Interface modelItem, Object param) {
-        StringToStringMap values = super.initValues(modelItem, param);
-        values.putIfMissing(BINDING, "jaxb");
-        return values;
+        return builder.buildDialog(buildDefaultActions(HelpUrls.XFIRE_HELP_URL, modelItem), "Specify arguments for XFire 1.X WsGen", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {
@@ -161,8 +156,7 @@ public class XFireAction extends AbstractToolsAction<Interface> {
         }
 
         classpath.append(File.pathSeparatorChar);
-        classpath.append(antDir).append(File.separatorChar).append("lib").append(File.separatorChar)
-                .append("ant.jar");
+        classpath.append(antDir).append(File.separatorChar).append("lib").append(File.separatorChar).append("ant.jar");
 
         if (additional != null && additional.trim().length() > 0) {
             classpath.append(File.pathSeparatorChar).append(additional.trim());
@@ -171,8 +165,7 @@ public class XFireAction extends AbstractToolsAction<Interface> {
         return classpath.toString();
     }
 
-    private ArgumentBuilder buildArgs(StringToStringMap values, String classpath, Interface modelItem)
-            throws IOException {
+    private ArgumentBuilder buildArgs(StringToStringMap values, String classpath, Interface modelItem) throws IOException {
         values.put(OUTPUT, Tools.ensureDir(values.get(OUTPUT), ""));
 
         ArgumentBuilder builder = new ArgumentBuilder(values);

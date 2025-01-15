@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.oauth;
@@ -46,30 +46,19 @@ public class OltuOAuth2ClientFacade implements OAuth2ClientFacade {
             OAuth2Parameters parameters = buildParametersFrom(profile);
             OAuthParameterValidator.validate(parameters);
             getOAuth2TokenExtractor().extractAccessToken(parameters);
-        } catch (OAuthSystemException e) {
+        }
+        catch (OAuthSystemException e) {
             logAndThrowOAuth2Exception(e);
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             logAndThrowOAuth2Exception(e);
-        } catch (URISyntaxException e) {
+        }
+        catch (URISyntaxException e) {
             logAndThrowOAuth2Exception(e);
-        } catch (OAuthProblemException e) {
+        }
+        catch (OAuthProblemException e) {
             e.printStackTrace();
         }
-
-    }
-
-    protected OAuth2TokenExtractor getOAuth2TokenExtractor() {
-        return new OAuth2TokenExtractor();
-    }
-
-    @Override
-    public void refreshAccessToken(OAuth2Profile profile) throws Exception {
-        OAuth2Parameters parameters = buildParametersFrom(profile);
-        validateRequiredStringValue(parameters.refreshToken, "refresh token");
-        validateRequiredStringValue(parameters.clientId, "client ID");
-        validateRequiredStringValue(parameters.clientSecret, "client secret");
-
-        getOAuth2TokenExtractor().refreshAccessToken(parameters);
     }
 
     @Override
@@ -91,9 +80,24 @@ public class OltuOAuth2ClientFacade implements OAuth2ClientFacade {
                     appendAccessTokenToHeader(request, oAuthClientRequest);
                     break;
             }
-        } catch (OAuthSystemException e) {
+        }
+        catch (OAuthSystemException e) {
             SoapUI.logError(e);
         }
+    }
+
+    @Override
+    public void refreshAccessToken(OAuth2Profile profile) throws Exception {
+        OAuth2Parameters parameters = buildParametersFrom(profile);
+        validateRequiredStringValue(parameters.refreshToken, "refresh token");
+        validateRequiredStringValue(parameters.clientId, "client ID");
+        validateRequiredStringValue(parameters.clientSecret, "client secret");
+
+        getOAuth2TokenExtractor().refreshAccessToken(parameters);
+    }
+
+    protected OAuth2TokenExtractor getOAuth2TokenExtractor() {
+        return new OAuth2TokenExtractor();
     }
 
     private OAuth2Parameters buildParametersFrom(OAuth2Profile profile) {
@@ -105,19 +109,20 @@ public class OltuOAuth2ClientFacade implements OAuth2ClientFacade {
         throw new OAuth2Exception(e);
     }
 
-    private void appendAccessTokenToBody(HttpRequestBase request, OAuthBearerClientRequest oAuthClientRequest)
-            throws OAuthSystemException {
+    private void appendAccessTokenToBody(HttpRequestBase request, OAuthBearerClientRequest oAuthClientRequest) throws OAuthSystemException {
         try {
             if (request instanceof HttpEntityEnclosingRequest) {
-                HttpEntity httpEntity = ((HttpEntityEnclosingRequest) request).getEntity();
+                HttpEntity httpEntity = ((HttpEntityEnclosingRequest)request).getEntity();
                 if (httpEntity == null) {
                     String accessTokenParameter = getQueryStringFromOAuthClientRequest(oAuthClientRequest);
-                    ((HttpEntityEnclosingRequest) request).setEntity(new StringEntity(accessTokenParameter));
-                } else {
+                    ((HttpEntityEnclosingRequest)request).setEntity(new StringEntity(accessTokenParameter));
+                }
+                else {
                     //TODO: re-create the entity from existing one and append the new content for access token
                 }
             }
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e) {
             throw new OAuthSystemException(e);
         }
     }
@@ -128,9 +133,9 @@ public class OltuOAuth2ClientFacade implements OAuth2ClientFacade {
         String requestQueryString = oldUri.getQuery() != null ? oldUri.getQuery() + "&" + queryString : queryString;
 
         try {
-            request.setURI(URIUtils.createURI(oldUri.getScheme(), oldUri.getHost(), oldUri.getPort(),
-                    oldUri.getRawPath(), requestQueryString, oldUri.getFragment()));
-        } catch (URISyntaxException e) {
+            request.setURI(URIUtils.createURI(oldUri.getScheme(), oldUri.getHost(), oldUri.getPort(), oldUri.getRawPath(), requestQueryString, oldUri.getFragment()));
+        }
+        catch (URISyntaxException e) {
             throw new OAuthSystemException(e);
         }
     }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.cxf;
@@ -42,6 +42,7 @@ import java.io.IOException;
  */
 
 public class CXFAction extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "CXFAction";
     private static final String PACKAGE = "Package";
     private static final String OUTPUT = "Output Directory";
     private static final String NAMESPACE_MAPPING = "Output Packages";
@@ -58,12 +59,17 @@ public class CXFAction extends AbstractToolsAction<Interface> {
     private static final String EXSH = "EXSH";
     private static final String DNS = "DNS";
     private static final String DEX = "DEX";
-
-    public static final String SOAPUI_ACTION_ID = "CXFAction";
     private static final String BINDING_FILES = "Bindings";
 
     public CXFAction() {
         super("Apache CXF", "Generates Apache CXF code using the wsdl2java utility");
+    }
+
+    protected StringToStringMap initValues(Interface modelItem, Object param) {
+        StringToStringMap values = super.initValues(modelItem, param);
+        values.putIfMissing(DNS, "true");
+        values.putIfMissing(DEX, "true");
+        return values;
     }
 
     protected XFormDialog buildDialog(Interface modelItem) {
@@ -81,15 +87,15 @@ public class CXFAction extends AbstractToolsAction<Interface> {
         mainForm.addCheckBox(IMPL_STUBS, "Generates starting point code for an implementation object");
         mainForm.addCheckBox(ANT_FILE, "Generates the Ant build.xml file");
         mainForm.addCheckBox(GENERATE_ALL,
-                "<html>Generates all starting point code: types, <br>service proxy, service interface, server mainline, "
-                        + "<br>client mainline, implementation object, and an Ant build.xml file</html>");
+                             "<html>Generates all starting point code: types, <br>service proxy, service interface, server mainline, " +
+                             "<br>client mainline, implementation object, and an Ant build.xml file</html>"
+        );
 
         XForm advForm = builder.createForm("Advanced");
 
         advForm.addTextField(BINDING_FILES, "Space-separated list of JAXWS or JAXB binding files", XForm.FieldType.TEXT);
         advForm.addCheckBox(COMPILE, "Compiles generated Java files");
-        advForm.addTextField(CLASSDIR, "The directory into which the compiled class files are written",
-                XForm.FieldType.FOLDER);
+        advForm.addTextField(CLASSDIR, "The directory into which the compiled class files are written", XForm.FieldType.FOLDER);
 
         advForm.addTextField(CATALOG_FILE, "The catalog file to map the imported wsdl/schema", XForm.FieldType.FILE);
 
@@ -101,15 +107,7 @@ public class CXFAction extends AbstractToolsAction<Interface> {
 
         buildArgsForm(builder, true, "wsdl2java");
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.CXFWSDL2JAVA_HELP_URL, modelItem),
-                "Specify arguments for Apache CXF wsdl2java", UISupport.TOOL_ICON);
-    }
-
-    protected StringToStringMap initValues(Interface modelItem, Object param) {
-        StringToStringMap values = super.initValues(modelItem, param);
-        values.putIfMissing(DNS, "true");
-        values.putIfMissing(DEX, "true");
-        return values;
+        return builder.buildDialog(buildDefaultActions(HelpUrls.CXFWSDL2JAVA_HELP_URL, modelItem), "Specify arguments for Apache CXF wsdl2java", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {
@@ -161,7 +159,8 @@ public class CXFAction extends AbstractToolsAction<Interface> {
             String value = excludes.get(key);
             if (value.equals("-")) {
                 builder.addArgs("-b", key);
-            } else {
+            }
+            else {
                 builder.addArgs("-b", key + "=" + value);
             }
         }

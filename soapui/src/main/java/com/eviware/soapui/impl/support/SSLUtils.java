@@ -36,10 +36,12 @@ public class SSLUtils {
         Settings settings = SoapUI.getSettings();
         KeyStore keyStore;
 
-        if (UISupport.isWindows() /*&& settings.getBoolean(SSLSettings.USE_WINDOWS_KEYSTORE, false)*/ && false) {
+        /*&& settings.getBoolean(SSLSettings.USE_WINDOWS_KEYSTORE, false)*/
+        if (false) {
             keyStore = KeyStore.getInstance("Windows-MY");
             keyStore.load(null, null);
-        } else {
+        }
+        else {
             String keyStoreUrl = getKeyStoreUrl();
             String password = getKeyStorePassword();
 
@@ -54,8 +56,7 @@ public class SSLUtils {
      */
     public static String getKeyStoreUrl() {
         Settings settings = SoapUI.getSettings();
-        String keyStoreUrl = System.getProperty(SoapUISystemProperties.SOAPUI_SSL_KEYSTORE_LOCATION,
-                settings.getString(SSLSettings.KEYSTORE, ""));
+        String keyStoreUrl = System.getProperty(SoapUISystemProperties.SOAPUI_SSL_KEYSTORE_LOCATION, settings.getString(SSLSettings.KEYSTORE, ""));
         return keyStoreUrl.trim();
     }
 
@@ -64,31 +65,7 @@ public class SSLUtils {
      */
     public static String getKeyStorePassword() {
         Settings settings = SoapUI.getSettings();
-        return System.getProperty(SoapUISystemProperties.SOAPUI_SSL_KEYSTORE_PASSWORD,
-                settings.getString(SSLSettings.KEYSTORE_PASSWORD, ""));
-    }
-
-    private static KeyStore getKeyStore(String keyStoreUrl, String password, Logger logger) {
-        KeyStore keyStore = null;
-        char[] pwd = password.toCharArray();
-
-        if (keyStoreUrl.trim().length() > 0) {
-            File f = new File(keyStoreUrl);
-            if (f.exists()) {
-                if (logger != null) {
-                    logger.info(INIT_KEYSTORE_INFO_MESSAGE);
-                }
-
-                try {
-                    KeyMaterial km = new KeyMaterial(f, pwd);
-                    keyStore = km.getKeyStore();
-                } catch (Exception e) {
-                    //Logging.logError(e);
-                }
-            }
-        }
-
-        return keyStore;
+        return System.getProperty(SoapUISystemProperties.SOAPUI_SSL_KEYSTORE_PASSWORD, settings.getString(SSLSettings.KEYSTORE_PASSWORD, ""));
     }
 
     /**
@@ -97,16 +74,16 @@ public class SSLUtils {
     public static X509ExtendedTrustManager getTrustAllManager() {
         return new X509ExtendedTrustManager() {
             @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
-
-            @Override
             public void checkClientTrusted(X509Certificate[] certs, String authType) {
             }
 
             @Override
             public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+
+            @Override
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
             }
 
             @Override
@@ -125,5 +102,29 @@ public class SSLUtils {
             public void checkServerTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) {
             }
         };
+    }
+
+    private static KeyStore getKeyStore(String keyStoreUrl, String password, Logger logger) {
+        KeyStore keyStore = null;
+        char[] pwd = password.toCharArray();
+
+        if (keyStoreUrl.trim().length() > 0) {
+            File f = new File(keyStoreUrl);
+            if (f.exists()) {
+                if (logger != null) {
+                    logger.info(INIT_KEYSTORE_INFO_MESSAGE);
+                }
+
+                try {
+                    KeyMaterial km = new KeyMaterial(f, pwd);
+                    keyStore = km.getKeyStore();
+                }
+                catch (Exception e) {
+                    //Logging.logError(e);
+                }
+            }
+        }
+
+        return keyStore;
     }
 }

@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package com.eviware.soapui.actions;
 
@@ -69,20 +69,27 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
     public static final String WSA_SETTINGS = "WS-A Settings";
     public static final String GLOBAL_SENSITIVE_INFORMATION_TOKENS = "Global Sensitive Information Tokens";
     public static final String VERSIONUPDATE_SETTINGS = "Version Update Settings";
-    private SwingConfigurationDialogImpl dialog;
-    private List<Prefs> prefs = new ArrayList<Prefs>();
-    private Map<PrefsFactory, Prefs> prefsFactories = new HashMap<PrefsFactory, Prefs>();
-
     private static SoapUIPreferencesAction instance;
+    private SwingConfigurationDialogImpl dialog;
+    private final List<Prefs> prefs = new ArrayList<Prefs>();
+    private final Map<PrefsFactory, Prefs> prefsFactories = new HashMap<PrefsFactory, Prefs>();
     private DefaultListModel<String> prefsListModel;
     private JPanel prefsPanel;
+
+    public static SoapUIPreferencesAction getInstance() {
+        if (instance == null) {
+            instance = new SoapUIPreferencesAction();
+        }
+
+        return instance;
+    }
 
     public SoapUIPreferencesAction() {
         super("Preferences");
 
-        putValue(Action.SHORT_DESCRIPTION, "Sets global SoapUI preferences");
-        putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu alt P"));
-        putValue(Action.SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
+        putValue(SHORT_DESCRIPTION, "Sets global SoapUI preferences");
+        putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu alt P"));
+        putValue(SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
 
         addPrefs(new AnnotatedSettingsPrefs(HttpSettings.class, HTTP_SETTINGS));
         addPrefs(new ProxyPrefs(PROXY_SETTINGS));
@@ -102,29 +109,26 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
             addPrefsFactory(factory);
         }
 
-        SoapUI.getFactoryRegistry().addFactoryRegistryListener( this );
+        SoapUI.getFactoryRegistry().addFactoryRegistryListener(this);
 
         instance = this;
     }
 
     public void addPrefsFactory(PrefsFactory factory) {
         Prefs pref = factory.createPrefs();
-        addPrefs( pref );
+        addPrefs(pref);
 
-        prefsFactories.put( factory, pref );
+        prefsFactories.put(factory, pref);
         if (prefsPanel != null) {
             addPrefToTabs(pref);
         }
     }
 
-    public void removePrefsFactory( PrefsFactory factory )
-    {
-        Prefs pref = prefsFactories.get( factory );
-        if( pref != null )
-        {
-            prefsFactories.remove( factory );
-            if (prefsPanel != null)
-            {
+    public void removePrefsFactory(PrefsFactory factory) {
+        Prefs pref = prefsFactories.get(factory);
+        if (pref != null) {
+            prefsFactories.remove(factory);
+            if (prefsPanel != null) {
                 int ix = prefsListModel.indexOf(pref.getTitle());
                 if (ix != -1) {
                     prefsListModel.remove(ix);
@@ -132,37 +136,30 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
                 }
             }
 
-            prefs.remove( pref );
+            prefs.remove(pref);
         }
     }
 
     @Override
     public void factoryAdded(Class<?> factoryType, Object factory) {
-        if(factoryType.equals( PrefsFactory.class ))
-            addPrefsFactory((PrefsFactory) factory);
+        if (factoryType.equals(PrefsFactory.class)) {
+            addPrefsFactory((PrefsFactory)factory);
+        }
     }
 
     @Override
     public void factoryRemoved(Class<?> factoryType, Object factory) {
-        if(factoryType.equals( PrefsFactory.class ))
-            removePrefsFactory((PrefsFactory) factory);
+        if (factoryType.equals(PrefsFactory.class)) {
+            removePrefsFactory((PrefsFactory)factory);
+        }
     }
 
     public void addPrefs(Prefs pref) {
         prefs.add(pref);
     }
 
-    public static SoapUIPreferencesAction getInstance() {
-        if (instance == null) {
-            instance = new SoapUIPreferencesAction();
-        }
-
-        return instance;
-    }
-
-    public Prefs [] getPrefs()
-    {
-        return prefs.toArray( new Prefs[prefs.size()]);
+    public Prefs[] getPrefs() {
+        return prefs.toArray(new Prefs[prefs.size()]);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -195,13 +192,12 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
     }
 
     public void selectPrefs(String initialTab) {
-        CardLayout cl = (CardLayout) (prefsPanel.getLayout());
+        CardLayout cl = (CardLayout)(prefsPanel.getLayout());
         cl.show(prefsPanel, initialTab);
     }
 
     private void buildDialog() {
-        dialog = new SwingConfigurationDialogImpl("SoapUI Preferences", HelpUrls.PREFERENCES_HELP_URL,
-                "Set global SoapUI settings", UISupport.OPTIONS_ICON);
+        dialog = new SwingConfigurationDialogImpl("SoapUI Preferences", HelpUrls.PREFERENCES_HELP_URL, "Set global SoapUI settings", UISupport.OPTIONS_ICON);
         dialog.setSize(new Dimension(1000, 700));
 
         prefsListModel = new DefaultListModel<String>();
@@ -230,5 +226,4 @@ public class SoapUIPreferencesAction extends AbstractAction implements SoapUIFac
         prefsPanel.add(pref.getForm().getPanel(), pref.getTitle());
         prefsListModel.addElement(pref.getTitle());
     }
-
 }

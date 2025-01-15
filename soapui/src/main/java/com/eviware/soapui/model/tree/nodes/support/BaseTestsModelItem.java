@@ -15,5 +15,4 @@ public class BaseTestsModelItem extends EmptyModelItem {
     public TestCase getTestCase() {
         return testCase;
     }
-
 }

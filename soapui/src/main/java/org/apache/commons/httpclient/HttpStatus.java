@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * $Header: /home/jerenkrantz/tmp/commons/commons-convert/cvs/home/cvs/jakarta-commons//httpclient/src/java/org/apache/commons/httpclient/HttpStatus.java,v 1.18 2004/05/02 11:21:13 olegk Exp $
  * $Revision: 480424 $
  * $Date: 2006-11-29 06:56:49 +0100 (Wed, 29 Nov 2006) $
@@ -52,91 +52,35 @@ package org.apache.commons.httpclient;
  * @author Unascribed
  * @author <a href="mailto:mbowler@GargoyleSoftware.com">Mike Bowler</a>
  * @author <a href="mailto:jsdever@apache.org">Jeff Dever</a>
- *         <p/>
+ * <p/>
  *         TODO: Internationalization of reason phrases
  * @version $Id: HttpStatus.java 480424 2006-11-29 05:56:49Z bayard $
  * @see StatusLine
  */
 public class HttpStatus {
 
-
     // -------------------------------------------------------- Class Variables
-
-    /**
-     * Reason phrases lookup table.
-     */
-    private static final String[][] REASON_PHRASES = new String[][]{
-            new String[0],
-            new String[3],
-            new String[8],
-            new String[8],
-            new String[25],
-            new String[8]
-    };
-
-
-    // --------------------------------------------------------- Public Methods
-
-    /**
-     * Get the reason phrase for a particular status code.
-     * <p/>
-     * This method always returns the English text as specified in the
-     * relevent RFCs and is not internationalized.
-     *
-     * @param statusCode the numeric status code
-     * @return the reason phrase associated with the given status code
-     *         or null if the status code is not recognized.
-     *         <p/>
-     *         TODO: getStatusText should be called getReasonPhrase to match RFC
-     */
-    public static String getStatusText(int statusCode) {
-
-        if (statusCode < 0) {
-            throw new IllegalArgumentException("status code may not be negative");
-        }
-        int classIndex = statusCode / 100;
-        int codeIndex = statusCode - classIndex * 100;
-        if (classIndex < 1 || classIndex > (REASON_PHRASES.length - 1)
-                || codeIndex < 0 || codeIndex > (REASON_PHRASES[classIndex].length - 1)) {
-            return null;
-        }
-        return REASON_PHRASES[classIndex][codeIndex];
-    }
-
-
-    // -------------------------------------------------------- Private Methods
-
-    /**
-     * Store the given reason phrase, by status code.
-     *
-     * @param statusCode   The status code to lookup
-     * @param reasonPhrase The reason phrase for this status code
-     */
-    private static void addStatusCodeMap(int statusCode, String reasonPhrase) {
-        int classIndex = statusCode / 100;
-        REASON_PHRASES[classIndex][statusCode - classIndex * 100] = reasonPhrase;
-    }
-
-
-    // -------------------------------------------------------------- Constants
-
-    // --- 1xx Informational ---
 
     /**
      * <tt>100 Continue</tt> (HTTP/1.1 - RFC 2616)
      */
     public static final int SC_CONTINUE = 100;
+
+    // --------------------------------------------------------- Public Methods
     /**
      * <tt>101 Switching Protocols</tt> (HTTP/1.1 - RFC 2616)
      */
     public static final int SC_SWITCHING_PROTOCOLS = 101;
+
+    // -------------------------------------------------------- Private Methods
     /**
      * <tt>102 Processing</tt> (WebDAV - RFC 2518)
      */
     public static final int SC_PROCESSING = 102;
 
-    // --- 2xx Success ---
+    // -------------------------------------------------------------- Constants
 
+    // --- 1xx Informational ---
     /**
      * <tt>200 OK</tt> (HTTP/1.0 - RFC 1945)
      */
@@ -149,6 +93,8 @@ public class HttpStatus {
      * <tt>202 Accepted</tt> (HTTP/1.0 - RFC 1945)
      */
     public static final int SC_ACCEPTED = 202;
+
+    // --- 2xx Success ---
     /**
      * <tt>203 Non Authoritative Information</tt> (HTTP/1.1 - RFC 2616)
      */
@@ -170,9 +116,6 @@ public class HttpStatus {
      * OK</tt> (HTTP/1.1 - draft-ietf-http-v11-spec-rev-01?)
      */
     public static final int SC_MULTI_STATUS = 207;
-
-    // --- 3xx Redirection ---
-
     /**
      * <tt>300 Mutliple Choices</tt> (HTTP/1.1 - RFC 2616)
      */
@@ -185,6 +128,8 @@ public class HttpStatus {
      * <tt>302 Moved Temporarily</tt> (Sometimes <tt>Found</tt>) (HTTP/1.0 - RFC 1945)
      */
     public static final int SC_MOVED_TEMPORARILY = 302;
+
+    // --- 3xx Redirection ---
     /**
      * <tt>303 See Other</tt> (HTTP/1.1 - RFC 2616)
      */
@@ -201,9 +146,6 @@ public class HttpStatus {
      * <tt>307 Temporary Redirect</tt> (HTTP/1.1 - RFC 2616)
      */
     public static final int SC_TEMPORARY_REDIRECT = 307;
-
-    // --- 4xx Client Error ---
-
     /**
      * <tt>400 Bad Request</tt> (HTTP/1.1 - RFC 2616)
      */
@@ -216,6 +158,8 @@ public class HttpStatus {
      * <tt>402 Payment Required</tt> (HTTP/1.1 - RFC 2616)
      */
     public static final int SC_PAYMENT_REQUIRED = 402;
+
+    // --- 4xx Client Error ---
     /**
      * <tt>403 Forbidden</tt> (HTTP/1.0 - RFC 1945)
      */
@@ -276,15 +220,6 @@ public class HttpStatus {
      * <tt>417 Expectation Failed</tt> (HTTP/1.1 - RFC 2616)
      */
     public static final int SC_EXPECTATION_FAILED = 417;
-
-    /**
-     * Static constant for a 418 error.
-     * <tt>418 Unprocessable Entity</tt> (WebDAV drafts?)
-     * or <tt>418 Reauthentication Required</tt> (HTTP/1.1 drafts?)
-     */
-    // not used
-    // public static final int SC_UNPROCESSABLE_ENTITY = 418;
-
     /**
      * Static constant for a 419 error.
      * <tt>419 Insufficient Space on Resource</tt>
@@ -303,6 +238,14 @@ public class HttpStatus {
      * <tt>422 Unprocessable Entity</tt> (WebDAV - RFC 2518)
      */
     public static final int SC_UNPROCESSABLE_ENTITY = 422;
+
+    /**
+     * Static constant for a 418 error.
+     * <tt>418 Unprocessable Entity</tt> (WebDAV drafts?)
+     * or <tt>418 Reauthentication Required</tt> (HTTP/1.1 drafts?)
+     */
+    // not used
+    // public static final int SC_UNPROCESSABLE_ENTITY = 418;
     /**
      * <tt>423 Locked</tt> (WebDAV - RFC 2518)
      */
@@ -311,9 +254,6 @@ public class HttpStatus {
      * <tt>424 Failed Dependency</tt> (WebDAV - RFC 2518)
      */
     public static final int SC_FAILED_DEPENDENCY = 424;
-
-    // --- 5xx Server Error ---
-
     /**
      * <tt>500 Server Error</tt> (HTTP/1.0 - RFC 1945)
      */
@@ -326,6 +266,8 @@ public class HttpStatus {
      * <tt>502 Bad Gateway</tt> (HTTP/1.0 - RFC 1945)
      */
     public static final int SC_BAD_GATEWAY = 502;
+
+    // --- 5xx Server Error ---
     /**
      * <tt>503 Service Unavailable</tt> (HTTP/1.0 - RFC 1945)
      */
@@ -338,14 +280,16 @@ public class HttpStatus {
      * <tt>505 HTTP Version Not Supported</tt> (HTTP/1.1 - RFC 2616)
      */
     public static final int SC_HTTP_VERSION_NOT_SUPPORTED = 505;
-
     /**
      * <tt>507 Insufficient Storage</tt> (WebDAV - RFC 2518)
      */
     public static final int SC_INSUFFICIENT_STORAGE = 507;
-
-
-    // ----------------------------------------------------- Static Initializer
+    /**
+     * Reason phrases lookup table.
+     */
+    private static final String[][] REASON_PHRASES = new String[][]{
+        new String[0], new String[3], new String[8], new String[8], new String[25], new String[8]
+    };
 
     /** Set up status code to "reason phrase" map. */
     static {
@@ -380,39 +324,66 @@ public class HttpStatus {
         addStatusCodeMap(SC_USE_PROXY, "Use Proxy");
         addStatusCodeMap(SC_PAYMENT_REQUIRED, "Payment Required");
         addStatusCodeMap(SC_NOT_ACCEPTABLE, "Not Acceptable");
-        addStatusCodeMap(SC_PROXY_AUTHENTICATION_REQUIRED,
-                "Proxy Authentication Required");
-        addStatusCodeMap(SC_REQUEST_TIMEOUT,
-                "Request Timeout");
+        addStatusCodeMap(SC_PROXY_AUTHENTICATION_REQUIRED, "Proxy Authentication Required");
+        addStatusCodeMap(SC_REQUEST_TIMEOUT, "Request Timeout");
 
         addStatusCodeMap(SC_SWITCHING_PROTOCOLS, "Switching Protocols");
-        addStatusCodeMap(SC_NON_AUTHORITATIVE_INFORMATION,
-                "Non Authoritative Information");
+        addStatusCodeMap(SC_NON_AUTHORITATIVE_INFORMATION, "Non Authoritative Information");
         addStatusCodeMap(SC_RESET_CONTENT, "Reset Content");
         addStatusCodeMap(SC_PARTIAL_CONTENT, "Partial Content");
         addStatusCodeMap(SC_GATEWAY_TIMEOUT, "Gateway Timeout");
-        addStatusCodeMap(SC_HTTP_VERSION_NOT_SUPPORTED,
-                "Http Version Not Supported");
-        addStatusCodeMap(SC_GONE,
-                "Gone");
-        addStatusCodeMap(SC_LENGTH_REQUIRED,
-                "Length Required");
-        addStatusCodeMap(SC_REQUESTED_RANGE_NOT_SATISFIABLE,
-                "Requested Range Not Satisfiable");
-        addStatusCodeMap(SC_EXPECTATION_FAILED,
-                "Expectation Failed");
+        addStatusCodeMap(SC_HTTP_VERSION_NOT_SUPPORTED, "Http Version Not Supported");
+        addStatusCodeMap(SC_GONE, "Gone");
+        addStatusCodeMap(SC_LENGTH_REQUIRED, "Length Required");
+        addStatusCodeMap(SC_REQUESTED_RANGE_NOT_SATISFIABLE, "Requested Range Not Satisfiable");
+        addStatusCodeMap(SC_EXPECTATION_FAILED, "Expectation Failed");
 
         // WebDAV Server-specific status codes
         addStatusCodeMap(SC_PROCESSING, "Processing");
         addStatusCodeMap(SC_MULTI_STATUS, "Multi-Status");
         addStatusCodeMap(SC_UNPROCESSABLE_ENTITY, "Unprocessable Entity");
-        addStatusCodeMap(SC_INSUFFICIENT_SPACE_ON_RESOURCE,
-                "Insufficient Space On Resource");
+        addStatusCodeMap(SC_INSUFFICIENT_SPACE_ON_RESOURCE, "Insufficient Space On Resource");
         addStatusCodeMap(SC_METHOD_FAILURE, "Method Failure");
         addStatusCodeMap(SC_LOCKED, "Locked");
         addStatusCodeMap(SC_INSUFFICIENT_STORAGE, "Insufficient Storage");
         addStatusCodeMap(SC_FAILED_DEPENDENCY, "Failed Dependency");
     }
 
+    /**
+     * Get the reason phrase for a particular status code.
+     * <p/>
+     * This method always returns the English text as specified in the
+     * relevent RFCs and is not internationalized.
+     *
+     * @param statusCode the numeric status code
+     * @return the reason phrase associated with the given status code
+     * or null if the status code is not recognized.
+     * <p/>
+     *         TODO: getStatusText should be called getReasonPhrase to match RFC
+     */
+    public static String getStatusText(int statusCode) {
 
+        if (statusCode < 0) {
+            throw new IllegalArgumentException("status code may not be negative");
+        }
+        int classIndex = statusCode / 100;
+        int codeIndex = statusCode - classIndex * 100;
+        if (classIndex < 1 || classIndex > (REASON_PHRASES.length - 1) || codeIndex < 0 || codeIndex > (REASON_PHRASES[classIndex].length - 1)) {
+            return null;
+        }
+        return REASON_PHRASES[classIndex][codeIndex];
+    }
+
+    // ----------------------------------------------------- Static Initializer
+
+    /**
+     * Store the given reason phrase, by status code.
+     *
+     * @param statusCode   The status code to lookup
+     * @param reasonPhrase The reason phrase for this status code
+     */
+    private static void addStatusCodeMap(int statusCode, String reasonPhrase) {
+        int classIndex = statusCode / 100;
+        REASON_PHRASES[classIndex][statusCode - classIndex * 100] = reasonPhrase;
+    }
 }

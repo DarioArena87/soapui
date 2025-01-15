@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.ui.support;
@@ -22,21 +22,8 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.Window;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class FindAndReplaceDialogView extends AbstractAction {
@@ -52,14 +39,15 @@ public class FindAndReplaceDialogView extends AbstractAction {
     private JButton replaceAllButton;
     private JComboBox findCombo;
     private JComboBox replaceCombo;
-    private RSyntaxTextArea editArea;
+    private final RSyntaxTextArea editArea;
 
     public FindAndReplaceDialogView(RSyntaxTextArea editArea) {
         super("Find / Replace");
         if (UISupport.isMac()) {
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("meta F"));
-        } else {
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("control F"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("meta F"));
+        }
+        else {
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("control F"));
         }
         this.editArea = editArea;
     }
@@ -255,7 +243,6 @@ public class FindAndReplaceDialogView extends AbstractAction {
                 UISupport.showErrorMessage("String [" + context.getSearchFor() + "] not found");
             }
         }
-
     }
 
     private class ReplaceAllAction extends AbstractAction {
@@ -276,7 +263,6 @@ public class FindAndReplaceDialogView extends AbstractAction {
                 UISupport.showErrorMessage("String [" + context.getSearchFor() + "] not found");
             }
         }
-
     }
 
     private class CloseAction extends AbstractAction {

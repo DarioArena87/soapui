@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps.amf;
@@ -22,6 +22,7 @@ import com.eviware.soapui.model.iface.SubmitContext;
 import com.eviware.soapui.model.support.AbstractResponse;
 import com.eviware.soapui.support.types.StringToStringMap;
 import com.eviware.soapui.support.types.StringToStringsMap;
+import com.thoughtworks.xstream.XStream;
 import flex.messaging.io.amf.ActionMessage;
 import flex.messaging.io.amf.MessageHeader;
 import org.apache.http.Header;
@@ -43,27 +44,29 @@ public class AMFResponse extends AbstractResponse<AMFRequest> {
     private String responseContentXML = "";
     private long timeTaken;
     private long timestamp;
-    private AMFRequest request;
+    private final AMFRequest request;
     private StringToStringsMap requestHeaders;
     private StringToStringsMap responseHeaders;
-    private StringToStringMap responseAMFHeaders = new StringToStringMap();
+    private final StringToStringMap responseAMFHeaders = new StringToStringMap();
     private byte[] rawRequestData;
     private byte[] rawResponseData;
-    private ActionMessage actionMessage;
-    private byte[] rawResponseBody;
+    private final ActionMessage actionMessage;
+    private final byte[] rawResponseBody;
 
-    public AMFResponse(AMFRequest request, SubmitContext submitContext, Object responseContent) throws SQLException,
-            ParserConfigurationException, TransformerConfigurationException, TransformerException {
+    public AMFResponse(
+        AMFRequest request,
+        SubmitContext submitContext,
+        Object responseContent
+    ) throws SQLException, ParserConfigurationException, TransformerException {
         super(request);
 
         this.request = request;
         if (responseContent != null) {
-            setResponseContentXML(new com.thoughtworks.xstream.XStream().toXML(responseContent));
+            setResponseContentXML(new XStream().toXML(responseContent));
         }
-        this.actionMessage = (ActionMessage) submitContext.getProperty(AMF_RESPONSE_ACTION_MESSAGE);
-        this.rawResponseBody = (byte[]) submitContext.getProperty(AMF_RAW_RESPONSE_BODY);
-        initHeaders((ExtendedPostMethod) submitContext.getProperty(AMF_POST_METHOD));
-
+        actionMessage = (ActionMessage)submitContext.getProperty(AMF_RESPONSE_ACTION_MESSAGE);
+        rawResponseBody = (byte[])submitContext.getProperty(AMF_RAW_RESPONSE_BODY);
+        initHeaders((ExtendedPostMethod)submitContext.getProperty(AMF_POST_METHOD));
     }
 
     public String getContentAsString() {
@@ -78,6 +81,22 @@ public class AMFResponse extends AbstractResponse<AMFRequest> {
         return rawResponseData != null ? rawResponseData.length : 0;
     }
 
+    public byte[] getRawRequestData() {
+        return rawRequestData;
+    }
+
+    public byte[] getRawResponseData() {
+        return rawResponseData;
+    }
+
+    public StringToStringsMap getRequestHeaders() {
+        return requestHeaders;
+    }
+
+    public StringToStringsMap getResponseHeaders() {
+        return responseHeaders;
+    }
+
     public String getRequestContent() {
         return request.toString();
     }
@@ -90,20 +109,20 @@ public class AMFResponse extends AbstractResponse<AMFRequest> {
         return timestamp;
     }
 
-    public void setTimeTaken(long timeTaken) {
-        this.timeTaken = timeTaken;
-    }
-
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
 
-    public void setResponseContentXML(String responseContentXML) {
-        this.responseContentXML = responseContentXML;
+    public void setTimeTaken(long timeTaken) {
+        this.timeTaken = timeTaken;
     }
 
     public String getResponseContentXML() {
         return responseContentXML;
+    }
+
+    public void setResponseContentXML(String responseContentXML) {
+        this.responseContentXML = responseContentXML;
     }
 
     protected void initHeaders(ExtendedPostMethod postMethod) {
@@ -123,8 +142,7 @@ public class AMFResponse extends AbstractResponse<AMFRequest> {
                 rawResponse.write("\r\n".getBytes());
             }
 
-            rawRequest.write((postMethod.getMethod() + " " + postMethod.getURI().toString() + " "
-                    + postMethod.getProtocolVersion().toString() + "\r\n").getBytes());
+            rawRequest.write((postMethod.getMethod() + " " + postMethod.getURI().toString() + " " + postMethod.getProtocolVersion().toString() + "\r\n").getBytes());
 
             Header[] headers = postMethod.getAllHeaders();
             for (Header header : headers) {
@@ -146,7 +164,8 @@ public class AMFResponse extends AbstractResponse<AMFRequest> {
                 rawRequest.write("\r\n".getBytes());
                 if (postMethod.getRequestEntity().isRepeatable() && postMethod.getEntity() != null) {
                     postMethod.getEntity().writeTo(rawRequest);
-                } else {
+                }
+                else {
                     rawRequest.write("<request data not available>".getBytes());
                 }
             }
@@ -160,8 +179,8 @@ public class AMFResponse extends AbstractResponse<AMFRequest> {
             rawRequestData = rawRequest.toByteArray();
 
             initAMFHeaders(postMethod);
-
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             SoapUI.logError(e);
         }
     }
@@ -177,22 +196,6 @@ public class AMFResponse extends AbstractResponse<AMFRequest> {
         }
     }
 
-    public byte[] getRawRequestData() {
-        return rawRequestData;
-    }
-
-    public byte[] getRawResponseData() {
-        return rawResponseData;
-    }
-
-    public StringToStringsMap getRequestHeaders() {
-        return requestHeaders;
-    }
-
-    public StringToStringsMap getResponseHeaders() {
-        return responseHeaders;
-    }
-
     public StringToStringMap getResponseAMFHeaders() {
         return responseAMFHeaders;
     }
@@ -203,8 +206,6 @@ public class AMFResponse extends AbstractResponse<AMFRequest> {
      * @return stringHEAD
      */
     public String toExternalForm(Header header) {
-        return ((null == header.getName() ? "" : header.getName()) + ": "
-                + (null == header.getValue() ? "" : header.getValue()) + "\r\n");
+        return ((null == header.getName() ? "" : header.getName()) + ": " + (null == header.getValue() ? "" : header.getValue()) + "\r\n");
     }
-
 }

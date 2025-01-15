@@ -51,13 +51,13 @@ import java.util.regex.Pattern;
 
 public class Tools {
     public static final int COPY_BUFFER_SIZE = 1000;
-
+    public static final long READ_ALL = 0;
     private static final MessageSupport messages = MessageSupport.getMessages(Tools.class);
     private static final Logger log = LogManager.getLogger(Tools.class);
-
     private static final Pattern PROPERTY_EXPANSION_EQUALS_PATTERN = Pattern.compile("^\\$\\{(.*)\\}$");
-    private static final Pattern PROPERTY_EXPANSION_CONTAINS_PATTERN =
-            Pattern.compile("(\\$\\{(.*?)\\})|(%24%7B.*?%7D)|(%2524%257B.*?%257D)|(%252524%25257B.*?%25257D)");
+    private static final Pattern PROPERTY_EXPANSION_CONTAINS_PATTERN = Pattern.compile("(\\$\\{(.*?)\\})|(%24%7B.*?%7D)|(%2524%257B.*?%257D)|(%252524%25257B.*?%25257D)");
+    // preallocate so it does not consume memory after out-of-memory errors
+    private static final byte[] copyBuffer = new byte[8192];
 
     public static String[] tokenizeArgs(String args) {
         if (args == null || args.trim().length() == 0) {
@@ -96,7 +96,8 @@ public class Tools {
             char ch = str.charAt(c);
             if (ch == '\n') {
                 result.append("<br>");
-            } else {
+            }
+            else {
                 result.append(ch);
             }
         }
@@ -115,7 +116,7 @@ public class Tools {
             return filePath;
         }
 
-        return filePath.substring(ix + 1, filePath.length());
+        return filePath.substring(ix + 1);
     }
 
     public static String getDir(String filePath) {
@@ -183,12 +184,7 @@ public class Tools {
         return outputDir;
     }
 
-    // preallocate so it does not consume memory after out-of-memory errors
-    private static final byte[] copyBuffer = new byte[8192];
-    public static final long READ_ALL = 0;
-
-
-    public static String modifyUrl(final String url, Integer mods) {
+    public static String modifyUrl(String url, Integer mods) {
 
         String helpUrl = url;
 
@@ -198,15 +194,17 @@ public class Tools {
 
         if (helpUrl == null) {
             modifier = 1; // "missing";
-        } else if (url.substring(0, 4).equals("http")) {
+        }
+        else if (url.startsWith("http")) {
             modifier = 2; // "external";
-        } else if (((mods & ActionEvent.SHIFT_MASK) != 0)
-                && ((mods & ActionEvent.CTRL_MASK) != 0)) {
+        }
+        else if (((mods & ActionEvent.SHIFT_MASK) != 0) && ((mods & ActionEvent.CTRL_MASK) != 0)) {
             modifier = 3; // "dev";
-        } else if (((mods & ActionEvent.SHIFT_MASK) != 0)
-                && ((mods & ActionEvent.ALT_MASK) != 0)) {
+        }
+        else if (((mods & ActionEvent.SHIFT_MASK) != 0) && ((mods & ActionEvent.ALT_MASK) != 0)) {
             modifier = 4; // "next";
-        } else {
+        }
+        else {
             modifier = 0; // String modifier = "prod";
         }
 
@@ -232,16 +230,16 @@ public class Tools {
         return helpUrl;
     }
 
-
     public static void openURL(String url) {
         String osName = System.getProperty("os.name");
 
         try {
             if (osName.startsWith("Mac OS")) {
                 Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
-                Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[]{String.class});
+                Method openURL = fileMgr.getDeclaredMethod("openURL", String.class);
                 openURL.invoke(null, url);
-            } else if (osName.startsWith("Windows")) {
+            }
+            else if (osName.startsWith("Windows")) {
                 if (url.startsWith("file:")) {
                     url = URLDecoder.decode(url.substring(5), "utf-8");
                     while (url.startsWith("/")) {
@@ -257,7 +255,8 @@ public class Tools {
                 }
 
                 Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
-            } else { // assume Unix or Linux
+            }
+            else { // assume Unix or Linux
                 String[] browsers = {"firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape"};
                 String browser = null;
                 for (int count = 0; count < browsers.length && browser == null; count++) {
@@ -267,11 +266,13 @@ public class Tools {
                 }
                 if (browser == null) {
                     throw new Exception("Could not find web browser");
-                } else {
+                }
+                else {
                     Runtime.getRuntime().exec(new String[]{browser, url});
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e);
         }
     }
@@ -293,7 +294,7 @@ public class Tools {
 
         if (maxSize > 0) {
             if (read + toRead > maxSize) {
-                toRead = (int) (maxSize - read);
+                toRead = (int)(maxSize - read);
             }
         }
 
@@ -303,7 +304,7 @@ public class Tools {
 
             if (maxSize > 0) {
                 if (read + toRead > maxSize) {
-                    toRead = (int) (maxSize - read);
+                    toRead = (int)(maxSize - read);
                 }
             }
         }
@@ -315,10 +316,12 @@ public class Tools {
         if (target.exists()) {
             if (overwrite) {
                 target.delete();
-            } else {
+            }
+            else {
                 return -1;
             }
-        } else {
+        }
+        else {
             String path = target.getAbsolutePath();
             int ix = path.lastIndexOf(File.separatorChar);
             if (ix != -1) {
@@ -417,7 +420,8 @@ public class Tools {
             if (ix3 == -1) {
                 ix3 = url.indexOf("\\..\\");
                 ix2 = url.lastIndexOf('\\', ix3 - 1);
-            } else {
+            }
+            else {
                 ix2 = url.lastIndexOf('/', ix3 - 1);
             }
 
@@ -463,7 +467,7 @@ public class Tools {
         StringBuilder buf = new StringBuilder();
         int lastIx = 0;
         while (ix != -1) {
-            buf.append(content.substring(lastIx, ix));
+            buf.append(content, lastIx, ix);
 
             int ix2 = content.indexOf('}', ix + 2);
             if (ix2 == -1) {
@@ -472,15 +476,16 @@ public class Tools {
 
             int ix3 = content.lastIndexOf("${", ix2);
             if (ix3 != ix) {
-                buf.append(content.substring(ix, ix3));
+                buf.append(content, ix, ix3);
                 ix = ix3;
             }
 
             String propertyName = content.substring(ix + 2, ix2);
             Object property = values.get(propertyName);
             if (property != null) {
-                buf.append(property.toString());
-            } else if (leaveMissing) {
+                buf.append(property);
+            }
+            else if (leaveMissing) {
                 buf.append("${").append(propertyName).append('}');
             }
 
@@ -548,7 +553,8 @@ public class Tools {
             content = br.readLine();
             br.close();
             in.close();
-        } catch (Exception e) {// Catch exception if any
+        }
+        catch (Exception e) {// Catch exception if any
             System.err.println("Error: " + e.getMessage());
         }
         return content;
@@ -562,7 +568,8 @@ public class Tools {
             props.load(fstream);
             fstream.close();
             content = props.getProperty("soapui.app.title");
-        } catch (Exception e) {// Catch exception if any
+        }
+        catch (Exception e) {// Catch exception if any
             System.err.println("Error: " + e.getMessage());
         }
         return content;
@@ -613,9 +620,7 @@ public class Tools {
             if (expected.endsWith(String.valueOf(wildcard))) {
                 sb.append(".*");
             }
-            if (!Pattern.compile(sb.toString(), Pattern.DOTALL).matcher(real).matches()) {
-                return false;
-            }
+            return Pattern.compile(sb.toString(), Pattern.DOTALL).matcher(real).matches();
         }
         return true;
     }
@@ -626,7 +631,7 @@ public class Tools {
 
     public static File createTemporaryDirectory() throws IOException {
         String libDirectoryName = UUID.randomUUID().toString();
-        final File libDirectory = new File(System.getProperty("java.io.tmpdir"), libDirectoryName);
+        File libDirectory = new File(System.getProperty("java.io.tmpdir"), libDirectoryName);
         if (!libDirectory.mkdir()) {
             throw new IOException("Could not create directory for unpacked JAR libraries at " + libDirectory);
         }
@@ -634,13 +639,14 @@ public class Tools {
         return libDirectory;
     }
 
-    public static void deleteDirectoryOnExit(final File directory) {
+    public static void deleteDirectoryOnExit(File directory) {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     FileUtils.deleteDirectory(directory);
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     log.warn("Could not delete temporary directory " + directory);
                 }
             }
@@ -654,8 +660,7 @@ public class Tools {
     public static String removePropertyExpansions(String definitionUrl, String definition) {
         Matcher matcher = PROPERTY_EXPANSION_CONTAINS_PATTERN.matcher(definition);
         while (matcher.find()) {
-            log.warn(messages.get("Tools.Warning.PropertyExpansionRemovedFromDefinition",
-                    definitionUrl, matcher.group()));
+            log.warn(messages.get("Tools.Warning.PropertyExpansionRemovedFromDefinition", definitionUrl, matcher.group()));
         }
         return matcher.replaceAll("");
     }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.ui.support;
@@ -38,28 +38,16 @@ import com.eviware.soapui.support.swing.ModelItemListKeyListener;
 import com.eviware.soapui.support.swing.ModelItemListMouseListener;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
-import javax.swing.AbstractListModel;
-import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.List;
 
-public abstract class AbstractMockOperationDesktopPanel<MockOperationType extends AbstractMockOperation>
-        extends ModelItemDesktopPanel<MockOperationType> {
+public abstract class AbstractMockOperationDesktopPanel<MockOperationType extends AbstractMockOperation> extends ModelItemDesktopPanel<MockOperationType> {
     private JList responseList;
     private JComboBox dispatchCombo;
     private JPanel dispatchPanel;
@@ -81,8 +69,12 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
 
         inspectorPanel = JInspectorPanelFactory.build(buildResponseList());
         inspectorPanel.setDefaultDividerLocation(0.5F);
-        dispatchInspector = new JComponentInspector<JComponent>(buildDispatchEditor(), "Dispatch ("
-                + getModelItem().getDispatchStyle().toString() + ")", "Configures current dispatch style", true);
+        dispatchInspector = new JComponentInspector<JComponent>(
+            buildDispatchEditor(),
+            "Dispatch (" + getModelItem().getDispatchStyle() + ")",
+            "Configures current dispatch style",
+            true
+        );
         inspectorPanel.addInspector(dispatchInspector);
         inspectorPanel.activate(dispatchInspector);
 
@@ -107,13 +99,11 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
             protected ActionList getDefaultActions() {
                 if (defaultActions == null) {
                     defaultActions = new DefaultActionList();
-                    defaultActions.addAction(SwingActionDelegate.createDelegate(NewMockResponseAction.SOAPUI_ACTION_ID,
-                            getModelItem(), null, getAddToMockOperationIconPath()));
+                    defaultActions.addAction(SwingActionDelegate.createDelegate(NewMockResponseAction.SOAPUI_ACTION_ID, getModelItem(), null, getAddToMockOperationIconPath()));
                 }
 
                 return defaultActions;
             }
-
         });
         responseList.setCellRenderer(new ResponseListCellRenderer());
 
@@ -129,7 +119,11 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
     private JComponent buildMockResponseListToolbar() {
         JXToolBar toolbar = UISupport.createToolbar();
         toolbar.add(UISupport.createToolbarButton(SwingActionDelegate.createDelegate(
-                NewMockResponseAction.SOAPUI_ACTION_ID, getModelItem(), null, getAddToMockOperationIconPath())));
+            NewMockResponseAction.SOAPUI_ACTION_ID,
+            getModelItem(),
+            null,
+            getAddToMockOperationIconPath()
+        )));
 
         return toolbar;
     }
@@ -149,7 +143,7 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
                     dispatchPanel.remove(1);
                 }
 
-                String item = (String) dispatchCombo.getSelectedItem();
+                String item = (String)dispatchCombo.getSelectedItem();
                 MockOperationDispatcher dispatcher = getModelItem().setDispatchStyle(item);
 
                 dispatchPanel.add(dispatcher.getEditorComponent(), BorderLayout.CENTER);
@@ -176,7 +170,7 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
         defaultResponseCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 Object selectedItem = defaultResponseCombo.getSelectedItem();
-                getModelItem().setDefaultResponse((String) selectedItem);
+                getModelItem().setDefaultResponse((String)selectedItem);
             }
         });
 
@@ -213,13 +207,37 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
     }
 
     public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == getModelItem() || modelItem == getModelItem().getMockService()
-                || modelItem == getModelItem().getMockService().getProject();
+        return modelItem == getModelItem() || modelItem == getModelItem().getMockService() || modelItem == getModelItem().getMockService().getProject();
     }
 
-    public class ResponseListModel extends AbstractListModel implements ListModel, MockServiceListener,
-            PropertyChangeListener {
-        private java.util.List<MockResponse> responses = new ArrayList<MockResponse>();
+    private final static class ResponseListCellRenderer extends JLabel implements ListCellRenderer {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
+            MockResponse testStep = (MockResponse)value;
+            setText(testStep.getName());
+            setIcon(testStep.getIcon());
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            setEnabled(list.isEnabled());
+            setFont(list.getFont());
+            setOpaque(true);
+            setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+
+            return this;
+        }
+    }
+
+    public class ResponseListModel extends AbstractListModel implements ListModel, MockServiceListener, PropertyChangeListener {
+        private final List<MockResponse> responses = new ArrayList<MockResponse>();
 
         public ResponseListModel() {
             for (int c = 0; c < getModelItem().getMockResponseCount(); c++) {
@@ -232,12 +250,12 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
             getModelItem().getMockService().addMockServiceListener(this);
         }
 
-        public Object getElementAt(int arg0) {
-            return responses.get(arg0);
-        }
-
         public int getSize() {
             return responses.size();
+        }
+
+        public Object getElementAt(int arg0) {
+            return responses.get(arg0);
         }
 
         public void mockOperationAdded(MockOperation operation) {
@@ -278,7 +296,7 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
                 int ix = responses.indexOf(arg0.getSource());
                 fireContentsChanged(this, ix, ix);
 
-                ExtendedComboBoxModel model = (ExtendedComboBoxModel) defaultResponseCombo.getModel();
+                ExtendedComboBoxModel model = (ExtendedComboBoxModel)defaultResponseCombo.getModel();
                 model.setElementAt(arg0.getNewValue(), ix);
 
                 if (model.getSelectedItem().equals(arg0.getOldValue())) {
@@ -295,29 +313,4 @@ public abstract class AbstractMockOperationDesktopPanel<MockOperationType extend
             getModelItem().getMockService().removeMockServiceListener(this);
         }
     }
-
-    private final static class ResponseListCellRenderer extends JLabel implements ListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
-            MockResponse testStep = (MockResponse) value;
-            setText(testStep.getName());
-            setIcon(testStep.getIcon());
-
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            setEnabled(list.isEnabled());
-            setFont(list.getFont());
-            setOpaque(true);
-            setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-
-            return this;
-        }
-    }
-
 }

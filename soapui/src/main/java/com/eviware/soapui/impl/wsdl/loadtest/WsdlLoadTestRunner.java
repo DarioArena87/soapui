@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest;
@@ -62,10 +62,10 @@ import java.util.Set;
 
 public class WsdlLoadTestRunner implements LoadTestRunner {
     private final WsdlLoadTest loadTest;
-    private Set<InternalTestCaseRunner> runners = new HashSet<InternalTestCaseRunner>();
+    private final Set<InternalTestCaseRunner> runners = new HashSet<InternalTestCaseRunner>();
     private long startTime = 0;
-    private InternalPropertyChangeListener internalPropertyChangeListener = new InternalPropertyChangeListener();
-    private InternalTestRunListener testRunListener = new InternalTestRunListener();
+    private final InternalPropertyChangeListener internalPropertyChangeListener = new InternalPropertyChangeListener();
+    private final InternalTestRunListener testRunListener = new InternalTestRunListener();
     private long runCount;
     private Status status;
     private WsdlLoadTestContext context;
@@ -79,7 +79,7 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
     private TestCaseConfig blueprintConfig;
 
     public WsdlLoadTestRunner(WsdlLoadTest test) {
-        this.loadTest = test;
+        loadTest = test;
         status = Status.INITIALIZED;
     }
 
@@ -87,85 +87,29 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
         return status;
     }
 
-    void start() {
-        loadTest.getTestCase().beforeSave();
+    public void start(boolean async) {
+        start();
+    }
 
-        runners.clear();
-        runCount = 0;
-        threadCount = 0;
-        threadsWaitingToStart = 0;
-        startedCount = 0;
-        context = new WsdlLoadTestContext(this);
+    public long getTimeTaken() {
+        return System.currentTimeMillis() - startTime;
+    }
 
-        try {
-            loadTest.runSetupScript(context, this);
-        } catch (Exception e1) {
-            SoapUI.logError(e1);
-        }
+    public long getStartTime() {
+        return startTime;
+    }
 
-        for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
+    public Status waitUntilFinished() {
+        while (runners.size() > 0 || threadsWaitingToStart > 0 || !hasStopped()) {
             try {
-                listener.beforeLoadTest(this, context);
-            } catch (Throwable e) {
+                Thread.sleep(200);
+            }
+            catch (InterruptedException e) {
                 SoapUI.logError(e);
             }
         }
 
-        status = Status.RUNNING;
-
-        loadTest.addPropertyChangeListener(WsdlLoadTest.THREADCOUNT_PROPERTY, internalPropertyChangeListener);
-
-        XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog("Starting threads",
-                (int) loadTest.getThreadCount(), "", true);
-        try {
-            testCaseStarter = new TestCaseStarter();
-            progressDialog.run(testCaseStarter);
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
-
-        if (status == Status.RUNNING) {
-            for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
-                listener.loadTestStarted(this, context);
-            }
-
-            startStrategyThread();
-        } else {
-            stop();
-        }
-    }
-
-    /**
-     * Starts thread the calls the current strategy to recalculate
-     */
-
-    private void startStrategyThread() {
-        new Thread(new Runnable() {
-            public void run() {
-                while (getStatus() == Status.RUNNING) {
-                    try {
-                        loadTest.getLoadStrategy().recalculate(WsdlLoadTestRunner.this, context);
-
-                        long strategyInterval = loadTest.getStrategyInterval();
-                        if (strategyInterval < 1) {
-                            strategyInterval = WsdlLoadTest.DEFAULT_STRATEGY_INTERVAL;
-                        }
-
-                        Thread.sleep(strategyInterval);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }).start();
-    }
-
-    private InternalTestCaseRunner startTestCase(WsdlTestCase testCase) {
-        InternalTestCaseRunner testCaseRunner = new InternalTestCaseRunner(testCase, threadCount++);
-
-        SoapUI.getThreadPool().submit(testCaseRunner);
-        runners.add(testCaseRunner);
-        return testCaseRunner;
+        return getStatus();
     }
 
     public synchronized void cancel(String reason) {
@@ -226,7 +170,8 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
         for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
             try {
                 listener.loadTestStopped(this, context);
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 SoapUI.logError(e);
             }
         }
@@ -242,6 +187,107 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
         }
     }
 
+    public String getReason() {
+        return reason;
+    }
+
+    public TestRunContext getRunContext() {
+        return context;
+    }
+
+    public TestRunnable getTestRunnable() {
+        return loadTest;
+    }
+
+    public boolean isRunning() {
+        return status == Status.RUNNING;
+    }
+
+    void start() {
+        loadTest.getTestCase().beforeSave();
+
+        runners.clear();
+        runCount = 0;
+        threadCount = 0;
+        threadsWaitingToStart = 0;
+        startedCount = 0;
+        context = new WsdlLoadTestContext(this);
+
+        try {
+            loadTest.runSetupScript(context, this);
+        }
+        catch (Exception e1) {
+            SoapUI.logError(e1);
+        }
+
+        for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
+            try {
+                listener.beforeLoadTest(this, context);
+            }
+            catch (Throwable e) {
+                SoapUI.logError(e);
+            }
+        }
+
+        status = Status.RUNNING;
+
+        loadTest.addPropertyChangeListener(WsdlLoadTest.THREADCOUNT_PROPERTY, internalPropertyChangeListener);
+
+        XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog("Starting threads", (int)loadTest.getThreadCount(), "", true);
+        try {
+            testCaseStarter = new TestCaseStarter();
+            progressDialog.run(testCaseStarter);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+
+        if (status == Status.RUNNING) {
+            for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
+                listener.loadTestStarted(this, context);
+            }
+
+            startStrategyThread();
+        }
+        else {
+            stop();
+        }
+    }
+
+    /**
+     * Starts thread the calls the current strategy to recalculate
+     */
+
+    private void startStrategyThread() {
+        new Thread(new Runnable() {
+            public void run() {
+                while (getStatus() == Status.RUNNING) {
+                    try {
+                        loadTest.getLoadStrategy().recalculate(WsdlLoadTestRunner.this, context);
+
+                        long strategyInterval = loadTest.getStrategyInterval();
+                        if (strategyInterval < 1) {
+                            strategyInterval = WsdlLoadTest.DEFAULT_STRATEGY_INTERVAL;
+                        }
+
+                        Thread.sleep(strategyInterval);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private InternalTestCaseRunner startTestCase(WsdlTestCase testCase) {
+        InternalTestCaseRunner testCaseRunner = new InternalTestCaseRunner(testCase, threadCount++);
+
+        SoapUI.getThreadPool().submit(testCaseRunner);
+        runners.add(testCaseRunner);
+        return testCaseRunner;
+    }
+
     private synchronized void tearDown() {
         if (hasTearedDown) {
             return;
@@ -249,23 +295,12 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
 
         try {
             loadTest.runTearDownScript(context, this);
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             SoapUI.logError(e1);
         }
 
         hasTearedDown = true;
-    }
-
-    public Status waitUntilFinished() {
-        while (runners.size() > 0 || threadsWaitingToStart > 0 || !hasStopped()) {
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                SoapUI.logError(e);
-            }
-        }
-
-        return getStatus();
     }
 
     public void finishTestCase(String reason, WsdlTestCase testCase) {
@@ -304,19 +339,20 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
             status = Status.FINISHED;
         }
 
-        loadTest.getLoadTestLog().addEntry(
-                new LoadTestLogMessageEntry("LoadTest ended at " + new Date(System.currentTimeMillis())));
+        loadTest.getLoadTestLog().addEntry(new LoadTestLogMessageEntry("LoadTest ended at " + new Date(System.currentTimeMillis())));
 
         try {
             tearDown();
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             SoapUI.logError(e);
         }
 
         for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
             try {
                 listener.afterLoadTest(this, context);
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 SoapUI.logError(e);
             }
         }
@@ -326,12 +362,12 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
         blueprintConfig = null;
     }
 
-    public boolean hasStopped() {
-        return stopped;
-    }
-
     public int getRunningThreadCount() {
         return runners.size();
+    }
+
+    public WsdlLoadTest getLoadTest() {
+        return loadTest;
     }
 
     public float getProgress() {
@@ -341,18 +377,22 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
         }
 
         if (loadTest.getLimitType() == LoadTestLimitTypesConfig.COUNT) {
-            return (float) runCount / (float) testLimit;
+            return (float)runCount / (float)testLimit;
         }
 
         if (loadTest.getLimitType() == LoadTestLimitTypesConfig.COUNT_PER_THREAD) {
-            return (float) runCount / (float) (testLimit * loadTest.getThreadCount());
+            return (float)runCount / (float)(testLimit * loadTest.getThreadCount());
         }
 
         if (loadTest.getLimitType() == LoadTestLimitTypesConfig.TIME) {
-            return startTime == 0 ? 0 : (float) getTimeTaken() / (float) (testLimit * 1000);
+            return startTime == 0 ? 0 : (float)getTimeTaken() / (float)(testLimit * 1000);
         }
 
         return -1;
+    }
+
+    public boolean hasStopped() {
+        return stopped;
     }
 
     private synchronized boolean afterRun(InternalTestCaseRunner runner) {
@@ -381,8 +421,103 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
         return true;
     }
 
+    public synchronized void updateThreadCount() {
+        if (status != Status.RUNNING) {
+            return;
+        }
+
+        long newCount = loadTest.getThreadCount();
+
+        // get list of active runners
+        Iterator<InternalTestCaseRunner> iterator = runners.iterator();
+        List<InternalTestCaseRunner> activeRunners = new ArrayList<InternalTestCaseRunner>();
+        while (iterator.hasNext()) {
+            InternalTestCaseRunner runner = iterator.next();
+            if (!runner.isCanceled()) {
+                activeRunners.add(runner);
+            }
+        }
+
+        long diff = newCount - activeRunners.size();
+
+        if (diff == 0) {
+            return;
+        }
+
+        // cancel runners if thread count has been decreased
+        if (diff < 0 && loadTest.getCancelExcessiveThreads()) {
+            diff = Math.abs(diff);
+            for (int c = 0; c < diff && c < activeRunners.size(); c++) {
+                activeRunners.get(c).cancel("excessive thread", false);
+            }
+        }
+        // start new runners if thread count has been increased
+        else if (diff > 0) {
+            for (int c = 0; c < diff; c++) {
+                int startDelay = loadTest.getStartDelay();
+                if (startDelay > 0) {
+                    try {
+                        Thread.sleep(startDelay);
+                    }
+                    catch (InterruptedException e) {
+                        SoapUI.logError(e);
+                    }
+                }
+
+                if (status == Status.RUNNING) {
+                    startTestCase(createTestCase());
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates a copy of the underlying WsdlTestCase with all LoadTests removed
+     * and configured for LoadTesting
+     */
+
+    private synchronized WsdlTestCase createTestCase() {
+        WsdlTestCase testCase = loadTest.getTestCase();
+        TestCaseConfig config = null;
+
+        if (blueprintConfig == null) {
+            try {
+                blueprintConfig = TestCaseConfig.Factory.parse(testCase.getConfig().xmlText());
+                blueprintConfig.setLoadTestArray(new LoadTestConfig[0]);
+                blueprintConfig.setSecurityTestArray(new SecurityTestConfig[0]);
+            }
+            catch (XmlException e) {
+                e.printStackTrace();
+            }
+        }
+
+        config = (TestCaseConfig)blueprintConfig.copy();
+
+        // clone entire testCase
+        WsdlTestCase tc = testCase.getTestSuite().buildTestCase(config, true);
+        tc.afterLoad();
+        tc.addTestRunListener(testRunListener);
+        Settings settings = tc.getSettings();
+        settings.setBoolean(HttpSettings.INCLUDE_REQUEST_IN_TIME_TAKEN, loadTest.getSettings().getBoolean(HttpSettings.INCLUDE_REQUEST_IN_TIME_TAKEN));
+        settings.setBoolean(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN, loadTest.getSettings().getBoolean(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN));
+        settings.setBoolean(HttpSettings.CLOSE_CONNECTIONS, loadTest.getSettings().getBoolean(HttpSettings.CLOSE_CONNECTIONS));
+
+        // disable default pretty-printing since it takes time
+        settings.setBoolean(WsdlSettings.PRETTY_PRINT_RESPONSE_MESSAGES, false);
+
+        // don't discard.. the WsdlLoadTests internal listener will discard after
+        // asserting..
+        tc.setDiscardOkResults(false);
+        tc.setMaxResults(0);
+        return tc;
+    }
+
+    public void release() {
+        loadTest.removePropertyChangeListener(WsdlLoadTest.THREADCOUNT_PROPERTY, internalPropertyChangeListener);
+    }
+
     private final class TestCaseStarter extends Worker.WorkerAdapter {
-        private List<WsdlTestCase> testCases = new ArrayList<WsdlTestCase>();
+        private final List<WsdlTestCase> testCases = new ArrayList<WsdlTestCase>();
         private boolean canceled;
 
         public Object construct(XProgressMonitor monitor) {
@@ -396,13 +531,11 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
             startTime = System.currentTimeMillis();
 
             if (canceled) {
-                loadTest.getLoadTestLog().addEntry(
-                        new LoadTestLogMessageEntry("LoadTest canceled during startup at " + new Date(startTime)));
+                loadTest.getLoadTestLog().addEntry(new LoadTestLogMessageEntry("LoadTest canceled during startup at " + new Date(startTime)));
                 return null;
             }
 
-            loadTest.getLoadTestLog().addEntry(
-                    new LoadTestLogMessageEntry("LoadTest started at " + new Date(startTime)));
+            loadTest.getLoadTestLog().addEntry(new LoadTestLogMessageEntry("LoadTest started at " + new Date(startTime)));
 
             threadsWaitingToStart = testCases.size();
             int cnt = 0;
@@ -410,7 +543,8 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
                 if (startDelay > 0) {
                     try {
                         Thread.sleep(startDelay);
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e) {
                         SoapUI.logError(e);
                     }
                 }
@@ -456,10 +590,10 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
 
     public class InternalTestCaseRunner implements Runnable {
         private final WsdlTestCase testCase;
+        private final int threadIndex;
         private boolean canceled;
         private long runCount;
         private WsdlTestCaseRunner runner;
-        private final int threadIndex;
 
         public InternalTestCaseRunner(WsdlTestCase testCase, int threadIndex) {
             this.testCase = testCase;
@@ -469,8 +603,7 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
         public void run() {
             try {
                 if (System.getProperty("soapui.enablenamedthreads") != null) {
-                    Thread.currentThread().setName(
-                            testCase.getName() + " " + loadTest.getName() + " ThreadIndex = " + threadIndex);
+                    Thread.currentThread().setName(testCase.getName() + " " + loadTest.getName() + " ThreadIndex = " + threadIndex);
                 }
 
                 runner = new WsdlTestCaseRunner(testCase, new StringToObjectMap());
@@ -487,7 +620,8 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
                         }
 
                         runner.run();
-                    } catch (Throwable e) {
+                    }
+                    catch (Throwable e) {
                         System.err.println("Error running testcase: " + e);
                         SoapUI.logError(e);
                     }
@@ -498,7 +632,8 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
                         break;
                     }
                 }
-            } finally {
+            }
+            finally {
                 finishRunner(this);
                 testCase.release();
                 testCase.removeTestRunListener(testRunListener);
@@ -510,7 +645,7 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
                 runner.cancel(reason);
             }
 
-            this.canceled = true;
+            canceled = true;
         }
 
         public boolean isCanceled() {
@@ -526,133 +661,20 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
         }
     }
 
-    public WsdlLoadTest getLoadTest() {
-        return loadTest;
-    }
-
     public class InternalPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             updateThreadCount();
         }
     }
 
-    public synchronized void updateThreadCount() {
-        if (status != Status.RUNNING) {
-            return;
-        }
-
-        long newCount = loadTest.getThreadCount();
-
-        // get list of active runners
-        Iterator<InternalTestCaseRunner> iterator = runners.iterator();
-        List<InternalTestCaseRunner> activeRunners = new ArrayList<InternalTestCaseRunner>();
-        while (iterator.hasNext()) {
-            InternalTestCaseRunner runner = iterator.next();
-            if (!runner.isCanceled()) {
-                activeRunners.add(runner);
-            }
-        }
-
-        long diff = newCount - activeRunners.size();
-
-        if (diff == 0) {
-            return;
-        }
-
-        // cancel runners if thread count has been decreased
-        if (diff < 0 && loadTest.getCancelExcessiveThreads()) {
-            diff = Math.abs(diff);
-            for (int c = 0; c < diff && c < activeRunners.size(); c++) {
-                activeRunners.get(c).cancel("excessive thread", false);
-            }
-        }
-        // start new runners if thread count has been increased
-        else if (diff > 0) {
-            for (int c = 0; c < diff; c++) {
-                int startDelay = loadTest.getStartDelay();
-                if (startDelay > 0) {
-                    try {
-                        Thread.sleep(startDelay);
-                    } catch (InterruptedException e) {
-                        SoapUI.logError(e);
-                    }
-                }
-
-                if (status == Status.RUNNING) {
-                    startTestCase(createTestCase());
-                }
-            }
-        }
-    }
-
-    /**
-     * Creates a copy of the underlying WsdlTestCase with all LoadTests removed
-     * and configured for LoadTesting
-     */
-
-    private synchronized WsdlTestCase createTestCase() {
-        WsdlTestCase testCase = loadTest.getTestCase();
-        TestCaseConfig config = null;
-
-        if (blueprintConfig == null) {
-            try {
-                blueprintConfig = TestCaseConfig.Factory.parse(testCase.getConfig().xmlText());
-                blueprintConfig.setLoadTestArray(new LoadTestConfig[0]);
-                blueprintConfig.setSecurityTestArray(new SecurityTestConfig[0]);
-            } catch (XmlException e) {
-                e.printStackTrace();
-            }
-        }
-
-        config = (TestCaseConfig) blueprintConfig.copy();
-
-        // clone entire testCase
-        WsdlTestCase tc = testCase.getTestSuite().buildTestCase(config, true);
-        tc.afterLoad();
-        tc.addTestRunListener(testRunListener);
-        Settings settings = tc.getSettings();
-        settings.setBoolean(HttpSettings.INCLUDE_REQUEST_IN_TIME_TAKEN,
-                loadTest.getSettings().getBoolean(HttpSettings.INCLUDE_REQUEST_IN_TIME_TAKEN));
-        settings.setBoolean(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN,
-                loadTest.getSettings().getBoolean(HttpSettings.INCLUDE_RESPONSE_IN_TIME_TAKEN));
-        settings.setBoolean(HttpSettings.CLOSE_CONNECTIONS,
-                loadTest.getSettings().getBoolean(HttpSettings.CLOSE_CONNECTIONS));
-
-        // disable default pretty-printing since it takes time
-        settings.setBoolean(WsdlSettings.PRETTY_PRINT_RESPONSE_MESSAGES, false);
-
-        // don't discard.. the WsdlLoadTests internal listener will discard after
-        // asserting..
-        tc.setDiscardOkResults(false);
-        tc.setMaxResults(0);
-        return tc;
-    }
-
-    public String getReason() {
-        return reason;
-    }
-
-    public long getTimeTaken() {
-        return System.currentTimeMillis() - startTime;
-    }
-
     private class InternalTestRunListener extends TestRunListenerAdapter {
         public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
             if (getProgress() > 1 && loadTest.getCancelOnReachedLimit()) {
                 testRunner.cancel("LoadTest Limit reached");
-            } else {
+            }
+            else {
                 for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
                     listener.beforeTestCase(WsdlLoadTestRunner.this, context, testRunner, runContext);
-                }
-            }
-        }
-
-        public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
-            if (getProgress() > 1 && loadTest.getCancelOnReachedLimit()) {
-                testRunner.cancel("LoadTest Limit reached");
-            } else if (runContext.getCurrentStep() != null) {
-                for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
-                    listener.beforeTestStep(WsdlLoadTestRunner.this, context, testRunner, runContext, testStep);
                 }
             }
         }
@@ -668,29 +690,16 @@ public class WsdlLoadTestRunner implements LoadTestRunner {
                 listener.afterTestCase(WsdlLoadTestRunner.this, context, testRunner, runContext);
             }
         }
-    }
 
-    public boolean isRunning() {
-        return status == Status.RUNNING;
-    }
-
-    public TestRunContext getRunContext() {
-        return context;
-    }
-
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public void start(boolean async) {
-        start();
-    }
-
-    public TestRunnable getTestRunnable() {
-        return loadTest;
-    }
-
-    public void release() {
-        loadTest.removePropertyChangeListener(WsdlLoadTest.THREADCOUNT_PROPERTY, internalPropertyChangeListener);
+        public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
+            if (getProgress() > 1 && loadTest.getCancelOnReachedLimit()) {
+                testRunner.cancel("LoadTest Limit reached");
+            }
+            else if (runContext.getCurrentStep() != null) {
+                for (LoadTestRunListener listener : loadTest.getLoadTestRunListeners()) {
+                    listener.beforeTestStep(WsdlLoadTestRunner.this, context, testRunner, runContext, testStep);
+                }
+            }
+        }
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.data;
@@ -41,18 +41,16 @@ import java.util.Map;
  */
 
 public class StatisticsHistory {
-    private final LoadTestStatistics statistics;
-    private List<long[][]> data = new ArrayList<long[][]>();
-    private List<Long> threadCounts = new ArrayList<Long>();
-    private Map<Integer, TestStepStatisticsHistory> testStepStatisticHistories = new HashMap<Integer, TestStepStatisticsHistory>();
-    private EnumMap<Statistic, StatisticsValueHistory> statisticsValueHistories = new EnumMap<Statistic, StatisticsValueHistory>(
-            Statistic.class);
-
     @SuppressWarnings("unused")
     private final static Logger logger = LogManager.getLogger(StatisticsHistory.class);
+    private final LoadTestStatistics statistics;
+    private final List<long[][]> data = new ArrayList<long[][]>();
+    private final List<Long> threadCounts = new ArrayList<Long>();
+    private final Map<Integer, TestStepStatisticsHistory> testStepStatisticHistories = new HashMap<Integer, TestStepStatisticsHistory>();
+    private final EnumMap<Statistic, StatisticsValueHistory> statisticsValueHistories = new EnumMap<Statistic, StatisticsValueHistory>(Statistic.class);
     private long resolution = 0;
-    private InternalTableModelListener internalTableModelListener = new InternalTableModelListener();
-    private Updater updater = new Updater();
+    private final InternalTableModelListener internalTableModelListener = new InternalTableModelListener();
+    private final Updater updater = new Updater();
 
     public StatisticsHistory(LoadTestStatistics statistics) {
         this.statistics = statistics;
@@ -62,8 +60,7 @@ public class StatisticsHistory {
 
             public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
                 if (resolution > 0) {
-                    new Thread(updater, StatisticsHistory.this.statistics.getLoadTest().getName()
-                            + " StatisticsHistory Updater").start();
+                    new Thread(updater, StatisticsHistory.this.statistics.getLoadTest().getName() + " StatisticsHistory Updater").start();
                 }
             }
         });
@@ -132,7 +129,8 @@ public class StatisticsHistory {
     private synchronized void updateHistory() {
         if (statistics.getStatistic(LoadTestStatistics.TOTAL, Statistic.COUNT) == 0) {
             reset();
-        } else {
+        }
+        else {
             int columnCount = statistics.getColumnCount();
             int rowCount = statistics.getRowCount();
 
@@ -142,8 +140,9 @@ public class StatisticsHistory {
                 for (int i = 2; i < columnCount; i++) {
                     try {
                         values[c][i - 2] = Long.parseLong(statistics.getValueAt(c, i).toString());
-                    } catch (NumberFormatException ex) {
-                        values[c][i - 2] = (long) Float.parseFloat(statistics.getValueAt(c, i).toString());
+                    }
+                    catch (NumberFormatException ex) {
+                        values[c][i - 2] = (long)Float.parseFloat(statistics.getValueAt(c, i).toString());
                     }
                 }
             }
@@ -194,17 +193,18 @@ public class StatisticsHistory {
             // tolerance..
             if (rowIndex < data.size()) {
                 return data.get(rowIndex)[testStepIndex][columnIndex - 1];
-            } else {
-                return new Long(0);
             }
-        }
-
-        public Class<?> getColumnClass(int columnIndex) {
-            return Long.class;
+            else {
+                return Long.valueOf(0);
+            }
         }
 
         public String getColumnName(int column) {
             return column == 0 ? "ThreadCount" : Statistic.forIndex(column - 1).getName();
+        }
+
+        public Class<?> getColumnClass(int columnIndex) {
+            return Long.class;
         }
 
         public void release() {
@@ -240,10 +240,6 @@ public class StatisticsHistory {
             return data.get(rowIndex)[columnIndex - 1][statistic.getIndex()];
         }
 
-        public Class<?> getColumnClass(int columnIndex) {
-            return Long.class;
-        }
-
         public String getColumnName(int column) {
             if (column == 0) {
                 return "ThreadCount";
@@ -256,6 +252,10 @@ public class StatisticsHistory {
             return statistics.getLoadTest().getTestCase().getTestStepAt(column - 1).getName();
         }
 
+        public Class<?> getColumnClass(int columnIndex) {
+            return Long.class;
+        }
+
         public void release() {
             statisticsValueHistories.remove(statistic);
         }
@@ -263,8 +263,7 @@ public class StatisticsHistory {
 
     private class InternalTableModelListener implements TableModelListener {
         public synchronized void tableChanged(TableModelEvent e) {
-            if ((resolution > 0 && statistics.getLoadTest().isRunning()) || e.getType() != TableModelEvent.UPDATE
-                    || statistics.getLoadTest().getHistoryLimit() == 0) {
+            if ((resolution > 0 && statistics.getLoadTest().isRunning()) || e.getType() != TableModelEvent.UPDATE || statistics.getLoadTest().getHistoryLimit() == 0) {
                 return;
             }
 
@@ -292,7 +291,8 @@ public class StatisticsHistory {
                     if (resolution > 0 && loadTest.isRunning()) {
                         Thread.sleep(res);
                     }
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e) {
                     SoapUI.logError(e);
                     break;
                 }

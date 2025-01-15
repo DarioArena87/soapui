@@ -1,21 +1,22 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.report;
 
+import com.eviware.soapui.junit.ErrorDocument.Error;
 import com.eviware.soapui.junit.FailureDocument.Failure;
 import com.eviware.soapui.junit.Properties;
 import com.eviware.soapui.junit.Property;
@@ -106,10 +107,11 @@ public class JUnitReport {
     }
 
     private void setTestProperties(HashMap<String, String> testProperties, Testcase testcase) {
-        if(!this.includeTestProperties)
+        if (!includeTestProperties) {
             return;
+        }
 
-        com.eviware.soapui.junit.Properties properties = testcase.addNewProperties();
+        Properties properties = testcase.addNewProperties();
         setProperties(properties, testProperties);
     }
 
@@ -134,7 +136,7 @@ public class JUnitReport {
         Testcase testcase = testsuiteDoc.getTestsuite().addNewTestcase();
         testcase.setName(name);
         testcase.setTime(String.valueOf(time / 1000));
-        com.eviware.soapui.junit.ErrorDocument.Error err = testcase.addNewError();
+        Error err = testcase.addNewError();
         err.setType(error);
         err.setMessage(error);
         err.setStringValue(stacktrace);
@@ -170,12 +172,10 @@ public class JUnitReport {
     public void save(File file) throws IOException {
         finishReport();
 
-        @SuppressWarnings("rawtypes")
-        Map prefixes = new HashMap();
+        @SuppressWarnings("rawtypes") Map prefixes = new HashMap();
         prefixes.put("", "http://eviware.com/soapui/junit");
 
-        testsuiteDoc.save(file, new XmlOptions().setSaveOuter().setCharacterEncoding("utf-8").setUseDefaultNamespace()
-                .setSaveImplicitNamespaces(prefixes));
+        testsuiteDoc.save(file, new XmlOptions().setSaveOuter().setCharacterEncoding("utf-8").setUseDefaultNamespace().setSaveImplicitNamespaces(prefixes));
     }
 
     public TestsuiteDocument finishReport() {

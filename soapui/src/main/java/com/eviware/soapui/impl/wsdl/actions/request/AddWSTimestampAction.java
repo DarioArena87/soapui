@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.request;
@@ -24,7 +24,7 @@ import org.apache.ws.security.message.WSSecTimestamp;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
-import javax.swing.AbstractAction;
+import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.event.ActionEvent;
@@ -58,7 +58,8 @@ public class AddWSTimestampAction extends AbstractAction {
             int ttl = 0;
             try {
                 ttl = Integer.parseInt(ttlString);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
             }
 
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -73,7 +74,8 @@ public class AddWSTimestampAction extends AbstractAction {
             secHeader.insertSecurityHeader(doc);
             XmlUtils.serializePretty(addTimestamp.build(doc, secHeader), writer);
             request.setRequestContent(writer.toString());
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             UISupport.showErrorMessage(e1);
         }
     }

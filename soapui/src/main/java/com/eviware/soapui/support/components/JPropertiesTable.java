@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -24,32 +24,14 @@ import com.eviware.soapui.support.swing.JTableFactory;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.TransferHandler;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -68,10 +50,10 @@ import java.util.List;
 public class JPropertiesTable<T> extends JPanel {
     public final static Object[] BOOLEAN_OPTIONS = new Object[]{Boolean.TRUE, Boolean.FALSE};
 
-    private PropertiesTableModel<T> tableModel;
-    private JTable table;
+    private final PropertiesTableModel<T> tableModel;
+    private final JTable table;
 
-    private TitledBorder titledBorder;
+    private final TitledBorder titledBorder;
 
     private String title;
 
@@ -91,15 +73,14 @@ public class JPropertiesTable<T> extends JPanel {
         table.getColumnModel().getColumn(0).setCellRenderer(new PropertiesTableCellRenderer());
         table.getColumnModel().getColumn(1).setCellRenderer(new PropertiesTableCellRenderer());
 
-
         add(new JScrollPane(table), BorderLayout.CENTER);
         titledBorder = BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(), title);
         /*
-		 * Java 7 issue
-		 *
-		 * old: titledBorder.setTitleFont( titledBorder.getTitleFont().deriveFont(
-		 * Font.PLAIN, 11 ) ); titledBorder.getTitleFont() return null in Java 7
-		 */
+         * Java 7 issue
+         *
+         * old: titledBorder.setTitleFont( titledBorder.getTitleFont().deriveFont(
+         * Font.PLAIN, 11 ) ); titledBorder.getTitleFont() return null in Java 7
+         */
         Font defaultUIFont = getUIDefaultFont();
         if (defaultUIFont != null) {
             titledBorder.setTitleFont(getUIDefaultFont().deriveFont(Font.PLAIN, 11));
@@ -123,6 +104,10 @@ public class JPropertiesTable<T> extends JPanel {
         return null;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public void setTitle(String title) {
         this.title = title;
         titledBorder.setTitle(title);
@@ -130,20 +115,16 @@ public class JPropertiesTable<T> extends JPanel {
         repaint();
     }
 
-    public String getTitle() {
-        return title;
+    @Override
+    public void addNotify() {
+        getTableModel().attach();
+        super.addNotify();
     }
 
     @Override
     public void removeNotify() {
         getTableModel().release();
         super.removeNotify();
-    }
-
-    @Override
-    public void addNotify() {
-        getTableModel().attach();
-        super.addNotify();
     }
 
     public void setPropertyObject(T propertyObject) {
@@ -170,8 +151,35 @@ public class JPropertiesTable<T> extends JPanel {
         return tableModel.addProperty(caption, name, editable, formatter);
     }
 
+    public PropertyDescriptor addProperty(String caption, String name, Object[] options) {
+        return tableModel.addProperty(caption, name, options);
+    }
+
+    /**
+     * Value in this field will not be showen. It will be masked...
+     *
+     * @param caption
+     * @param name
+     * @param editable
+     * @return
+     * @author robert nemet
+     */
+    public PropertyDescriptor addPropertyShadow(String caption, String name, boolean editable) {
+        return tableModel.addPropertyShadow(caption, name, editable);
+    }
+
+    /**
+     * Formatter used for displaying property values
+     *
+     * @author Ole.Matzura
+     */
+
+    public interface PropertyFormatter {
+        Object format(String propertyName, Object value);
+    }
+
     public static final class PropertiesTableModel<T> extends AbstractTableModel implements PropertyChangeListener {
-        private List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+        private final List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
         private T propertyObject;
         private boolean attached;
 
@@ -181,7 +189,7 @@ public class JPropertiesTable<T> extends JPanel {
 
         public void attach() {
             if (!attached && propertyObject instanceof PropertyChangeNotifier) {
-                ((PropertyChangeNotifier) propertyObject).addPropertyChangeListener(this);
+                ((PropertyChangeNotifier)propertyObject).addPropertyChangeListener(this);
                 attached = true;
             }
         }
@@ -213,26 +221,6 @@ public class JPropertiesTable<T> extends JPanel {
             return 2;
         }
 
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            if (columnIndex == 0 || propertyObject == null) {
-                return false;
-            }
-            return properties.get(rowIndex).isEditable()
-                    && PropertyUtils.isWriteable(propertyObject, properties.get(rowIndex).getName());
-        }
-
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            try {
-                if (propertyObject != null && columnIndex == 1 && properties.get(rowIndex).isEditable()) {
-                    BeanUtils.setProperty(propertyObject, properties.get(rowIndex).getName(), aValue);
-                }
-            } catch (IllegalAccessException e) {
-                SoapUI.logError(e);
-            } catch (InvocationTargetException e) {
-                SoapUI.logError(e);
-            }
-        }
-
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (propertyObject == null) {
                 return null;
@@ -248,15 +236,39 @@ public class JPropertiesTable<T> extends JPanel {
                         return propertyDescriptor.getFormatter().format(propertyDescriptor.getName(), value);
                     }
                 }
-            } catch (IllegalAccessException e) {
+            }
+            catch (IllegalAccessException e) {
                 SoapUI.logError(e);
-            } catch (InvocationTargetException e) {
+            }
+            catch (InvocationTargetException e) {
                 SoapUI.logError(e);
-            } catch (NoSuchMethodException e) {
+            }
+            catch (NoSuchMethodException e) {
                 SoapUI.logError(e);
             }
 
             return null;
+        }
+
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            if (columnIndex == 0 || propertyObject == null) {
+                return false;
+            }
+            return properties.get(rowIndex).isEditable() && PropertyUtils.isWriteable(propertyObject, properties.get(rowIndex).getName());
+        }
+
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            try {
+                if (propertyObject != null && columnIndex == 1 && properties.get(rowIndex).isEditable()) {
+                    BeanUtils.setProperty(propertyObject, properties.get(rowIndex).getName(), aValue);
+                }
+            }
+            catch (IllegalAccessException e) {
+                SoapUI.logError(e);
+            }
+            catch (InvocationTargetException e) {
+                SoapUI.logError(e);
+            }
         }
 
         public PropertyDescriptor getPropertyDescriptorAt(int row) {
@@ -269,7 +281,7 @@ public class JPropertiesTable<T> extends JPanel {
 
         public void release() {
             if (propertyObject instanceof PropertyChangeNotifier && attached) {
-                ((PropertyChangeNotifier) propertyObject).removePropertyChangeListener(this);
+                ((PropertyChangeNotifier)propertyObject).removePropertyChangeListener(this);
                 attached = false;
             }
         }
@@ -284,10 +296,10 @@ public class JPropertiesTable<T> extends JPanel {
     public static class PropertyDescriptor {
         private final String caption;
         private final String name;
-        private boolean editable;
+        private final boolean editable;
         private PropertyFormatter formatter;
         private Object[] options;
-        private DefaultCellEditor cellEditor;
+        private final DefaultCellEditor cellEditor;
         private String description;
 
         public PropertyDescriptor(String caption, String name, boolean editable, PropertyFormatter formatter) {
@@ -337,12 +349,12 @@ public class JPropertiesTable<T> extends JPanel {
             cellEditor = new DefaultCellEditor(textField);
         }
 
-        public void setFormatter(PropertyFormatter formatter) {
-            this.formatter = formatter;
-        }
-
         public PropertyFormatter getFormatter() {
             return formatter == null ? DefaultFormatter.getInstance() : formatter;
+        }
+
+        public void setFormatter(PropertyFormatter formatter) {
+            this.formatter = formatter;
         }
 
         public String getCaption() {
@@ -379,48 +391,39 @@ public class JPropertiesTable<T> extends JPanel {
     }
 
     private static class PropertiesTableCellRenderer extends DefaultTableCellRenderer {
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
+        public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
+        ) {
             Component component;
-            DefaultCellEditor cellEditor = (DefaultCellEditor) table.getCellEditor(row, column);
+            DefaultCellEditor cellEditor = (DefaultCellEditor)table.getCellEditor(row, column);
             if (cellEditor.getComponent() instanceof JPasswordField && value instanceof String) {
-                if (value != null && ((String) value).length() > 0) {
-                    component = super.getTableCellRendererComponent(table, "**************", isSelected, hasFocus, row,
-                            column);
-                } else {
+                if (value != null && ((String)value).length() > 0) {
+                    component = super.getTableCellRendererComponent(table, "**************", isSelected, hasFocus, row, column);
+                }
+                else {
                     component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 }
-            } else {
+            }
+            else {
                 component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
             if (component instanceof JComponent) {
-                PropertyDescriptor descriptor = ((PropertiesTableModel<?>) table.getModel())
-                        .getPropertyDescriptorAt(row);
+                PropertyDescriptor descriptor = ((PropertiesTableModel<?>)table.getModel()).getPropertyDescriptorAt(row);
 
                 if (StringUtils.hasContent(descriptor.getDescription())) {
-                    ((JComponent) component).setToolTipText(descriptor.getDescription());
+                    ((JComponent)component).setToolTipText(descriptor.getDescription());
                 }
                 // do not set tooltip as value for password field, it has no sense.
-                else if (value != null && StringUtils.hasContent(value.toString())
-                        && !(cellEditor.getComponent() instanceof JPasswordField)) {
-                    ((JComponent) component).setToolTipText(value.toString());
-                } else {
-                    ((JComponent) component).setToolTipText(null);
+                else if (value != null && StringUtils.hasContent(value.toString()) && !(cellEditor.getComponent() instanceof JPasswordField)) {
+                    ((JComponent)component).setToolTipText(value.toString());
+                }
+                else {
+                    ((JComponent)component).setToolTipText(null);
                 }
             }
 
             return component;
         }
-    }
-
-    /**
-     * Formatter used for displaying property values
-     *
-     * @author Ole.Matzura
-     */
-
-    public interface PropertyFormatter {
-        public Object format(String propertyName, Object value);
     }
 
     private static class DefaultFormatter implements PropertyFormatter {
@@ -437,10 +440,6 @@ public class JPropertiesTable<T> extends JPanel {
         public Object format(String propertyName, Object value) {
             return value;
         }
-    }
-
-    public PropertyDescriptor addProperty(String caption, String name, Object[] options) {
-        return tableModel.addProperty(caption, name, options);
     }
 
     private class PTable extends JTable {
@@ -467,6 +466,11 @@ public class JPropertiesTable<T> extends JPanel {
         }
 
         @Override
+        public boolean getShowVerticalLines() {
+            return !UISupport.isMac();
+        }
+
+        @Override
         public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
             Component defaultRenderer = super.prepareRenderer(renderer, row, column);
             if (UISupport.isMac()) {
@@ -475,30 +479,13 @@ public class JPropertiesTable<T> extends JPanel {
             return defaultRenderer;
         }
 
-        @Override
-        public boolean getShowVerticalLines() {
-            return !UISupport.isMac();
-        }
-
         public TableCellEditor getCellEditor(int row, int column) {
             if (column == 0) {
                 return super.getCellEditor(row, column);
-            } else {
+            }
+            else {
                 return tableModel.getPropertyDescriptorAt(row).getCellEditor();
             }
         }
-    }
-
-    /**
-     * Value in this field will not be showen. It will be masked...
-     *
-     * @param caption
-     * @param name
-     * @param editable
-     * @return
-     * @author robert nemet
-     */
-    public PropertyDescriptor addPropertyShadow(String caption, String name, boolean editable) {
-        return tableModel.addPropertyShadow(caption, name, editable);
     }
 }

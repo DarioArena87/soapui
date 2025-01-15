@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.entries;
@@ -39,9 +39,7 @@ import org.apache.ws.security.message.WSSecEncrypt;
 import org.apache.ws.security.message.WSSecHeader;
 import org.w3c.dom.Document;
 
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.StringWriter;
@@ -49,8 +47,8 @@ import java.util.List;
 import java.util.Vector;
 
 public class EncryptionEntry extends WssEntryBase {
-    private static final String DEFAULT_OPTION = "<default>";
     public static final String TYPE = "Encryption";
+    private static final String DEFAULT_OPTION = "<default>";
     private String crypto;
     private int keyIdentifierType;
     private String symmetricEncAlgorithm;
@@ -66,7 +64,14 @@ public class EncryptionEntry extends WssEntryBase {
     private InternalWssContainerListener wssContainerListener;
 
     public void init(WSSEntryConfig config, OutgoingWss container) {
-        super.init(config, container, TYPE);
+        init(config, container, TYPE);
+    }
+
+    @Override
+    public void release() {
+        if (wssContainerListener != null) {
+            getWssContainer().removeWssContainerListener(wssContainerListener);
+        }
     }
 
     @Override
@@ -77,10 +82,8 @@ public class EncryptionEntry extends WssEntryBase {
         wssContainerListener = new InternalWssContainerListener();
         getWssContainer().addWssContainerListener(wssContainerListener);
 
-        KeystoresComboBoxModel keystoresComboBoxModel = new KeystoresComboBoxModel(getWssContainer(), getWssContainer()
-                .getCryptoByName(crypto), true);
-        form.appendComboBox("crypto", "Keystore", keystoresComboBoxModel,
-                "Selects the Keystore containing the key to use for signing").addItemListener(new ItemListener() {
+        KeystoresComboBoxModel keystoresComboBoxModel = new KeystoresComboBoxModel(getWssContainer(), getWssContainer().getCryptoByName(crypto), true);
+        form.appendComboBox("crypto", "Keystore", keystoresComboBoxModel, "Selects the Keystore containing the key to use for signing").addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
                 keyAliasComboBoxModel.update(getWssContainer().getCryptoByName(crypto));
@@ -90,38 +93,29 @@ public class EncryptionEntry extends WssEntryBase {
         keyAliasComboBoxModel = new KeyAliasComboBoxModel(getWssContainer().getCryptoByName(crypto));
         form.appendComboBox("username", "Alias", keyAliasComboBoxModel, "The alias for the key to use for encryption");
 
-        form.appendPasswordField("password", "Password",
-                "The password for the key to use for encryption (if it is private)");
+        form.appendPasswordField("password", "Password", "The password for the key to use for encryption (if it is private)");
 
-        form.appendComboBox("keyIdentifierType", "Key Identifier Type", new Integer[]{1, 2, 3, 4, 5, 6, 8},
-                "Sets which key identifier to use").setRenderer(new KeyIdentifierTypeRenderer());
+        form.appendComboBox("keyIdentifierType", "Key Identifier Type", new Integer[]{1, 2, 3, 4, 5, 6, 8}, "Sets which key identifier to use")
+            .setRenderer(new KeyIdentifierTypeRenderer());
 
-        (embeddedKeyNameTextField = form.appendTextField("embeddedKeyName", "Embedded Key Name",
-                "The embedded key name")).setEnabled(keyIdentifierType == WSConstants.EMBEDDED_KEYNAME);
-        (embeddedKeyNamePassword = form.appendPasswordField("embeddedKeyPassword", "Embedded Key Password",
-                "The embedded key password")).setEnabled(keyIdentifierType == WSConstants.EMBEDDED_KEYNAME);
+        (embeddedKeyNameTextField = form.appendTextField("embeddedKeyName", "Embedded Key Name", "The embedded key name")).setEnabled(keyIdentifierType ==
+                                                                                                                                      WSConstants.EMBEDDED_KEYNAME);
+        (embeddedKeyNamePassword = form.appendPasswordField("embeddedKeyPassword", "Embedded Key Password", "The embedded key password")).setEnabled(keyIdentifierType ==
+                                                                                                                                                     WSConstants.EMBEDDED_KEYNAME);
 
-        form.appendComboBox("symmetricEncAlgorithm", "Symmetric Encoding Algorithm", new String[]{DEFAULT_OPTION,
-                WSConstants.AES_128, WSConstants.AES_192, WSConstants.AES_256, WSConstants.TRIPLE_DES},
-                "Set the name of the symmetric encryption algorithm to use");
+        form.appendComboBox("symmetricEncAlgorithm", "Symmetric Encoding Algorithm", new String[]{
+            DEFAULT_OPTION, WSConstants.AES_128, WSConstants.AES_192, WSConstants.AES_256, WSConstants.TRIPLE_DES
+        }, "Set the name of the symmetric encryption algorithm to use");
 
-        form.appendComboBox("encKeyTransport", "Key Encryption Algorithm", new String[]{DEFAULT_OPTION,
-                WSConstants.KEYTRANSPORT_RSA15, WSConstants.KEYTRANSPORT_RSAOEP},
-                "Sets the algorithm to encode the symmetric key");
+        form.appendComboBox("encKeyTransport", "Key Encryption Algorithm", new String[]{
+            DEFAULT_OPTION, WSConstants.KEYTRANSPORT_RSA15, WSConstants.KEYTRANSPORT_RSAOEP
+        }, "Sets the algorithm to encode the symmetric key");
 
-        form.appendCheckBox("encryptSymmetricKey", "Create Encrypted Key",
-                "Indicates whether to encrypt the symmetric key into an EncryptedKey or not");
+        form.appendCheckBox("encryptSymmetricKey", "Create Encrypted Key", "Indicates whether to encrypt the symmetric key into an EncryptedKey or not");
 
         form.append("Parts", new WSPartsTable(parts, this));
 
         return new JScrollPane(form.getPanel());
-    }
-
-    @Override
-    public void release() {
-        if (wssContainerListener != null) {
-            getWssContainer().removeWssContainerListener(wssContainerListener);
-        }
     }
 
     @Override
@@ -148,6 +142,11 @@ public class EncryptionEntry extends WssEntryBase {
         builder.add("encryptionCanonicalization", encryptionCanonicalization);
         builder.add("encryptSymmetricKey", encryptSymmetricKey);
         saveTableValues(builder, parts, "encryptionPart");
+    }
+
+    @Override
+    protected void addPropertyExpansions(PropertyExpansionsResult result) {
+        super.addPropertyExpansions(result);
     }
 
     public String getEmbeddedKeyName() {
@@ -280,24 +279,20 @@ public class EncryptionEntry extends WssEntryBase {
             XmlUtils.serialize(doc, writer);
 
             wsEncrypt.build(doc, crypto, secHeader);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
 
             if (writer != null && writer.getBuffer().length() > 0) {
                 try {
                     // try to restore..
-                    doc.replaceChild(doc.importNode(XmlUtils.parseXml(writer.toString()).getDocumentElement(), true),
-                            doc.getDocumentElement());
-                } catch (Exception e1) {
+                    doc.replaceChild(doc.importNode(XmlUtils.parseXml(writer.toString()).getDocumentElement(), true), doc.getDocumentElement());
+                }
+                catch (Exception e1) {
                     SoapUI.logError(e1);
                 }
             }
         }
-    }
-
-    @Override
-    protected void addPropertyExpansions(PropertyExpansionsResult result) {
-        super.addPropertyExpansions(result);
     }
 
     public String getCrypto() {

@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//**
+ *//**
  * MySwing: Advanced Swing Utilites
  * Copyright (C) 2005  Santhosh Kumar T
  * <p/>
@@ -36,5 +36,5 @@ import javax.swing.tree.TreePath;
  * @email santhosh@in.fiorano.com
  */
 public interface TreePathSelectable {
-    public boolean isSelectable(TreePath path);
+    boolean isSelectable(TreePath path);
 }

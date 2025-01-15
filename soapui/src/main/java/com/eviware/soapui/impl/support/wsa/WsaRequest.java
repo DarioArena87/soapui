@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support.wsa;
@@ -32,19 +32,12 @@ public class WsaRequest extends HttpRequest implements WsaContainer, WsrmContain
     private WsdlOperation operation;
     private boolean wsrmEnabled;
 
-    public WsaRequest(HttpRequestConfig httpRequestConfig, WsaConfig wsaConfig, WsrmConfig wsrmConfig,
-                      boolean forLoadTest) {
+    public WsaRequest(
+        HttpRequestConfig httpRequestConfig, WsaConfig wsaConfig, WsrmConfig wsrmConfig, boolean forLoadTest
+    ) {
         super(httpRequestConfig, forLoadTest);
-        this.setWsaConfig(wsaConfig);
-        this.setWsrmConfig(wsrmConfig);
-    }
-
-    public void setWsaConfig(WsaConfig wsaConfig) {
-        this.wsaConfig = wsaConfig;
-    }
-
-    public WsaConfig getWsaConfig() {
-        return wsaConfig;
+        setWsaConfig(wsaConfig);
+        setWsrmConfig(wsrmConfig);
     }
 
     public boolean isWsaEnabled() {
@@ -53,24 +46,26 @@ public class WsaRequest extends HttpRequest implements WsaContainer, WsrmContain
 
     public void setWsaEnabled(boolean arg0) {
         wsaConfig.setWsaEnabled(arg0);
-
     }
 
-    public WsdlOperation getOperation() {
-        return operation;
+    public WsaConfig getWsaConfig() {
+        return wsaConfig;
+    }
+
+    public void setWsaConfig(WsaConfig wsaConfig) {
+        this.wsaConfig = wsaConfig;
     }
 
     public RestRequestInterface.HttpMethod getMethod() {
         return RestRequestInterface.HttpMethod.POST;
     }
 
-    public void setOperation(WsdlOperation operation) {
-        this.operation = operation;
-
+    public WsdlOperation getOperation() {
+        return operation;
     }
 
-    public WsrmConfig getWsrmConfig() {
-        return wsrmConfig;
+    public void setOperation(WsdlOperation operation) {
+        this.operation = operation;
     }
 
     public boolean isWsrmEnabled() {
@@ -79,7 +74,10 @@ public class WsaRequest extends HttpRequest implements WsaContainer, WsrmContain
 
     public void setWsrmEnabled(boolean arg0) {
         wsrmEnabled = arg0;
+    }
 
+    public WsrmConfig getWsrmConfig() {
+        return wsrmConfig;
     }
 
     public void setWsrmConfig(WsrmConfig wsrmConfig) {

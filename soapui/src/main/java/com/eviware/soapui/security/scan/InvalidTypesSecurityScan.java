@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.scan;
@@ -40,10 +40,8 @@ import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.impl.schema.SchemaTypeImpl;
 
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,10 +53,10 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
     public final static String NAME = "Invalid Types";
 
     private InvalidTypesForSOAP invalidTypes;
-    private TypeLabel typeLabel = new TypeLabel();
+    private final TypeLabel typeLabel = new TypeLabel();
     private InvalidSecurityScanConfig invalidTypeConfig;
 
-    private Map<SecurityCheckedParameter, ArrayList<String>> parameterMutations = new HashMap<SecurityCheckedParameter, ArrayList<String>>();
+    private final Map<SecurityCheckedParameter, ArrayList<String>> parameterMutations = new HashMap<SecurityCheckedParameter, ArrayList<String>>();
 
     private boolean mutation;
 
@@ -67,10 +65,10 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
 
         if (config.getConfig() == null || !(config.getConfig() instanceof InvalidSecurityScanConfig)) {
             initInvalidTypesConfig();
-        } else {
-            invalidTypeConfig = (InvalidSecurityScanConfig) config.getConfig();
         }
-
+        else {
+            invalidTypeConfig = (InvalidSecurityScanConfig)config.getConfig();
+        }
     }
 
     @Override
@@ -78,13 +76,12 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
         super.updateSecurityConfig(config);
 
         if (invalidTypeConfig != null) {
-            invalidTypeConfig = (InvalidSecurityScanConfig) getConfig().getConfig();
+            invalidTypeConfig = (InvalidSecurityScanConfig)getConfig().getConfig();
         }
     }
 
     public InvalidSecurityScanConfig getInvalidTypeConfig() {
-        if (invalidTypeConfig == null || getConfig().getConfig() == null
-                || !(getConfig().getConfig() instanceof InvalidSecurityScanConfig)) {
+        if (invalidTypeConfig == null || getConfig().getConfig() == null || !(getConfig().getConfig() instanceof InvalidSecurityScanConfig)) {
             initInvalidTypesConfig();
         }
         return invalidTypeConfig;
@@ -92,7 +89,7 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
 
     private void initInvalidTypesConfig() {
         getConfig().setConfig(InvalidSecurityScanConfig.Factory.newInstance());
-        invalidTypeConfig = (InvalidSecurityScanConfig) getConfig().getConfig();
+        invalidTypeConfig = (InvalidSecurityScanConfig)getConfig().getConfig();
         invalidTypes = new InvalidTypesForSOAP();
 
         // add all types..
@@ -104,8 +101,8 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
     }
 
     @Override
-    public JComponent getAdvancedSettingsPanel() {
-        return new InvalidTypesTable(getInvalidTypeConfig());
+    public boolean isConfigurable() {
+        return true;
     }
 
     /*
@@ -126,31 +123,74 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
     }
 
     @Override
-    public boolean isConfigurable() {
-        return true;
+    public String getConfigName() {
+        return "Invalid Types Security Scan";
+    }
+
+    @Override
+    public String getConfigDescription() {
+        return "Configures invalid type security scan";
+    }
+
+    @Override
+    public String getHelpURL() {
+        return "http://soapui.org/Security/invalid-types.html";
+    }
+
+    @Override
+    public JComponent getAdvancedSettingsPanel() {
+        return new InvalidTypesTable(getInvalidTypeConfig());
+    }
+
+    @Override
+    protected void clear() {
+        parameterMutations.clear();
+        mutation = false;
     }
 
     @Override
     protected void execute(SecurityTestRunner securityTestRunner, TestStep testStep, SecurityTestRunContext context) {
         try {
             StringToStringMap updatedParams = updateRequestContent(testStep, context);
-            MessageExchange message = (MessageExchange) testStep.run((TestCaseRunner) securityTestRunner, context);
+            MessageExchange message = (MessageExchange)testStep.run((TestCaseRunner)securityTestRunner, context);
 
             createMessageExchange(updatedParams, message, context);
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             SoapUI.logError(e, "[InvalidtypeSecurityScan]XPath seems to be invalid!");
             reportSecurityScanException("Property value is not XML or XPath is wrong!");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e, "[InvalidtypeSecurityScan]Property value is not valid xml!");
             reportSecurityScanException("Property value is not XML or XPath is wrong!");
         }
     }
 
+    @Override
+    protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
+        boolean hasNext = false;
+        if ((parameterMutations == null || parameterMutations.size() == 0) && !mutation) {
+            hasNext = getParameterHolder().getParameterList().size() > 0;
+        }
+        else {
+            for (SecurityCheckedParameter param : parameterMutations.keySet()) {
+                if (parameterMutations.get(param).size() > 0) {
+                    hasNext = true;
+                    break;
+                }
+            }
+        }
+        if (!hasNext) {
+            parameterMutations.clear();
+            mutation = false;
+        }
+        return hasNext;
+    }
+
     /*
      * Set new value for request
      */
-    private StringToStringMap updateRequestContent(TestStep testStep, SecurityTestRunContext context)
-            throws XmlException, Exception {
+    private StringToStringMap updateRequestContent(TestStep testStep, SecurityTestRunContext context) throws Exception {
 
         StringToStringMap params = new StringToStringMap();
 
@@ -159,8 +199,8 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
         }
         if (getExecutionStrategy().getStrategy() == StrategyTypeConfig.ONE_BY_ONE) {
             /*
-			 * Idea is to drain for each parameter mutations.
-			 */
+             * Idea is to drain for each parameter mutations.
+             */
             for (SecurityCheckedParameter param : getParameterHolder().getParameterList()) {
                 if (parameterMutations.containsKey(param)) {
                     if (parameterMutations.get(param).size() > 0) {
@@ -168,11 +208,11 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
                         TestProperty property = getTestStep().getProperties().get(param.getName());
                         String value = context.expand(property.getValue());
                         if (param.getXpath() == null || param.getXpath().trim().length() == 0) {
-                            testStep.getProperties().get(param.getName())
-                                    .setValue(parameterMutations.get(param).get(0));
+                            testStep.getProperties().get(param.getName()).setValue(parameterMutations.get(param).get(0));
                             params.put(param.getLabel(), parameterMutations.get(param).get(0));
                             parameterMutations.get(param).remove(0);
-                        } else {
+                        }
+                        else {
                             // no value, do nothing.
                             if (value == null || value.trim().equals("")) {
                                 continue;
@@ -183,8 +223,7 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
                                 // XmlObjectTreeModel model = new XmlObjectTreeModel(
                                 // property.getSchemaType().getTypeSystem(),
                                 // XmlObject.Factory.parse( value ) );
-                                XmlObjectTreeModel model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(),
-                                        XmlUtils.createXmlObject(value));
+                                XmlObjectTreeModel model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(), XmlUtils.createXmlObject(value));
                                 XmlTreeNode[] nodes = model.selectTreeNodes(context.expand(param.getXpath()));
                                 for (XmlTreeNode node : nodes) {
                                     node.setValue(1, parameterMutations.get(param).get(0));
@@ -193,14 +232,14 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
                                 parameterMutations.get(param).remove(0);
 
                                 testStep.getProperties().get(param.getName()).setValue(model.getXmlObject().toString());
-
                             }
                         }
                         break;
                     }
                 }
             }
-        } else {
+        }
+        else {
             for (TestProperty property : testStep.getPropertyList()) {
 
                 String value = context.expand(property.getValue());
@@ -209,16 +248,15 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
                     // model = new XmlObjectTreeModel(
                     // property.getSchemaType().getTypeSystem(),
                     // XmlObject.Factory.parse( value ) );
-                    model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(),
-                            XmlUtils.createXmlObject(value));
+                    model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(), XmlUtils.createXmlObject(value));
 
                     for (SecurityCheckedParameter param : getParameterHolder().getParameterList()) {
                         if (param.getXpath() == null || param.getXpath().trim().length() == 0) {
-                            testStep.getProperties().get(param.getName())
-                                    .setValue(parameterMutations.get(param).get(0));
+                            testStep.getProperties().get(param.getName()).setValue(parameterMutations.get(param).get(0));
                             params.put(param.getLabel(), parameterMutations.get(param).get(0));
                             parameterMutations.get(param).remove(0);
-                        } else {
+                        }
+                        else {
                             // no value, do nothing.
                             if (value == null || value.trim().equals("")) {
                                 continue;
@@ -240,7 +278,6 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
                     if (model != null) {
                         property.setValue(model.getXmlObject().toString());
                     }
-
                 }
             }
         }
@@ -273,9 +310,9 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
                             parameterMutations.put(parameter, new ArrayList<String>());
                         }
                         parameterMutations.get(parameter).add(invalidType.getValue());
-
                     }
-                } else {
+                }
+                else {
                     // we have xpath but do we have xml which need to mutate
                     // ignore if there is no value, since than we'll get exception
                     if (property.getValue() == null && property.getDefaultValue() == null) {
@@ -289,8 +326,7 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
                         // XmlObjectTreeModel model = new XmlObjectTreeModel(
                         // property.getSchemaType().getTypeSystem(),
                         // XmlObject.Factory.parse( value ) );
-                        XmlObjectTreeModel model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(),
-                                XmlUtils.createXmlObject(value));
+                        XmlObjectTreeModel model = new XmlObjectTreeModel(property.getSchemaType().getTypeSystem(), XmlUtils.createXmlObject(value));
 
                         XmlTreeNode[] nodes = model.selectTreeNodes(context.expand(parameter.getXpath()));
 
@@ -307,7 +343,6 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
                                     parameterMutations.get(parameter).add(type.getValue());
                                 }
                             }
-
                         }
                     }
                 }
@@ -315,28 +350,59 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
         }
     }
 
-    @Override
-    protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
-        boolean hasNext = false;
-        if ((parameterMutations == null || parameterMutations.size() == 0) && !mutation) {
-            if (getParameterHolder().getParameterList().size() > 0) {
-                hasNext = true;
-            } else {
-                hasNext = false;
+    public TypeLabel getTypeLabel() {
+        return typeLabel;
+    }
+
+    public void refreshRestrictionLabel(int row) {
+        if (row == -1) {
+            typeLabel.setJlabel("- no parameter selected -");
+            return;
+        }
+        SecurityCheckedParameter parameter = getParameterAt(row);
+        if (parameter == null) {
+            return;
+        }
+        String name = parameter.getName();
+        String xpath = parameter.getXpath();
+        TestProperty tp = getTestStep().getProperty(name);
+        XmlObjectTreeModel xmlObjectTreeModel = null;
+        if (tp.getSchemaType() != null && XmlUtils.seemsToBeXml(tp.getValue())) {
+            try {
+                // xmlObjectTreeModel = new XmlObjectTreeModel(
+                // tp.getSchemaType().getTypeSystem(),
+                // XmlObject.Factory.parse( tp.getValue() ) );
+                xmlObjectTreeModel = new XmlObjectTreeModel(tp.getSchemaType().getTypeSystem(), XmlUtils.createXmlObject(tp.getValue()));
             }
-        } else {
-            for (SecurityCheckedParameter param : parameterMutations.keySet()) {
-                if (parameterMutations.get(param).size() > 0) {
-                    hasNext = true;
-                    break;
+            catch (XmlException e) {
+                SoapUI.logError(e);
+            }
+
+            XmlTreeNode[] treeNodes = xmlObjectTreeModel.selectTreeNodes(xpath);
+
+            if (treeNodes.length == 0) {
+                typeLabel.setJlabel("");
+                return;
+            }
+
+            SchemaTypeImpl simpleType = (SchemaTypeImpl)treeNodes[0].getSchemaType();
+            if (simpleType != null && !simpleType.isNoType()) {
+                XmlObjectTreeModel model2 = new XmlObjectTreeModel(simpleType.getTypeSystem(), simpleType.getParseObject());
+                List<String> list = BoundaryRestrictionUtill.getType(model2.getRootNode(), new ArrayList<String>());
+                if (list.isEmpty()) {
+                    typeLabel.setJlabel("parameter has type [" + simpleType.getName() + "]");
+                }
+                else {
+                    typeLabel.setJlabel("parameter has types [" + list + "]");
                 }
             }
+            else {
+                typeLabel.setJlabel("parameter is missing type in schema");
+            }
         }
-        if (!hasNext) {
-            parameterMutations.clear();
-            mutation = false;
+        else {
+            typeLabel.setJlabel("- no parameter selected ->");
         }
-        return hasNext;
     }
 
     /**
@@ -347,7 +413,7 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
      */
     private class InvalidTypesForSOAP {
 
-        private HashMap<Integer, String> typeMap = new HashMap<Integer, String>();
+        private final HashMap<Integer, String> typeMap = new HashMap<Integer, String>();
 
         public InvalidTypesForSOAP() {
             generateInvalidTypes();
@@ -416,33 +482,11 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
         public HashMap<Integer, String> getDefaultTypeMap() {
             return typeMap;
         }
-
-    }
-
-    @Override
-    public String getConfigDescription() {
-        return "Configures invalid type security scan";
-    }
-
-    @Override
-    public String getConfigName() {
-        return "Invalid Types Security Scan";
-    }
-
-    @Override
-    public String getHelpURL() {
-        return "http://soapui.org/Security/invalid-types.html";
-    }
-
-    @Override
-    protected void clear() {
-        parameterMutations.clear();
-        mutation = false;
     }
 
     public class TypeLabel {
-        private String text = "<html><pre>    </pre></html>";
-        private JLabel jlabel = new JLabel();
+        private final String text = "<html><pre>    </pre></html>";
+        private final JLabel jlabel = new JLabel();
 
         {
             setJlabel(text);
@@ -457,60 +501,5 @@ public class InvalidTypesSecurityScan extends AbstractSecurityScanWithProperties
         public JLabel getJLabel() {
             return jlabel;
         }
-
     }
-
-    public TypeLabel getTypeLabel() {
-        return typeLabel;
-    }
-
-    public void refreshRestrictionLabel(int row) {
-        if (row == -1) {
-            typeLabel.setJlabel("- no parameter selected -");
-            return;
-        }
-        SecurityCheckedParameter parameter = getParameterAt(row);
-        if (parameter == null) {
-            return;
-        }
-        String name = parameter.getName();
-        String xpath = parameter.getXpath();
-        TestProperty tp = getTestStep().getProperty(name);
-        XmlObjectTreeModel xmlObjectTreeModel = null;
-        if (tp.getSchemaType() != null && XmlUtils.seemsToBeXml(tp.getValue())) {
-            try {
-                // xmlObjectTreeModel = new XmlObjectTreeModel(
-                // tp.getSchemaType().getTypeSystem(),
-                // XmlObject.Factory.parse( tp.getValue() ) );
-                xmlObjectTreeModel = new XmlObjectTreeModel(tp.getSchemaType().getTypeSystem(),
-                        XmlUtils.createXmlObject(tp.getValue()));
-            } catch (XmlException e) {
-                SoapUI.logError(e);
-            }
-
-            XmlTreeNode[] treeNodes = xmlObjectTreeModel.selectTreeNodes(xpath);
-
-            if (treeNodes.length == 0) {
-                typeLabel.setJlabel("");
-                return;
-            }
-
-            SchemaTypeImpl simpleType = (SchemaTypeImpl) treeNodes[0].getSchemaType();
-            if (simpleType != null && !simpleType.isNoType()) {
-                XmlObjectTreeModel model2 = new XmlObjectTreeModel(simpleType.getTypeSystem(), simpleType.getParseObject());
-                List<String> list = BoundaryRestrictionUtill.getType(model2.getRootNode(), new ArrayList<String>());
-                if (list.isEmpty()) {
-                    typeLabel.setJlabel("parameter has type [" + simpleType.getName() + "]");
-                } else {
-                    typeLabel.setJlabel("parameter has types [" + list.toString() + "]");
-                }
-            } else {
-                typeLabel.setJlabel("parameter is missing type in schema");
-            }
-        } else {
-            typeLabel.setJlabel("- no parameter selected ->");
-        }
-
-    }
-
 }

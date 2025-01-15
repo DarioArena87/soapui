@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.jms.property;
@@ -41,8 +41,7 @@ public class JMSPropertyInspectorFactory implements RequestInspectorFactory, Res
 
     public EditorInspector<?> createRequestInspector(Editor<?> editor, ModelItem modelItem) {
         if (modelItem instanceof AbstractHttpRequest<?>) {
-            JMSPropertyInspector inspector = new JMSPropertyInspector(
-                    (JMSPropertyInspectorModel) new WsdlRequestJMSPropertiesModel((AbstractHttpRequest<?>) modelItem));
+            JMSPropertyInspector inspector = new JMSPropertyInspector(new WsdlRequestJMSPropertiesModel((AbstractHttpRequest<?>)modelItem));
             inspector.setEnabled(JMSUtils.checkIfJMS(modelItem));
             return inspector;
         }
@@ -60,21 +59,8 @@ public class JMSPropertyInspectorFactory implements RequestInspectorFactory, Res
 
         public WsdlRequestJMSPropertiesModel(AbstractHttpRequest<?> wsdlRequest) {
             super(false, wsdlRequest, "jmsProperty");
-            this.request = wsdlRequest;
+            request = wsdlRequest;
             request.addPropertyChangeListener(this);
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (request.getEndpoint() != null && evt.getPropertyName().equals(AbstractHttpRequest.ENDPOINT_PROPERTY)) {
-                inspector.setEnabled(request.getEndpoint().startsWith(JMSEndpoint.JMS_ENDPOINT_PREFIX));
-            }
-            super.propertyChange(evt);
-        }
-
-        @Override
-        public void release() {
-            super.release();
-            request.removePropertyChangeListener(this);
         }
 
         public StringToStringMap getJMSProperties() {
@@ -100,9 +86,21 @@ public class JMSPropertyInspectorFactory implements RequestInspectorFactory, Res
             propertyList2.addAll(propertyList);
         }
 
+        @Override
+        public void release() {
+            super.release();
+            request.removePropertyChangeListener(this);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (request.getEndpoint() != null && evt.getPropertyName().equals(AbstractHttpRequest.ENDPOINT_PROPERTY)) {
+                inspector.setEnabled(request.getEndpoint().startsWith(JMSEndpoint.JMS_ENDPOINT_PREFIX));
+            }
+            super.propertyChange(evt);
+        }
+
         public void setInspector(JMSPropertyInspector inspector) {
             this.inspector = inspector;
         }
     }
-
 }

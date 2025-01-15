@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http;
@@ -59,7 +59,7 @@ public class HttpMethodSupport {
     private boolean decompress;
     private org.apache.http.HttpResponse httpResponse;
 
-    private SoapUIMetrics metrics;
+    private final SoapUIMetrics metrics;
 
     public HttpMethodSupport() {
         decompress = !SoapUI.getSettings().getBoolean(HttpSettings.DISABLE_RESPONSE_DECOMPRESSION);
@@ -147,9 +147,9 @@ public class HttpMethodSupport {
             if (compressionAlg != null) {
                 try {
                     return CompressionSupport.decompress(compressionAlg, responseBody);
-                } catch (Exception e) {
-                    IOException ioe = new IOException("Decompression of response failed");
-                    ioe.initCause(e);
+                }
+                catch (Exception e) {
+                    IOException ioe = new IOException("Decompression of response failed", e);
                     throw ioe;
                 }
             }
@@ -188,10 +188,11 @@ public class HttpMethodSupport {
                 try {
                     String value = contentEncodingHeader.getValue();
                     if (CompressionSupport.getAvailableAlgorithm(value) == null) {
-                        new String("").getBytes(value);
+                        "".getBytes(value);
                         return value;
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                 }
             }
         }
@@ -208,7 +209,7 @@ public class HttpMethodSupport {
     }
 
     public void setFailed(Throwable t) {
-        this.failureCause = t;
+        failureCause = t;
     }
 
     public boolean hasResponse() {
@@ -251,7 +252,8 @@ public class HttpMethodSupport {
                         if (StringUtils.hasContent(dumpFile)) {
                             Tools.writeAll(new FileOutputStream(dumpFile), new ByteArrayInputStream(responseBody));
                         }
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         e.printStackTrace();
                     }
 
@@ -260,14 +262,15 @@ public class HttpMethodSupport {
                         if (compressionAlg != null) {
                             try {
                                 responseBody = CompressionSupport.decompress(compressionAlg, responseBody);
-                            } catch (Exception e) {
-                                IOException ioe = new IOException("Decompression of response failed");
-                                ioe.initCause(e);
+                            }
+                            catch (Exception e) {
+                                IOException ioe = new IOException("Decompression of response failed", e);
                                 throw ioe;
                             }
                         }
                     }
-                } else {
+                }
+                else {
                     try {
                         if (StringUtils.hasContent(dumpFile) && instream != null) {
                             FileOutputStream fileOutputStream = new FileOutputStream(dumpFile);
@@ -276,12 +279,12 @@ public class HttpMethodSupport {
                             fileOutputStream.close();
                             instream = new FileInputStream(dumpFile);
                         }
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         e.printStackTrace();
                     }
 
-                    ByteArrayOutputStream outstream = instream == null ? new ByteArrayOutputStream() : Tools.readAll(
-                            instream, maxSize);
+                    ByteArrayOutputStream outstream = instream == null ? new ByteArrayOutputStream() : Tools.readAll(instream, maxSize);
 
                     if (responseReadTime == 0) {
                         responseReadTime = System.nanoTime() - now;
@@ -289,7 +292,8 @@ public class HttpMethodSupport {
 
                     responseBody = outstream.toByteArray();
                 }
-            } finally {
+            }
+            finally {
                 if (instream != null) {
                     instream.close();
                 }

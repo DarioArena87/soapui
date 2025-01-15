@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.filters;
@@ -40,11 +40,9 @@ public class WssRequestFilter extends AbstractWssRequestFilter implements Reques
 
         OutgoingWss outgoingWss = wssContainer.getOutgoingWssByName(wsdlRequest.getOutgoingWss());
 
-        DefaultEndpointStrategy des = (DefaultEndpointStrategy) wsdlRequest.getOperation().getInterface().getProject()
-                .getEndpointStrategy();
+        DefaultEndpointStrategy des = (DefaultEndpointStrategy)wsdlRequest.getOperation().getInterface().getProject().getEndpointStrategy();
         EndpointDefaults endpointDefaults = des.getEndpointDefaults(wsdlRequest.getEndpoint());
-        if (StringUtils.hasContent(endpointDefaults.getOutgoingWss())
-                && (outgoingWss == null || endpointDefaults.getMode() != EndpointConfig.Mode.COMPLEMENT)) {
+        if (StringUtils.hasContent(endpointDefaults.getOutgoingWss()) && (outgoingWss == null || endpointDefaults.getMode() != EndpointConfig.Mode.COMPLEMENT)) {
             outgoingWss = wssContainer.getOutgoingWssByName(endpointDefaults.getOutgoingWss());
         }
 
@@ -57,15 +55,15 @@ public class WssRequestFilter extends AbstractWssRequestFilter implements Reques
 
                 outgoingWss.processOutgoing(wssDocument, context);
                 updateWssDocument(context, wssDocument);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
         IncomingWss incomingWss = wssContainer.getIncomingWssByName(wsdlRequest.getIncomingWss());
 
-        if (StringUtils.hasContent(endpointDefaults.getIncomingWss())
-                && (incomingWss == null || endpointDefaults.getMode() != EndpointConfig.Mode.COMPLEMENT)) {
+        if (StringUtils.hasContent(endpointDefaults.getIncomingWss()) && (incomingWss == null || endpointDefaults.getMode() != EndpointConfig.Mode.COMPLEMENT)) {
             incomingWss = wssContainer.getIncomingWssByName(endpointDefaults.getIncomingWss());
         }
 

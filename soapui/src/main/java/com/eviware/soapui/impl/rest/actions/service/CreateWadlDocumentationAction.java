@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.service;
@@ -30,6 +30,7 @@ import com.eviware.x.form.support.ADialogBuilder;
 import com.eviware.x.form.support.AField;
 import com.eviware.x.form.support.AField.AFieldType;
 import com.eviware.x.form.support.AForm;
+import org.apache.xalan.processor.TransformerFactoryImpl;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -48,14 +49,12 @@ import java.util.Map;
 public class CreateWadlDocumentationAction extends AbstractSoapUIAction<RestService> {
     public static final String SOAPUI_ACTION_ID = "CreateWadlDocumentationAction";
 
-    private static final String REPORT_DIRECTORY_SETTING = CreateWadlDocumentationAction.class.getSimpleName()
-            + "@report-directory";
-    private XFormDialog dialog;
+    private static final String REPORT_DIRECTORY_SETTING = CreateWadlDocumentationAction.class.getSimpleName() + "@report-directory";
     private static Map<String, Transformer> transformers;
+    private XFormDialog dialog;
 
     public CreateWadlDocumentationAction() {
-        super("CreateWadlDocumentationAction", "Create Documentation",
-                "Generate simple HTML Documentation for this WADL");
+        super("CreateWadlDocumentationAction", "Create Documentation", "Generate simple HTML Documentation for this WADL");
     }
 
     public void perform(RestService target, Object param) {
@@ -73,18 +72,27 @@ public class CreateWadlDocumentationAction extends AbstractSoapUIAction<RestServ
 
             settings.setString(REPORT_DIRECTORY_SETTING, dialog.getValue(Form.OUTPUT_FOLDER));
 
-            final File reportDirectory = new File(settings.getString(REPORT_DIRECTORY_SETTING, ""));
+            File reportDirectory = new File(settings.getString(REPORT_DIRECTORY_SETTING, ""));
             String reportDirAbsolutePath = reportDirectory.getAbsolutePath();
             String filename = reportDirAbsolutePath + File.separatorChar + "report.xml";
             String reportUrl = transform(target, reportDirAbsolutePath, filename);
             Tools.openURL(reportUrl);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e);
         }
     }
 
-    private static String transform(RestService target, final String reportDirAbsolutePath, String filename)
-            throws Exception {
+    protected static void initTransformers() throws Exception {
+        transformers = new HashMap<String, Transformer>();
+        TransformerFactory xformFactory = new TransformerFactoryImpl();
+
+        transformers.put("WADL",
+                         xformFactory.newTemplates(new StreamSource(SoapUI.class.getResourceAsStream("/com/eviware/soapui/resources/doc/wadl_documentation.xsl"))).newTransformer()
+        );
+    }
+
+    private static String transform(RestService target, String reportDirAbsolutePath, String filename) throws Exception {
         if (transformers == null) {
             initTransformers();
         }
@@ -109,22 +117,10 @@ public class CreateWadlDocumentationAction extends AbstractSoapUIAction<RestServ
         return reportUrl;
     }
 
-    protected static void initTransformers() throws Exception {
-        transformers = new HashMap<String, Transformer>();
-        TransformerFactory xformFactory = new org.apache.xalan.processor.TransformerFactoryImpl();
-
-        transformers.put(
-                "WADL",
-                xformFactory.newTemplates(
-                        new StreamSource(SoapUI.class
-                                .getResourceAsStream("/com/eviware/soapui/resources/doc/wadl_documentation.xsl")))
-                        .newTransformer());
-    }
-
     @AForm(description = "Creates an HTML-Report for the current WADL", name = "Create Report", helpUrl = HelpUrls.CREATEWADLDOC_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
     public interface Form {
         @AField(name = "Output Folder", description = "The folder where to create the report", type = AFieldType.FOLDER)
-        public final static String OUTPUT_FOLDER = "Output Folder";
+        String OUTPUT_FOLDER = "Output Folder";
     }
 
     public static class FileUriResolver implements URIResolver {
@@ -143,7 +139,8 @@ public class CreateWadlDocumentationAction extends AbstractSoapUIAction<RestServ
                 File file = PathUtils.isAbsolutePath(href) ? new File(href) : new File(basePath, href);
                 FileReader reader = new FileReader(file);
                 return new StreamSource(reader);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 return null;
             }
         }

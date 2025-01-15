@@ -24,30 +24,14 @@ import com.eviware.x.dialogs.XDialogs;
 import com.eviware.x.dialogs.XProgressDialog;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JEditorPane;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class SwingDialogs implements XDialogs {
-    private Component parent;
+    private final Component parent;
     private JDialog extendedInfoDialog;
     private Boolean extendedInfoResult;
 
@@ -55,72 +39,76 @@ public class SwingDialogs implements XDialogs {
         this.parent = parent;
     }
 
-    public void showErrorMessage(final String message) {
+    public void showErrorMessage(String message) {
         try {
             Object displayMessage = getDisplayMessage(message);
             if (SwingUtilities.isEventDispatchThread()) {
                 JOptionPane.showMessageDialog(parent, displayMessage, "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
+            }
+            else {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
                         JOptionPane.showMessageDialog(parent, displayMessage, "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 });
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
-    }
-
-    public boolean confirm(String question, String title) {
-        Object displayMessage = getDisplayMessage(question);
-        return JOptionPane.showConfirmDialog(this.parent, displayMessage, title, JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
-    }
-
-    @Override
-    public boolean confirm(String question, String title, Component parent) {
-        Object displayMessage = getDisplayMessage(question);
-        return JOptionPane.showConfirmDialog(parent, displayMessage, title, JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
-    }
-
-    public String prompt(String question, String title, String value) {
-        return (String) JOptionPane.showInputDialog(parent, question, title, JOptionPane.QUESTION_MESSAGE, null, null,
-                value);
-    }
-
-    public String prompt(String question, String title) {
-        return JOptionPane.showInputDialog(parent, question, title, JOptionPane.QUESTION_MESSAGE);
     }
 
     public void showInfoMessage(String message) {
         showInfoMessage(message, "Information");
     }
 
-    public void showInfoMessage(final String message, final String title) {
+    public void showInfoMessage(String message, String title) {
         Object displayMessage = getDisplayMessage(message);
         try {
             if (SwingUtilities.isEventDispatchThread()) {
                 JOptionPane.showMessageDialog(parent, displayMessage, title, JOptionPane.INFORMATION_MESSAGE);
-            } else {
+            }
+            else {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
                         JOptionPane.showMessageDialog(parent, displayMessage, title, JOptionPane.INFORMATION_MESSAGE);
                     }
                 });
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
 
-    public Object prompt(String question, String title, Object[] objects) {
-        return JOptionPane.showInputDialog(parent, question, title, JOptionPane.OK_CANCEL_OPTION, null,
-                objects, null);
+    public void showExtendedInfo(String title, String description, String content, Dimension size) {
+        try {
+            JPanel buttonBar = ButtonBarFactory.buildRightAlignedBar(new JButton(new OkAction("OK")));
+            if (SwingUtilities.isEventDispatchThread()) {
+                showExtendedInfo(title, description, content, buttonBar, size);
+            }
+            else {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        showExtendedInfo(title, description, content, buttonBar, size);
+                    }
+                });
+            }
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
     }
 
-    public Object prompt(String question, String title, Object[] objects, String value) {
-        return JOptionPane.showInputDialog(parent, question, title, JOptionPane.OK_CANCEL_OPTION, null,
-                objects, value);
+    public boolean confirm(String question, String title) {
+        Object displayMessage = getDisplayMessage(question);
+        return JOptionPane.showConfirmDialog(parent, displayMessage, title, JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
+    }
+
+    @Override
+    public boolean confirm(String question, String title, Component parent) {
+        Object displayMessage = getDisplayMessage(question);
+        return JOptionPane.showConfirmDialog(parent, displayMessage, title, JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION;
     }
 
     public Boolean confirmOrCancel(String question, String title) {
@@ -135,29 +123,66 @@ public class SwingDialogs implements XDialogs {
 
     public int yesYesToAllOrNo(String question, String title) {
         String[] buttons = {"Yes", "Yes to all", "No"};
-        return JOptionPane.showOptionDialog(parent, question, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons,
-                buttons[0]);
+        return JOptionPane.showOptionDialog(parent, question, title, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, buttons[0]);
+    }
+
+    public String prompt(String question, String title, String value) {
+        return (String)JOptionPane.showInputDialog(parent, question, title, JOptionPane.QUESTION_MESSAGE, null, null, value);
+    }
+
+    public String prompt(String question, String title) {
+        return JOptionPane.showInputDialog(parent, question, title, JOptionPane.QUESTION_MESSAGE);
+    }
+
+    public Object prompt(String question, String title, Object[] objects) {
+        return JOptionPane.showInputDialog(parent, question, title, JOptionPane.OK_CANCEL_OPTION, null, objects, null);
+    }
+
+    public Object prompt(String question, String title, Object[] objects, String value) {
+        return JOptionPane.showInputDialog(parent, question, title, JOptionPane.OK_CANCEL_OPTION, null, objects, value);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.x.dialogs.XDialogs#promptPassword(java.lang.String,
+     * java.lang.String)
+     */
+    public char[] promptPassword(String question, String title) {
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.addAncestorListener(new RequestFocusListener());
+        JLabel qLabel = new JLabel(question);
+        JOptionPane.showConfirmDialog(parent, new Object[]{qLabel, passwordField}, title, JOptionPane.OK_CANCEL_OPTION);
+        return passwordField.getPassword();
     }
 
     public XProgressDialog createProgressDialog(String label, int length, String initialValue, boolean canCancel) {
         return new ProgressDialog("Progress", label, length, initialValue, canCancel);
     }
 
-    public void showExtendedInfo(final String title, final String description, final String content, final Dimension size) {
-        try {
-            final JPanel buttonBar = ButtonBarFactory.buildRightAlignedBar(new JButton(new OkAction("OK")));
-            if (SwingUtilities.isEventDispatchThread()) {
-                showExtendedInfo(title, description, content, buttonBar, size);
-            } else {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                        showExtendedInfo(title, description, content, buttonBar, size);
-                    }
-                });
-            }
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
+    public boolean confirmExtendedInfo(String title, String description, String content, Dimension size) {
+        JPanel buttonBar = ButtonBarFactory.buildRightAlignedBar(new JButton(new OkAction("OK")), new JButton(new CancelAction("Cancel")));
+
+        showExtendedInfo(title, description, content, buttonBar, size);
+
+        return extendedInfoResult != null && extendedInfoResult;
+    }
+
+    public Boolean confirmOrCancleExtendedInfo(String title, String description, String content, Dimension size) {
+        JPanel buttonBar = ButtonBarFactory.buildRightAlignedBar(new JButton(new OkAction("Yes")), new JButton(new NoAction("No")), new JButton(new CancelAction("Cancel")));
+
+        showExtendedInfo(title, description, content, buttonBar, size);
+
+        return extendedInfoResult;
+    }
+
+    public String selectXPath(String title, String info, String xml, String xpath) {
+        return prompt("Specify XPath expression", "Select XPath", xpath);
+    }
+
+    @Override
+    public String selectJsonPath(String title, String info, String json, String jsonPath) {
+        return prompt("Specify JsonPath expression", "Select JsonPath", jsonPath);
     }
 
     private void showExtendedInfo(String title, String description, String content, JPanel buttonBar, Dimension size) {
@@ -175,8 +200,7 @@ public class SwingDialogs implements XDialogs {
         editorPane.addHyperlinkListener(new DefaultHyperlinkListener(editorPane));
 
         JScrollPane scrollPane = new JScrollPane(editorPane);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5),
-                scrollPane.getBorder()));
+        scrollPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5), scrollPane.getBorder()));
 
         panel.add(scrollPane);
         buttonBar.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
@@ -185,7 +209,8 @@ public class SwingDialogs implements XDialogs {
         extendedInfoDialog.getRootPane().setContentPane(panel);
         if (size == null) {
             extendedInfoDialog.setSize(400, 300);
-        } else {
+        }
+        else {
             extendedInfoDialog.setSize(size);
         }
 
@@ -193,22 +218,63 @@ public class SwingDialogs implements XDialogs {
         UISupport.showDialog(extendedInfoDialog);
     }
 
-    public boolean confirmExtendedInfo(String title, String description, String content, Dimension size) {
-        JPanel buttonBar = ButtonBarFactory.buildRightAlignedBar(new JButton(new OkAction("OK")), new JButton(
-                new CancelAction("Cancel")));
+    /**
+     * Method which accepts a message as a string, checks if it is longer than a certain threshold
+     * and if so, returns a JScrollPane with a JTextArea instead of the string. The returned
+     * value can be used as message to a JOptionPane. JOptionPane will create a JLabel for the
+     * message unless it is passed an JComponent of some other kind.
+     *
+     * @param message The string message to process
+     * @return The string sent in or a JScrollPane depending on message length
+     */
+    private Object getDisplayMessage(String message) {
+        final int maxWidth = 60;
+        final int maxLines = 15;
+        Color transparent = new Color(0, 0, 0, 0);
 
-        showExtendedInfo(title, description, content, buttonBar, size);
-
-        return extendedInfoResult == null ? false : extendedInfoResult;
+        if (message == null || message.length() <= UISupport.EXTENDED_ERROR_MESSAGE_THRESHOLD) {
+            return message;
+        }
+        JTextArea textArea = new JTextArea(message);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setColumns(maxWidth);
+        textArea.setOpaque(false);
+        textArea.setEditable(false);
+        textArea.setBackground(transparent);
+        if (textArea.getLineCount() > maxLines) {
+            textArea.setRows(maxLines);
+        }
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        JViewport viewport = scrollPane.getViewport();
+        viewport.setOpaque(false);
+        viewport.setBackground(transparent);
+        return scrollPane;
     }
 
-    public Boolean confirmOrCancleExtendedInfo(String title, String description, String content, Dimension size) {
-        JPanel buttonBar = ButtonBarFactory.buildRightAlignedBar(new JButton(new OkAction("Yes")), new JButton(
-                new NoAction("No")), new JButton(new CancelAction("Cancel")));
+    /*
+     * Used to give focus to password field, instead of the default OK button in
+     * the confirmation dialog.
+     */
+    private static class RequestFocusListener implements AncestorListener {
+        public void ancestorAdded(AncestorEvent e) {
+            AncestorListener al = this;
+            SwingUtilities.invokeLater(new Runnable() {
 
-        showExtendedInfo(title, description, content, buttonBar, size);
+                @Override
+                public void run() {
+                    JComponent component = e.getComponent();
+                    component.requestFocusInWindow();
+                    component.removeAncestorListener(al);
+                }
+            });
+        }
 
-        return extendedInfoResult;
+        public void ancestorRemoved(AncestorEvent e) {
+        }
+
+        public void ancestorMoved(AncestorEvent e) {
+        }
     }
 
     private final class OkAction extends AbstractAction {
@@ -242,88 +308,5 @@ public class SwingDialogs implements XDialogs {
             extendedInfoResult = null;
             extendedInfoDialog.setVisible(false);
         }
-    }
-
-    public String selectXPath(String title, String info, String xml, String xpath) {
-        return prompt("Specify XPath expression", "Select XPath", xpath);
-    }
-
-    @Override
-    public String selectJsonPath(String title, String info, String json, String jsonPath) {
-        return prompt("Specify JsonPath expression", "Select JsonPath", jsonPath);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.eviware.x.dialogs.XDialogs#promptPassword(java.lang.String,
-     * java.lang.String)
-     */
-    public char[] promptPassword(String question, String title) {
-        JPasswordField passwordField = new JPasswordField();
-        passwordField.addAncestorListener(new RequestFocusListener());
-        JLabel qLabel = new JLabel(question);
-        JOptionPane.showConfirmDialog(parent, new Object[]{qLabel, passwordField}, title,
-                JOptionPane.OK_CANCEL_OPTION);
-        return passwordField.getPassword();
-    }
-
-    /*
-     * Used to give focus to password field, instead of the default OK button in
-     * the confirmation dialog.
-     */
-    private static class RequestFocusListener implements AncestorListener {
-        public void ancestorAdded(final AncestorEvent e) {
-            final AncestorListener al = this;
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    JComponent component = e.getComponent();
-                    component.requestFocusInWindow();
-                    component.removeAncestorListener(al);
-                }
-            });
-        }
-
-        public void ancestorMoved(AncestorEvent e) {
-        }
-
-        public void ancestorRemoved(AncestorEvent e) {
-        }
-    }
-
-    /**
-     * Method which accepts a message as a string, checks if it is longer than a certain threshold
-     * and if so, returns a JScrollPane with a JTextArea instead of the string. The returned
-     * value can be used as message to a JOptionPane. JOptionPane will create a JLabel for the
-     * message unless it is passed an JComponent of some other kind.
-     *
-     * @param message The string message to process
-     * @return The string sent in or a JScrollPane depending on message length
-     */
-    private Object getDisplayMessage(String message) {
-        final int maxWidth = 60;
-        final int maxLines = 15;
-        final Color transparent = new Color(0, 0, 0, 0);
-
-        if (message == null || message.length() <= UISupport.EXTENDED_ERROR_MESSAGE_THRESHOLD) {
-            return message;
-        }
-        JTextArea textArea = new JTextArea(message);
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.setColumns(maxWidth);
-        textArea.setOpaque(false);
-        textArea.setEditable(false);
-        textArea.setBackground(transparent);
-        if (textArea.getLineCount() > maxLines) {
-            textArea.setRows(maxLines);
-        }
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        JViewport viewport = scrollPane.getViewport();
-        viewport.setOpaque(false);
-        viewport.setBackground(transparent);
-        return scrollPane;
     }
 }

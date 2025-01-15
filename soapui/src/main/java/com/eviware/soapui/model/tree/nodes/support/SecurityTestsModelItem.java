@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes.support;
@@ -30,7 +30,7 @@ import com.eviware.soapui.support.UISupport;
  */
 
 public class SecurityTestsModelItem extends BaseTestsModelItem {
-    private TestSuiteListener listener = new InternalTestSuiteListener();
+    private final TestSuiteListener listener = new InternalTestSuiteListener();
 
     public SecurityTestsModelItem(TestCase testCase) {
         super(testCase, createLabel(testCase), UISupport.createImageIcon("/security_tests_group.png"));
@@ -38,8 +38,9 @@ public class SecurityTestsModelItem extends BaseTestsModelItem {
         testCase.getTestSuite().addTestSuiteListener(listener);
     }
 
-    private static String createLabel(TestCase testCase) {
-        return "Security Tests (" + testCase.getSecurityTestCount() + ")";
+    @Override
+    public String getName() {
+        return createLabel(testCase);
     }
 
     public Settings getSettings() {
@@ -52,16 +53,22 @@ public class SecurityTestsModelItem extends BaseTestsModelItem {
         testCase.getTestSuite().removeTestSuiteListener(listener);
     }
 
-    @Override
-    public String getName() {
-        return createLabel(testCase);
-    }
-
     public void updateLabel() {
         setName(createLabel(testCase));
     }
 
+    private static String createLabel(TestCase testCase) {
+        return "Security Tests (" + testCase.getSecurityTestCount() + ")";
+    }
+
     public class InternalTestSuiteListener extends TestSuiteListenerAdapter implements TestSuiteListener {
+        @Override
+        public void testCaseRemoved(TestCase testCase) {
+            if (testCase == SecurityTestsModelItem.this.testCase) {
+                testCase.getTestSuite().removeTestSuiteListener(listener);
+            }
+        }
+
         @Override
         public void securityTestAdded(SecurityTest securityTest) {
             if (securityTest.getTestCase() == testCase) {
@@ -73,13 +80,6 @@ public class SecurityTestsModelItem extends BaseTestsModelItem {
         public void securityTestRemoved(SecurityTest securityTest) {
             if (securityTest.getTestCase() == testCase) {
                 updateLabel();
-            }
-        }
-
-        @Override
-        public void testCaseRemoved(TestCase testCase) {
-            if (testCase == SecurityTestsModelItem.this.testCase) {
-                testCase.getTestSuite().removeTestSuiteListener(listener);
             }
         }
     }

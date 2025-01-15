@@ -53,36 +53,93 @@ import java.util.concurrent.TimeUnit;
  * keep different pools for different keystores.
  */
 public class SoapUIMultiThreadedHttpConnectionManager extends PoolingHttpClientConnectionManager {
-    private Object SSLState;
     /**
      * Log object for this class.
      */
     private static final Logger log = LogManager.getLogger(SoapUIMultiThreadedHttpConnectionManager.class);
-
     /**
      * Connection eviction policy
      */
     IdleConnectionMonitorThread idleConnectionHandler = new IdleConnectionMonitorThread(this);
+    private Object SSLState;
 
     public SoapUIMultiThreadedHttpConnectionManager(Registry<ConnectionSocketFactory> registry) {
         this(registry, new SoapUIManagedHttpClientConnectionFactory(), null);
         idleConnectionHandler.start();
     }
 
-    public SoapUIMultiThreadedHttpConnectionManager(Registry<ConnectionSocketFactory> socketFactoryRegistry, HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory, DnsResolver dnsResolver) {
+    public SoapUIMultiThreadedHttpConnectionManager(
+        Registry<ConnectionSocketFactory> socketFactoryRegistry,
+        HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory,
+        DnsResolver dnsResolver
+    ) {
         this(socketFactoryRegistry, connFactory, null, dnsResolver, -1, TimeUnit.MILLISECONDS);
     }
 
-    public SoapUIMultiThreadedHttpConnectionManager(Registry<ConnectionSocketFactory> socketFactoryRegistry, HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory, SchemePortResolver schemePortResolver, DnsResolver dnsResolver, long timeToLive, TimeUnit tunit) {
-        super(
-                new SoapUiHttpClientConnectionOperator(socketFactoryRegistry, schemePortResolver, dnsResolver),
-                connFactory,
-                timeToLive, tunit
-        );
+    public SoapUIMultiThreadedHttpConnectionManager(
+        Registry<ConnectionSocketFactory> socketFactoryRegistry,
+        HttpConnectionFactory<HttpRoute, ManagedHttpClientConnection> connFactory,
+        SchemePortResolver schemePortResolver,
+        DnsResolver dnsResolver,
+        long timeToLive,
+        TimeUnit tunit
+    ) {
+        super(new SoapUiHttpClientConnectionOperator(socketFactoryRegistry, schemePortResolver, dnsResolver), connFactory, timeToLive, tunit);
     }
 
     public void setSSLState(Object SSLState) {
         this.SSLState = SSLState;
+    }
+
+    @Override
+    public ConnectionRequest requestConnection(
+        HttpRoute route, Object state
+    ) {
+        if (SSLState != null) {
+            return super.requestConnection(route, SSLState);
+        }
+        return super.requestConnection(route, state);
+    }
+
+    @Override
+    protected HttpClientConnection leaseConnection(
+        Future future, long timeout, TimeUnit tunit
+    ) throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
+        HttpClientConnection httpClientConnection = null;
+        do {
+            httpClientConnection = super.leaseConnection(future, timeout, tunit);
+            if (!httpClientConnection.isOpen()) {
+                break;
+            }
+            else if (httpClientConnection.isOpen() && AbstractHttpRequest.EMPTY_SSLSTATE.equals(SSLState)) {
+                try {
+                    httpClientConnection.close();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        while (AbstractHttpRequest.EMPTY_SSLSTATE.equals(SSLState));
+        return httpClientConnection;
+    }
+
+    @Override
+    public void releaseConnection(
+        HttpClientConnection managedConn, Object state, long keepalive, TimeUnit tunit
+    ) {
+        Object curState = state;
+        SSLSession sslSession = ((ManagedHttpClientConnection)managedConn).getSSLSession();
+        if (sslSession != null) {
+            curState = sslSession.getLocalPrincipal();
+        }
+        super.releaseConnection(managedConn, curState, keepalive, tunit);
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown(); //To change body of generated methods, choose Tools | Templates.
+        idleConnectionHandler.shutdown();
     }
 
     public static class IdleConnectionMonitorThread extends Thread {
@@ -90,7 +147,6 @@ public class SoapUIMultiThreadedHttpConnectionManager extends PoolingHttpClientC
         private volatile boolean shutdown;
 
         public IdleConnectionMonitorThread(HttpClientConnectionManager connMgr) {
-            super();
             this.connMgr = connMgr;
         }
 
@@ -107,7 +163,8 @@ public class SoapUIMultiThreadedHttpConnectionManager extends PoolingHttpClientC
                         connMgr.closeIdleConnections(30, TimeUnit.SECONDS);
                     }
                 }
-            } catch (InterruptedException ex) {
+            }
+            catch (InterruptedException ex) {
                 // terminate
             }
         }
@@ -119,56 +176,6 @@ public class SoapUIMultiThreadedHttpConnectionManager extends PoolingHttpClientC
             }
         }
     }
-
-    @Override
-    public void shutdown() {
-        super.shutdown(); //To change body of generated methods, choose Tools | Templates.
-        idleConnectionHandler.shutdown();
-    }
-
-    @Override
-    public ConnectionRequest requestConnection(
-            final HttpRoute route,
-            final Object state) {
-        if (SSLState != null) {
-            return super.requestConnection(route, SSLState);
-        }
-        return super.requestConnection(route, state);
-    }
-
-    @Override
-    protected HttpClientConnection leaseConnection(
-            final Future future,
-            final long timeout,
-            final TimeUnit tunit) throws InterruptedException, ExecutionException, ConnectionPoolTimeoutException {
-        HttpClientConnection httpClientConnection = null;
-        do {
-            httpClientConnection = super.leaseConnection(future, timeout, tunit);
-            if (!httpClientConnection.isOpen()) {
-                break;
-            } else if (httpClientConnection.isOpen() && AbstractHttpRequest.EMPTY_SSLSTATE.equals(SSLState)) {
-                try {
-                    httpClientConnection.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        } while (AbstractHttpRequest.EMPTY_SSLSTATE.equals(SSLState));
-        return httpClientConnection;
-    }
-
-    @Override
-    public void releaseConnection(
-            final HttpClientConnection managedConn,
-            final Object state,
-            final long keepalive, final TimeUnit tunit) {
-        Object curState = state;
-        SSLSession sslSession = ((ManagedHttpClientConnection) managedConn).getSSLSession();
-        if (sslSession != null) {
-            curState = sslSession.getLocalPrincipal();
-        }
-        super.releaseConnection(managedConn, curState, keepalive, tunit);
-    }
 }
 
 class SoapUiHttpClientConnectionOperator extends DefaultHttpClientConnectionOperator {
@@ -179,10 +186,17 @@ class SoapUiHttpClientConnectionOperator extends DefaultHttpClientConnectionOper
     }
 
     @Override
-    public void connect(ManagedHttpClientConnection conn, HttpHost host, InetSocketAddress localAddress, int connectTimeout, SocketConfig socketConfig, HttpContext context) throws IOException {
-        HttpRequest request = (HttpRequest) context.getAttribute(HTTP_REQUEST_ATTRIBUTE);
+    public void connect(
+        ManagedHttpClientConnection conn,
+        HttpHost host,
+        InetSocketAddress localAddress,
+        int connectTimeout,
+        SocketConfig socketConfig,
+        HttpContext context
+    ) throws IOException {
+        HttpRequest request = (HttpRequest)context.getAttribute(HTTP_REQUEST_ATTRIBUTE);
         if (request instanceof HttpRequestWrapper) {
-            request = ((HttpRequestWrapper) request).getOriginal();
+            request = ((HttpRequestWrapper)request).getOriginal();
         }
         //for a request via proxy
         if (!request.getRequestLine().getUri().contains(host.toURI())) {
@@ -197,8 +211,8 @@ class SoapUiHttpClientConnectionOperator extends DefaultHttpClientConnectionOper
         }
 
         Stopwatch connectTimer = null;
-        if ((request instanceof ExtendedHttpMethod) && (((ExtendedHttpMethod) request).getMetrics() != null)) {
-            connectTimer = ((ExtendedHttpMethod) request).getMetrics().getConnectTimer();
+        if ((request instanceof ExtendedHttpMethod) && (((ExtendedHttpMethod)request).getMetrics() != null)) {
+            connectTimer = ((ExtendedHttpMethod)request).getMetrics().getConnectTimer();
             connectTimer.start();
         }
         super.connect(conn, host, localAddress, connectTimeout, socketConfig, context);

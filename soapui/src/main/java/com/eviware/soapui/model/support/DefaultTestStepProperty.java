@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.support;
@@ -33,11 +33,11 @@ import javax.xml.namespace.QName;
  */
 
 public class DefaultTestStepProperty implements TestStepProperty, RenameableTestProperty {
+    private final WsdlTestStep testStep;
     private String name;
     private boolean isReadOnly;
     private String description;
     private PropertyHandler handler;
-    private final WsdlTestStep testStep;
     private boolean requestPart;
 
     public DefaultTestStepProperty(String name, boolean isReadOnly, PropertyHandler handler, WsdlTestStep testStep) {
@@ -47,8 +47,9 @@ public class DefaultTestStepProperty implements TestStepProperty, RenameableTest
         this.testStep = testStep;
     }
 
-    public DefaultTestStepProperty(String name, boolean isReadOnly, PropertyHandler handler, WsdlTestStep testStep,
-                                   boolean requestPart) {
+    public DefaultTestStepProperty(
+        String name, boolean isReadOnly, PropertyHandler handler, WsdlTestStep testStep, boolean requestPart
+    ) {
         this.name = name;
         this.isReadOnly = isReadOnly;
         this.handler = handler;
@@ -64,32 +65,16 @@ public class DefaultTestStepProperty implements TestStepProperty, RenameableTest
         this(name, isReadOnly, new SimplePropertyHandler(), testStep);
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setIsReadOnly(boolean isReadOnly) {
-        this.isReadOnly = isReadOnly;
-    }
-
-    public boolean isReadOnly() {
-        return isReadOnly;
-    }
-
-    public void setPropertyHandler(PropertyHandler handler) {
-        this.handler = handler;
     }
 
     public String getValue() {
@@ -106,6 +91,43 @@ public class DefaultTestStepProperty implements TestStepProperty, RenameableTest
         }
     }
 
+    public boolean isReadOnly() {
+        return isReadOnly;
+    }
+
+    public QName getType() {
+        return XmlString.type.getName();
+    }
+
+    public ModelItem getModelItem() {
+        return testStep;
+    }
+
+    public boolean isRequestPart() {
+        return requestPart;
+    }
+
+    @Override
+    public SchemaType getSchemaType() {
+        return XmlString.type;
+    }
+
+    public String getDefaultValue() {
+        return null;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setIsReadOnly(boolean isReadOnly) {
+        this.isReadOnly = isReadOnly;
+    }
+
+    public void setPropertyHandler(PropertyHandler handler) {
+        this.handler = handler;
+    }
+
     public TestStep getTestStep() {
         return testStep;
     }
@@ -117,9 +139,9 @@ public class DefaultTestStepProperty implements TestStepProperty, RenameableTest
      */
 
     public interface PropertyHandler {
-        public String getValue(DefaultTestStepProperty property);
+        String getValue(DefaultTestStepProperty property);
 
-        public void setValue(DefaultTestStepProperty property, String value);
+        void setValue(DefaultTestStepProperty property, String value);
     }
 
     /**
@@ -154,26 +176,4 @@ public class DefaultTestStepProperty implements TestStepProperty, RenameableTest
             this.value = value;
         }
     }
-
-    public QName getType() {
-        return XmlString.type.getName();
-    }
-
-    public ModelItem getModelItem() {
-        return testStep;
-    }
-
-    public String getDefaultValue() {
-        return null;
-    }
-
-    public boolean isRequestPart() {
-        return requestPart;
-    }
-
-    @Override
-    public SchemaType getSchemaType() {
-        return XmlString.type;
-    }
-
 }

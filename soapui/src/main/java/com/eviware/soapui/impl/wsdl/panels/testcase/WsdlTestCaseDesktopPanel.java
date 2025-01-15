@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.testcase;
@@ -73,28 +73,11 @@ import com.eviware.soapui.support.swing.ComponentBag;
 import com.eviware.soapui.support.types.StringToObjectMap;
 import com.eviware.soapui.ui.support.KeySensitiveModelItemDesktopPanel;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JToggleButton;
-import javax.swing.ListModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
 import java.awt.event.ActionEvent;
@@ -108,22 +91,24 @@ import java.util.Date;
 
 @SuppressWarnings("serial")
 public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<WsdlTestCase> {
+    public boolean canceled;
+    public TestCaseRunner lastRunner;
+    protected JTextArea descriptionArea;
+    protected TestOnDemandPanel testOnDemandPanel;
     private JProgressBar progressBar;
     private JTestStepList testStepList;
-    private InternalTestRunListener testRunListener = new InternalTestRunListener();
+    private final InternalTestRunListener testRunListener = new InternalTestRunListener();
     private JButton runButton;
     private JButton cancelButton;
     private TestCaseRunner runner;
     private JButton setEndpointButton;
     private JButton setCredentialsButton;
     private JButton optionsButton;
-    private ComponentBag stateDependantComponents = new ComponentBag();
+    private final ComponentBag stateDependantComponents = new ComponentBag();
     private JTestRunLog testCaseLog;
     private JToggleButton loopButton;
-    private ProgressBarTestCaseAdapter progressBarAdapter;
-    private InternalTestMonitorListener testMonitorListener;
-    public boolean canceled;
-    protected JTextArea descriptionArea;
+    private final ProgressBarTestCaseAdapter progressBarAdapter;
+    private final InternalTestMonitorListener testMonitorListener;
     private PropertyHolderTable propertiesTable;
     private GroovyEditorComponent tearDownGroovyEditor;
     private GroovyEditorComponent setupGroovyEditor;
@@ -131,9 +116,7 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
     private JButton createLoadTestButton;
     private JButton createSecurityTestButton;
     private JInspectorPanel inspectorPanel;
-    public TestCaseRunner lastRunner;
-    private WsdlTestCase testCase;
-    protected TestOnDemandPanel testOnDemandPanel;
+    private final WsdlTestCase testCase;
 
     public WsdlTestCaseDesktopPanel(WsdlTestCase testCase) {
         super(testCase);
@@ -150,11 +133,12 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         SoapUI.getTestMonitor().addTestMonitorListener(testMonitorListener);
 
         DragSource dragSource = DragSource.getDefaultDragSource();
-        SoapUIDragAndDropHandler dragAndDropHandler = new SoapUIDragAndDropHandler(new ModelItemListDragAndDropable(
-                getTestStepList().getTestStepList(), testCase), DropType.BEFORE_AND_AFTER);
+        SoapUIDragAndDropHandler dragAndDropHandler = new SoapUIDragAndDropHandler(
+            new ModelItemListDragAndDropable(getTestStepList().getTestStepList(), testCase),
+            DropType.BEFORE_AND_AFTER
+        );
 
-        dragSource.createDefaultDragGestureRecognizer(getTestStepList().getTestStepList(),
-                DnDConstants.ACTION_COPY_OR_MOVE, dragAndDropHandler);
+        dragSource.createDefaultDragGestureRecognizer(getTestStepList().getTestStepList(), DnDConstants.ACTION_COPY_OR_MOVE, dragAndDropHandler);
         // needed for synchronizing with loadUI
         this.testCase = testCase;
     }
@@ -165,15 +149,15 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
      */
 
     private void setRunningState() {
-        boolean hasRunningTests = SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem())
-                || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem());
+        boolean hasRunningTests = SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem());
         stateDependantComponents.setEnabled(!hasRunningTests);
 
         //disable setting endpoint if in environment mode
         WsdlProject project = getModelItem().getTestSuite().getProject();
         if (project.isEnvironmentMode()) {
             getSetEndpointButton().setEnabled(false);
-        } else {
+        }
+        else {
             getSetEndpointButton().setEnabled(!hasRunningTests);
         }
     }
@@ -187,13 +171,11 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         add(panel, BorderLayout.NORTH);
 
         inspectorPanel = JInspectorPanelFactory.build(buildContent());
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildTestLog(), "TestCase Log",
-                "TestCase Execution Log", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildTestLog(), "TestCase Log", "TestCase Execution Log", true));
         inspectorPanel.setDefaultDividerLocation(0.7F);
         inspectorPanel.setCurrentInspector("TestCase Log");
 
-        if (StringUtils.hasContent(getModelItem().getDescription())
-                && getModelItem().getSettings().getBoolean(UISettings.SHOW_DESCRIPTIONS)) {
+        if (StringUtils.hasContent(getModelItem().getDescription()) && getModelItem().getSettings().getBoolean(UISettings.SHOW_DESCRIPTIONS)) {
             testStepListInspectorPanel.setCurrentInspector("Description");
         }
 
@@ -238,11 +220,11 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
             }
             toolbar.addFixed(testStepButton);
             String type = factory.getType();
-            if (type.equals(JdbcRequestTestStepFactory.JDBC_TYPE)
-                    || type.equals(PropertyTransfersStepFactory.TRANSFER_TYPE)
-                    || type.equals("datasourceloop")
-                    || type.equals(RunTestCaseStepFactory.RUNTESTCASE_TYPE)
-                    || type.equals(ManualTestStepFactory.MANUAL_TEST_STEP)) {
+            if (type.equals(JdbcRequestTestStepFactory.JDBC_TYPE) ||
+                type.equals(PropertyTransfersStepFactory.TRANSFER_TYPE) ||
+                type.equals("datasourceloop") ||
+                type.equals(RunTestCaseStepFactory.RUNTESTCASE_TYPE) ||
+                type.equals(ManualTestStepFactory.MANUAL_TEST_STEP)) {
                 toolbar.addRelatedGap();
             }
         }
@@ -257,14 +239,10 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
     }
 
     protected void addTabs(JTabbedPane tabs, JInspectorPanel inspectorPanel) {
-        inspectorPanel.addInspector(new JFocusableComponentInspector<JPanel>(buildDescriptionPanel(), descriptionArea,
-                "Description", "TestCase Description", true));
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildPropertiesPanel(), "Properties",
-                "TestCase level properties", true));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildSetupScriptPanel(), "Setup Script",
-                "Script to run before running a TestCase"));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildTearDownScriptPanel(), "TearDown Script",
-                "Script to run after a TestCase Run"));
+        inspectorPanel.addInspector(new JFocusableComponentInspector<JPanel>(buildDescriptionPanel(), descriptionArea, "Description", "TestCase Description", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildPropertiesPanel(), "Properties", "TestCase level properties", true));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildSetupScriptPanel(), "Setup Script", "Script to run before running a TestCase"));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildTearDownScriptPanel(), "TearDown Script", "Script to run after a TestCase Run"));
 
         tabs.addTab("Test On Demand", buildTestOnDemandPanel());
     }
@@ -311,8 +289,7 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         JXToolBar toolbar = UISupport.createToolbar();
 
         runButton = UISupport.createToolbarButton(new RunTestCaseAction());
-        optionsButton = UISupport.createToolbarButton(SwingActionDelegate.createDelegate(
-                TestCaseOptionsAction.SOAPUI_ACTION_ID, getModelItem(), null, "/preferences.png"));
+        optionsButton = UISupport.createToolbarButton(SwingActionDelegate.createDelegate(TestCaseOptionsAction.SOAPUI_ACTION_ID, getModelItem(), null, "/preferences.png"));
         optionsButton.setText(null);
         cancelButton = UISupport.createToolbarButton(new CancelRunTestCaseAction(), false);
 
@@ -329,13 +306,11 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         stateDependantComponents.add(setCredentialsButton);
         stateDependantComponents.add(setEndpointButton);
 
-        SwingActionDelegate createLoadTestDelegate = SwingActionDelegate.createDelegate(
-                AddNewLoadTestAction.SOAPUI_ACTION_ID, getModelItem(), null, "/loadTest.png");
+        SwingActionDelegate createLoadTestDelegate = SwingActionDelegate.createDelegate(AddNewLoadTestAction.SOAPUI_ACTION_ID, getModelItem(), null, "/loadTest.png");
 //        createLoadTestDelegate.getMapping().setParam(CREATE_LOAD_TEST_FROM_TEST_CASE_PANEL);
         createLoadTestButton = UISupport.createToolbarButton(createLoadTestDelegate);
 
-        SwingActionDelegate createSecurityTestDelegate = SwingActionDelegate.createDelegate(
-                AddNewSecurityTestAction.SOAPUI_ACTION_ID, getModelItem(), null, "/security_test.png");
+        SwingActionDelegate createSecurityTestDelegate = SwingActionDelegate.createDelegate(AddNewSecurityTestAction.SOAPUI_ACTION_ID, getModelItem(), null, "/security_test.png");
 //        createSecurityTestDelegate.getMapping().setParam(CREATE_SECURITY_TEST_FROM_TEST_CASE_PANEL);
         createSecurityTestButton = UISupport.createToolbarButton(createSecurityTestDelegate);
 
@@ -370,10 +345,136 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         return UISupport.createProgressBarPanel(progressBar, 10, false);
     }
 
+    protected void runTestCase() {
+        if (canceled) {
+            // make sure state is correct
+            runButton.setEnabled(true);
+            cancelButton.setEnabled(false);
+            testStepList.setEnabled(true);
+            return;
+        }
+
+        StringToObjectMap properties = new StringToObjectMap();
+        properties.put("loopButton", loopButton);
+        properties.put(TestCaseRunContext.INTERACTIVE, Boolean.TRUE);
+        lastRunner = null;
+        runner = getModelItem().run(properties, true);
+    }
+
+    @Override
+    public boolean onClose(boolean canCancel) {
+        if (canCancel) {
+            if (runner != null && runner.getStatus() == TestCaseRunner.Status.RUNNING) {
+                Boolean retval = UISupport.confirmOrCancel("Cancel running TestCase?", "Cancel Run");
+
+                if (retval == null) {
+                    return false;
+                }
+                if (retval) {
+                    if (runner != null) {
+                        runner.cancel(null);
+                    }
+                }
+            }
+        }
+        else {
+            if (runner != null && runner.getStatus() == TestCaseRunner.Status.RUNNING) {
+                if (runner != null) {
+                    runner.cancel(null);
+                }
+            }
+        }
+
+        SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
+        getModelItem().removeTestRunListener(testRunListener);
+        testStepList.release();
+        progressBarAdapter.release();
+        propertiesTable.release();
+        inspectorPanel.release();
+
+        setupGroovyEditor.getEditor().release();
+        tearDownGroovyEditor.getEditor().release();
+
+        testCaseLog.release();
+        lastRunner = null;
+
+        if (testOnDemandPanel != null) {
+            testOnDemandPanel.release();
+        }
+
+        return release();
+    }
+
+    @Override
+    public boolean dependsOn(ModelItem modelItem) {
+        return modelItem == getModelItem() || modelItem == getModelItem().getTestSuite() || modelItem == getModelItem().getTestSuite().getProject();
+    }
+
+    protected void beforeRun() {
+    }
+
+    protected void afterRun() {
+        runButton.setEnabled(true);
+        cancelButton.setEnabled(false);
+        testStepList.setEnabled(true);
+    }
+
+    public TestCaseRunner getTestCaseRunner() {
+        return runner == null ? lastRunner : runner;
+    }
+
+    @Override
+    protected void renameModelItem() {
+        SoapUI.getActionRegistry().performAction("RenameTestCaseAction", getModelItem(), null);
+    }
+
+    @Override
+    protected void cloneModelItem() {
+        SoapUI.getActionRegistry().performAction("CloneTestCaseAction", getModelItem(), null);
+    }
+
+    protected Component buildTestOnDemandPanel() {
+        testOnDemandPanel = new TestOnDemandPanel(getModelItem());
+        return testOnDemandPanel;
+    }
+
+    public static class ModelItemListDragAndDropable extends JListDragAndDropable<JList> {
+        public ModelItemListDragAndDropable(JList list, WsdlTestCase testCase) {
+            super(list, testCase);
+        }
+
+        @Override
+        public ModelItem getModelItemAtRow(int row) {
+            return (ModelItem)getList().getModel().getElementAt(row);
+        }
+
+        @Override
+        public int getModelItemRow(ModelItem modelItem) {
+            ListModel model = getList().getModel();
+
+            for (int c = 0; c < model.getSize(); c++) {
+                if (model.getElementAt(c) == modelItem) {
+                    return c;
+                }
+            }
+
+            return -1;
+        }
+
+        @Override
+        public void setDragInfo(String dropInfo) {
+            super.setDragInfo(dropInfo == null || dropInfo.length() == 0 ? null : dropInfo);
+        }
+
+        public Component getRenderer(ModelItem modelItem) {
+            return getList().getCellRenderer().getListCellRendererComponent(getList(), modelItem, getModelItemRow(modelItem), true, true);
+        }
+    }
+
     private final class TestOnDemandTabChangeListener implements ChangeListener {
         @Override
         public void stateChanged(ChangeEvent evt) {
-            JTabbedPane pane = (JTabbedPane) evt.getSource();
+            JTabbedPane pane = (JTabbedPane)evt.getSource();
             if (pane.getSelectedComponent().equals(testOnDemandPanel)) {
                 testOnDemandPanel.ensureBrowserIsInitialized();
                 testOnDemandPanel.initializeLocationsCache();
@@ -410,8 +511,7 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
 
         @Override
         public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-            if (SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem())
-                    || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem())) {
+            if (SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem())) {
                 return;
             }
 
@@ -431,39 +531,30 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         }
 
         @Override
-        public synchronized void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext,
-                                            final TestStep testStep) {
-            if (SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem())
-                    || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem())) {
+        public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult stepResult) {
+            if (SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem())) {
                 return;
             }
 
-            if (testStep != null) {
-                if (SwingUtilities.isEventDispatchThread()) {
-                    testStepList.setSelectedValue(testStep, true);
-                } else {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            testStepList.setSelectedValue(testStep, true);
-                        }
-                    });
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    testCaseLog.addTestStepResult(stepResult);
                 }
-            }
+            });
         }
 
         @Override
         public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-            if (SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem())
-                    || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem())) {
+            if (SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem())) {
                 return;
             }
 
-            AbstractTestCaseRunner<TestRunnable, WsdlTestRunContext> wsdlRunner = (AbstractTestCaseRunner<TestRunnable, WsdlTestRunContext>) testRunner;
+            AbstractTestCaseRunner<TestRunnable, WsdlTestRunContext> wsdlRunner = (AbstractTestCaseRunner<TestRunnable, WsdlTestRunContext>)testRunner;
 
             if (testRunner.getStatus() == TestCaseRunner.Status.CANCELED) {
-                testCaseLog.addText("TestCase canceled [" + testRunner.getReason() + "], time taken = "
-                        + wsdlRunner.getTimeTaken());
-            } else if (testRunner.getStatus() == TestCaseRunner.Status.FAILED) {
+                testCaseLog.addText("TestCase canceled [" + testRunner.getReason() + "], time taken = " + wsdlRunner.getTimeTaken());
+            }
+            else if (testRunner.getStatus() == TestCaseRunner.Status.FAILED) {
                 String msg = wsdlRunner.getReason();
                 if (wsdlRunner.getError() != null) {
                     if (msg != null) {
@@ -474,61 +565,54 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
                 }
 
                 testCaseLog.addText("TestCase failed [" + msg + "], time taken = " + wsdlRunner.getTimeTaken());
-            } else {
-                testCaseLog.addText("TestCase finished with status [" + testRunner.getStatus() + "], time taken = "
-                        + wsdlRunner.getTimeTaken());
+            }
+            else {
+                testCaseLog.addText("TestCase finished with status [" + testRunner.getStatus() + "], time taken = " + wsdlRunner.getTimeTaken());
             }
 
             lastRunner = runner;
             runner = null;
 
-            JToggleButton loopButton = (JToggleButton) runContext.getProperty("loopButton");
+            JToggleButton loopButton = (JToggleButton)runContext.getProperty("loopButton");
             if (loopButton != null && loopButton.isSelected() && testRunner.getStatus() == TestCaseRunner.Status.FINISHED) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         runTestCase();
                     }
                 });
-            } else {
+            }
+            else {
                 WsdlTestCaseDesktopPanel.this.afterRun();
             }
         }
 
         @Override
-        public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, final TestStepResult stepResult) {
-            if (SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem())
-                    || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem())) {
+        public synchronized void beforeStep(
+            TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep
+        ) {
+            if (SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem())) {
                 return;
             }
 
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    testCaseLog.addTestStepResult(stepResult);
+            if (testStep != null) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    testStepList.setSelectedValue(testStep, true);
                 }
-            });
+                else {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            testStepList.setSelectedValue(testStep, true);
+                        }
+                    });
+                }
+            }
         }
-    }
-
-    protected void runTestCase() {
-        if (canceled) {
-            // make sure state is correct
-            runButton.setEnabled(true);
-            cancelButton.setEnabled(false);
-            testStepList.setEnabled(true);
-            return;
-        }
-
-        StringToObjectMap properties = new StringToObjectMap();
-        properties.put("loopButton", loopButton);
-        properties.put(TestCaseRunContext.INTERACTIVE, Boolean.TRUE);
-        lastRunner = null;
-        runner = getModelItem().run(properties, true);
     }
 
     public class RunTestCaseAction extends AbstractAction {
         public RunTestCaseAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Runs this testcase");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Runs this testcase");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -539,8 +623,8 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
 
     public class CancelRunTestCaseAction extends AbstractAction {
         public CancelRunTestCaseAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/stop.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Stops running this testcase");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/stop.png"));
+            putValue(SHORT_DESCRIPTION, "Stops running this testcase");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -552,85 +636,25 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         }
     }
 
-    @Override
-    public boolean onClose(boolean canCancel) {
-        if (canCancel) {
-            if (runner != null && runner.getStatus() == TestCaseRunner.Status.RUNNING) {
-                Boolean retval = UISupport.confirmOrCancel("Cancel running TestCase?", "Cancel Run");
-
-                if (retval == null) {
-                    return false;
-                }
-                if (retval) {
-                    if (runner != null) {
-                        runner.cancel(null);
-                    }
-                }
-            }
-        } else {
-            if (runner != null && runner.getStatus() == TestCaseRunner.Status.RUNNING) {
-                if (runner != null) {
-                    runner.cancel(null);
-                }
-            }
-        }
-
-        SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
-        getModelItem().removeTestRunListener(testRunListener);
-        testStepList.release();
-        progressBarAdapter.release();
-        propertiesTable.release();
-        inspectorPanel.release();
-
-        setupGroovyEditor.getEditor().release();
-        tearDownGroovyEditor.getEditor().release();
-
-        testCaseLog.release();
-        lastRunner = null;
-
-        if (testOnDemandPanel != null) {
-            testOnDemandPanel.release();
-        }
-
-        return release();
-    }
-
-    @Override
-    public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == getModelItem() || modelItem == getModelItem().getTestSuite()
-                || modelItem == getModelItem().getTestSuite().getProject();
-    }
-
-    protected void beforeRun() {
-    }
-
-    protected void afterRun() {
-        runButton.setEnabled(true);
-        cancelButton.setEnabled(false);
-        testStepList.setEnabled(true);
-    }
-
     private class SetupScriptGroovyEditorModel extends AbstractGroovyEditorModel {
+        public SetupScriptGroovyEditorModel() {
+            super(new String[]{"log", "testCase", "context", "testRunner"}, WsdlTestCaseDesktopPanel.this.getModelItem(), "Setup");
+        }
+
         @Override
         public Action createRunAction() {
             return new AbstractAction() {
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        MockTestRunner mockTestRunner = new MockTestRunner(WsdlTestCaseDesktopPanel.this.getModelItem(),
-                                SoapUI.ensureGroovyLog());
-                        WsdlTestCaseDesktopPanel.this.getModelItem().runSetupScript(
-                                new MockTestRunContext(mockTestRunner, null), mockTestRunner);
-                    } catch (Exception e1) {
+                        MockTestRunner mockTestRunner = new MockTestRunner(WsdlTestCaseDesktopPanel.this.getModelItem(), SoapUI.ensureGroovyLog());
+                        WsdlTestCaseDesktopPanel.this.getModelItem().runSetupScript(new MockTestRunContext(mockTestRunner, null), mockTestRunner);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
             };
-        }
-
-        public SetupScriptGroovyEditorModel() {
-            super(new String[]{"log", "testCase", "context", "testRunner"}, WsdlTestCaseDesktopPanel.this
-                    .getModelItem(), "Setup");
         }
 
         @Override
@@ -645,26 +669,24 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
     }
 
     private class TearDownScriptGroovyEditorModel extends AbstractGroovyEditorModel {
+        public TearDownScriptGroovyEditorModel() {
+            super(new String[]{"log", "testCase", "context", "testRunner"}, WsdlTestCaseDesktopPanel.this.getModelItem(), "TearDown");
+        }
+
         @Override
         public Action createRunAction() {
             return new AbstractAction() {
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        MockTestRunner mockTestRunner = new MockTestRunner(WsdlTestCaseDesktopPanel.this.getModelItem(),
-                                SoapUI.ensureGroovyLog());
-                        WsdlTestCaseDesktopPanel.this.getModelItem().runTearDownScript(
-                                new MockTestRunContext(mockTestRunner, null), mockTestRunner);
-                    } catch (Exception e1) {
+                        MockTestRunner mockTestRunner = new MockTestRunner(WsdlTestCaseDesktopPanel.this.getModelItem(), SoapUI.ensureGroovyLog());
+                        WsdlTestCaseDesktopPanel.this.getModelItem().runTearDownScript(new MockTestRunContext(mockTestRunner, null), mockTestRunner);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
             };
-        }
-
-        public TearDownScriptGroovyEditorModel() {
-            super(new String[]{"log", "testCase", "context", "testRunner"}, WsdlTestCaseDesktopPanel.this
-                    .getModelItem(), "TearDown");
         }
 
         @Override
@@ -700,9 +722,9 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
 
             String name;
             if (factory.promptForName()) {
-                name = UISupport.prompt("Specify name for new step", ix == -1 ? "Add Step" : "Insert Step",
-                        factory.getTestStepName());
-            } else {
+                name = UISupport.prompt("Specify name for new step", ix == -1 ? "Add Step" : "Insert Step", factory.getTestStepName());
+            }
+            else {
                 name = factory.getTestStepName();
             }
             if (name != null) {
@@ -715,58 +737,5 @@ public class WsdlTestCaseDesktopPanel extends KeySensitiveModelItemDesktopPanel<
                 }
             }
         }
-    }
-
-    public static class ModelItemListDragAndDropable extends JListDragAndDropable<JList> {
-        public ModelItemListDragAndDropable(JList list, WsdlTestCase testCase) {
-            super(list, testCase);
-        }
-
-        @Override
-        public ModelItem getModelItemAtRow(int row) {
-            return (ModelItem) getList().getModel().getElementAt(row);
-        }
-
-        @Override
-        public int getModelItemRow(ModelItem modelItem) {
-            ListModel model = getList().getModel();
-
-            for (int c = 0; c < model.getSize(); c++) {
-                if (model.getElementAt(c) == modelItem) {
-                    return c;
-                }
-            }
-
-            return -1;
-        }
-
-        public Component getRenderer(ModelItem modelItem) {
-            return getList().getCellRenderer().getListCellRendererComponent(getList(), modelItem,
-                    getModelItemRow(modelItem), true, true);
-        }
-
-        @Override
-        public void setDragInfo(String dropInfo) {
-            super.setDragInfo(dropInfo == null || dropInfo.length() == 0 ? null : dropInfo);
-        }
-    }
-
-    public TestCaseRunner getTestCaseRunner() {
-        return runner == null ? lastRunner : runner;
-    }
-
-    @Override
-    protected void renameModelItem() {
-        SoapUI.getActionRegistry().performAction("RenameTestCaseAction", getModelItem(), null);
-    }
-
-    @Override
-    protected void cloneModelItem() {
-        SoapUI.getActionRegistry().performAction("CloneTestCaseAction", getModelItem(), null);
-    }
-
-    protected Component buildTestOnDemandPanel() {
-        testOnDemandPanel = new TestOnDemandPanel(getModelItem());
-        return testOnDemandPanel;
     }
 }

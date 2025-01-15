@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wsdl;
@@ -60,8 +60,8 @@ import java.util.Map;
  */
 
 public class WsdlValidator {
-    private final WsdlContext wsdlContext;
     private final static Logger log = LogManager.getLogger(WsdlValidator.class);
+    private final WsdlContext wsdlContext;
 
     public WsdlValidator(WsdlContext wsdlContext) {
         this.wsdlContext = wsdlContext;
@@ -78,24 +78,26 @@ public class WsdlValidator {
                 WsdlOperation operation = messageExchange.getOperation();
                 BindingOperation bindingOperation = operation.getBindingOperation();
                 if (bindingOperation == null) {
-                    errors.add(XmlError.forMessage("Missing operation [" + operation.getBindingOperationName()
-                            + "] in wsdl definition"));
-                } else {
+                    errors.add(XmlError.forMessage("Missing operation [" + operation.getBindingOperationName() + "] in wsdl definition"));
+                }
+                else {
                     Part[] inputParts = WsdlUtils.getInputParts(bindingOperation);
                     validateMessage(messageExchange, requestContent, bindingOperation, inputParts, errors, false);
                     // validateInputAttachments(request, errors, bindingOperation,
                     // inputParts);
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             errors.add(XmlError.forMessage(e.getMessage()));
         }
 
         return convertErrors(errors);
     }
 
-    private void validateInputAttachments(WsdlMessageExchange messageExchange, List<XmlError> errors,
-                                          BindingOperation bindingOperation, Part[] inputParts) {
+    private void validateInputAttachments(
+        WsdlMessageExchange messageExchange, List<XmlError> errors, BindingOperation bindingOperation, Part[] inputParts
+    ) {
         for (Part part : inputParts) {
             MIMEContent[] contents = WsdlUtils.getInputMultipartContent(part, bindingOperation);
             if (contents.length == 0) {
@@ -105,7 +107,8 @@ public class WsdlValidator {
             Attachment[] attachments = messageExchange.getRequestAttachmentsForPart(part.getName());
             if (attachments.length == 0) {
                 errors.add(XmlError.forMessage("Missing attachment for part [" + part.getName() + "]"));
-            } else if (attachments.length == 1) {
+            }
+            else if (attachments.length == 1) {
                 Attachment attachment = attachments[0];
                 String types = "";
                 for (MIMEContent content : contents) {
@@ -122,16 +125,24 @@ public class WsdlValidator {
                 }
 
                 if (types != null) {
-                    String msg = "Missing attachment for part [" + part.getName() + "] with content-type [" + types + "],"
-                            + " content type is [" + attachment.getContentType() + "]";
+                    String msg = "Missing attachment for part [" +
+                                 part.getName() +
+                                 "] with content-type [" +
+                                 types +
+                                 "]," +
+                                 " content type is [" +
+                                 attachment.getContentType() +
+                                 "]";
 
                     if (SoapUI.getSettings().getBoolean(WsdlSettings.ALLOW_INCORRECT_CONTENTTYPE)) {
                         log.warn(msg);
-                    } else {
+                    }
+                    else {
                         errors.add(XmlError.forMessage(msg));
                     }
                 }
-            } else {
+            }
+            else {
                 String types = "";
                 for (MIMEContent content : contents) {
                     String type = content.getType();
@@ -150,7 +161,8 @@ public class WsdlValidator {
                     String msg = "Too many attachments for part [" + part.getName() + "] with content-type [" + types + "]";
                     if (SoapUI.getSettings().getBoolean(WsdlSettings.ALLOW_INCORRECT_CONTENTTYPE)) {
                         log.warn(msg);
-                    } else {
+                    }
+                    else {
                         errors.add(XmlError.forMessage(msg));
                     }
                 }
@@ -162,8 +174,9 @@ public class WsdlValidator {
         }
     }
 
-    private void validateOutputAttachments(WsdlMessageExchange messageExchange, XmlObject xml, List<XmlError> errors,
-                                           BindingOperation bindingOperation, Part[] outputParts) throws Exception {
+    private void validateOutputAttachments(
+        WsdlMessageExchange messageExchange, XmlObject xml, List<XmlError> errors, BindingOperation bindingOperation, Part[] outputParts
+    ) throws Exception {
         for (Part part : outputParts) {
             MIMEContent[] contents = WsdlUtils.getOutputMultipartContent(part, bindingOperation);
             if (contents.length == 0) {
@@ -178,7 +191,7 @@ public class WsdlValidator {
                 if (rpcBodyPart.length == 1) {
                     XmlObject[] children = rpcBodyPart[0].selectChildren(new QName(part.getName()));
                     if (children.length == 1) {
-                        String href = ((Element) children[0].getDomNode()).getAttribute("href");
+                        String href = ((Element)children[0].getDomNode()).getAttribute("href");
                         if (href != null) {
                             if (href.startsWith("cid:")) {
                                 href = href.substring(4);
@@ -192,7 +205,8 @@ public class WsdlValidator {
 
             if (attachments.length == 0) {
                 errors.add(XmlError.forMessage("Missing attachment for part [" + part.getName() + "]"));
-            } else if (attachments.length == 1) {
+            }
+            else if (attachments.length == 1) {
                 Attachment attachment = attachments[0];
                 String types = "";
                 for (MIMEContent content : contents) {
@@ -210,16 +224,17 @@ public class WsdlValidator {
                 }
 
                 if (types != null) {
-                    String msg = "Missing attachment for part [" + part.getName() + "] with content-type [" + types
-                            + "], content type is [" + attachment.getContentType() + "]";
+                    String msg = "Missing attachment for part [" + part.getName() + "] with content-type [" + types + "], content type is [" + attachment.getContentType() + "]";
 
                     if (SoapUI.getSettings().getBoolean(WsdlSettings.ALLOW_INCORRECT_CONTENTTYPE)) {
                         log.warn(msg);
-                    } else {
+                    }
+                    else {
                         errors.add(XmlError.forMessage(msg));
                     }
                 }
-            } else {
+            }
+            else {
                 String types = "";
                 for (MIMEContent content : contents) {
                     String type = content.getType();
@@ -240,7 +255,8 @@ public class WsdlValidator {
 
                     if (SoapUI.getSettings().getBoolean(WsdlSettings.ALLOW_INCORRECT_CONTENTTYPE)) {
                         log.warn(msg);
-                    } else {
+                    }
+                    else {
                         errors.add(XmlError.forMessage(msg));
                     }
                 }
@@ -256,14 +272,14 @@ public class WsdlValidator {
         for (Attachment attachment : attachments) {
             try {
                 attachment.getInputStream();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 errors.add(XmlError.forMessage(e.toString()));
             }
         }
     }
 
-    public XmlObject[] getMessageParts(String messageContent, String operationName, boolean isResponse)
-            throws Exception {
+    public XmlObject[] getMessageParts(String messageContent, String operationName, boolean isResponse) throws Exception {
         BindingOperation bindingOperation = findBindingOperation(operationName);
         if (bindingOperation == null) {
             throw new Exception("Missing operation [" + operationName + "] in wsdl definition");
@@ -275,8 +291,7 @@ public class WsdlValidator {
 
         // XmlObject msgXml = XmlObject.Factory.parse( messageContent );
         XmlObject msgXml = XmlUtils.createXmlObject(messageContent);
-        Part[] parts = isResponse ? WsdlUtils.getOutputParts(bindingOperation) : WsdlUtils
-                .getInputParts(bindingOperation);
+        Part[] parts = isResponse ? WsdlUtils.getOutputParts(bindingOperation) : WsdlUtils.getInputParts(bindingOperation);
         if (parts == null || parts.length == 0) {
             throw new Exception("Missing parts for operation [" + operationName + "]");
         }
@@ -285,22 +300,29 @@ public class WsdlValidator {
 
         if (WsdlUtils.isRpc(wsdlContext.getDefinition(), bindingOperation)) {
             // get root element
-            XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                    + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';" + "declare namespace ns='"
-                    + WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) + "';" + "$this/env:Envelope/env:Body/ns:"
-                    + bindingOperation.getName() + (isResponse ? "Response" : ""));
+            XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                                  wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                  "';" +
+                                                  "declare namespace ns='" +
+                                                  WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) +
+                                                  "';" +
+                                                  "$this/env:Envelope/env:Body/ns:" +
+                                                  bindingOperation.getName() +
+                                                  (isResponse ? "Response" : ""));
 
             if (paths.length != 1) {
-                throw new Exception("Missing message wrapper element ["
-                        + WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) + "@" + bindingOperation.getName()
-                        + (isResponse ? "Response]" : "]"));
-            } else {
+                throw new Exception("Missing message wrapper element [" +
+                                    WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) +
+                                    "@" +
+                                    bindingOperation.getName() +
+                                    (isResponse ? "Response]" : "]"));
+            }
+            else {
                 XmlObject wrapper = paths[0];
 
                 for (int i = 0; i < parts.length; i++) {
                     Part part = parts[i];
-                    if ((isResponse && WsdlUtils.isAttachmentOutputPart(part, bindingOperation))
-                            || (!isResponse && WsdlUtils.isAttachmentInputPart(part, bindingOperation))) {
+                    if ((isResponse && WsdlUtils.isAttachmentOutputPart(part, bindingOperation)) || (!isResponse && WsdlUtils.isAttachmentInputPart(part, bindingOperation))) {
                         continue;
                     }
 
@@ -312,7 +334,8 @@ public class WsdlValidator {
                     XmlObject[] children = wrapper.selectChildren(partName);
                     if (children.length != 1) {
                         log.error("Missing message part [" + part.getName() + "]");
-                    } else {
+                    }
+                    else {
                         QName typeName = part.getTypeName();
                         if (typeName == null) {
                             typeName = partName;
@@ -320,41 +343,49 @@ public class WsdlValidator {
 
                             if (type != null) {
                                 result.add(children[0].copy().changeType(type.getType()));
-                            } else {
-                                log.error("Missing element [" + typeName + "] in associated schema for part ["
-                                        + part.getName() + "]");
                             }
-                        } else {
+                            else {
+                                log.error("Missing element [" + typeName + "] in associated schema for part [" + part.getName() + "]");
+                            }
+                        }
+                        else {
                             SchemaType type = wsdlContext.getSchemaTypeLoader().findType(typeName);
                             if (type != null) {
                                 result.add(children[0].copy().changeType(type));
-                            } else {
-                                log.error("Missing type [" + typeName + "] in associated schema for part [" + part.getName()
-                                        + "]");
+                            }
+                            else {
+                                log.error("Missing type [" + typeName + "] in associated schema for part [" + part.getName() + "]");
                             }
                         }
                     }
                 }
             }
-        } else {
+        }
+        else {
             Part part = parts[0];
             QName elementName = part.getElementName();
             if (elementName != null) {
                 // just check for correct message element, other elements are
                 // avoided (should create an error)
-                XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                        + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';" + "declare namespace ns='"
-                        + elementName.getNamespaceURI() + "';" + "$this/env:Envelope/env:Body/ns:"
-                        + elementName.getLocalPart());
+                XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                                      wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                      "';" +
+                                                      "declare namespace ns='" +
+                                                      elementName.getNamespaceURI() +
+                                                      "';" +
+                                                      "$this/env:Envelope/env:Body/ns:" +
+                                                      elementName.getLocalPart());
 
                 if (paths.length == 1) {
                     SchemaGlobalElement elm = wsdlContext.getSchemaTypeLoader().findElement(elementName);
                     if (elm != null) {
                         result.add(paths[0].copy().changeType(elm.getType()));
-                    } else {
+                    }
+                    else {
                         throw new Exception("Missing part type in associated schema");
                     }
-                } else {
+                }
+                else {
                     throw new Exception("Missing message part with name [" + elementName + "]");
                 }
             }
@@ -372,12 +403,14 @@ public class WsdlValidator {
             xmlOptions.setLoadLineNumbers(XmlOptions.LOAD_LINE_NUMBERS_END_ELEMENT);
             // XmlObject.Factory.parse( request, xmlOptions );
             XmlUtils.createXmlObject(request, xmlOptions);
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             if (e.getErrors() != null) {
                 errors.addAll(e.getErrors());
             }
             errors.add(XmlError.forMessage(e.getMessage()));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             errors.add(XmlError.forMessage(e.getMessage()));
         }
     }
@@ -389,15 +422,14 @@ public class WsdlValidator {
                 XmlError error = i.next();
 
                 if (error instanceof XmlValidationError) {
-                    XmlValidationError e = ((XmlValidationError) error);
+                    XmlValidationError e = ((XmlValidationError)error);
                     QName offendingQName = e.getOffendingQName();
                     if (offendingQName != null) {
-                        if (offendingQName.equals(new QName(wsdlContext.getSoapVersion().getEnvelopeNamespace(),
-                                "encodingStyle"))) {
+                        if (offendingQName.equals(new QName(wsdlContext.getSoapVersion().getEnvelopeNamespace(), "encodingStyle"))) {
                             log.debug("ignoring encodingStyle validation..");
                             continue;
-                        } else if (offendingQName.equals(new QName(wsdlContext.getSoapVersion().getEnvelopeNamespace(),
-                                "mustUnderstand"))) {
+                        }
+                        else if (offendingQName.equals(new QName(wsdlContext.getSoapVersion().getEnvelopeNamespace(), "mustUnderstand"))) {
                             log.debug("ignoring mustUnderstand validation..");
                             continue;
                         }
@@ -417,12 +449,14 @@ public class WsdlValidator {
     }
 
     @SuppressWarnings("unchecked")
-    public void validateMessage(WsdlMessageExchange messageExchange, String message, BindingOperation bindingOperation,
-                                Part[] parts, List<XmlError> errors, boolean isResponse) {
+    public void validateMessage(
+        WsdlMessageExchange messageExchange, String message, BindingOperation bindingOperation, Part[] parts, List<XmlError> errors, boolean isResponse
+    ) {
         try {
             if (!wsdlContext.hasSchemaTypes()) {
                 errors.add(XmlError.forMessage("Missing schema types for message"));
-            } else {
+            }
+            else {
                 if (!WsdlUtils.isOutputSoapEncoded(bindingOperation)) {
                     XmlOptions xmlOptions = new XmlOptions();
                     xmlOptions.setLoadLineNumbers();
@@ -431,33 +465,40 @@ public class WsdlValidator {
                     // );
                     XmlObject xml = XmlUtils.createXmlObject(message, xmlOptions);
 
-                    XmlObject[] paths = xml.selectPath("declare namespace env='"
-                            + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';"
-                            + "$this/env:Envelope/env:Body/env:Fault");
+                    XmlObject[] paths = xml.selectPath("declare namespace env='" +
+                                                       wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                       "';" +
+                                                       "$this/env:Envelope/env:Body/env:Fault");
 
                     if (paths.length > 0) {
                         validateSoapFault(bindingOperation, paths[0], errors);
-                    } else if (WsdlUtils.isRpc(wsdlContext.getDefinition(), bindingOperation)) {
+                    }
+                    else if (WsdlUtils.isRpc(wsdlContext.getDefinition(), bindingOperation)) {
                         validateRpcLiteral(bindingOperation, parts, xml, errors, isResponse);
-                    } else {
+                    }
+                    else {
                         validateDocLiteral(bindingOperation, parts, xml, errors, isResponse);
                     }
 
                     if (isResponse) {
                         validateOutputAttachments(messageExchange, xml, errors, bindingOperation, parts);
-                    } else {
+                    }
+                    else {
                         validateInputAttachments(messageExchange, errors, bindingOperation, parts);
                     }
-                } else {
+                }
+                else {
                     errors.add(XmlError.forMessage("Validation of SOAP-Encoded messages not supported"));
                 }
             }
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             if (e.getErrors() != null) {
                 errors.addAll(e.getErrors());
             }
             errors.add(XmlError.forMessage(e.getMessage()));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             errors.add(XmlError.forMessage(e.getMessage()));
         }
     }
@@ -466,12 +507,12 @@ public class WsdlValidator {
         Map<?, ?> services = wsdlContext.getDefinition().getAllServices();
         Iterator<?> i = services.keySet().iterator();
         while (i.hasNext()) {
-            Service service = (Service) wsdlContext.getDefinition().getService((QName) i.next());
+            Service service = wsdlContext.getDefinition().getService((QName)i.next());
             Map<?, ?> ports = service.getPorts();
 
             Iterator<?> iterator = ports.keySet().iterator();
             while (iterator.hasNext()) {
-                Port port = (Port) service.getPort((String) iterator.next());
+                Port port = service.getPort((String)iterator.next());
                 Binding binding = port.getBinding();
                 if (binding.getQName().equals(wsdlContext.getInterface().getBindingName())) {
                     BindingOperation bindingOperation = binding.getBindingOperation(operationName, null, null);
@@ -485,7 +526,7 @@ public class WsdlValidator {
         Map<?, ?> bindings = wsdlContext.getDefinition().getAllBindings();
         i = bindings.keySet().iterator();
         while (i.hasNext()) {
-            Binding binding = (Binding) bindings.get(i.next());
+            Binding binding = (Binding)bindings.get(i.next());
             if (binding.getQName().equals(wsdlContext.getInterface().getBindingName())) {
                 BindingOperation bindingOperation = binding.getBindingOperation(operationName, null, null);
                 if (bindingOperation != null) {
@@ -506,22 +547,24 @@ public class WsdlValidator {
                 if (!messageExchange.getOperation().isOneWay()) {
                     errors.add(XmlError.forMessage("Response is missing or empty"));
                 }
-            } else {
+            }
+            else {
                 wsdlContext.getSoapVersion().validateSoapEnvelope(response, errors);
 
                 if (errors.isEmpty() && !envelopeOnly) {
                     WsdlOperation operation = messageExchange.getOperation();
                     BindingOperation bindingOperation = operation.getBindingOperation();
                     if (bindingOperation == null) {
-                        errors.add(XmlError.forMessage("Missing operation [" + operation.getBindingOperationName()
-                                + "] in wsdl definition"));
-                    } else {
+                        errors.add(XmlError.forMessage("Missing operation [" + operation.getBindingOperationName() + "] in wsdl definition"));
+                    }
+                    else {
                         Part[] outputParts = WsdlUtils.getOutputParts(bindingOperation);
                         validateMessage(messageExchange, response, bindingOperation, outputParts, errors, true);
                     }
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             errors.add(XmlError.forMessage(e.getMessage()));
         }
@@ -529,15 +572,15 @@ public class WsdlValidator {
         return convertErrors(errors);
     }
 
-    private void validateDocLiteral(BindingOperation bindingOperation, Part[] parts, XmlObject msgXml,
-                                    List<XmlError> errors, boolean isResponse) throws Exception {
+    private void validateDocLiteral(
+        BindingOperation bindingOperation, Part[] parts, XmlObject msgXml, List<XmlError> errors, boolean isResponse
+    ) throws Exception {
         Part part = null;
 
         // start by finding body part
         for (int c = 0; c < parts.length; c++) {
             // content part?
-            if ((isResponse && !WsdlUtils.isAttachmentOutputPart(parts[c], bindingOperation))
-                    || (!isResponse && !WsdlUtils.isAttachmentInputPart(parts[c], bindingOperation))) {
+            if ((isResponse && !WsdlUtils.isAttachmentOutputPart(parts[c], bindingOperation)) || (!isResponse && !WsdlUtils.isAttachmentInputPart(parts[c], bindingOperation))) {
                 // already found?
                 if (part != null) {
                     errors.add(XmlError.forMessage("DocLiteral message must contain 1 body part definition"));
@@ -552,9 +595,14 @@ public class WsdlValidator {
         if (elementName != null) {
             // just check for correct message element, other elements are avoided
             // (should create an error)
-            XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                    + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';" + "declare namespace ns='"
-                    + elementName.getNamespaceURI() + "';" + "$this/env:Envelope/env:Body/ns:" + elementName.getLocalPart());
+            XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                                  wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                  "';" +
+                                                  "declare namespace ns='" +
+                                                  elementName.getNamespaceURI() +
+                                                  "';" +
+                                                  "$this/env:Envelope/env:Body/ns:" +
+                                                  elementName.getLocalPart());
 
             if (paths.length == 1) {
                 SchemaGlobalElement elm = wsdlContext.getSchemaTypeLoader().findElement(elementName);
@@ -562,7 +610,7 @@ public class WsdlValidator {
                     validateMessageBody(errors, elm.getType(), paths[0]);
 
                     // ensure no other elements in body
-                    NodeList children = XmlUtils.getChildElements((Element) paths[0].getDomNode().getParentNode());
+                    NodeList children = XmlUtils.getChildElements((Element)paths[0].getDomNode().getParentNode());
                     for (int c = 0; c < children.getLength(); c++) {
                         QName childName = XmlUtils.getQName(children.item(c));
                         if (!elementName.equals(childName)) {
@@ -573,18 +621,26 @@ public class WsdlValidator {
                             cur.dispose();
                         }
                     }
-                } else {
+                }
+                else {
                     errors.add(XmlError.forMessage("Missing part type [" + elementName + "] in associated schema"));
                 }
-            } else {
+            }
+            else {
                 errors.add(XmlError.forMessage("Missing message part with name [" + elementName + "]"));
             }
-        } else if (part.getTypeName() != null) {
+        }
+        else if (part.getTypeName() != null) {
             QName typeName = part.getTypeName();
 
-            XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                    + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';" + "declare namespace ns='"
-                    + typeName.getNamespaceURI() + "';" + "$this/env:Envelope/env:Body/ns:" + part.getName());
+            XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                                  wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                  "';" +
+                                                  "declare namespace ns='" +
+                                                  typeName.getNamespaceURI() +
+                                                  "';" +
+                                                  "$this/env:Envelope/env:Body/ns:" +
+                                                  part.getName());
 
             if (paths.length == 1) {
                 SchemaType type = wsdlContext.getSchemaTypeLoader().findType(typeName);
@@ -592,12 +648,13 @@ public class WsdlValidator {
                     validateMessageBody(errors, type, paths[0]);
                     // XmlObject obj = paths[0].copy().changeType( type );
                     // obj.validate( new XmlOptions().setErrorListener( errors ));
-                } else {
+                }
+                else {
                     errors.add(XmlError.forMessage("Missing part type in associated schema"));
                 }
-            } else {
-                errors.add(XmlError.forMessage("Missing message part with name:type [" + part.getName() + ":" + typeName
-                        + "]"));
+            }
+            else {
+                errors.add(XmlError.forMessage("Missing message part with name:type [" + part.getName() + ":" + typeName + "]"));
             }
         }
     }
@@ -644,25 +701,25 @@ public class WsdlValidator {
 
         try {
             obj.validate(xmlOptions);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             list.add("Internal Error - see error log for details - [" + e + "]");
         }
 
         // transfer errors for "real" line numbers
         for (int c = 0; c < list.size(); c++) {
-            XmlError error = (XmlError) list.get(c);
+            XmlError error = (XmlError)list.get(c);
 
             if (error instanceof XmlValidationError) {
-                XmlValidationError validationError = ((XmlValidationError) error);
+                XmlValidationError validationError = ((XmlValidationError)error);
 
                 if (wsdlContext.getSoapVersion().shouldIgnore(validationError)) {
                     continue;
                 }
 
                 // ignore cid: related errors
-                if (validationError.getErrorCode().equals("base64Binary")
-                        || validationError.getErrorCode().equals("hexBinary")) {
+                if (validationError.getErrorCode().equals("base64Binary") || validationError.getErrorCode().equals("hexBinary")) {
                     XmlCursor cursor = validationError.getCursorLocation();
                     if (cursor.toParent()) {
                         String text = cursor.getTextValue();
@@ -678,8 +735,7 @@ public class WsdlValidator {
             }
 
             int line = error.getLine() == -1 ? 0 : error.getLine() - 1;
-            errors.add(XmlError.forLocation(error.getMessage(), error.getSourceName(), getLine(msg) + line,
-                    error.getColumn(), error.getOffset()));
+            errors.add(XmlError.forLocation(error.getMessage(), error.getSourceName(), getLine(msg) + line, error.getColumn(), error.getOffset()));
         }
     }
 
@@ -688,15 +744,16 @@ public class WsdlValidator {
         object.newCursor().getAllBookmarkRefs(list);
         for (int c = 0; c < list.size(); c++) {
             if (list.get(c) instanceof XmlLineNumber) {
-                return ((XmlLineNumber) list.get(c)).getLine();
+                return ((XmlLineNumber)list.get(c)).getLine();
             }
         }
 
         return -1;
     }
 
-    private void validateRpcLiteral(BindingOperation bindingOperation, Part[] parts, XmlObject msgXml,
-                                    List<XmlError> errors, boolean isResponse) throws Exception {
+    private void validateRpcLiteral(
+        BindingOperation bindingOperation, Part[] parts, XmlObject msgXml, List<XmlError> errors, boolean isResponse
+    ) throws Exception {
         if (parts.length == 0) {
             return;
         }
@@ -704,10 +761,13 @@ public class WsdlValidator {
         XmlObject[] bodyParts = getRpcBodyPart(bindingOperation, msgXml, isResponse);
 
         if (bodyParts.length != 1) {
-            errors.add(XmlError.forMessage("Missing message wrapper element ["
-                    + WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) + "@" + bindingOperation.getName()
-                    + (isResponse ? "Response" : "")));
-        } else {
+            errors.add(XmlError.forMessage("Missing message wrapper element [" +
+                                           WsdlUtils.getTargetNamespace(wsdlContext.getDefinition()) +
+                                           "@" +
+                                           bindingOperation.getName() +
+                                           (isResponse ? "Response" : "")));
+        }
+        else {
             XmlObject wrapper = bodyParts[0];
 
             for (int i = 0; i < parts.length; i++) {
@@ -718,7 +778,8 @@ public class WsdlValidator {
                     if (WsdlUtils.isAttachmentOutputPart(part, bindingOperation)) {
                         continue;
                     }
-                } else {
+                }
+                else {
                     if (WsdlUtils.isAttachmentInputPart(part, bindingOperation)) {
                         continue;
                     }
@@ -732,62 +793,78 @@ public class WsdlValidator {
                     // try element name (loophole in basic-profile spec?)
                     QName elementName = part.getElementName();
                     if (elementName != null) {
-                        bodyParts = msgXml.selectPath("declare namespace env='"
-                                + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';" + "declare namespace ns='"
-                                + wsdlContext.getDefinition().getTargetNamespace() + "';" + "declare namespace ns2='"
-                                + elementName.getNamespaceURI() + "';" + "$this/env:Envelope/env:Body/ns:"
-                                + bindingOperation.getName() + (isResponse ? "Response" : "") + "/ns2:"
-                                + elementName.getLocalPart());
+                        bodyParts = msgXml.selectPath("declare namespace env='" +
+                                                      wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                      "';" +
+                                                      "declare namespace ns='" +
+                                                      wsdlContext.getDefinition().getTargetNamespace() +
+                                                      "';" +
+                                                      "declare namespace ns2='" +
+                                                      elementName.getNamespaceURI() +
+                                                      "';" +
+                                                      "$this/env:Envelope/env:Body/ns:" +
+                                                      bindingOperation.getName() +
+                                                      (isResponse ? "Response" : "") +
+                                                      "/ns2:" +
+                                                      elementName.getLocalPart());
 
                         if (bodyParts.length == 1) {
                             SchemaGlobalElement elm = wsdlContext.getSchemaTypeLoader().findElement(elementName);
                             if (elm != null) {
                                 validateMessageBody(errors, elm.getType(), bodyParts[0]);
-                            } else {
-                                errors.add(XmlError.forMessage("Missing part type in associated schema for [" + elementName
-                                        + "]"));
                             }
-                        } else {
+                            else {
+                                errors.add(XmlError.forMessage("Missing part type in associated schema for [" + elementName + "]"));
+                            }
+                        }
+                        else {
                             errors.add(XmlError.forMessage("Missing message part with name [" + elementName + "]"));
                         }
-                    } else {
+                    }
+                    else {
                         errors.add(XmlError.forMessage("Missing message part [" + part.getName() + "]"));
                     }
-                } else {
+                }
+                else {
                     QName typeName = part.getTypeName();
                     SchemaType type = wsdlContext.getSchemaTypeLoader().findType(typeName);
                     if (type != null) {
                         validateMessageBody(errors, type, children[0]);
-                    } else {
-                        errors.add(XmlError.forMessage("Missing type in associated schema for part [" + part.getName()
-                                + "]"));
+                    }
+                    else {
+                        errors.add(XmlError.forMessage("Missing type in associated schema for part [" + part.getName() + "]"));
                     }
                 }
             }
         }
     }
 
-    private XmlObject[] getRpcBodyPart(BindingOperation bindingOperation, XmlObject msgXml, boolean isResponse)
-            throws Exception {
+    private XmlObject[] getRpcBodyPart(BindingOperation bindingOperation, XmlObject msgXml, boolean isResponse) throws Exception {
         // rpc requests should use the operation name as root element and soapbind
         // namespaceuri attribute as ns
-        String ns = WsdlUtils.getSoapBodyNamespace(isResponse ? bindingOperation.getBindingOutput()
-                .getExtensibilityElements() : bindingOperation.getBindingInput().getExtensibilityElements());
+        String ns = WsdlUtils.getSoapBodyNamespace(isResponse
+                                                   ? bindingOperation.getBindingOutput().getExtensibilityElements()
+                                                   : bindingOperation.getBindingInput().getExtensibilityElements());
 
         if (ns == null || ns.trim().length() == 0) {
             ns = WsdlUtils.getTargetNamespace(wsdlContext.getDefinition());
         }
 
         // get root element
-        XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "';" + "declare namespace ns='" + ns + "';"
-                + "$this/env:Envelope/env:Body/ns:" + bindingOperation.getName() + (isResponse ? "Response" : ""));
+        XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                              wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                              "';" +
+                                              "declare namespace ns='" +
+                                              ns +
+                                              "';" +
+                                              "$this/env:Envelope/env:Body/ns:" +
+                                              bindingOperation.getName() +
+                                              (isResponse ? "Response" : ""));
         return paths;
     }
 
     @SuppressWarnings("unchecked")
-    private void validateSoapFault(BindingOperation bindingOperation, XmlObject msgXml, List<XmlError> errors)
-            throws Exception {
+    private void validateSoapFault(BindingOperation bindingOperation, XmlObject msgXml, List<XmlError> errors) throws Exception {
         Map faults = bindingOperation.getBindingFaults();
         Iterator<BindingFault> i = faults.values().iterator();
 
@@ -801,8 +878,9 @@ public class WsdlValidator {
 
         for (Object o : list) {
             if (o instanceof XmlError) {
-                errors.add((XmlError) o);
-            } else {
+                errors.add((XmlError)o);
+            }
+            else {
                 errors.add(XmlError.forMessage(o.toString()));
             }
         }
@@ -813,14 +891,12 @@ public class WsdlValidator {
 
             Part[] faultParts = WsdlUtils.getFaultParts(bindingOperation, faultName);
             if (faultParts.length == 0) {
-                log.warn("Missing fault parts in wsdl for fault [" + faultName + "] in bindingOperation ["
-                        + bindingOperation.getName() + "]");
+                log.warn("Missing fault parts in wsdl for fault [" + faultName + "] in bindingOperation [" + bindingOperation.getName() + "]");
                 continue;
             }
 
             if (faultParts.length != 1) {
-                log.info("Too many fault parts in wsdl for fault [" + faultName + "] in bindingOperation ["
-                        + bindingOperation.getName() + "]");
+                log.info("Too many fault parts in wsdl for fault [" + faultName + "] in bindingOperation [" + bindingOperation.getName() + "]");
                 continue;
             }
 
@@ -828,18 +904,24 @@ public class WsdlValidator {
             QName elementName = part.getElementName();
 
             if (elementName != null) {
-                XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                        + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "'; declare namespace flt='"
-                        + wsdlContext.getSoapVersion().getFaultDetailNamespace() + "';" + "declare namespace ns='"
-                        + elementName.getNamespaceURI() + "';" + "//env:Fault/flt:detail/ns:" + elementName.getLocalPart());
+                XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                                      wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                      "'; declare namespace flt='" +
+                                                      wsdlContext.getSoapVersion().getFaultDetailNamespace() +
+                                                      "';" +
+                                                      "declare namespace ns='" +
+                                                      elementName.getNamespaceURI() +
+                                                      "';" +
+                                                      "//env:Fault/flt:detail/ns:" +
+                                                      elementName.getLocalPart());
 
                 if (paths.length == 1) {
                     SchemaGlobalElement elm = wsdlContext.getSchemaTypeLoader().findElement(elementName);
                     if (elm != null) {
                         validateMessageBody(errors, elm.getType(), paths[0]);
-                    } else {
-                        errors.add(XmlError.forMessage("Missing fault part element [" + elementName + "] for fault ["
-                                + part.getName() + "] in associated schema"));
+                    }
+                    else {
+                        errors.add(XmlError.forMessage("Missing fault part element [" + elementName + "] for fault [" + part.getName() + "] in associated schema"));
                     }
 
                     return;
@@ -849,18 +931,24 @@ public class WsdlValidator {
             else if (part.getTypeName() != null) {
                 QName typeName = part.getTypeName();
 
-                XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                        + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "'; declare namespace flt='"
-                        + wsdlContext.getSoapVersion().getFaultDetailNamespace() + "';" + "declare namespace ns='"
-                        + typeName.getNamespaceURI() + "';" + "//env:Fault/flt:detail/ns:" + part.getName());
+                XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                                      wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                                      "'; declare namespace flt='" +
+                                                      wsdlContext.getSoapVersion().getFaultDetailNamespace() +
+                                                      "';" +
+                                                      "declare namespace ns='" +
+                                                      typeName.getNamespaceURI() +
+                                                      "';" +
+                                                      "//env:Fault/flt:detail/ns:" +
+                                                      part.getName());
 
                 if (paths.length == 1) {
                     SchemaType type = wsdlContext.getSchemaTypeLoader().findType(typeName);
                     if (type != null) {
                         validateMessageBody(errors, type, paths[0]);
-                    } else {
-                        errors.add(XmlError.forMessage("Missing fault part type [" + typeName + "] for fault ["
-                                + part.getName() + "] in associated schema"));
+                    }
+                    else {
+                        errors.add(XmlError.forMessage("Missing fault part type [" + typeName + "] for fault [" + part.getName() + "] in associated schema"));
                     }
 
                     return;
@@ -870,17 +958,22 @@ public class WsdlValidator {
 
         // if we get here, no matching fault was found.. this is not an error but
         // should be warned..
-        XmlObject[] paths = msgXml.selectPath("declare namespace env='"
-                + wsdlContext.getSoapVersion().getEnvelopeNamespace() + "'; declare namespace flt='"
-                + wsdlContext.getSoapVersion().getFaultDetailNamespace() + "';//env:Fault/flt:detail");
+        XmlObject[] paths = msgXml.selectPath("declare namespace env='" +
+                                              wsdlContext.getSoapVersion().getEnvelopeNamespace() +
+                                              "'; declare namespace flt='" +
+                                              wsdlContext.getSoapVersion().getFaultDetailNamespace() +
+                                              "';//env:Fault/flt:detail");
 
         if (paths.length == 0) {
             log.warn("Missing matching Fault in wsdl for bindingOperation [" + bindingOperation.getName() + "]");
-        } else {
+        }
+        else {
             String xmlText = paths[0].xmlText(new XmlOptions().setSaveOuter());
-            log.warn("Missing matching Fault in wsdl for Fault Detail element ["
-                    + XmlUtils.removeUnneccessaryNamespaces(xmlText) + "] in bindingOperation ["
-                    + bindingOperation.getName() + "]");
+            log.warn("Missing matching Fault in wsdl for Fault Detail element [" +
+                     XmlUtils.removeUnneccessaryNamespaces(xmlText) +
+                     "] in bindingOperation [" +
+                     bindingOperation.getName() +
+                     "]");
         }
     }
 }

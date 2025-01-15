@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support.panels;
@@ -39,16 +39,10 @@ import java.beans.PropertyChangeListener;
 
 import static com.eviware.soapui.support.JsonUtil.seemsToBeJsonContentType;
 
-public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2 extends HttpRequestInterface<?>>
-        extends AbstractHttpRequestDesktopPanel<T, T2> {
+public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2 extends HttpRequestInterface<?>> extends AbstractHttpRequestDesktopPanel<T, T2> {
 
     public AbstractHttpXmlRequestDesktopPanel(T modelItem, T2 requestItem) {
         super(modelItem, requestItem);
-    }
-
-    @Override
-    protected ModelItemXmlEditor<?, ?> buildRequestEditor() {
-        return new HttpRequestMessageEditor(getRequest());
     }
 
     @Override
@@ -56,18 +50,9 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
         return new HttpResponseMessageEditor(getRequest());
     }
 
-    public class HttpRequestMessageEditor extends
-            AbstractHttpRequestDesktopPanel.AbstractHttpRequestMessageEditor {
-        public HttpRequestMessageEditor(HttpRequestInterface<?> modelItem) {
-            super(new HttpRequestDocument(modelItem));
-        }
-    }
-
-    public class HttpResponseMessageEditor extends
-            AbstractHttpRequestDesktopPanel.AbstractHttpResponseMessageEditor {
-        public HttpResponseMessageEditor(HttpRequestInterface<?> modelItem) {
-            super(new HttpResponseDocument(modelItem));
-        }
+    @Override
+    protected ModelItemXmlEditor<?, ?> buildRequestEditor() {
+        return new HttpRequestMessageEditor(getRequest());
     }
 
     public static class HttpRequestDocument extends AbstractXmlDocument implements PropertyChangeListener {
@@ -91,12 +76,6 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
         }
 
         @Override
-        public void release() {
-            super.release();
-            request.removePropertyChangeListener(this);
-        }
-
-        @Override
         public void setDocumentContent(DocumentContent documentContent) {
             if (!updating) {
                 updating = true;
@@ -106,13 +85,21 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
                         JSON json = new JsonXmlSerializer().read(contentAsString);
                         processNullsAndEmptyValuesIn(json);
                         request.setRequestContent(json.toString(3, 0));
-                    } else {
+                    }
+                    else {
                         request.setRequestContent(contentAsString);
                     }
-                } finally {
+                }
+                finally {
                     updating = false;
                 }
             }
+        }
+
+        @Override
+        public void release() {
+            super.release();
+            request.removePropertyChangeListener(this);
         }
 
         @Override
@@ -130,8 +117,9 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
                 if (!(json instanceof JSONObject) || !(oldJson instanceof JSONObject)) {
                     return;
                 }
-                overwriteNullValues((JSONObject) json, (JSONObject) oldJson);
-            } catch (Exception e) {
+                overwriteNullValues((JSONObject)json, (JSONObject)oldJson);
+            }
+            catch (Exception e) {
                 SoapUI.logError(e, "Unexpected error while parsing JSON");
             }
         }
@@ -142,7 +130,8 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
                 Object oldValue = oldJson.get(key);
                 if (isNullValue(value) && isEmptyJson(oldValue)) {
                     json.put(key, oldJson.get(key));
-                } else if (isEmptyJson(value) && oldValue instanceof String) {
+                }
+                else if (isEmptyJson(value) && oldValue instanceof String) {
                     json.put(key, "");
                 }
                 //TODO: do this recursively but make sure that cyclic dependencies are handled
@@ -154,23 +143,22 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
         }
 
         private boolean isEmptyJson(Object oldValue) {
-            return oldValue != null && oldValue instanceof JSON && ((JSON) oldValue).isEmpty();
+            return oldValue != null && oldValue instanceof JSON && ((JSON)oldValue).isEmpty();
         }
 
         private boolean isNullValue(Object value) {
             return value == null || value.toString().equals("null");
         }
 
-
         public void propertyChange(PropertyChangeEvent evt) {
             if (!updating) {
                 try {
                     updating = true;
-                    if (evt.getPropertyName().equals(Request.REQUEST_PROPERTY)
-                            || evt.getPropertyName().equals(Request.MEDIA_TYPE)) {
+                    if (evt.getPropertyName().equals(Request.REQUEST_PROPERTY) || evt.getPropertyName().equals(Request.MEDIA_TYPE)) {
                         fireContentChanged();
                     }
-                } finally {
+                }
+                finally {
                     updating = false;
                 }
             }
@@ -204,11 +192,6 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
             }
         }
 
-        @Override
-        public String getContentType() {
-            return modelItem.getResponse() == null ? null : modelItem.getResponse().getContentType();
-        }
-
         public void propertyChange(PropertyChangeEvent evt) {
             fireContentChanged();
         }
@@ -216,11 +199,13 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
         private DocumentContent extractContentFrom(HttpResponse response, Format format) {
             if (response == null) {
                 return new DocumentContent(null, null);
-            } else {
+            }
+            else {
                 String contentAsString;
                 if (format == Format.XML) {
                     contentAsString = MediaTypeHandlerRegistry.getTypeHandler(response.getContentType()).createXmlRepresentation(response);
-                } else {
+                }
+                else {
                     contentAsString = response.getContentAsString();
                 }
                 return new DocumentContent(response.getContentType(), contentAsString);
@@ -231,7 +216,22 @@ public abstract class AbstractHttpXmlRequestDesktopPanel<T extends ModelItem, T2
             super.release();
             modelItem.removePropertyChangeListener(RestRequestInterface.RESPONSE_PROPERTY, this);
         }
+
+        @Override
+        public String getContentType() {
+            return modelItem.getResponse() == null ? null : modelItem.getResponse().getContentType();
+        }
     }
 
+    public class HttpRequestMessageEditor extends AbstractHttpRequestDesktopPanel.AbstractHttpRequestMessageEditor {
+        public HttpRequestMessageEditor(HttpRequestInterface<?> modelItem) {
+            super(new HttpRequestDocument(modelItem));
+        }
+    }
 
+    public class HttpResponseMessageEditor extends AbstractHttpRequestDesktopPanel.AbstractHttpResponseMessageEditor {
+        public HttpResponseMessageEditor(HttpRequestInterface<?> modelItem) {
+            super(new HttpResponseDocument(modelItem));
+        }
+    }
 }

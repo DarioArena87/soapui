@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.log;
@@ -21,7 +21,7 @@ import com.eviware.soapui.impl.wsdl.loadtest.WsdlLoadTest;
 import com.eviware.soapui.model.support.TestSuiteListenerAdapter;
 import com.eviware.soapui.model.testsuite.TestStep;
 
-import javax.swing.AbstractListModel;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,13 +37,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 
 public class LoadTestLog extends AbstractListModel implements Runnable {
-    private List<LoadTestLogEntry> entries = Collections.synchronizedList(new ArrayList<LoadTestLogEntry>());
     private final WsdlLoadTest loadTest;
+    private final List<LoadTestLogEntry> entries = Collections.synchronizedList(new ArrayList<LoadTestLogEntry>());
     private int totalErrorCount;
-    private Map<String, Integer> errorCounts = new HashMap<String, Integer>();
-    private Queue<LoadTestLogEntry> entriesStack = new ConcurrentLinkedQueue<LoadTestLogEntry>();
+    private final Map<String, Integer> errorCounts = new HashMap<String, Integer>();
+    private final Queue<LoadTestLogEntry> entriesStack = new ConcurrentLinkedQueue<LoadTestLogEntry>();
     private Thread modelThread;
-    private InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
+    private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
 
     public LoadTestLog(WsdlLoadTest loadTest) {
         this.loadTest = loadTest;
@@ -88,7 +88,8 @@ public class LoadTestLog extends AbstractListModel implements Runnable {
                                 Integer errorCount = errorCounts.get(stepName);
                                 if (errorCount == null) {
                                     errorCount = 1;
-                                } else {
+                                }
+                                else {
                                     errorCount = errorCount + 1;
                                 }
 
@@ -110,7 +111,8 @@ public class LoadTestLog extends AbstractListModel implements Runnable {
                 }
 
                 Thread.sleep(200);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -184,15 +186,15 @@ public class LoadTestLog extends AbstractListModel implements Runnable {
         return counts == null ? 0 : counts;
     }
 
+    public List<LoadTestLogEntry> getEntries() {
+        return entries;
+    }
+
     private final class InternalTestSuiteListener extends TestSuiteListenerAdapter {
         public void testStepRemoved(TestStep testStep, int index) {
             if (testStep.getTestCase() == loadTest.getTestCase()) {
                 clearEntries(testStep);
             }
         }
-    }
-
-    public List<LoadTestLogEntry> getEntries() {
-        return entries;
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.project;
@@ -41,9 +41,9 @@ public class CloseProjectAction extends AbstractSoapUIAction<WsdlProject> {
             if (UISupport.confirm("Close remote project? (changes will be lost)", getName())) {
                 project.getWorkspace().closeProject(project);
             }
-        } else {
-            Boolean saveProject = UISupport.confirmOrCancel("Save project [" + project.getName() + "] before closing?",
-                    "Close Project");
+        }
+        else {
+            Boolean saveProject = UISupport.confirmOrCancel("Save project [" + project.getName() + "] before closing?", "Close Project");
 
             if (saveProject == null) {
                 return;
@@ -57,7 +57,8 @@ public class CloseProjectAction extends AbstractSoapUIAction<WsdlProject> {
                     }
                 }
                 project.getWorkspace().closeProject(project);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 UISupport.showErrorMessage(e);
             }
         }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.autoupdate;
@@ -43,50 +43,22 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
     private final static String APPLICATION_SILENT_VERSION_CHECK_ID = SoapUISystemProperties.SOAP_UI_UPDATER_APP_ID;
     private final static String APPLICATION_UPDATES_XML_URL = SoapUISystemProperties.SOAP_UI_UPDATE_URL;
     private final static String DEFAULT_UNREACHABLE_VALUE_FOR_SKIPPED_VERSION = "-1";
-    private final String TERMINATED = "Terminated {EE9BF704-944A-43ae-8B53-7C9AE5SOAPUI}";
     private final static Logger logger = LoggerFactory.getLogger(SoapUIUpdateProvider.class);
     private final static String NEXT_AUTO_UPDATE_CHECK = "NextAU";//TODO: move to SoapUI settings
-
+    private final String TERMINATED = "Terminated {EE9BF704-944A-43ae-8B53-7C9AE5SOAPUI}";
     private final TestMonitor testMonitor;
     private final String currentVersion;
 
     private volatile boolean autoCheckCancelled = false;
 
-    private static class UpdateCheckResult {
-        public SoapUIVersionInfo version = null;
-        public String comments = null;
-        public String errorText = null;
-
-        private UpdateCheckResult() {
-        }
-
-        public static UpdateCheckResult error(String errorText) {
-            UpdateCheckResult result = new UpdateCheckResult();
-            result.errorText = errorText;
-            return result;
-        }
-
-        public static UpdateCheckResult found(SoapUIVersionInfo version, String comments) {
-            UpdateCheckResult result = new UpdateCheckResult();
-            result.version = version;
-            result.comments = comments;
-            return result;
-        }
-
-        public static UpdateCheckResult noUpdate() {
-            return new UpdateCheckResult();
-        }
-
-    }
-
     public Install4jSoapUIUpdateProvider(String soapuiVersion, TestMonitor testMonitor) {
         this.testMonitor = testMonitor;
-        this.currentVersion = soapuiVersion;
+        currentVersion = soapuiVersion;
     }
 
     public void showUpdateStatus() {
         autoCheckCancelled = true;
-        final XProgressDialog waitDialog = UISupport.getDialogs().createProgressDialog("Checking for update", 100, "Update is checking...", true);
+        XProgressDialog waitDialog = UISupport.getDialogs().createProgressDialog("Checking for update", 100, "Update is checking...", true);
         try {
             waitDialog.run(new Worker() {
                 private UpdateCheckResult result;
@@ -97,7 +69,8 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
                     String error = checkURLisReachable(APPLICATION_UPDATES_XML_URL);
                     if (StringUtils.isNullOrEmpty(error) || cancelled) {
                         result = checkUpdate();
-                    } else {
+                    }
+                    else {
                         result = UpdateCheckResult.error(error);
                     }
                     return null;
@@ -113,10 +86,12 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
                         if (!TERMINATED.equals(result.errorText)) {
                             UISupport.showErrorMessage(result.errorText);
                         }
-                    } else {
+                    }
+                    else {
                         if (result.version == null) {
                             UISupport.showInfoMessage("You are using the latest accessible release of SoapUI");
-                        } else {
+                        }
+                        else {
                             if (!updatePostponedByUser(result.version, new SoapUIVersionInfo(currentVersion), result.comments)) {
                                 update(false);
                             }
@@ -131,43 +106,45 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
                     return true;
                 }
             });
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e.getMessage());
         }
     }
 
     private boolean update(boolean blocking) {
         try {
-            ApplicationLauncher.launchApplication(APPLICATION_SILENT_VERSION_CHECK_ID, null, blocking,
-                    new ApplicationLauncher.Callback() {
-                        @Override
-                        public void exited(int i) {
+            ApplicationLauncher.launchApplication(APPLICATION_SILENT_VERSION_CHECK_ID, null, blocking, new ApplicationLauncher.Callback() {
+                @Override
+                public void exited(int i) {
 
-                        }
+                }
 
-                        @Override
-                        public void prepareShutdown() {
-                            if (testMonitor.hasRunningTests()) {
-                                testMonitor.cancelAllTests("Terminated because of auto-update.");
-                            }
-                            DoExit();
-                        }
-                    });
-        } catch (IOException exception) {
+                @Override
+                public void prepareShutdown() {
+                    if (testMonitor.hasRunningTests()) {
+                        testMonitor.cancelAllTests("Terminated because of auto-update.");
+                    }
+                    DoExit();
+                }
+            });
+        }
+        catch (IOException exception) {
             return false;
         }
 
         return true;
     }
 
-    private void DoExit(){
+    private void DoExit() {
         try {
             SoapUI.saveSettings();
             SaveStatus saveStatus = SoapUI.getWorkspace().onClose();
             if (saveStatus == SaveStatus.CANCELLED || saveStatus == SaveStatus.FAILED) {
                 return;
             }
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             logger.error("Error saving settings during exit", e1);
         }
         SoapUI.shutdown();
@@ -181,23 +158,24 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
             String error = checkURLisReachable(APPLICATION_UPDATES_XML_URL);
             if (StringUtils.hasContent(error)) {
                 logger.info(error);
-            } else {
+            }
+            else {
                 UpdateCheckResult checkResult = checkUpdate();
                 if (StringUtils.hasContent(checkResult.errorText)) {
                     logger.info(checkResult.errorText);
                     return;
                 }
-                if (checkResult.version != null){
+                if (checkResult.version != null) {
                     String skippedVersion = SoapUI.getSettings().getString(NewSoapUIVersionAvailableDialog.SKIPPED_VERSION_SETTING, DEFAULT_UNREACHABLE_VALUE_FOR_SKIPPED_VERSION);
-                    if (skippedVersion != null){
-                        if (skippedVersion.equals(checkResult.version.toString())){
+                    if (skippedVersion != null) {
+                        if (skippedVersion.equals(checkResult.version.toString())) {
                             logger.info("Found new version (" + skippedVersion + ") but it was skipped according to previous user's choice.");
                             return;
                         }
                     }
                 }
                 if (checkResult.version != null && !autoCheckCancelled) {
-                    if (!updatePostponedByUser(checkResult.version, new SoapUIVersionInfo(this.currentVersion), checkResult.comments)) {
+                    if (!updatePostponedByUser(checkResult.version, new SoapUIVersionInfo(currentVersion), checkResult.comments)) {
                         update(true);
                     }
                 }
@@ -246,7 +224,7 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
     private String checkURLisReachable(String url) {
         try {
             int timeout = 10 * 1000;//10 seconds
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            HttpURLConnection connection = (HttpURLConnection)new URL(url).openConnection();
             connection.setConnectTimeout(timeout);
             connection.setReadTimeout(timeout);
             int responseCode = connection.getResponseCode();
@@ -254,7 +232,8 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
                 return null;
             }
             return String.format("The update server is unreachable: The attempt to connect to the update server has resulted in %d code.", responseCode);
-        } catch (IOException exception) {
+        }
+        catch (IOException exception) {
             return String.format("The update server is unreachable: %s", exception.getMessage());
         }
     }
@@ -270,9 +249,11 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
                     newVersion = entry.getNewVersion();
                 }
             }
-        } catch (UserCanceledException ex) {
+        }
+        catch (UserCanceledException ex) {
             return UpdateCheckResult.error(TERMINATED);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             return UpdateCheckResult.error(ex.getMessage());
         }
         if (newVersion != null && newVersion.length() != 0) {
@@ -288,5 +269,31 @@ public class Install4jSoapUIUpdateProvider extends Thread implements SoapUIUpdat
 
     private UpdateDescriptor getUpdateDescriptor() throws UserCanceledException, IOException {
         return UpdateChecker.getUpdateDescriptor(APPLICATION_UPDATES_XML_URL, ApplicationDisplayMode.GUI);
+    }
+
+    private static class UpdateCheckResult {
+        public SoapUIVersionInfo version = null;
+        public String comments = null;
+        public String errorText = null;
+
+        public static UpdateCheckResult error(String errorText) {
+            UpdateCheckResult result = new UpdateCheckResult();
+            result.errorText = errorText;
+            return result;
+        }
+
+        public static UpdateCheckResult found(SoapUIVersionInfo version, String comments) {
+            UpdateCheckResult result = new UpdateCheckResult();
+            result.version = version;
+            result.comments = comments;
+            return result;
+        }
+
+        public static UpdateCheckResult noUpdate() {
+            return new UpdateCheckResult();
+        }
+
+        private UpdateCheckResult() {
+        }
     }
 }

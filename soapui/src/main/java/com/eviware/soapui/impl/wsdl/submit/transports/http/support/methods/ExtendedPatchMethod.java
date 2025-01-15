@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.methods;
@@ -34,7 +34,7 @@ import java.net.URL;
 
 public class ExtendedPatchMethod extends HttpPatch implements ExtendedEntityEnclosingHttpMethod {
 
-    private HttpMethodSupport httpMethodSupport;
+    private final HttpMethodSupport httpMethodSupport;
 
     public ExtendedPatchMethod() {
         httpMethodSupport = new HttpMethodSupport();
@@ -53,28 +53,16 @@ public class ExtendedPatchMethod extends HttpPatch implements ExtendedEntityEncl
         httpMethodSupport.setDumpFile(dumpFile);
     }
 
-    public boolean hasResponse() {
-        return httpMethodSupport.hasResponse();
-    }
-
-    public void afterReadResponse(SSLSession session) {
-        httpMethodSupport.afterReadResponse(session);
-    }
-
-    public String getResponseCharSet() {
-        return httpMethodSupport.getResponseCharset();
-    }
-
-    public HttpEntity getRequestEntity() {
-        return super.getEntity();
-    }
-
     public long getMaxSize() {
         return httpMethodSupport.getMaxSize();
+    }    public boolean hasResponse() {
+        return httpMethodSupport.hasResponse();
     }
 
     public void setMaxSize(long maxSize) {
         httpMethodSupport.setMaxSize(maxSize);
+    }    public void afterReadResponse(SSLSession session) {
+        httpMethodSupport.afterReadResponse(session);
     }
 
     public long getResponseReadTime() {
@@ -83,10 +71,8 @@ public class ExtendedPatchMethod extends HttpPatch implements ExtendedEntityEncl
 
     public long getResponseReadTimeNanos() {
         return httpMethodSupport.getResponseReadTimeNanos();
-    }
-
-    public void afterWriteRequest() {
-        httpMethodSupport.afterWriteRequest();
+    }    public HttpEntity getRequestEntity() {
+        return getEntity();
     }
 
     public void initStartTime() {
@@ -101,12 +87,14 @@ public class ExtendedPatchMethod extends HttpPatch implements ExtendedEntityEncl
         return httpMethodSupport.getStartTime();
     }
 
-    public byte[] getResponseBody() throws IOException {
-        return httpMethodSupport.getResponseBody();
-    }
-
     public SSLInfo getSSLInfo() {
         return httpMethodSupport.getSSLInfo();
+    }
+
+    public String getResponseCharSet() {
+        return httpMethodSupport.getResponseCharset();
+    }    public void afterWriteRequest() {
+        httpMethodSupport.afterWriteRequest();
     }
 
     public String getResponseContentType() {
@@ -116,6 +104,18 @@ public class ExtendedPatchMethod extends HttpPatch implements ExtendedEntityEncl
     public String getMethod() {
         return RestRequestInterface.HttpMethod.PATCH.toString();
     }
+
+
+
+    public byte[] getResponseBody() throws IOException {
+        return httpMethodSupport.getResponseBody();
+    }
+
+
+
+
+
+
 
     public Throwable getFailureCause() {
         return httpMethodSupport.getFailureCause();
@@ -153,7 +153,8 @@ public class ExtendedPatchMethod extends HttpPatch implements ExtendedEntityEncl
         byte[] rawdata = getResponseBody();
         if (rawdata != null) {
             return EncodingUtil.getString(rawdata, getResponseCharSet());
-        } else {
+        }
+        else {
             return null;
         }
     }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support.definition.export;
@@ -46,18 +46,10 @@ public class WadlDefinitionExporter extends AbstractDefinitionExporter<RestServi
         return super.export(folderName);
     }
 
-    protected String[] getLocationXPathsToReplace() {
-        return new String[]{
-                "declare namespace s='" + getDefinition().getInterface().getWadlVersion()
-                        + "' .//s:grammars/s:include/@href",
-                "declare namespace s='http://www.w3.org/2001/XMLSchema' .//s:import/@schemaLocation",
-                "declare namespace s='http://www.w3.org/2001/XMLSchema' .//s:include/@schemaLocation"};
-    }
-
     @Override
     protected void postProcessing(XmlObject obj, InterfaceDefinitionPart part) {
         if (part.getType().equals(Constants.WADL11_NS)) {
-            ApplicationDocument document = (ApplicationDocument) obj;
+            ApplicationDocument document = (ApplicationDocument)obj;
             for (Resources resources : document.getApplication().getResourcesList()) {
                 for (Resource resource : resources.getResourceList()) {
                     for (Method method : resource.getMethodList()) {
@@ -74,15 +66,21 @@ public class WadlDefinitionExporter extends AbstractDefinitionExporter<RestServi
         }
     }
 
+    protected String[] getLocationXPathsToReplace() {
+        return new String[]{
+            "declare namespace s='" + getDefinition().getInterface().getWadlVersion() + "' .//s:grammars/s:include/@href",
+            "declare namespace s='http://www.w3.org/2001/XMLSchema' .//s:import/@schemaLocation",
+            "declare namespace s='http://www.w3.org/2001/XMLSchema' .//s:include/@schemaLocation"
+        };
+    }
+
     private void fixRepresentations(List<Representation> representationList) {
         for (Representation representation : representationList) {
-            if (!("text/xml".equals(representation.getMediaType()) || "application/xml".equals(representation
-                    .getMediaType())) && representation.isSetElement()) {
+            if (!("text/xml".equals(representation.getMediaType()) || "application/xml".equals(representation.getMediaType())) && representation.isSetElement()) {
                 String prefix = representation.xgetElement().getDomNode().getNodeValue().split(":")[0];
                 representation.unsetElement();
-                ((Element) representation.getDomNode()).removeAttribute("xmlns:" + prefix);
+                ((Element)representation.getDomNode()).removeAttribute("xmlns:" + prefix);
             }
         }
     }
-
 }

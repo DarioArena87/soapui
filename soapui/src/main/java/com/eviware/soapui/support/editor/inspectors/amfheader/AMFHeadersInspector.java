@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.amfheader;
@@ -27,33 +27,30 @@ import com.eviware.soapui.support.editor.views.xml.raw.RawXmlEditorFactory;
 import com.eviware.soapui.support.editor.xml.XmlDocument;
 import com.eviware.soapui.support.swing.JTableFactory;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 public class AMFHeadersInspector extends AbstractXmlInspector implements PropertyChangeListener {
-    private StringToStringMapTableModel headersTableModel;
     private final AMFHeadersInspectorModel model;
+    public boolean changing;
+    private StringToStringMapTableModel headersTableModel;
     private JTable headersTable;
     private JPanel panel;
     private JButton removeButton;
-    public boolean changing;
 
     protected AMFHeadersInspector(AMFHeadersInspectorModel model) {
         super("AMF Headers (" + (model.getHeaders() == null ? "0" : model.getHeaders().size()) + ")",
-                "AMF Headers for this amf message", true, AMFHeadersInspectorFactory.INSPECTOR_ID);
+              "AMF Headers for this amf message",
+              true,
+              AMFHeadersInspectorFactory.INSPECTOR_ID
+        );
         this.model = model;
 
         model.addPropertyChangeListener(this);
@@ -64,8 +61,7 @@ public class AMFHeadersInspector extends AbstractXmlInspector implements Propert
             return panel;
         }
 
-        headersTableModel = new StringToStringMapTableModel(model.getHeaders(), "AMFHeader", "Value",
-                !model.isReadOnly());
+        headersTableModel = new StringToStringMapTableModel(model.getHeaders(), "AMFHeader", "Value", !model.isReadOnly());
         headersTableModel.addTableModelListener(new TableModelListener() {
             public void tableChanged(TableModelEvent arg0) {
                 model.setHeaders(headersTableModel.getData());
@@ -100,7 +96,8 @@ public class AMFHeadersInspector extends AbstractXmlInspector implements Propert
 
             if (headersTable.getRowCount() > 0) {
                 headersTable.setRowSelectionInterval(0, 0);
-            } else {
+            }
+            else {
                 removeButton.setEnabled(false);
             }
         }
@@ -119,6 +116,11 @@ public class AMFHeadersInspector extends AbstractXmlInspector implements Propert
         model.removePropertyChangeListener(this);
     }
 
+    @Override
+    public boolean isEnabledFor(EditorView<XmlDocument> view) {
+        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (!changing) {
             headersTableModel.setData(model.getHeaders());
@@ -127,9 +129,8 @@ public class AMFHeadersInspector extends AbstractXmlInspector implements Propert
 
     private final class RemoveAction extends AbstractAction {
         private RemoveAction() {
-            super();
-            putValue(AbstractAction.SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(AbstractAction.SHORT_DESCRIPTION, "Removes the selected custom AMF Header from this message");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
+            putValue(SHORT_DESCRIPTION, "Removes the selected custom AMF Header from this message");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -144,9 +145,8 @@ public class AMFHeadersInspector extends AbstractXmlInspector implements Propert
 
     private final class AddAction extends AbstractAction {
         private AddAction() {
-            super();
-            putValue(AbstractAction.SMALL_ICON, UISupport.createImageIcon("/add.png"));
-            putValue(AbstractAction.SHORT_DESCRIPTION, "Adds a custom AMF Header to this message");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds a custom AMF Header to this message");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -172,10 +172,5 @@ public class AMFHeadersInspector extends AbstractXmlInspector implements Propert
                 changing = false;
             }
         }
-    }
-
-    @Override
-    public boolean isEnabledFor(EditorView<XmlDocument> view) {
-        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
     }
 }

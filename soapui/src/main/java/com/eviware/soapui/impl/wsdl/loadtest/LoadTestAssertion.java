@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest;
@@ -34,32 +34,34 @@ import javax.swing.ImageIcon;
  */
 
 public interface LoadTestAssertion extends PropertyChangeNotifier {
-    public final static String NAME_PROPERTY = LoadTestAssertion.class.getName() + "@name";
-    public final static String ICON_PROPERTY = LoadTestAssertion.class.getName() + "@icon";
-    public final static String CONFIGURATION_PROPERTY = LoadTestAssertion.class.getName() + "@configuration";
+    String NAME_PROPERTY = LoadTestAssertion.class.getName() + "@name";
+    String ICON_PROPERTY = LoadTestAssertion.class.getName() + "@icon";
+    String CONFIGURATION_PROPERTY = LoadTestAssertion.class.getName() + "@configuration";
 
-    public static final String ALL_TEST_STEPS = "- Total -";
-    public static final String ANY_TEST_STEP = "- Any -";
+    String ALL_TEST_STEPS = "- Total -";
+    String ANY_TEST_STEP = "- Any -";
 
-    public String getName();
+    String getName();
 
-    public ImageIcon getIcon();
+    ImageIcon getIcon();
 
-    public XmlObject getConfiguration();
+    XmlObject getConfiguration();
 
-    public void updateConfiguration(LoadTestAssertionConfig configuration);
+    void updateConfiguration(LoadTestAssertionConfig configuration);
 
-    public String assertResult(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestStepResult result,
-                               TestCaseRunner testRunner, TestCaseRunContext runContext);
+    String assertResult(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestStepResult result, TestCaseRunner testRunner, TestCaseRunContext runContext
+    );
 
-    public String assertResults(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                                TestCaseRunContext runContext);
+    String assertResults(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+    );
 
-    public String getTargetStep();
+    String getTargetStep();
 
-    public void setTargetStep(String name);
+    void setTargetStep(String name);
 
-    public String getDescription();
+    String getDescription();
 
-    public void release();
+    void release();
 }

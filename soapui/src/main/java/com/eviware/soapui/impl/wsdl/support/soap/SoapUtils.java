@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.soap;
@@ -54,11 +54,8 @@ public class SoapUtils {
         if (responseContent.indexOf(":Fault") > 0 || responseContent.indexOf("<Fault") > 0) {
             // XmlObject xml = XmlObject.Factory.parse( responseContent );
             XmlObject xml = XmlUtils.createXmlObject(responseContent);
-            XmlObject[] paths = xml.selectPath("declare namespace env='" + soapVersion.getEnvelopeNamespace() + "';"
-                    + "//env:Fault");
-            if (paths.length > 0) {
-                return true;
-            }
+            XmlObject[] paths = xml.selectPath("declare namespace env='" + soapVersion.getEnvelopeNamespace() + "';" + "//env:Fault");
+            return paths.length > 0;
         }
 
         return false;
@@ -77,11 +74,12 @@ public class SoapUtils {
 
     public static SoapVersion deduceSoapVersion(String contentType, XmlObject xmlObject) {
         if (xmlObject != null) {
-            Element elm = ((Document) (xmlObject.getDomNode())).getDocumentElement();
+            Element elm = ((Document)(xmlObject.getDomNode())).getDocumentElement();
             if (elm.getLocalName().equals("Envelope")) {
                 if (elm.getNamespaceURI().equals(SoapVersion.Soap11.getEnvelopeNamespace())) {
                     return SoapVersion.Soap11;
-                } else if (elm.getNamespaceURI().equals(SoapVersion.Soap12.getEnvelopeNamespace())) {
+                }
+                else if (elm.getNamespaceURI().equals(SoapVersion.Soap12.getEnvelopeNamespace())) {
                     return SoapVersion.Soap12;
                 }
             }
@@ -94,12 +92,12 @@ public class SoapUtils {
         }
 
         soapVersion = contentType.startsWith(SoapVersion.Soap11.getContentType()) ? SoapVersion.Soap11 : null;
-        soapVersion = soapVersion == null && contentType.startsWith(SoapVersion.Soap12.getContentType()) ? SoapVersion.Soap12
-                : soapVersion;
+        soapVersion = soapVersion == null && contentType.startsWith(SoapVersion.Soap12.getContentType()) ? SoapVersion.Soap12 : soapVersion;
         if (soapVersion == null && contentType.startsWith("application/xop+xml")) {
             if (contentType.indexOf("type=\"" + SoapVersion.Soap11.getContentType() + "\"") > 0) {
                 soapVersion = SoapVersion.Soap11;
-            } else if (contentType.indexOf("type=\"" + SoapVersion.Soap12.getContentType() + "\"") > 0) {
+            }
+            else if (contentType.indexOf("type=\"" + SoapVersion.Soap12.getContentType() + "\"") > 0) {
                 soapVersion = SoapVersion.Soap12;
             }
         }
@@ -113,7 +111,8 @@ public class SoapUtils {
 
         if (soapVersion == SoapVersion.Soap11) {
             soapAction = headers.get("SOAPAction", "");
-        } else if (soapVersion == SoapVersion.Soap12) {
+        }
+        else if (soapVersion == SoapVersion.Soap12) {
             int ix = contentType.indexOf("action=");
             if (ix > 0) {
                 int endIx = contentType.indexOf(';', ix);
@@ -140,8 +139,7 @@ public class SoapUtils {
         return body[0];
     }
 
-    public static XmlObject getHeaderElement(XmlObject messageObject, SoapVersion soapVersion, boolean create)
-            throws XmlException {
+    public static XmlObject getHeaderElement(XmlObject messageObject, SoapVersion soapVersion, boolean create) throws XmlException {
         XmlObject[] envelope = messageObject.selectChildren(soapVersion.getEnvelopeQName());
         if (envelope.length != 1) {
             throw new XmlException("Missing/Invalid SOAP Envelope, expecting [" + soapVersion.getEnvelopeQName() + "]");
@@ -150,9 +148,8 @@ public class SoapUtils {
         QName headerQName = soapVersion.getHeaderQName();
         XmlObject[] header = envelope[0].selectChildren(headerQName);
         if (header.length == 0 && create) {
-            Element elm = (Element) envelope[0].getDomNode();
-            Element headerElement = elm.getOwnerDocument().createElementNS(headerQName.getNamespaceURI(),
-                    headerQName.getLocalPart());
+            Element elm = (Element)envelope[0].getDomNode();
+            Element headerElement = elm.getOwnerDocument().createElementNS(headerQName.getNamespaceURI(), headerQName.getLocalPart());
 
             elm.insertBefore(headerElement, elm.getFirstChild());
 
@@ -167,7 +164,7 @@ public class SoapUtils {
             return null;
         }
 
-        XmlObject bodyElement = SoapUtils.getBodyElement(messageObject, soapVersion);
+        XmlObject bodyElement = getBodyElement(messageObject, soapVersion);
         if (bodyElement != null) {
             XmlCursor cursor = bodyElement.newCursor();
 
@@ -181,9 +178,11 @@ public class SoapUtils {
                         return cursor.getObject();
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
-            } finally {
+            }
+            finally {
                 cursor.dispose();
             }
         }
@@ -192,14 +191,19 @@ public class SoapUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static WsdlOperation findOperationForRequest(SoapVersion soapVersion, String soapAction,
-                                                        XmlObject requestContent, List<WsdlOperation> operations, boolean requireSoapVersionMatch,
-                                                        boolean requireSoapActionMatch, Attachment[] attachments) throws Exception {
+    public static WsdlOperation findOperationForRequest(
+        SoapVersion soapVersion,
+        String soapAction,
+        XmlObject requestContent,
+        List<WsdlOperation> operations,
+        boolean requireSoapVersionMatch,
+        boolean requireSoapActionMatch,
+        Attachment[] attachments
+    ) throws Exception {
         XmlObject contentElm = getContentElement(requestContent, soapVersion);
         if (contentElm == null) {
             for (WsdlOperation operation : operations) {
-                if (operation.getAction().equals(soapAction)
-                        && operation.getBindingOperation().getOperation().getInput().getMessage().getParts().size() == 0) {
+                if (operation.getAction().equals(soapAction) && operation.getBindingOperation().getOperation().getInput().getMessage().getParts().size() == 0) {
                     return operation;
                 }
             }
@@ -215,9 +219,7 @@ public class SoapUtils {
             String action = wsdlOperation.getAction();
 
             // matches soapAction?
-            if (!requireSoapActionMatch
-                    || ((soapAction == null && wsdlOperation.getAction() == null) || (action != null && action
-                    .equals(soapAction)))) {
+            if (!requireSoapActionMatch || ((soapAction == null && wsdlOperation.getAction() == null) || (action != null && action.equals(soapAction)))) {
                 QName qname = wsdlOperation.getRequestBodyElementQName();
 
                 if (!contentQName.equals(qname)) {
@@ -246,7 +248,8 @@ public class SoapUtils {
                                     x--;
                                 }
                             }
-                        } else {
+                        }
+                        else {
                             parts.remove(x);
                             x--;
                         }
@@ -256,13 +259,14 @@ public class SoapUtils {
                     if (parts.isEmpty()) {
                         return wsdlOperation;
                     }
-                } else if (wsdlOperation.getStyle().equals(WsdlOperation.STYLE_RPC)) {
+                }
+                else if (wsdlOperation.getStyle().equals(WsdlOperation.STYLE_RPC)) {
                     BindingOperation bindingOperation = wsdlOperation.getBindingOperation();
                     Message message = bindingOperation.getOperation().getInput().getMessage();
                     List<Part> parts = message.getOrderedParts(null);
 
                     if (contentChildNodes == null) {
-                        contentChildNodes = XmlUtils.getChildElements((Element) contentElm.getDomNode());
+                        contentChildNodes = XmlUtils.getChildElements((Element)contentElm.getDomNode());
                     }
 
                     int i = 0;
@@ -296,11 +300,11 @@ public class SoapUtils {
                                 Part part = parts.get(j);
                                 if (part.getElementName() != null) {
                                     QName qn = part.getElementName();
-                                    if (item.getLocalName().equals(qn.getLocalPart())
-                                            && item.getNamespaceURI().equals(qn.getNamespaceURI())) {
+                                    if (item.getLocalName().equals(qn.getLocalPart()) && item.getNamespaceURI().equals(qn.getNamespaceURI())) {
                                         break;
                                     }
-                                } else {
+                                }
+                                else {
                                     if (item.getNodeName().equals(parts.get(j).getName())) {
                                         break;
                                     }
@@ -325,14 +329,13 @@ public class SoapUtils {
             }
         }
 
-        throw new DispatchException("Missing operation for soapAction [" + soapAction + "] and body element ["
-                + contentQName + "] with SOAP Version [" + soapVersion + "]");
+        throw new DispatchException("Missing operation for soapAction [" + soapAction + "] and body element [" + contentQName + "] with SOAP Version [" + soapVersion + "]");
     }
 
     @SuppressWarnings("unchecked")
-    public static WsdlOperation findOperationForResponse(SoapVersion soapVersion, String soapAction,
-                                                         XmlObject responseContent, List<WsdlOperation> operations, boolean requireSoapVersionMatch,
-                                                         boolean requireSoapActionMatch) throws Exception {
+    public static WsdlOperation findOperationForResponse(
+        SoapVersion soapVersion, String soapAction, XmlObject responseContent, List<WsdlOperation> operations, boolean requireSoapVersionMatch, boolean requireSoapActionMatch
+    ) throws Exception {
         XmlObject contentElm = getContentElement(responseContent, soapVersion);
         if (contentElm == null) {
             return null;
@@ -346,9 +349,7 @@ public class SoapUtils {
             String action = wsdlOperation.getAction();
 
             // matches soapAction?
-            if (!requireSoapActionMatch
-                    || ((soapAction == null && wsdlOperation.getAction() == null) || (action != null && action
-                    .equals(soapAction)))) {
+            if (!requireSoapActionMatch || ((soapAction == null && wsdlOperation.getAction() == null) || (action != null && action.equals(soapAction)))) {
                 QName qname = wsdlOperation.getResponseBodyElementQName();
 
                 if (!contentQName.equals(qname)) {
@@ -365,21 +366,21 @@ public class SoapUtils {
                 if (wsdlOperation.getStyle().equals(WsdlOperation.STYLE_DOCUMENT)) {
                     // matches!
                     return wsdlOperation;
-                } else if (wsdlOperation.getStyle().equals(WsdlOperation.STYLE_RPC)) {
+                }
+                else if (wsdlOperation.getStyle().equals(WsdlOperation.STYLE_RPC)) {
                     BindingOperation bindingOperation = wsdlOperation.getBindingOperation();
                     Message message = bindingOperation.getOperation().getOutput().getMessage();
                     List<Part> parts = message.getOrderedParts(null);
 
                     if (contentChildNodes == null) {
-                        contentChildNodes = XmlUtils.getChildElements((Element) contentElm.getDomNode());
+                        contentChildNodes = XmlUtils.getChildElements((Element)contentElm.getDomNode());
                     }
 
                     int i = 0;
 
                     if (parts.size() > 0) {
                         for (int x = 0; x < parts.size(); x++) {
-                            if (WsdlUtils.isAttachmentOutputPart(parts.get(x), bindingOperation)
-                                    || WsdlUtils.isHeaderOutputPart(parts.get(x), message, bindingOperation)) {
+                            if (WsdlUtils.isAttachmentOutputPart(parts.get(x), bindingOperation) || WsdlUtils.isHeaderOutputPart(parts.get(x), message, bindingOperation)) {
                                 parts.remove(x);
                                 x--;
                             }
@@ -396,11 +397,11 @@ public class SoapUtils {
                                 Part part = parts.get(j);
                                 if (part.getElementName() != null) {
                                     QName qn = part.getElementName();
-                                    if (item.getLocalName().equals(qn.getLocalPart())
-                                            && item.getNamespaceURI().equals(qn.getNamespaceURI())) {
+                                    if (item.getLocalName().equals(qn.getLocalPart()) && item.getNamespaceURI().equals(qn.getNamespaceURI())) {
                                         break;
                                     }
-                                } else {
+                                }
+                                else {
                                     if (item.getNodeName().equals(parts.get(j).getName())) {
                                         break;
                                     }
@@ -425,15 +426,19 @@ public class SoapUtils {
             }
         }
 
-        throw new DispatchException("Missing response operation for soapAction [" + soapAction + "] and body element ["
-                + contentQName + "] with SOAP Version [" + soapVersion + "]");
+        throw new DispatchException("Missing response operation for soapAction [" +
+                                    soapAction +
+                                    "] and body element [" +
+                                    contentQName +
+                                    "] with SOAP Version [" +
+                                    soapVersion +
+                                    "]");
     }
 
     public static String removeEmptySoapHeaders(String content, SoapVersion soapVersion) throws XmlException {
         // XmlObject xmlObject = XmlObject.Factory.parse( content );
         XmlObject xmlObject = XmlUtils.createXmlObject(content);
-        XmlObject[] selectPath = xmlObject.selectPath("declare namespace soap='" + soapVersion.getEnvelopeNamespace()
-                + "';/soap:Envelope/soap:Header");
+        XmlObject[] selectPath = xmlObject.selectPath("declare namespace soap='" + soapVersion.getEnvelopeNamespace() + "';/soap:Envelope/soap:Header");
         if (selectPath.length > 0) {
             Node domNode = selectPath[0].getDomNode();
             if (!domNode.hasChildNodes() && !domNode.hasAttributes()) {
@@ -450,8 +455,9 @@ public class SoapUtils {
             // return deduceSoapVersion( requestContentType,
             // XmlObject.Factory.parse( requestContent ) );
             return deduceSoapVersion(requestContentType, XmlUtils.createXmlObject(requestContent));
-        } catch (XmlException e) {
-            return deduceSoapVersion(requestContentType, (XmlObject) null);
+        }
+        catch (XmlException e) {
+            return deduceSoapVersion(requestContentType, (XmlObject)null);
         }
     }
 
@@ -462,7 +468,7 @@ public class SoapUtils {
             String headerXPath = "declare namespace ns='" + soapVersion.getEnvelopeNamespace() + "'; //ns:Header";
             XmlObject[] header = source.selectPath(headerXPath);
             if (header.length == 1) {
-                Element headerElm = (Element) header[0].getDomNode();
+                Element headerElm = (Element)header[0].getDomNode();
                 NodeList childNodes = headerElm.getChildNodes();
                 if (childNodes.getLength() > 0) {
                     // XmlObject dest = XmlObject.Factory.parse( newRequest );
@@ -471,21 +477,20 @@ public class SoapUtils {
                     Element destElm = null;
 
                     if (header.length == 0) {
-                        Element docElm = ((Document) dest.getDomNode()).getDocumentElement();
+                        Element docElm = ((Document)dest.getDomNode()).getDocumentElement();
 
-                        destElm = (Element) docElm.insertBefore(
-                                docElm.getOwnerDocument().createElementNS(soapVersion.getEnvelopeNamespace(),
-                                        docElm.getPrefix() + ":Header"),
-                                XmlUtils.getFirstChildElementNS(docElm, soapVersion.getBodyQName()));
-                    } else {
-                        destElm = (Element) header[0].getDomNode();
+                        destElm = (Element)docElm.insertBefore(docElm.getOwnerDocument().createElementNS(soapVersion.getEnvelopeNamespace(), docElm.getPrefix() + ":Header"),
+                                                               XmlUtils.getFirstChildElementNS(docElm, soapVersion.getBodyQName())
+                        );
+                    }
+                    else {
+                        destElm = (Element)header[0].getDomNode();
                     }
 
                     for (int c = 0; c < childNodes.getLength(); c++) {
                         Node childNode = childNodes.item(c);
                         if (childNode.getNodeType() == Node.ELEMENT_NODE) {
-                            if (XmlUtils.getFirstChildElementNS(destElm, childNode.getNamespaceURI(),
-                                    childNode.getLocalName()) != null) {
+                            if (XmlUtils.getFirstChildElementNS(destElm, childNode.getNamespaceURI(), childNode.getLocalName()) != null) {
                                 continue;
                             }
 
@@ -496,7 +501,8 @@ public class SoapUtils {
                     return dest.xmlText();
                 }
             }
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             SoapUI.logError(e);
         }
 

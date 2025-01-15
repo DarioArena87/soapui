@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//**
+ *//**
  * MySwing: Advanced Swing Utilites
  * Copyright (C) 2005  Santhosh Kumar T
  * <p/>
@@ -39,10 +39,10 @@ import java.util.NoSuchElementException;
  * @email santhosh@in.fiorano.com
  */
 public class ChildrenEnumeration implements Enumeration {
-    private TreePath path;
-    private TreeModel model;
+    private final TreePath path;
+    private final TreeModel model;
     private int position = 0;
-    private int childCount;
+    private final int childCount;
 
     public ChildrenEnumeration(TreePath path, TreeModel model) {
         this.path = path;

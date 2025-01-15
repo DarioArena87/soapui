@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.inspectors.schema;
@@ -40,21 +40,11 @@ import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.xml.namespace.QName;
-import java.awt.BorderLayout;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -71,8 +61,8 @@ import java.util.List;
  */
 public class InferredSchemaInspector extends AbstractXmlInspector implements SubmitListener {
     private SchemaTabs tabs;
-    private RestService service;
-    private RestRequest request;
+    private final RestService service;
+    private final RestRequest request;
     private Handler handler;
     private Thread thread;
 
@@ -93,16 +83,15 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
         return tabs;
     }
 
-    @Override
-    public boolean isEnabledFor(EditorView<XmlDocument> view) {
-        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
+    public boolean beforeSubmit(Submit submit, SubmitContext context) {
+        return true;
     }
 
     public void afterSubmit(Submit submit, SubmitContext context) {
         if (submit.getResponse() == null) {
             return;
         }
-        HttpResponse httpResponse = (HttpResponse) submit.getResponse();
+        HttpResponse httpResponse = (HttpResponse)submit.getResponse();
         String content = httpResponse.getContentAsXml();
         if (content == null || content.equals("<xml/>")) {
             return;
@@ -113,27 +102,28 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
             String defaultNamespace = null;
             if (url != null) {
                 defaultNamespace = url.getProtocol() + "://" + url.getHost();
-            } else {
+            }
+            else {
                 if (httpResponse instanceof JMSResponse) {
-                    defaultNamespace = ((JMSResponse) httpResponse).getEndpoint();
+                    defaultNamespace = ((JMSResponse)httpResponse).getEndpoint();
                 }
             }
-            XmlOptions options = new XmlOptions().setLoadSubstituteNamespaces(Collections.singletonMap("",
-                    defaultNamespace));
+            XmlOptions options = new XmlOptions().setLoadSubstituteNamespaces(Collections.singletonMap("", defaultNamespace));
             // xml = XmlObject.Factory.parse( content, options );
             xml = XmlUtils.createXmlObject(content, options);
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             e.printStackTrace();
             return;
         }
-        if (!submit.getStatus().equals(Status.CANCELED)
-                && !InferredSchemaManager.getInferredSchema(service).validate(xml)) {
+        if (!submit.getStatus().equals(Status.CANCELED) && !InferredSchemaManager.getInferredSchema(service).validate(xml)) {
             setTitle("Schema (conflicts)");
             if (thread != null && thread.isAlive()) {
                 handler.kill();
                 try {
                     thread.join();
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
@@ -141,10 +131,6 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
             thread = new Thread(handler);
             thread.start();
         }
-    }
-
-    public boolean beforeSubmit(Submit submit, SubmitContext context) {
-        return true;
     }
 
     public void release() {
@@ -158,21 +144,28 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
         }
     }
 
+    @Override
+    public boolean isEnabledFor(EditorView<XmlDocument> view) {
+        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
+    }
+
+    public RestRequest getRequest() {
+        return request;
+    }
+
     @SuppressWarnings("serial")
-    private class SchemaTabs extends JTabbedPane implements ActionListener, PropertyChangeListener,
-            ListSelectionListener {
-        private JLogList log;
-        private JPanel conflicts;
-        private JButton resolveButton;
-        private JCheckBox auto;
-        private Handler handler;
-        private RSyntaxTextArea xsd;
-        private JList schemaList;
+    private class SchemaTabs extends JTabbedPane implements ActionListener, PropertyChangeListener, ListSelectionListener {
         public static final String AUTO_INFER_SCHEMAS = "AutoInferSchemas";
         public static final String NO_NAMESPACE = "<no namespace>";
+        private final JLogList log;
+        private final JPanel conflicts;
+        private final JButton resolveButton;
+        private final JCheckBox auto;
+        private Handler handler;
+        private final RSyntaxTextArea xsd;
+        private final JList schemaList;
 
         public SchemaTabs() {
-            super();
             conflicts = new JPanel();
             conflicts.setLayout(new BorderLayout());
             auto = new JCheckBox("Auto-Resolve");
@@ -232,7 +225,8 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
             if (e.getActionCommand().equals("resolve")) {
                 resolveButton.setEnabled(false);
                 handler.go();
-            } else if (e.getActionCommand().equals("save")) {
+            }
+            else if (e.getActionCommand().equals("save")) {
                 InferredSchemaManager.save(service);
             }
         }
@@ -251,12 +245,11 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
             schemaList.setListData(namespaces);
             if (schemaList.isSelectionEmpty()) {
                 xsd.setText("");
-            } else {
-                xsd.setText(XmlUtils.prettyPrintXml(InferredSchemaManager.getInferredSchema(service)
-                        .getXsdForNamespace((String) schemaList.getSelectedValue())));
+            }
+            else {
+                xsd.setText(XmlUtils.prettyPrintXml(InferredSchemaManager.getInferredSchema(service).getXsdForNamespace((String)schemaList.getSelectedValue())));
                 xsd.setCaretPosition(0);
-                xsd.scrollRectToVisible(new Rectangle(0, 0, (int) (getSize().getWidth()), (int) (getSize()
-                        .getHeight())));
+                xsd.scrollRectToVisible(new Rectangle(0, 0, (int)(getSize().getWidth()), (int)(getSize().getHeight())));
             }
         }
 
@@ -265,17 +258,15 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
         }
 
         public void valueChanged(ListSelectionEvent e) {
-            if (e.getValueIsAdjusting() == false) {
+            if (!e.getValueIsAdjusting()) {
                 if (!schemaList.isSelectionEmpty()) {
-                    String namespace = (String) schemaList.getSelectedValue();
+                    String namespace = (String)schemaList.getSelectedValue();
                     if (namespace.equals(NO_NAMESPACE)) {
                         namespace = "";
                     }
-                    xsd.setText(XmlUtils.prettyPrintXml(InferredSchemaManager.getInferredSchema(service)
-                            .getXsdForNamespace(namespace)));
+                    xsd.setText(XmlUtils.prettyPrintXml(InferredSchemaManager.getInferredSchema(service).getXsdForNamespace(namespace)));
                     xsd.setCaretPosition(0);
-                    xsd.scrollRectToVisible(new Rectangle(0, 0, (int) (getSize().getWidth()), (int) (getSize()
-                            .getHeight())));
+                    xsd.scrollRectToVisible(new Rectangle(0, 0, (int)(getSize().getWidth()), (int)(getSize().getHeight())));
                 }
             }
         }
@@ -288,7 +279,7 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
 
             public void actionPerformed(ActionEvent e) {
                 if (!schemaList.isSelectionEmpty()) {
-                    String ns = (String) schemaList.getSelectedValue();
+                    String ns = (String)schemaList.getSelectedValue();
                     if (UISupport.confirm("Remove inferred namespace '" + ns + "'?", "Remove namespace")) {
                         if (ns.equals(NO_NAMESPACE)) {
                             ns = "";
@@ -301,9 +292,9 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
     }
 
     public class Handler implements ConflictHandler, Runnable {
-        private SchemaTabs panel;
-        private XmlObject xml;
-        private List<String> paths;
+        private final SchemaTabs panel;
+        private final XmlObject xml;
+        private final List<String> paths;
         private boolean yesToAll = false;
         private boolean kill = false;
 
@@ -318,10 +309,12 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
                 if (panel.awaitButton(this)) {
                     try {
                         wait();
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else {
+                }
+                else {
                     yesToAll = true;
                 }
                 if (kill) {
@@ -331,7 +324,8 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
                 panel.update();
                 setTitle("Schema");
                 InferredSchemaManager.save(service);
-            } catch (XmlException e) {
+            }
+            catch (XmlException e) {
                 setTitle("Schema (invalid)");
             }
         }
@@ -352,35 +346,33 @@ public class InferredSchemaInspector extends AbstractXmlInspector implements Sub
             if (event == Event.CREATION) {
                 paths.add(path);
                 s.append("Create ");
-            } else if (event == Event.MODIFICATION) {
+            }
+            else if (event == Event.MODIFICATION) {
                 paths.add(path);
                 s.append("Modify ");
             }
             if (type == Type.ELEMENT) {
                 s.append("element '");
-            } else if (type == Type.ATTRIBUTE) {
+            }
+            else if (type == Type.ATTRIBUTE) {
                 s.append("attribute '");
-            } else if (type == Type.TYPE) {
+            }
+            else if (type == Type.TYPE) {
                 s.append("type '");
             }
-            s.append(name.getLocalPart()).append("' in namespace '").append(name.getNamespaceURI())
-                    .append("' at path ").append(path).append("?");
+            s.append(name.getLocalPart()).append("' in namespace '").append(name.getNamespaceURI()).append("' at path ").append(path).append("?");
             if (!yesToAll) {
                 int choice = UISupport.yesYesToAllOrNo(s.toString(), "Conflict");
                 if (choice == 2) {
                     panel.logln(s.append(" FAIL").toString());
                     return false;
-                } else if (choice == 1) {
+                }
+                else if (choice == 1) {
                     yesToAll = true;
                 }
             }
             panel.logln(s.append(" OK").toString());
             return true;
         }
-
-    }
-
-    public RestRequest getRequest() {
-        return request;
     }
 }

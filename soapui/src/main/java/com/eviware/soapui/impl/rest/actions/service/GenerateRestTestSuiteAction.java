@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.service;
@@ -64,7 +64,7 @@ public class GenerateRestTestSuiteAction extends AbstractSoapUIAction<RestServic
         }
 
         dialog.setOptions(GenerateForm.RESOURCES, paths.toStringArray());
-        XFormOptionsField operationsFormField = (XFormOptionsField) dialog.getFormField(GenerateForm.RESOURCES);
+        XFormOptionsField operationsFormField = (XFormOptionsField)dialog.getFormField(GenerateForm.RESOURCES);
         operationsFormField.setSelectedOptions(paths.toStringArray());
 
         WsdlProject project = service.getProject();
@@ -81,8 +81,7 @@ public class GenerateRestTestSuiteAction extends AbstractSoapUIAction<RestServic
             String testSuiteName = dialog.getValue(GenerateForm.TESTSUITE);
 
             if (testSuiteName.equals("<create>")) {
-                testSuiteName = UISupport.prompt("Enter name of TestSuite to create", "Generate TestSuite",
-                        service.getName() + " TestSuite");
+                testSuiteName = UISupport.prompt("Enter name of TestSuite to create", "Generate TestSuite", service.getName() + " TestSuite");
             }
 
             if (testSuiteName != null && testSuiteName.trim().length() > 0) {
@@ -97,7 +96,8 @@ public class GenerateRestTestSuiteAction extends AbstractSoapUIAction<RestServic
                 boolean generateLoadTest = dialog.getBooleanValue(GenerateForm.GENERATE_LOADTEST);
                 if (style == 0) {
                     generateMulipleTestCases(testSuite, service, generateLoadTest, resources);
-                } else if (style == 1) {
+                }
+                else if (style == 1) {
                     generateSingleTestCase(testSuite, service, generateLoadTest, resources);
                 }
 
@@ -112,8 +112,9 @@ public class GenerateRestTestSuiteAction extends AbstractSoapUIAction<RestServic
         return null;
     }
 
-    private void generateSingleTestCase(WsdlTestSuite testSuite, RestService service, boolean createLoadTest,
-                                        List<String> resources) {
+    private void generateSingleTestCase(
+        WsdlTestSuite testSuite, RestService service, boolean createLoadTest, List<String> resources
+    ) {
         WsdlTestCase testCase = testSuite.addNewTestCase(service.getName() + " TestSuite");
 
         for (RestResource resource : service.getAllResources()) {
@@ -123,8 +124,7 @@ public class GenerateRestTestSuiteAction extends AbstractSoapUIAction<RestServic
 
             if (resource.getRequestCount() > 0) {
                 for (int x = 0; x < resource.getRequestCount(); x++) {
-                    testCase.addTestStep(RestRequestStepFactory.createConfig(resource.getRequestAt(x),
-                            resource.getName()));
+                    testCase.addTestStep(RestRequestStepFactory.createConfig(resource.getRequestAt(x), resource.getName()));
                 }
             }
         }
@@ -134,16 +134,16 @@ public class GenerateRestTestSuiteAction extends AbstractSoapUIAction<RestServic
         }
     }
 
-    private void generateMulipleTestCases(WsdlTestSuite testSuite, RestService service, boolean createLoadTest,
-                                          List<String> resources) {
+    private void generateMulipleTestCases(
+        WsdlTestSuite testSuite, RestService service, boolean createLoadTest, List<String> resources
+    ) {
         for (RestResource resource : service.getAllResources()) {
             if (!resources.contains(resource.getName() + ": " + resource.getFullPath(false))) {
                 continue;
             }
 
             WsdlTestCase testCase = testSuite.addNewTestCase(resource.getName() + " TestCase");
-            testCase.setDescription("TestCase generated for REST Resource [" + resource.getName() + "] located at ["
-                    + resource.getFullPath(false) + "]");
+            testCase.setDescription("TestCase generated for REST Resource [" + resource.getName() + "] located at [" + resource.getFullPath(false) + "]");
 
             if (resource.getRequestCount() > 0) {
                 for (int x = 0; x < resource.getRequestCount(); x++) {
@@ -158,13 +158,21 @@ public class GenerateRestTestSuiteAction extends AbstractSoapUIAction<RestServic
         }
     }
 
-    @AForm(name = "Generate TestSuite", description = "Generates TestSuite with TestCase(s) for all Resources in this Service", helpUrl = HelpUrls.GENERATE_TESTSUITE_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
+    @AForm(
+        name = "Generate TestSuite",
+        description = "Generates TestSuite with TestCase(s) for all Resources in this Service",
+        helpUrl = HelpUrls.GENERATE_TESTSUITE_HELP_URL,
+        icon = UISupport.TOOL_ICON_PATH
+    )
     private class GenerateForm {
         @AField(name = "TestSuite", description = "The TestSuite to create or use", type = AFieldType.ENUMERATION)
         public final static String TESTSUITE = "TestSuite";
 
-        @AField(name = "Style", description = "Select the style of TestCases to create", type = AFieldType.RADIOGROUP, values = {
-                "One TestCase for each Resource", "Single TestCase with one Request for each Method"})
+        @AField(
+            name = "Style", description = "Select the style of TestCases to create", type = AFieldType.RADIOGROUP, values = {
+            "One TestCase for each Resource", "Single TestCase with one Request for each Method"
+        }
+        )
         public final static String STYLE = "Style";
 
         @AField(name = "Resources", description = "The Resources for which to Generate Tests", type = AFieldType.MULTILIST)

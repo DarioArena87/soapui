@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.mockoperation;
@@ -40,35 +40,25 @@ public class MockRequestXmlDocument extends AbstractXmlDocument {
     private final MockResponse mockResponse;
 
     public MockRequestXmlDocument(MockResponse response) {
-        this.mockResponse = response;
+        mockResponse = response;
     }
 
     public SchemaTypeSystem getTypeSystem() {
         try {
             if (mockResponse instanceof WsdlMockResponse) {
-                WsdlOperation operation = (WsdlOperation) mockResponse.getMockOperation().getOperation();
+                WsdlOperation operation = (WsdlOperation)mockResponse.getMockOperation().getOperation();
                 if (operation != null) {
                     WsdlInterface iface = operation.getInterface();
                     WsdlContext wsdlContext = iface.getWsdlContext();
                     return wsdlContext.getSchemaTypeSystem();
                 }
             }
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             SoapUI.logError(e1);
         }
 
         return XmlBeans.getBuiltinTypeSystem();
-    }
-
-    @Override
-    public void setDocumentContent(DocumentContent documentContent) {
-        MockResult mockResult = mockResponse.getMockResult();
-        if (mockResult != null) {
-            mockResult.getMockRequest().setRequestContent(documentContent.getContentAsString());
-            fireContentChanged();
-        } else {
-            fireContentChanged();
-        }
     }
 
     @Override
@@ -81,8 +71,19 @@ public class MockRequestXmlDocument extends AbstractXmlDocument {
     @Override
     public DocumentContent getDocumentContent(Format format) {
         MockResult mockResult = mockResponse.getMockResult();
-        final String requestContent = mockResult == null ? null : mockResult.getMockRequest().getRequestContent();
+        String requestContent = mockResult == null ? null : mockResult.getMockRequest().getRequestContent();
         return new DocumentContent(null, requestContent);
     }
 
+    @Override
+    public void setDocumentContent(DocumentContent documentContent) {
+        MockResult mockResult = mockResponse.getMockResult();
+        if (mockResult != null) {
+            mockResult.getMockRequest().setRequestContent(documentContent.getContentAsString());
+            fireContentChanged();
+        }
+        else {
+            fireContentChanged();
+        }
+    }
 }

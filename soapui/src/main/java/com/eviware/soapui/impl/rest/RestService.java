@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest;
@@ -38,7 +38,7 @@ import java.util.Map;
  */
 
 public class RestService extends AbstractInterface<RestServiceConfig> implements RestResourceContainer {
-    private List<RestResource> resources = new ArrayList<RestResource>();
+    private final List<RestResource> resources = new ArrayList<RestResource>();
     private WadlDefinitionContext wadlContext;
     private boolean exportChanges = false;
 
@@ -58,24 +58,28 @@ public class RestService extends AbstractInterface<RestServiceConfig> implements
         return getConfig().getWadlVersion();
     }
 
-    public String getInterfaceType() {
-        return RestServiceFactory.REST_TYPE;
-    }
-
     public RestResource getOperationAt(int index) {
         return resources.get(index);
-    }
-
-    public RestResource getOperationByName(String name) {
-        return (RestResource) getWsdlModelItemByName(resources, name);
     }
 
     public int getOperationCount() {
         return resources.size();
     }
 
+    public RestResource getOperationByName(String name) {
+        return (RestResource)getWsdlModelItemByName(resources, name);
+    }
+
+    public String getTechnicalId() {
+        return getConfig().getBasePath();
+    }
+
     public List<Operation> getOperationList() {
         return new ArrayList<Operation>(resources);
+    }
+
+    public String getInterfaceType() {
+        return RestServiceFactory.REST_TYPE;
     }
 
     public String getBasePath() {
@@ -108,10 +112,6 @@ public class RestService extends AbstractInterface<RestServiceConfig> implements
         return isGenerated() ? generateWadlUrl() : getConfig().getDefinitionUrl();
     }
 
-    public String generateWadlUrl() {
-        return getName() + ".wadl";
-    }
-
     public void setWadlUrl(String wadlUrl) {
         String old = getWadlUrl();
         getConfig().setDefinitionUrl(wadlUrl);
@@ -119,8 +119,8 @@ public class RestService extends AbstractInterface<RestServiceConfig> implements
         notifyPropertyChanged("wadlUrl", old, wadlUrl);
     }
 
-    public String getTechnicalId() {
-        return getConfig().getBasePath();
+    public String generateWadlUrl() {
+        return getName() + ".wadl";
     }
 
     public RestResource addNewResource(String name, String path) {
@@ -135,17 +135,6 @@ public class RestService extends AbstractInterface<RestServiceConfig> implements
         return resource;
     }
 
-    public RestResource cloneResource(RestResource resource, String name) {
-        RestResourceConfig resourceConfig = (RestResourceConfig) getConfig().addNewResource().set(resource.getConfig());
-        resourceConfig.setName(name);
-
-        RestResource newResource = new RestResource(this, resourceConfig);
-        resources.add(newResource);
-
-        fireOperationAdded(newResource);
-        return newResource;
-    }
-
     public void deleteResource(RestResource resource) {
         resource.deleteAllChildResources(resource);
 
@@ -158,6 +147,17 @@ public class RestService extends AbstractInterface<RestServiceConfig> implements
 
         getConfig().removeResource(ix);
         resource.release();
+    }
+
+    public RestResource cloneResource(RestResource resource, String name) {
+        RestResourceConfig resourceConfig = (RestResourceConfig)getConfig().addNewResource().set(resource.getConfig());
+        resourceConfig.setName(name);
+
+        RestResource newResource = new RestResource(this, resourceConfig);
+        resources.add(newResource);
+
+        fireOperationAdded(newResource);
+        return newResource;
     }
 
     public List<RestResource> getAllResources() {
@@ -209,17 +209,36 @@ public class RestService extends AbstractInterface<RestServiceConfig> implements
         return result.toArray(new RestResource[result.size()]);
     }
 
-    @Override
-    public WadlDefinitionContext getDefinitionContext() {
-        return getWadlContext();
-    }
-
     public WadlDefinitionContext getWadlContext() {
         if (wadlContext == null) {
             wadlContext = new WadlDefinitionContext(getWadlUrl(), this);
         }
 
         return wadlContext;
+    }
+
+    public void beforeSave() {
+        super.beforeSave();
+
+        if (isGenerated() && wadlContext != null) {
+            try {
+                wadlContext.getDefinitionCache().clear();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void release() {
+        InferredSchemaManager.release(this);
+        super.release();
+    }
+
+    @Override
+    public WadlDefinitionContext getDefinitionContext() {
+        return getWadlContext();
     }
 
     @Override
@@ -241,25 +260,6 @@ public class RestService extends AbstractInterface<RestServiceConfig> implements
         return restResources.toArray(new Operation[restResources.size()]);
     }
 
-    public void beforeSave() {
-        super.beforeSave();
-
-        if (isGenerated() && wadlContext != null) {
-            try {
-                wadlContext.getDefinitionCache().clear();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-    }
-
-    @Override
-    public void release() {
-        InferredSchemaManager.release(this);
-        super.release();
-    }
-
     public List<RestResource> getResourceList() {
         return new ArrayList<RestResource>(resources);
     }
@@ -271,5 +271,4 @@ public class RestService extends AbstractInterface<RestServiceConfig> implements
     public void setExportChanges(boolean exportChanges) {
         this.exportChanges = exportChanges;
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -33,12 +33,41 @@ public class HttpResponseMessageExchange extends AbstractMessageExchange<HttpReq
     public HttpResponseMessageExchange(HttpRequestInterface<?> request) {
         super(request);
 
-        response = (isDiscarded() == true) ? null : request.getResponse();
+        response = (isDiscarded()) ? null : request.getResponse();
         if (response != null) {
             for (String key : response.getPropertyNames()) {
                 addProperty(key, response.getProperty(key));
             }
         }
+    }
+
+    @Override
+    public String getResponseContentAsXml() {
+        if (response == null) {
+            response = getModelItem().getResponse();
+        }
+
+        return response.getContentAsXml();
+    }
+
+    public Operation getOperation() {
+        return null;
+    }
+
+    public long getTimestamp() {
+        if (response == null) {
+            response = getModelItem().getResponse();
+        }
+
+        return response == null ? 0 : response.getTimestamp();
+    }
+
+    public long getTimeTaken() {
+        if (response == null) {
+            response = getModelItem().getResponse();
+        }
+
+        return response == null ? 0 : response.getTimeTaken();
     }
 
     public String getEndpoint() {
@@ -57,17 +86,24 @@ public class HttpResponseMessageExchange extends AbstractMessageExchange<HttpReq
         return response == null ? getModelItem().getRequestContent() : response.getRequestContent();
     }
 
-    @Override
-    public String getResponseContentAsXml() {
+    public String getResponseContent() {
         if (response == null) {
             response = getModelItem().getResponse();
         }
 
-        return response.getContentAsXml();
+        return response == null ? null : response.getContentAsString();
     }
 
     public StringToStringsMap getRequestHeaders() {
         return response == null ? getModelItem().getRequestHeaders() : response.getRequestHeaders();
+    }
+
+    public StringToStringsMap getResponseHeaders() {
+        if (response == null) {
+            response = getModelItem().getResponse();
+        }
+
+        return response == null ? new StringToStringsMap() : response.getResponseHeaders();
     }
 
     public Attachment[] getRequestAttachments() {
@@ -82,60 +118,8 @@ public class HttpResponseMessageExchange extends AbstractMessageExchange<HttpReq
         return response == null ? null : response.getAttachments();
     }
 
-    public String getResponseContent() {
-        if (response == null) {
-            response = getModelItem().getResponse();
-        }
-
-        return response == null ? null : response.getContentAsString();
-    }
-
-    public HttpResponse getResponse() {
-        return response;
-    }
-
-    public void setResponse(HttpResponse response) {
-        this.response = response;
-    }
-
-    public StringToStringsMap getResponseHeaders() {
-        if (response == null) {
-            response = getModelItem().getResponse();
-        }
-
-        return response == null ? new StringToStringsMap() : response.getResponseHeaders();
-    }
-
-    public long getTimeTaken() {
-        if (response == null) {
-            response = getModelItem().getResponse();
-        }
-
-        return response == null ? 0 : response.getTimeTaken();
-    }
-
-    public long getTimestamp() {
-        if (response == null) {
-            response = getModelItem().getResponse();
-        }
-
-        return response == null ? 0 : response.getTimestamp();
-    }
-
     public boolean isDiscarded() {
         return discardResponse;
-    }
-
-    public Operation getOperation() {
-        return null;
-    }
-
-    public int getResponseStatusCode() {
-        return response == null ? 0 : response.getStatusCode();
-    }
-
-    public String getResponseContentType() {
-        return response == null ? null : response.getContentType();
     }
 
     public boolean hasRawData() {
@@ -148,6 +132,18 @@ public class HttpResponseMessageExchange extends AbstractMessageExchange<HttpReq
 
     public byte[] getRawResponseData() {
         return response == null ? null : response.getRawResponseData();
+    }
+
+    public Attachment[] getRequestAttachmentsForPart(String name) {
+        List<Attachment> result = new ArrayList<Attachment>();
+
+        for (Attachment attachment : getRequestAttachments()) {
+            if (attachment.getPart().equals(name)) {
+                result.add(attachment);
+            }
+        }
+
+        return result.toArray(new Attachment[result.size()]);
     }
 
     public Attachment[] getResponseAttachmentsForPart(String name) {
@@ -164,18 +160,6 @@ public class HttpResponseMessageExchange extends AbstractMessageExchange<HttpReq
         return result.toArray(new Attachment[result.size()]);
     }
 
-    public Attachment[] getRequestAttachmentsForPart(String name) {
-        List<Attachment> result = new ArrayList<Attachment>();
-
-        for (Attachment attachment : getRequestAttachments()) {
-            if (attachment.getPart().equals(name)) {
-                result.add(attachment);
-            }
-        }
-
-        return result.toArray(new Attachment[result.size()]);
-    }
-
     public boolean hasRequest(boolean ignoreEmpty) {
         String requestContent = getRequestContent();
         return !(requestContent == null || (ignoreEmpty && requestContent.trim().length() == 0));
@@ -184,5 +168,21 @@ public class HttpResponseMessageExchange extends AbstractMessageExchange<HttpReq
     public boolean hasResponse() {
         String responseContent = getResponseContent();
         return responseContent != null && responseContent.trim().length() > 0;
+    }
+
+    public HttpResponse getResponse() {
+        return response;
+    }
+
+    public void setResponse(HttpResponse response) {
+        this.response = response;
+    }
+
+    public int getResponseStatusCode() {
+        return response == null ? 0 : response.getStatusCode();
+    }
+
+    public String getResponseContentType() {
+        return response == null ? null : response.getContentType();
     }
 }

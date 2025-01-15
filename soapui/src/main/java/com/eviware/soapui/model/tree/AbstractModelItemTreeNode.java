@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree;
@@ -65,66 +65,32 @@ public abstract class AbstractModelItemTreeNode<T extends ModelItem> implements 
         return treeModel;
     }
 
-    public T getModelItem() {
-        return modelItem;
-    }
-
-    public boolean valueChanged(Object newValue) {
-        return false;
+    public int getChildCount() {
+        return orderItems == null ? 0 : orderItems.size();
     }
 
     public boolean isLeaf() {
         return getChildCount() == 0;
     }
 
-    public int getChildCount() {
-        return orderItems == null ? 0 : orderItems.size();
+    public int getIndexOfChild(Object child) {
+        return orderItems == null ? -1 : orderItems.indexOf(child);
+    }
+
+    public boolean valueChanged(Object newValue) {
+        return false;
     }
 
     public SoapUITreeNode getChildNode(int index) {
         return orderItems == null ? null : orderItems.get(index);
     }
 
-    public int getIndexOfChild(Object child) {
-        return orderItems == null ? -1 : orderItems.indexOf(child);
-    }
-
-    public String toString() {
-        if (modelItem instanceof TestStep) {
-            return ((TestStep) modelItem).getLabel();
-        } else if (modelItem instanceof TestCase) {
-            return ((TestCase) modelItem).getLabel();
-        }
-
-        return modelItem.getName();
-    }
-
     public JPopupMenu getPopup() {
         return ActionSupport.buildPopup(getActions());
     }
 
-    public ActionList getActions() {
-        return ActionListBuilder.buildActions(modelItem);
-    }
-
     public SoapUITreeNode getParentTreeNode() {
         return treeModel.getTreeNode(parentItem);
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        String propertyName = evt.getPropertyName();
-        if (propertyName.equals(ModelItem.NAME_PROPERTY) || propertyName.equals(ModelItem.LABEL_PROPERTY)) {
-            // use this since length has probably changed
-            getTreeModel().notifyNodeChanged(this);
-        } else if (propertyName.equals(ModelItem.ICON_PROPERTY)) {
-            // hack to improve rendering performance
-            JTree mainTree = SoapUI.getNavigator().getMainTree();
-            TreePath nodePath = getTreeModel().getPath(this);
-            Rectangle rowBounds = mainTree.getPathBounds(nodePath);
-            if (rowBounds != null) {
-                mainTree.repaint(rowBounds);
-            }
-        }
     }
 
     public void release() {
@@ -137,13 +103,109 @@ public abstract class AbstractModelItemTreeNode<T extends ModelItem> implements 
         getTreeModel().unmapModelItem(modelItem);
     }
 
+    public ActionList getActions() {
+        return ActionListBuilder.buildActions(modelItem);
+    }
+
+    public void reorder(boolean notify) {
+        if (orderItems != null) {
+            sortModelItems(orderItems, orderSetting);
+
+            if (notify) {
+                getTreeModel().notifyStructureChanged(new TreeModelEvent(this, getTreeModel().getPath(this)));
+            }
+        }
+    }
+
+    public T getModelItem() {
+        return modelItem;
+    }
+
+    public String toString() {
+        if (modelItem instanceof TestStep) {
+            return ((TestStep)modelItem).getLabel();
+        }
+        else if (modelItem instanceof TestCase) {
+            return ((TestCase)modelItem).getLabel();
+        }
+
+        return modelItem.getName();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
+        if (propertyName.equals(ModelItem.NAME_PROPERTY) || propertyName.equals(ModelItem.LABEL_PROPERTY)) {
+            // use this since length has probably changed
+            getTreeModel().notifyNodeChanged(this);
+        }
+        else if (propertyName.equals(ModelItem.ICON_PROPERTY)) {
+            // hack to improve rendering performance
+            JTree mainTree = SoapUI.getNavigator().getMainTree();
+            TreePath nodePath = getTreeModel().getPath(this);
+            Rectangle rowBounds = mainTree.getPathBounds(nodePath);
+            if (rowBounds != null) {
+                mainTree.repaint(rowBounds);
+            }
+        }
+    }
+
     public <T2 extends SoapUITreeNode> void initOrdering(List<T2> items, String setting) {
-        this.orderItems = items;
-        this.orderSetting = setting;
+        orderItems = items;
+        orderSetting = setting;
 
         internalSettingsListener = new InternalSettingsListener(this, setting);
         SoapUI.getSettings().addSettingsListener(internalSettingsListener);
         sortModelItems(items, setting);
+    }
+
+    public <T2 extends SoapUITreeNode> void sortModelItems(List<T2> modelItems, String setting) {
+        Collections.sort(modelItems, new Comparator<T2>() {
+            public int compare(T2 o1, T2 o2) {
+                String name1 = o1.getModelItem().getName();
+                String name2 = o2.getModelItem().getName();
+
+                if (name1 == null && name2 == null) {
+                    return 0;
+                }
+                else if (name1 == null) {
+                    return -1;
+                }
+                else if (name2 == null) {
+                    return 1;
+                }
+                else if (setting != null && SoapUI.getSettings().getBoolean(setting)) {
+                    return name1.compareToIgnoreCase(name2);
+                }
+                else {
+                    return name1.compareTo(name2);
+                }
+            }
+        });
+    }
+
+    public TreeNode getChildAt(int childIndex) {
+        return getChildNode(childIndex);
+    }
+
+    public TreeNode getParent() {
+        return getParentTreeNode();
+    }
+
+    public int getIndex(TreeNode node) {
+        return getIndexOfChild(node);
+    }
+
+    public boolean getAllowsChildren() {
+        return !isLeaf();
+    }
+
+    public Enumeration<? extends TreeNode> children() {
+        Vector<TreeNode> children = new Vector<TreeNode>();
+        for (int c = 0; c < getChildCount(); c++) {
+            children.add(getChildAt(c));
+        }
+
+        return children.elements();
     }
 
     private final class InternalSettingsListener implements SettingsListener {
@@ -178,66 +240,10 @@ public abstract class AbstractModelItemTreeNode<T extends ModelItem> implements 
         }
     }
 
-    public void reorder(boolean notify) {
-        if (orderItems != null) {
-            sortModelItems(orderItems, orderSetting);
-
-            if (notify) {
-                getTreeModel().notifyStructureChanged(new TreeModelEvent(this, getTreeModel().getPath(this)));
-            }
-        }
-    }
-
-    public <T2 extends SoapUITreeNode> void sortModelItems(List<T2> modelItems, final String setting) {
-        Collections.sort(modelItems, new Comparator<T2>() {
-            public int compare(T2 o1, T2 o2) {
-                String name1 = o1.getModelItem().getName();
-                String name2 = o2.getModelItem().getName();
-
-                if (name1 == null && name2 == null) {
-                    return 0;
-                } else if (name1 == null) {
-                    return -1;
-                } else if (name2 == null) {
-                    return 1;
-                } else if (setting != null && SoapUI.getSettings().getBoolean(setting)) {
-                    return name1.compareToIgnoreCase(name2);
-                } else {
-                    return name1.compareTo(name2);
-                }
-            }
-        });
-    }
-
-    public Enumeration<? extends TreeNode> children() {
-        Vector<TreeNode> children = new Vector<TreeNode>();
-        for (int c = 0; c < getChildCount(); c++) {
-            children.add(getChildAt(c));
-        }
-
-        return children.elements();
-    }
-
-    public boolean getAllowsChildren() {
-        return !isLeaf();
-    }
-
-    public TreeNode getChildAt(int childIndex) {
-        return getChildNode(childIndex);
-    }
-
-    public int getIndex(TreeNode node) {
-        return getIndexOfChild(node);
-    }
-
-    public TreeNode getParent() {
-        return getParentTreeNode();
-    }
-
     public class ReorderPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent arg0) {
             reorder(true);
-            SoapUI.getNavigator().selectModelItem((ModelItem) arg0.getSource());
+            SoapUI.getNavigator().selectModelItem((ModelItem)arg0.getSource());
         }
     }
 }

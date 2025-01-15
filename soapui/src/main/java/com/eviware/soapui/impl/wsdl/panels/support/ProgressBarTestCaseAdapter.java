@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.support;
@@ -41,8 +41,8 @@ import java.awt.Color;
 public class ProgressBarTestCaseAdapter {
     private final JProgressBar progressBar;
     private final WsdlTestCase testCase;
-    private InternalTestRunListener internalTestRunListener;
-    private InternalTestMonitorListener internalTestMonitorListener;
+    private final InternalTestRunListener internalTestRunListener;
+    private final InternalTestMonitorListener internalTestMonitorListener;
 
     public ProgressBarTestCaseAdapter(JProgressBar progressBar, WsdlTestCase testCase) {
         this.progressBar = progressBar;
@@ -66,7 +66,8 @@ public class ProgressBarTestCaseAdapter {
         if (SoapUI.getTestMonitor().hasRunningLoadTest(testCase)) {
             progressBar.setIndeterminate(true);
             progressBar.setString("load testing");
-        } else {
+        }
+        else {
             progressBar.setIndeterminate(false);
             progressBar.setString("");
         }
@@ -76,7 +77,8 @@ public class ProgressBarTestCaseAdapter {
         if (SoapUI.getTestMonitor().hasRunningSecurityTest(testCase)) {
             progressBar.setIndeterminate(true);
             progressBar.setString("security testing");
-        } else {
+        }
+        else {
             progressBar.setIndeterminate(false);
             progressBar.setString("");
         }
@@ -112,17 +114,6 @@ public class ProgressBarTestCaseAdapter {
             progressBar.setString("");
         }
 
-        public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
-            if (progressBar.isIndeterminate()) {
-                return;
-            }
-
-            if (testStep != null) {
-                progressBar.setString(testStep.getName());
-                progressBar.setValue(runContext.getCurrentStepIndex());
-            }
-        }
-
         public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
             if (progressBar.isIndeterminate()) {
                 return;
@@ -130,7 +121,8 @@ public class ProgressBarTestCaseAdapter {
 
             if (result.getStatus() == TestStepStatus.FAILED) {
                 progressBar.setForeground(Color.RED);
-            } else if (!testCase.getFailTestCaseOnErrors()) {
+            }
+            else if (!testCase.getFailTestCaseOnErrors()) {
                 progressBar.setForeground(Color.GREEN.darker());
             }
 
@@ -140,7 +132,8 @@ public class ProgressBarTestCaseAdapter {
         public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
             if (testRunner.getStatus() == Status.FAILED) {
                 progressBar.setForeground(Color.RED);
-            } else if (testRunner.getStatus() == Status.FINISHED) {
+            }
+            else if (testRunner.getStatus() == Status.FINISHED) {
                 progressBar.setForeground(Color.GREEN.darker());
             }
 
@@ -153,6 +146,17 @@ public class ProgressBarTestCaseAdapter {
             }
 
             progressBar.setString(testRunner.getStatus().toString());
+        }
+
+        public void beforeStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep) {
+            if (progressBar.isIndeterminate()) {
+                return;
+            }
+
+            if (testStep != null) {
+                progressBar.setString(testStep.getName());
+                progressBar.setValue(runContext.getCurrentStepIndex());
+            }
         }
     }
 }

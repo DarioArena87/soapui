@@ -11,18 +11,16 @@ import java.net.URI;
 public class HttpCopyMethod extends HttpRequestBase {
 
     public HttpCopyMethod() {
-        super();
     }
 
-    public HttpCopyMethod(final URI uri) {
-        super();
+    public HttpCopyMethod(URI uri) {
         setURI(uri);
     }
 
     /**
      * @throws IllegalArgumentException if the uri is invalid.
      */
-    public HttpCopyMethod(final String uri) {
+    public HttpCopyMethod(String uri) {
         this(URI.create(uri));
     }
 

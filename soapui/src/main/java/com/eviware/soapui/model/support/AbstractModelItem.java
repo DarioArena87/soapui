@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.support;
@@ -32,12 +32,13 @@ import java.util.List;
  */
 
 public abstract class AbstractModelItem implements ModelItem {
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         try {
             propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -45,7 +46,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         try {
             propertyChangeSupport.addPropertyChangeListener(listener);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -53,7 +55,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         try {
             propertyChangeSupport.removePropertyChangeListener(listener);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -61,7 +64,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         try {
             propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -69,7 +73,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void notifyPropertyChanged(String name, Object oldValue, Object newValue) {
         try {
             propertyChangeSupport.firePropertyChange(name, oldValue, newValue);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -77,7 +82,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void notifyPropertyChanged(String name, String oldValue, String newValue) {
         try {
             propertyChangeSupport.firePropertyChange(name, oldValue, newValue);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -85,7 +91,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void notifyPropertyChanged(String name, int oldValue, int newValue) {
         try {
             propertyChangeSupport.firePropertyChange(name, oldValue, newValue);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -93,7 +100,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void notifyPropertyChanged(String name, boolean oldValue, boolean newValue) {
         try {
             propertyChangeSupport.firePropertyChange(name, oldValue, newValue);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -101,7 +109,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void fireIndexedPropertyChange(String propertyName, int index, boolean oldValue, boolean newValue) {
         try {
             propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -109,7 +118,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void fireIndexedPropertyChange(String propertyName, int index, int oldValue, int newValue) {
         try {
             propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }
@@ -117,7 +127,8 @@ public abstract class AbstractModelItem implements ModelItem {
     public void fireIndexedPropertyChange(String propertyName, int index, Object oldValue, Object newValue) {
         try {
             propertyChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
         }
     }

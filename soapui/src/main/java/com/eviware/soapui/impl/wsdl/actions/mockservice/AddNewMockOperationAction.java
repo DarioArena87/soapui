@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.mockservice;
@@ -52,7 +52,7 @@ public class AddNewMockOperationAction extends AbstractSoapUIAction<WsdlMockServ
         for (Interface iface : interfaces) {
             for (int i = 0; i < iface.getOperationCount(); i++) {
                 if (!mockService.hasMockOperation(iface.getOperationAt(i))) {
-                    operations.add(new OperationWrapper((WsdlOperation) iface.getOperationAt(i)));
+                    operations.add(new OperationWrapper((WsdlOperation)iface.getOperationAt(i)));
                 }
             }
         }
@@ -64,8 +64,8 @@ public class AddNewMockOperationAction extends AbstractSoapUIAction<WsdlMockServ
 
         Object result = UISupport.prompt("Select Operation to Mock", "New MockOperation", operations.toArray());
         if (result != null) {
-            WsdlOperation operation = ((OperationWrapper) result).getOperation();
-            WsdlMockOperation mockOperation = (WsdlMockOperation) mockService.addNewMockOperation(operation);
+            WsdlOperation operation = ((OperationWrapper)result).getOperation();
+            WsdlMockOperation mockOperation = (WsdlMockOperation)mockService.addNewMockOperation(operation);
             WsdlMockResponse mockResponse = mockOperation.addNewMockResponse("Response 1", true);
             UISupport.selectAndShow(mockResponse);
         }

@@ -9,7 +9,7 @@ public class FixedSPNegoSchemeFactory extends SPNegoSchemeFactory {
     public static final String SPNEGO_USE_CANONICAL_HOSTNAME_VM_OPTION = "httpclient.spnego.usecanonicalname";
 
     @Override
-    public AuthScheme create(final HttpContext context) {
+    public AuthScheme create(HttpContext context) {
         boolean useCanonicalNames = VMOptionReader.getValueAsBoolean(SPNEGO_USE_CANONICAL_HOSTNAME_VM_OPTION, isUseCanonicalHostname());
         return new FixedSPNegoScheme(isStripPort(), useCanonicalNames);
     }

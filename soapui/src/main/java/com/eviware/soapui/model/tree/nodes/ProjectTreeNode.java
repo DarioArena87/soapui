@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes;
@@ -36,9 +36,9 @@ import java.util.List;
 
 public class ProjectTreeNode extends AbstractModelItemTreeNode<Project> {
     private InternalProjectListener internalProjectListener;
-    private List<InterfaceTreeNode> interfaceNodes = new ArrayList<InterfaceTreeNode>();
-    private List<TestSuiteTreeNode> testSuiteNodes = new ArrayList<TestSuiteTreeNode>();
-    private List<MockServiceTreeNode> mockServiceNodes = new ArrayList<MockServiceTreeNode>();
+    private final List<InterfaceTreeNode> interfaceNodes = new ArrayList<InterfaceTreeNode>();
+    private final List<TestSuiteTreeNode> testSuiteNodes = new ArrayList<TestSuiteTreeNode>();
+    private final List<MockServiceTreeNode> mockServiceNodes = new ArrayList<MockServiceTreeNode>();
     private PropertiesTreeNode<?> propertiesTreeNode;
 
     public ProjectTreeNode(Project project, WorkspaceTreeNode workspaceNode) {
@@ -78,28 +78,6 @@ public class ProjectTreeNode extends AbstractModelItemTreeNode<Project> {
         getTreeModel().mapModelItem(propertiesTreeNode);
     }
 
-    public void release() {
-        super.release();
-
-        getProject().removeProjectListener(internalProjectListener);
-
-        for (InterfaceTreeNode treeNode : interfaceNodes) {
-            treeNode.release();
-        }
-
-        for (TestSuiteTreeNode treeNode : testSuiteNodes) {
-            treeNode.release();
-        }
-
-        for (MockServiceTreeNode treeNode : mockServiceNodes) {
-            treeNode.release();
-        }
-
-        if (propertiesTreeNode != null) {
-            propertiesTreeNode.release();
-        }
-    }
-
     public int getChildCount() {
         if (propertiesTreeNode == null) {
             return 0;
@@ -108,6 +86,27 @@ public class ProjectTreeNode extends AbstractModelItemTreeNode<Project> {
         int propMod = getTreeModel().isShowProperties() ? 1 : 0;
 
         return interfaceNodes.size() + testSuiteNodes.size() + mockServiceNodes.size() + propMod;
+    }
+
+    public SoapUITreeNode getChildNode(int index) {
+        if (propertiesTreeNode == null) {
+            return null;
+        }
+
+        int propMod = getTreeModel().isShowProperties() ? 1 : 0;
+
+        if (propMod == 1 && index == 0) {
+            return propertiesTreeNode;
+        }
+        else if (index < interfaceNodes.size() + propMod) {
+            return interfaceNodes.get(index - propMod);
+        }
+        else if (index < testSuiteNodes.size() + interfaceNodes.size() + propMod) {
+            return testSuiteNodes.get(index - interfaceNodes.size() - propMod);
+        }
+        else {
+            return mockServiceNodes.get(index - interfaceNodes.size() - testSuiteNodes.size() - propMod);
+        }
     }
 
     public int getIndexOfChild(Object child) {
@@ -139,26 +138,30 @@ public class ProjectTreeNode extends AbstractModelItemTreeNode<Project> {
         return -1;
     }
 
-    public SoapUITreeNode getChildNode(int index) {
-        if (propertiesTreeNode == null) {
-            return null;
+    public void release() {
+        super.release();
+
+        getProject().removeProjectListener(internalProjectListener);
+
+        for (InterfaceTreeNode treeNode : interfaceNodes) {
+            treeNode.release();
         }
 
-        int propMod = getTreeModel().isShowProperties() ? 1 : 0;
+        for (TestSuiteTreeNode treeNode : testSuiteNodes) {
+            treeNode.release();
+        }
 
-        if (propMod == 1 && index == 0) {
-            return propertiesTreeNode;
-        } else if (index < interfaceNodes.size() + propMod) {
-            return interfaceNodes.get(index - propMod);
-        } else if (index < testSuiteNodes.size() + interfaceNodes.size() + propMod) {
-            return testSuiteNodes.get(index - interfaceNodes.size() - propMod);
-        } else {
-            return mockServiceNodes.get(index - interfaceNodes.size() - testSuiteNodes.size() - propMod);
+        for (MockServiceTreeNode treeNode : mockServiceNodes) {
+            treeNode.release();
+        }
+
+        if (propertiesTreeNode != null) {
+            propertiesTreeNode.release();
         }
     }
 
     public Project getProject() {
-        return (Project) getModelItem();
+        return getModelItem();
     }
 
     private class InternalProjectListener extends ProjectListenerAdapter {
@@ -174,7 +177,8 @@ public class ProjectTreeNode extends AbstractModelItemTreeNode<Project> {
             if (interfaceNodes.contains(treeNode)) {
                 getTreeModel().notifyNodeRemoved(treeNode);
                 interfaceNodes.remove(treeNode);
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing unkown interface");
             }
         }
@@ -190,7 +194,8 @@ public class ProjectTreeNode extends AbstractModelItemTreeNode<Project> {
             if (testSuiteNodes.contains(treeNode)) {
                 getTreeModel().notifyNodeRemoved(treeNode);
                 testSuiteNodes.remove(treeNode);
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing unkown testSuite");
             }
         }
@@ -212,10 +217,10 @@ public class ProjectTreeNode extends AbstractModelItemTreeNode<Project> {
             if (mockServiceNodes.contains(treeNode)) {
                 getTreeModel().notifyNodeRemoved(treeNode);
                 mockServiceNodes.remove(treeNode);
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing unkown mockService");
             }
         }
     }
-
 }

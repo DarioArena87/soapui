@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support;
@@ -31,16 +31,13 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractMockOperation
-        <BaseMockOperationConfigType extends BaseMockOperationConfig, MockResponseType extends MockResponse>
-        extends AbstractWsdlModelItem<BaseMockOperationConfigType>
-        implements MockOperation, PropertyChangeListener {
+public abstract class AbstractMockOperation<BaseMockOperationConfigType extends BaseMockOperationConfig, MockResponseType extends MockResponse> extends AbstractWsdlModelItem<BaseMockOperationConfigType> implements MockOperation, PropertyChangeListener {
     public final static String DISPATCH_PATH_PROPERTY = MockOperation.class.getName() + "@dispatchpath";
     public final static String DISPATCH_STYLE_PROPERTY = MockOperation.class.getName() + "@dispatchstyle";
 
     private MockOperationDispatcher dispatcher;
 
-    private List<MockResponseType> responses = new ArrayList<MockResponseType>();
+    private final List<MockResponseType> responses = new ArrayList<MockResponseType>();
 
     protected AbstractMockOperation(BaseMockOperationConfigType config, MockService parent, String icon) {
         super(config, parent, icon);
@@ -59,7 +56,6 @@ public abstract class AbstractMockOperation
         if (!config.isSetDispatchStyle()) {
             config.setDispatchStyle(MockOperationDispatchStyleConfig.SEQUENCE);
             setExampleScript();
-
         }
 
         dispatcher = MockOperationDispatchRegistry.buildDispatcher(getConfig().getDispatchStyle().toString(), this);
@@ -69,20 +65,16 @@ public abstract class AbstractMockOperation
         responses.add(response);
     }
 
-    public List<MockResponse> getMockResponses() {
-        return new ArrayList<MockResponse>(responses);
+    public int getMockResponseCount() {
+        return responses.size();
     }
 
     public MockResponseType getMockResponseAt(int index) {
         return responses.get(index);
     }
 
-    public int getMockResponseCount() {
-        return responses.size();
-    }
-
     public MockResponseType getMockResponseByName(String name) {
-        return (MockResponseType) getWsdlModelItemByName(getMockResponses(), name);
+        return (MockResponseType)getWsdlModelItemByName(getMockResponses(), name);
     }
 
     public MockResult getLastMockResult() {
@@ -100,6 +92,10 @@ public abstract class AbstractMockOperation
         return result;
     }
 
+    public List<MockResponse> getMockResponses() {
+        return new ArrayList<MockResponse>(responses);
+    }
+
     public void removeMockResponse(MockResponse mockResponse) {
         int ix = responses.indexOf(mockResponse);
         responses.remove(ix);
@@ -107,22 +103,11 @@ public abstract class AbstractMockOperation
 
         try {
             (getMockService()).fireMockResponseRemoved(mockResponse);
-        } finally {
+        }
+        finally {
             mockResponse.release();
             removeResponseFromConfig(ix);
         }
-    }
-
-    public abstract void removeResponseFromConfig(int index);
-
-    public String getDefaultResponse() {
-        return getConfig().getDefaultResponse();
-    }
-
-    public void setDefaultResponse(String defaultResponse) {
-        String old = getDefaultResponse();
-        getConfig().setDefaultResponse(defaultResponse);
-        // noone is listening? notifyPropertyChanged( WsdlMockOperation.DEFAULT_RESPONSE_PROPERTY, old, defaultResponse );
     }
 
     @Override
@@ -135,6 +120,18 @@ public abstract class AbstractMockOperation
         String old = getScript();
         getConfig().setDispatchPath(dispatchPath);
         notifyPropertyChanged(DISPATCH_PATH_PROPERTY, old, dispatchPath);
+    }
+
+    public abstract void removeResponseFromConfig(int index);
+
+    public String getDefaultResponse() {
+        return getConfig().getDefaultResponse();
+    }
+
+    public void setDefaultResponse(String defaultResponse) {
+        String old = getDefaultResponse();
+        getConfig().setDefaultResponse(defaultResponse);
+        // noone is listening? notifyPropertyChanged( WsdlMockOperation.DEFAULT_RESPONSE_PROPERTY, old, defaultResponse );
     }
 
     // Hook for subclasses
@@ -150,8 +147,7 @@ public abstract class AbstractMockOperation
     }
 
     public String getDispatchStyle() {
-        return String.valueOf(getConfig().isSetDispatchStyle() ? getConfig().getDispatchStyle()
-                : MockOperationDispatchStyleConfig.SEQUENCE);
+        return String.valueOf(getConfig().isSetDispatchStyle() ? getConfig().getDispatchStyle() : MockOperationDispatchStyleConfig.SEQUENCE);
     }
 
     public MockOperationDispatcher setDispatchStyle(String dispatchStyle) {
@@ -173,5 +169,4 @@ public abstract class AbstractMockOperation
 
         return getDispatcher();
     }
-
 }

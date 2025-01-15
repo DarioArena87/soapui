@@ -12,14 +12,14 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
-import javax.swing.text.Segment;
-
 import org.syntax.jedit.KeywordMap;
 import org.syntax.jedit.SyntaxUtilities;
+
+import javax.swing.text.Segment;
 
 /**
  * Perl token marker.
@@ -30,13 +30,20 @@ import org.syntax.jedit.SyntaxUtilities;
 public class PerlTokenMarker extends TokenMarker {
     // public members
     public static final byte S_ONE = Token.INTERNAL_FIRST;
-    public static final byte S_TWO = (byte) (Token.INTERNAL_FIRST + 1);
-    public static final byte S_END = (byte) (Token.INTERNAL_FIRST + 2);
-
+    public static final byte S_TWO = (byte)(Token.INTERNAL_FIRST + 1);
+    public static final byte S_END = (byte)(Token.INTERNAL_FIRST + 2);
+    private static KeywordMap perlKeywords;
+    // private members
+    private final KeywordMap keywords;
+    private byte token;
+    private int lastOffset;
+    private int lastKeyword;
+    private char matchChar;
+    private boolean matchCharBracket;
+    private boolean matchSpacesAllowed;
     public PerlTokenMarker() {
         this(getKeywords());
     }
-
     public PerlTokenMarker(KeywordMap keywords) {
         this.keywords = keywords;
     }
@@ -53,11 +60,12 @@ public class PerlTokenMarker extends TokenMarker {
         int length = line.count + offset;
 
         if (token == Token.LITERAL1 && lineIndex != 0 && lineInfo[lineIndex - 1].obj != null) {
-            String str = (String) lineInfo[lineIndex - 1].obj;
+            String str = (String)lineInfo[lineIndex - 1].obj;
             if (str != null && str.length() == line.count && SyntaxUtilities.regionMatches(false, line, offset, str)) {
                 addToken(line.count, token);
                 return Token.NULL;
-            } else {
+            }
+            else {
                 addToken(line.count, token);
                 lineInfo[lineIndex].obj = str;
                 return token;
@@ -84,7 +92,8 @@ public class PerlTokenMarker extends TokenMarker {
                             }
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 addToken(length - i, Token.COMMENT1);
                                 lastOffset = lastKeyword = length;
@@ -98,7 +107,8 @@ public class PerlTokenMarker extends TokenMarker {
                                 addToken(length - i, token);
                                 lastOffset = lastKeyword = length;
                                 break loop;
-                            } else {
+                            }
+                            else {
                                 doKeyword(line, i, c);
                             }
                             break;
@@ -113,7 +123,8 @@ public class PerlTokenMarker extends TokenMarker {
                             if (length - i > 1) {
                                 if (c == '&' && (array[i1] == '&' || Character.isWhitespace(array[i1]))) {
                                     i++;
-                                } else {
+                                }
+                                else {
                                     addToken(i - lastOffset, token);
                                     lastOffset = lastKeyword = i;
                                     token = Token.KEYWORD2;
@@ -126,7 +137,8 @@ public class PerlTokenMarker extends TokenMarker {
                             }
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 token = Token.LITERAL1;
                                 lineInfo[lineIndex].obj = null;
@@ -136,7 +148,8 @@ public class PerlTokenMarker extends TokenMarker {
                         case '\'':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 int oldLastKeyword = lastKeyword;
                                 if (doKeyword(line, i, c)) {
                                     break;
@@ -155,7 +168,8 @@ public class PerlTokenMarker extends TokenMarker {
                             }
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 token = Token.OPERATOR;
                                 lastOffset = lastKeyword = i;
@@ -167,7 +181,8 @@ public class PerlTokenMarker extends TokenMarker {
                             }
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 if (length - i > 2 && array[i1] == '<' && !Character.isWhitespace(array[i + 2])) {
                                     addToken(i - lastOffset, token);
                                     lastOffset = lastKeyword = i;
@@ -289,14 +304,17 @@ public class PerlTokenMarker extends TokenMarker {
                 case S_TWO:
                     if (backslash) {
                         backslash = false;
-                    } else {
+                    }
+                    else {
                         if (matchChar == '\0') {
                             if (Character.isWhitespace(matchChar) && !matchSpacesAllowed) {
                                 break;
-                            } else {
+                            }
+                            else {
                                 matchChar = c;
                             }
-                        } else {
+                        }
+                        else {
                             switch (matchChar) {
                                 case '(':
                                     matchChar = ')';
@@ -326,7 +344,8 @@ public class PerlTokenMarker extends TokenMarker {
                                 if (matchCharBracket) {
                                     matchChar = '\0';
                                 }
-                            } else {
+                            }
+                            else {
                                 token = S_END;
                                 addToken(i1 - lastOffset, Token.LITERAL2);
                                 lastOffset = lastKeyword = i1;
@@ -355,9 +374,9 @@ public class PerlTokenMarker extends TokenMarker {
                     if (backslash) {
                         backslash = false;
                     }
-                /*
-				 * else if(c == '$') backslash = true;
-				 */
+                    /*
+                     * else if(c == '$') backslash = true;
+                     */
                     else if (c == '"') {
                         addToken(i1 - lastOffset, token);
                         token = Token.NULL;
@@ -368,9 +387,9 @@ public class PerlTokenMarker extends TokenMarker {
                     if (backslash) {
                         backslash = false;
                     }
-				/*
-				 * else if(c == '$') backslash = true;
-				 */
+                    /*
+                     * else if(c == '$') backslash = true;
+                     */
                     else if (c == '\'') {
                         addToken(i1 - lastOffset, Token.LITERAL1);
                         token = Token.NULL;
@@ -380,7 +399,8 @@ public class PerlTokenMarker extends TokenMarker {
                 case Token.OPERATOR:
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '`') {
+                    }
+                    else if (c == '`') {
                         addToken(i1 - lastOffset, token);
                         token = Token.NULL;
                         lastOffset = lastKeyword = i1;
@@ -419,15 +439,6 @@ public class PerlTokenMarker extends TokenMarker {
         return token;
     }
 
-    // private members
-    private KeywordMap keywords;
-    private byte token;
-    private int lastOffset;
-    private int lastKeyword;
-    private char matchChar;
-    private boolean matchCharBracket;
-    private boolean matchSpacesAllowed;
-
     private boolean doKeyword(Segment line, int i, char c) {
         int i1 = i + 1;
 
@@ -450,13 +461,15 @@ public class PerlTokenMarker extends TokenMarker {
             lastKeyword = i1;
             if (Character.isWhitespace(c)) {
                 matchChar = '\0';
-            } else {
+            }
+            else {
                 matchChar = c;
             }
             matchSpacesAllowed = true;
             token = id;
             return true;
-        } else if (id != Token.NULL) {
+        }
+        else if (id != Token.NULL) {
             if (lastKeyword != lastOffset) {
                 addToken(lastKeyword - lastOffset, Token.NULL);
             }
@@ -482,8 +495,6 @@ public class PerlTokenMarker extends TokenMarker {
 
         return new String(array, idx1, idx2 - idx1 + 1);
     }
-
-    private static KeywordMap perlKeywords;
 
     private static KeywordMap getKeywords() {
         if (perlKeywords == null) {

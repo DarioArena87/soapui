@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions;
@@ -71,10 +71,18 @@ import java.util.TreeSet;
  */
 
 public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
-    private static TestAssertionRegistry instance;
-    private Map<String, TestAssertionFactory> availableAssertions = new HashMap<String, TestAssertionFactory>();
-    private StringToStringMap assertionLabels = new StringToStringMap();
     private final static Logger log = LogManager.getLogger(TestAssertionRegistry.class);
+    private static TestAssertionRegistry instance;
+    private final Map<String, TestAssertionFactory> availableAssertions = new HashMap<String, TestAssertionFactory>();
+    private final StringToStringMap assertionLabels = new StringToStringMap();
+
+    public static synchronized TestAssertionRegistry getInstance() {
+        if (instance == null) {
+            instance = new TestAssertionRegistry();
+        }
+
+        return instance;
+    }
 
     private TestAssertionRegistry() {
         addAssertion(new SoapResponseAssertion.Factory());
@@ -114,7 +122,7 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
             addAssertion(factory);
         }
 
-        SoapUI.getFactoryRegistry().addFactoryRegistryListener( this );
+        SoapUI.getFactoryRegistry().addFactoryRegistryListener(this);
     }
 
     public void addAssertion(TestAssertionFactory factory) {
@@ -122,18 +130,9 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
         assertionLabels.put(factory.getAssertionLabel(), factory.getAssertionId());
     }
 
-    public void removeFactory( TestAssertionFactory factory )
-    {
-        availableAssertions.remove( factory.getAssertionId());
-        assertionLabels.remove( factory.getAssertionLabel());
-    }
-
-    public static synchronized TestAssertionRegistry getInstance() {
-        if (instance == null) {
-            instance = new TestAssertionRegistry();
-        }
-
-        return instance;
+    public void removeFactory(TestAssertionFactory factory) {
+        availableAssertions.remove(factory.getAssertionId());
+        assertionLabels.remove(factory.getAssertionLabel());
     }
 
     public WsdlMessageAssertion buildAssertion(TestAssertionConfig config, Assertable assertable) {
@@ -142,10 +141,12 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
             TestAssertionFactory factory = availableAssertions.get(type);
             if (factory == null) {
                 log.error("Missing assertion for type [" + type + "]");
-            } else {
-                return (WsdlMessageAssertion) factory.buildAssertion(config, assertable);
             }
-        } catch (Exception e) {
+            else {
+                return (WsdlMessageAssertion)factory.buildAssertion(config, assertable);
+            }
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
@@ -157,10 +158,12 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
             TestAssertionFactory factory = availableAssertions.get(assertionType);
             if (factory == null) {
                 log.error("Missing assertion for type [" + assertionType + "]");
-            } else {
+            }
+            else {
                 return factory.getAssertionClassType();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
@@ -173,10 +176,12 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
             TestAssertionFactory factory = availableAssertions.get(type);
             if (factory == null) {
                 log.error("Missing assertion for type [" + type + "]");
-            } else {
+            }
+            else {
                 return factory.getAssertionClassType();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
@@ -193,25 +198,24 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
 
     @Override
     public void factoryAdded(Class<?> factoryType, Object factory) {
-        if( factory instanceof TestAssertionFactory )
-            addAssertion((TestAssertionFactory) factory);
+        if (factory instanceof TestAssertionFactory) {
+            addAssertion((TestAssertionFactory)factory);
+        }
     }
 
     @Override
     public void factoryRemoved(Class<?> factoryType, Object factory) {
-        if( factory instanceof TestAssertionFactory )
-            removeFactory((TestAssertionFactory) factory);
-    }
-
-    public enum AssertableType {
-        REQUEST, RESPONSE, BOTH
+        if (factory instanceof TestAssertionFactory) {
+            removeFactory((TestAssertionFactory)factory);
+        }
     }
 
     public AssertionListEntry getAssertionListEntry(String type) {
         TestAssertionFactory factory = availableAssertions.get(type);
         if (factory != null) {
             return factory.getAssertionListEntry();
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -220,7 +224,8 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
         TestAssertionFactory factory = availableAssertions.get(type);
         if (factory != null) {
             return factory.canAssert(assertable);
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -229,7 +234,8 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
         TestAssertionFactory factory = availableAssertions.get(type);
         if (factory != null) {
             return factory.canAssert(modelItem, property);
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -238,12 +244,13 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
      * @param assertable
      * @param categoryAssertionsMap
      * @return assertion categories mapped with assertions in exact category if @param
-     *         assertable is not null only assertions for specific @param
-     *         assertable will be included if @param assertable is null all
-     *         assertions are included
+     * assertable is not null only assertions for specific @param
+     * assertable will be included if @param assertable is null all
+     * assertions are included
      */
-    public LinkedHashMap<String, SortedSet<AssertionListEntry>> addCategoriesAssertionsMap(Assertable assertable,
-                                                                                           LinkedHashMap<String, SortedSet<AssertionListEntry>> categoryAssertionsMap) {
+    public LinkedHashMap<String, SortedSet<AssertionListEntry>> addCategoriesAssertionsMap(
+        Assertable assertable, LinkedHashMap<String, SortedSet<AssertionListEntry>> categoryAssertionsMap
+    ) {
         for (String category : AssertionCategoryMapping.getAssertionCategories()) {
             SortedSet<AssertionListEntry> assertionCategorySet = new TreeSet<AssertionListEntry>();
             categoryAssertionsMap.put(category, assertionCategorySet);
@@ -259,7 +266,6 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
                     set.add(assertionListEntry);
                     categoryAssertionsMap.put(assertion.getCategory(), set);
                 }
-
             }
         }
         for (String category : AssertionCategoryMapping.getAssertionCategories()) {
@@ -275,7 +281,8 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
      * adds all assertions into map, to be disabled later when non applicable
      */
     public LinkedHashMap<String, SortedSet<AssertionListEntry>> addAllCategoriesMap(
-            LinkedHashMap<String, SortedSet<AssertionListEntry>> categoryAssertionsMap) {
+        LinkedHashMap<String, SortedSet<AssertionListEntry>> categoryAssertionsMap
+    ) {
         for (String category : AssertionCategoryMapping.getAssertionCategories()) {
             SortedSet<AssertionListEntry> assertionCategorySet = new TreeSet<AssertionListEntry>();
             categoryAssertionsMap.put(category, assertionCategorySet);
@@ -289,7 +296,6 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
                 set.add(assertionListEntry);
                 categoryAssertionsMap.put(assertion.getCategory(), set);
             }
-
         }
         for (String category : AssertionCategoryMapping.getAssertionCategories()) {
             if (categoryAssertionsMap.get(category).isEmpty()) {
@@ -333,8 +339,7 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
                 continue;
             }
 
-            if (assertion.getClass().equals(
-                    availableAssertions.get(getAssertionTypeForName(name)).getAssertionClassType())) {
+            if (assertion.getClass().equals(availableAssertions.get(getAssertionTypeForName(name)).getAssertionClassType())) {
                 return false;
             }
         }
@@ -354,5 +359,11 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
         }
 
         return true;
+    }
+
+    public enum AssertableType {
+        REQUEST,
+        RESPONSE,
+        BOTH
     }
 }

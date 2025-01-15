@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.methods;
@@ -39,7 +39,7 @@ import java.net.URL;
  */
 
 public final class ExtendedDeleteMethod extends HttpDeleteWithBody implements ExtendedHttpMethod {
-    private HttpMethodSupport httpMethodSupport;
+    private final HttpMethodSupport httpMethodSupport;
 
     public ExtendedDeleteMethod() {
         httpMethodSupport = new HttpMethodSupport();
@@ -58,21 +58,10 @@ public final class ExtendedDeleteMethod extends HttpDeleteWithBody implements Ex
         httpMethodSupport.setDumpFile(dumpFile);
     }
 
-    public void afterReadResponse(SSLSession session) {
-        httpMethodSupport.afterReadResponse(session);
-    }
-
-    @Override
-    public String getResponseCharSet() {
-        return httpMethodSupport.getResponseCharset();
-    }
-
-    public HttpEntity getRequestEntity() {
-        return super.getEntity();
-    }
-
     public long getMaxSize() {
         return httpMethodSupport.getMaxSize();
+    }    public void afterReadResponse(SSLSession session) {
+        httpMethodSupport.afterReadResponse(session);
     }
 
     public void setMaxSize(long maxSize) {
@@ -81,18 +70,12 @@ public final class ExtendedDeleteMethod extends HttpDeleteWithBody implements Ex
 
     public long getResponseReadTime() {
         return httpMethodSupport.getResponseReadTime();
+    }    public HttpEntity getRequestEntity() {
+        return getEntity();
     }
 
     public long getResponseReadTimeNanos() {
         return httpMethodSupport.getResponseReadTimeNanos();
-    }
-
-    public boolean hasResponse() {
-        return httpMethodSupport.hasResponse();
-    }
-
-    public void afterWriteRequest() {
-        httpMethodSupport.afterWriteRequest();
     }
 
     public void initStartTime() {
@@ -109,6 +92,15 @@ public final class ExtendedDeleteMethod extends HttpDeleteWithBody implements Ex
 
     public SSLInfo getSSLInfo() {
         return httpMethodSupport.getSSLInfo();
+    }    public boolean hasResponse() {
+        return httpMethodSupport.hasResponse();
+    }
+
+    @Override
+    public String getResponseCharSet() {
+        return httpMethodSupport.getResponseCharset();
+    }    public void afterWriteRequest() {
+        httpMethodSupport.afterWriteRequest();
     }
 
     public String getResponseContentType() {
@@ -118,6 +110,14 @@ public final class ExtendedDeleteMethod extends HttpDeleteWithBody implements Ex
     public String getMethod() {
         return RestRequestInterface.HttpMethod.DELETE.toString();
     }
+
+
+
+
+
+
+
+
 
     public Throwable getFailureCause() {
         return httpMethodSupport.getFailureCause();
@@ -159,7 +159,8 @@ public final class ExtendedDeleteMethod extends HttpDeleteWithBody implements Ex
         byte[] rawdata = getResponseBody();
         if (rawdata != null) {
             return EncodingUtil.getString(rawdata, getResponseCharSet());
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -177,5 +178,4 @@ public final class ExtendedDeleteMethod extends HttpDeleteWithBody implements Ex
     public URL getURL() throws MalformedURLException {
         return getURI().toURL();
     }
-
 }

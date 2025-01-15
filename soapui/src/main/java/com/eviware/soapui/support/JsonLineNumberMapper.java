@@ -17,6 +17,10 @@ public class JsonLineNumberMapper {
     private boolean rootProcessed = false;
     private int yamlLineNumberCorrection = 0;
 
+    public static String processNodeName(String name) {
+        return name.replace("~", "~0").replace("/", "~1");
+    }
+
     public Map<JsonPointer, NodeRange> mapLineNumber(JsonParser parser, boolean isYaml) {
         lines = new HashMap<>();
         if (isYaml) {
@@ -31,14 +35,15 @@ public class JsonLineNumberMapper {
                 token = parser.nextToken();
             }
             lines.get(jsonPointer).endLine = parser.getCurrentLocation().getLineNr();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             LogManager.getLogger(JsonLineNumberMapper.class).error(e.getMessage(), e);
         }
 
         return lines;
     }
 
-    private void processLineEntry(final JsonToken token, final JsonLocation location, final JsonStreamContext context) {
+    private void processLineEntry(JsonToken token, JsonLocation location, JsonStreamContext context) {
         if (!rootProcessed) {
             NodeRange nodeRange = new NodeRange(location.getLineNr());
             lines.put(jsonPointer, nodeRange);
@@ -70,12 +75,8 @@ public class JsonLineNumberMapper {
             return;
         }
 
-        final JsonPointer entryPointer = JsonPointer.forPath(context, false);
+        JsonPointer entryPointer = JsonPointer.forPath(context, false);
         lines.put(entryPointer, new NodeRange(lineNumber, lineNumber));
-    }
-
-    public static String processNodeName(String name) {
-        return name.replace("~", "~0").replace("/", "~1");
     }
 }
 

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.loadtest.strategy;
@@ -29,7 +29,15 @@ import java.util.Map;
 
 public class LoadStrategyRegistry {
     private static LoadStrategyRegistry instance;
-    private Map<String, LoadStrategyFactory> factories = new HashMap<String, LoadStrategyFactory>();
+    private final Map<String, LoadStrategyFactory> factories = new HashMap<String, LoadStrategyFactory>();
+
+    public static LoadStrategyRegistry getInstance() {
+        if (instance == null) {
+            instance = new LoadStrategyRegistry();
+        }
+
+        return instance;
+    }
 
     public LoadStrategyRegistry() {
         addFactory(new SimpleLoadStrategy.Factory());
@@ -44,14 +52,6 @@ public class LoadStrategyRegistry {
 
     public String[] getStrategies() {
         return StringUtils.sortNames(factories.keySet().toArray(new String[factories.size()]));
-    }
-
-    public static LoadStrategyRegistry getInstance() {
-        if (instance == null) {
-            instance = new LoadStrategyRegistry();
-        }
-
-        return instance;
     }
 
     public LoadStrategyFactory getFactory(String type) {

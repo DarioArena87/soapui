@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.iface;
@@ -28,53 +28,53 @@ import com.eviware.soapui.support.types.StringToStringsMap;
  */
 
 public interface MessageExchange extends ResultContainer {
-    public Operation getOperation();
+    Operation getOperation();
 
-    public ModelItem getModelItem();
+    ModelItem getModelItem();
 
-    public long getTimestamp();
+    long getTimestamp();
 
-    public long getTimeTaken();
+    long getTimeTaken();
 
-    public String getEndpoint();
+    String getEndpoint();
 
-    public StringToStringMap getProperties();
+    StringToStringMap getProperties();
 
-    public String getRequestContent();
+    String getRequestContent();
 
-    public String getResponseContent();
+    String getResponseContent();
 
-    public String getRequestContentAsXml();
+    String getRequestContentAsXml();
 
-    public String getResponseContentAsXml();
+    String getResponseContentAsXml();
 
-    public StringToStringsMap getRequestHeaders();
+    StringToStringsMap getRequestHeaders();
 
-    public StringToStringsMap getResponseHeaders();
+    StringToStringsMap getResponseHeaders();
 
-    public Attachment[] getRequestAttachments();
+    Attachment[] getRequestAttachments();
 
-    public Attachment[] getResponseAttachments();
+    Attachment[] getResponseAttachments();
 
-    public String[] getMessages();
+    String[] getMessages();
 
-    public boolean isDiscarded();
+    boolean isDiscarded();
 
-    public boolean hasRawData();
+    boolean hasRawData();
 
-    public byte[] getRawRequestData();
+    byte[] getRawRequestData();
 
-    public byte[] getRawResponseData();
+    byte[] getRawResponseData();
 
-    public Attachment[] getRequestAttachmentsForPart(String partName);
+    Attachment[] getRequestAttachmentsForPart(String partName);
 
-    public Attachment[] getResponseAttachmentsForPart(String partName);
+    Attachment[] getResponseAttachmentsForPart(String partName);
 
-    public boolean hasRequest(boolean ignoreEmpty);
+    boolean hasRequest(boolean ignoreEmpty);
 
-    public boolean hasResponse();
+    boolean hasResponse();
 
-    public Response getResponse();
+    Response getResponse();
 
-    public String getProperty(String name);
+    String getProperty(String name);
 }

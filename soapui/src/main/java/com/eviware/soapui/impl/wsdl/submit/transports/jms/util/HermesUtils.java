@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.jms.util;
@@ -48,11 +48,10 @@ import java.util.Properties;
 import java.util.Set;
 
 public class HermesUtils {
-    private static ClassLoader hermesClassLoader;
-    private static Map<String, Context> contextMap = new HashMap<String, Context>();
     public static String HERMES_CONFIG_XML = "hermes-config.xml";
-
-    private static HashSet<String> classesToBeLoadedByParentClassLoader = new HashSet<>();
+    private static ClassLoader hermesClassLoader;
+    private static final Map<String, Context> contextMap = new HashMap<String, Context>();
+    private static final HashSet<String> classesToBeLoadedByParentClassLoader = new HashSet<>();
 
     static {
         classesToBeLoadedByParentClassLoader.add("hermes.browser.tasks.ThreadPool");
@@ -70,22 +69,19 @@ public class HermesUtils {
         classesToBeLoadedByParentClassLoader.add("hermes.ProviderMetaData");
         classesToBeLoadedByParentClassLoader.add("hermes.impl.DestinationManager");
         classesToBeLoadedByParentClassLoader.add("hermes.browser.MessageRenderer");
-
     }
 
     public static ClassLoader getHermesClassLoader() {
         return hermesClassLoader;
     }
 
-    public static Context hermesContext(WsdlProject project) throws NamingException, MalformedURLException,
-            IOException {
+    public static Context hermesContext(WsdlProject project) throws NamingException, IOException {
         String expandedHermesConfigPath = PropertyExpander.expandProperties(project, project.getHermesConfig());
         String key = project.getName() + expandedHermesConfigPath;
         return getHermes(key, expandedHermesConfigPath);
     }
 
-    public static Context hermesContext(WsdlProject project, String hermesConfigPath) throws NamingException,
-            MalformedURLException, IOException {
+    public static Context hermesContext(WsdlProject project, String hermesConfigPath) throws NamingException, IOException {
         String expandedHermesConfigPath = PropertyExpander.expandProperties(project, hermesConfigPath);
         String key = project.getName() + expandedHermesConfigPath;
         return getHermes(key, expandedHermesConfigPath);
@@ -93,8 +89,73 @@ public class HermesUtils {
 
     // private static URLClassLoader hermesClassLoader;
 
-    private static Context getHermes(String key, String hermesConfigPath) throws IOException, MalformedURLException,
-            NamingException {
+    public static void flushHermesCache() {
+        contextMap.clear();
+    }
+
+    public static String defaultHermesJMSPath() {
+        try {
+            String path = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS, null);
+            if (path == null || "".equals(path)) {
+                String temp = System.getProperty("soapui.home").substring(0, System.getProperty("soapui.home").lastIndexOf("bin") - 1);
+                path = new File(temp + File.separator + "hermesJMS").getAbsolutePath();
+                SoapUI.log("HermesJMS path: " + path);
+            }
+            setHermesJMSPath(path);
+            return path;
+        }
+        catch (Exception e) {
+            SoapUI.log("No HermesJMS on default path %SOAPUI_HOME%/hermesJMS");
+            return null;
+        }
+    }
+
+    public static void setHermesJMSPath(String path) {
+        if (path != null) {
+            SoapUI.getSettings().setString(ToolsSettings.HERMES_JMS, path);
+        }
+    }
+
+    /**
+     * @param project
+     * @param sessionName
+     * @return hermes.Hermes
+     * @throws NamingException
+     */
+    public static Hermes getHermes(WsdlProject project, String sessionName) throws NamingException {
+        SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
+        try {
+            Context ctx = hermesContext(project);
+
+            Hermes hermes = (Hermes)ctx.lookup(sessionName);
+            return hermes;
+        }
+        catch (NamingException ne) {
+            UISupport.showErrorMessage("Hermes configuration is not valid. Please check that 'Hermes Config' project property is set to path of proper hermes-config.xml file");
+            SoapUI.logError(ne, "Error when trying to find JMS session");
+            throw new NamingException("Session name '" +
+                                      sessionName +
+                                      "' does not exist in Hermes configuration or path to Hermes config ( " +
+                                      project.getHermesConfig() +
+                                      " )is not valid!");
+        }
+        catch (MalformedURLException mue) {
+            SoapUI.logError(mue);
+        }
+        catch (IOException ioe) {
+            SoapUI.logError(ioe);
+        }
+        finally {
+            state.restore();
+        }
+        return null;
+    }
+
+    public static boolean isHermesJMSSupported() {
+        return !UISupport.isIdePlugin();
+    }
+
+    private static Context getHermes(String key, String hermesConfigPath) throws IOException, NamingException {
         SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
         if (hermesClassLoader == null) {
             addHermesJarsToClasspath();
@@ -115,12 +176,13 @@ public class HermesUtils {
             Context ctx = new InitialContext(props);
             contextMap.put(key, ctx);
             return ctx;
-        } finally {
+        }
+        finally {
             state.restore();
         }
     }
 
-    private static void addHermesJarsToClasspath() throws IOException, MalformedURLException {
+    private static void addHermesJarsToClasspath() throws IOException {
         String hermesHome = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS, defaultHermesJMSPath());
 
         if (hermesHome == null || "".equals(hermesHome)) {
@@ -143,8 +205,7 @@ public class HermesUtils {
                 // fix for users using version of hermesJMS which still has
                 // cglib-2.1.3.jar in lib directory
                 String filename = file.getName();
-                if (!filename.endsWith(".jar") || filename.equals("cglib-2.1.3.jar") ||
-                        filename.equals("slf4j-jdk14-1.0.1.jar")) {
+                if (!filename.endsWith(".jar") || filename.equals("cglib-2.1.3.jar") || filename.equals("slf4j-jdk14-1.0.1.jar")) {
                     continue;
                 }
 
@@ -152,28 +213,22 @@ public class HermesUtils {
                     urls.add(file.toURI().toURL());
                 }
             }
-            hermesClassLoader = new ReverseOrderClassLoader(urls.toArray(new URL[urls.size()]),
-                    currentClassLoader, classesToBeLoadedByParentClassLoader);
+            hermesClassLoader = new ReverseOrderClassLoader(urls.toArray(new URL[urls.size()]), currentClassLoader, classesToBeLoadedByParentClassLoader);
         }
-
     }
 
     private static boolean mustBeAddedToCurrentClassLoader(String filename) {
         return filename.equals("jide-action.jar") ||
-                filename.equals("jaxb-api.jar") ||
-                filename.equals("xerces.jar") ||
-                filename.equals("xercesImpl.jar") ||
-                filename.equals("jide-components.jar") ||
-                filename.equals(("xml-apis.jar")) ||
-                filename.equals("javax.jms.jar") ||
-                filename.equals("jms.jar") ||
-                filename.equals("jta-spec1_0_1.jar") ||
-                filename.equals("jmx.jar") ||
-                filename.equals("jms-jmx.jar");
-    }
-
-    public static void flushHermesCache() {
-        contextMap.clear();
+               filename.equals("jaxb-api.jar") ||
+               filename.equals("xerces.jar") ||
+               filename.equals("xercesImpl.jar") ||
+               filename.equals("jide-components.jar") ||
+               filename.equals(("xml-apis.jar")) ||
+               filename.equals("javax.jms.jar") ||
+               filename.equals("jms.jar") ||
+               filename.equals("jta-spec1_0_1.jar") ||
+               filename.equals("jmx.jar") ||
+               filename.equals("jms-jmx.jar");
     }
 
     private static String createHermesHomeSetting() {
@@ -189,64 +244,6 @@ public class HermesUtils {
         return null;
     }
 
-    public static String defaultHermesJMSPath() {
-        try {
-            String path = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS, null);
-            if (path == null || "".equals(path)) {
-                String temp = System.getProperty("soapui.home").substring(0,
-                        System.getProperty("soapui.home").lastIndexOf("bin") - 1);
-                path = new File(temp + File.separator + "hermesJMS").getAbsolutePath().toString();
-                SoapUI.log("HermesJMS path: " + path);
-            }
-            setHermesJMSPath(path);
-            return path;
-        } catch (Exception e) {
-            SoapUI.log("No HermesJMS on default path %SOAPUI_HOME%/hermesJMS");
-            return null;
-        }
-
-    }
-
-    public static void setHermesJMSPath(String path) {
-        if (path != null) {
-            SoapUI.getSettings().setString(ToolsSettings.HERMES_JMS, path);
-        }
-    }
-
-    /**
-     * @param project
-     * @param sessionName
-     * @return hermes.Hermes
-     * @throws NamingException
-     */
-    public static Hermes getHermes(WsdlProject project, String sessionName) throws NamingException {
-        SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
-        try {
-            Context ctx = hermesContext(project);
-
-            Hermes hermes = (Hermes) ctx.lookup(sessionName);
-            return hermes;
-        } catch (NamingException ne) {
-            UISupport
-                    .showErrorMessage("Hermes configuration is not valid. Please check that 'Hermes Config' project property is set to path of proper hermes-config.xml file");
-            SoapUI.logError(ne, "Error when trying to find JMS session");
-            throw new NamingException("Session name '" + sessionName
-                    + "' does not exist in Hermes configuration or path to Hermes config ( " + project.getHermesConfig()
-                    + " )is not valid!");
-        } catch (MalformedURLException mue) {
-            SoapUI.logError(mue);
-        } catch (IOException ioe) {
-            SoapUI.logError(ioe);
-        } finally {
-            state.restore();
-        }
-        return null;
-    }
-
-    public static boolean isHermesJMSSupported() {
-        return !UISupport.isIdePlugin();
-    }
-
     public static class ReverseOrderClassLoader extends URLClassLoader {
         final private Set<String> toBeLoadedByParent;
 
@@ -256,8 +253,7 @@ public class HermesUtils {
         }
 
         @Override
-        protected synchronized Class<?> loadClass(String name, boolean resolve)
-                throws ClassNotFoundException {
+        protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             Class<?> c = findLoadedClass(name);
             if (c == null) {
                 c = innerLoadClass(name, resolve);
@@ -266,17 +262,6 @@ public class HermesUtils {
                 resolveClass(c);
             }
             return c;
-        }
-
-        private Class<?> innerLoadClass(String name, boolean resolve) throws ClassNotFoundException {
-            if (toBeLoadedByParent.contains(name)) {
-                return super.loadClass(name, resolve);
-            }
-            try {
-                return findClass(name);
-            } catch (ClassNotFoundException e) {
-                return super.loadClass(name, resolve);
-            }
         }
 
         @Override
@@ -298,11 +283,23 @@ public class HermesUtils {
                 parentUrls = getParent().getResources(name);
             }
 
-            final List<URL> urlList = new ArrayList<>();
+            List<URL> urlList = new ArrayList<>();
             addURLsIntoList(urlList, localUrls);
             addURLsIntoList(urlList, parentUrls);
 
             return Collections.enumeration(urlList);
+        }
+
+        private Class<?> innerLoadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (toBeLoadedByParent.contains(name)) {
+                return super.loadClass(name, resolve);
+            }
+            try {
+                return findClass(name);
+            }
+            catch (ClassNotFoundException e) {
+                return super.loadClass(name, resolve);
+            }
         }
 
         @Override
@@ -310,11 +307,11 @@ public class HermesUtils {
             URL url = getResource(name);
             try {
                 return url != null ? url.openStream() : null;
-            } catch (IOException ignore) {
+            }
+            catch (IOException ignore) {
             }
             return null;
         }
-
 
         private void addURLsIntoList(List<URL> urlList, Enumeration<URL> urlEnumeration) {
             if (urlEnumeration != null && urlList != null) {
@@ -323,6 +320,5 @@ public class HermesUtils {
                 }
             }
         }
-
     }
 }

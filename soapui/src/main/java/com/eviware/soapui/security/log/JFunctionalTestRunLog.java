@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.log;
@@ -28,20 +28,8 @@ import com.eviware.soapui.support.components.JXToolBar;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.ListCellRenderer;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -58,13 +46,13 @@ import java.util.Set;
  */
 
 public class JFunctionalTestRunLog extends JPanel {
+    protected int selectedIndex;
     private FunctionalTestLogModel logListModel;
     private JList testLogList;
-    private Set<String> boldTexts = new HashSet<String>();
-    protected int selectedIndex;
-    private Logger log = LogManager.getLogger(JSecurityTestRunLog.class);
+    private final Set<String> boldTexts = new HashSet<String>();
+    private final Logger log = LogManager.getLogger(JSecurityTestRunLog.class);
     // TODO see how to get this from security log options to apply here
-    private boolean follow = true;
+    private final boolean follow = true;
 
     public JFunctionalTestRunLog(SecurityTest securityTest) {
         super(new BorderLayout());
@@ -115,16 +103,38 @@ public class JFunctionalTestRunLog extends JPanel {
         if (follow) {
             try {
                 testLogList.ensureIndexIsVisible(logListModel.getSize() - 1);
-            } catch (RuntimeException e) {
+            }
+            catch (RuntimeException e) {
                 log.error(e.getMessage());
             }
         }
     }
 
+    public void printLog(PrintWriter out) {
+        for (int c = 0; c < logListModel.getSize(); c++) {
+            Object value = logListModel.getElementAt(c);
+            if (value instanceof String) {
+                out.println(value);
+            }
+        }
+    }
+
+    public synchronized void addText(String string) {
+        logListModel.addText(string);
+        if (follow) {
+            testLogList.ensureIndexIsVisible(logListModel.getSize() - 1);
+        }
+    }
+
+    public void release() {
+        logListModel = null;
+        testLogList.setModel(new DefaultListModel());
+    }
+
     private class ClearLogAction extends AbstractAction {
         public ClearLogAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/clear.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Clears the log");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/clear.png"));
+            putValue(SHORT_DESCRIPTION, "Clears the log");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -134,8 +144,8 @@ public class JFunctionalTestRunLog extends JPanel {
 
     private class ExportLogAction extends AbstractAction {
         public ExportLogAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/export.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Exports this log to a file");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/export.png"));
+            putValue(SHORT_DESCRIPTION, "Exports this log to a file");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -146,18 +156,10 @@ public class JFunctionalTestRunLog extends JPanel {
                     printLog(out);
 
                     out.close();
-                } catch (FileNotFoundException e1) {
+                }
+                catch (FileNotFoundException e1) {
                     UISupport.showErrorMessage(e1);
                 }
-            }
-        }
-    }
-
-    public void printLog(PrintWriter out) {
-        for (int c = 0; c < logListModel.getSize(); c++) {
-            Object value = logListModel.getElementAt(c);
-            if (value instanceof String) {
-                out.println(value.toString());
             }
         }
     }
@@ -174,55 +176,55 @@ public class JFunctionalTestRunLog extends JPanel {
             int index = testLogList.getSelectedIndex();
             if (index != -1 && (index == selectedIndex || e.getClickCount() > 1)) {
                 TestStepResult result = logListModel.getTestStepResultAt(index);
-                if (result != null && result.getActions() != null)
+                if (result != null && result.getActions() != null) {
                     result.getActions().performDefaultAction(new ActionEvent(this, 0, null));
+                }
             }
             selectedIndex = index;
         }
 
         public void mousePressed(MouseEvent e) {
-            if (e.isPopupTrigger())
+            if (e.isPopupTrigger()) {
                 showPopup(e);
+            }
         }
 
         public void mouseReleased(MouseEvent e) {
-            if (e.isPopupTrigger())
+            if (e.isPopupTrigger()) {
                 showPopup(e);
+            }
         }
 
         public void showPopup(MouseEvent e) {
             int row = testLogList.locationToIndex(e.getPoint());
-            if (row == -1)
+            if (row == -1) {
                 return;
+            }
 
             if (testLogList.getSelectedIndex() != row) {
                 testLogList.setSelectedIndex(row);
             }
 
             TestStepResult result = logListModel.getTestStepResultAt(row);
-            if (result == null)
+            if (result == null) {
                 return;
+            }
 
             ActionList actions = result.getActions();
 
-            if (actions == null || actions.getActionCount() == 0)
+            if (actions == null || actions.getActionCount() == 0) {
                 return;
+            }
 
             JPopupMenu popup = ActionSupport.buildPopup(actions);
             UISupport.showPopup(popup, testLogList, e.getPoint());
         }
     }
 
-    public synchronized void addText(String string) {
-        logListModel.addText(string);
-        if (follow)
-            testLogList.ensureIndexIsVisible(logListModel.getSize() - 1);
-    }
-
     private final class FunctionalLogCellRenderer extends JLabel implements ListCellRenderer {
-        private Font boldFont;
-        private Font normalFont;
-        private JHyperlinkLabel hyperlinkLabel = new JHyperlinkLabel("");
+        private final Font boldFont;
+        private final Font normalFont;
+        private final JHyperlinkLabel hyperlinkLabel = new JHyperlinkLabel("");
 
         public FunctionalLogCellRenderer() {
             setOpaque(true);
@@ -237,20 +239,23 @@ public class JFunctionalTestRunLog extends JPanel {
             hyperlinkLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 3, 3));
         }
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
-            } else {
+            }
+            else {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
 
             if (value instanceof String) {
                 setText(value.toString());
-            } else if (value instanceof TestCaseLogItem) {
-                TestCaseLogItem logItem = (TestCaseLogItem) value;
+            }
+            else if (value instanceof TestCaseLogItem) {
+                TestCaseLogItem logItem = (TestCaseLogItem)value;
                 String msg = logItem.getMsg();
                 setText(msg == null ? "" : msg);
             }
@@ -263,9 +268,11 @@ public class JFunctionalTestRunLog extends JPanel {
 
                 if (result.getStatus() == TestStepStatus.OK) {
                     hyperlinkLabel.setIcon(UISupport.createImageIcon("/valid_assertion.gif"));
-                } else if (result.getStatus() == TestStepStatus.FAILED) {
+                }
+                else if (result.getStatus() == TestStepStatus.FAILED) {
                     hyperlinkLabel.setIcon(UISupport.createImageIcon("/failed_assertion.gif"));
-                } else {
+                }
+                else {
                     hyperlinkLabel.setIcon(UISupport.createImageIcon("/unknown_assertion.png"));
                 }
 
@@ -275,17 +282,12 @@ public class JFunctionalTestRunLog extends JPanel {
 
             if (boldTexts.contains(getText())) {
                 setFont(boldFont);
-            } else {
+            }
+            else {
                 setFont(normalFont);
             }
 
             return this;
         }
     }
-
-    public void release() {
-        logListModel = null;
-        testLogList.setModel(new DefaultListModel());
-    }
-
 }

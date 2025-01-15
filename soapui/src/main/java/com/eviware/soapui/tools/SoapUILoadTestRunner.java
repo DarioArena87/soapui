@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.tools;
@@ -58,18 +58,17 @@ import static com.eviware.soapui.impl.wsdl.actions.iface.tools.support.ProcessTo
  */
 
 public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements LoadTestRunListener {
+    public static String TITLE = "SoapUI " + SoapUI.SOAPUI_VERSION + " LoadTest Runner";
     private String testSuite;
     private String testCase;
     private String loadTest;
     private boolean printReport;
-    private List<LoadTestRunner> failedTests = new ArrayList<LoadTestRunner>();
+    private final List<LoadTestRunner> failedTests = new ArrayList<LoadTestRunner>();
     private int testCaseCount;
     private int loadTestCount;
     private int limit = -1;
     private long threadCount = -1;
     private boolean saveAfterRun;
-
-    public static String TITLE = "SoapUI " + SoapUI.SOAPUI_VERSION + " LoadTest Runner";
 
     /**
      * Runs the loadtests in the specified soapUI project file, see SoapUI xdocs
@@ -81,6 +80,14 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
 
     public static void main(String[] args) {
         System.exit(new SoapUILoadTestRunner().runFromCommandLine(args));
+    }
+
+    public SoapUILoadTestRunner() {
+        this(TITLE);
+    }
+
+    public SoapUILoadTestRunner(String title) {
+        super(title);
     }
 
     protected boolean processCommandLine(CommandLine cmd) {
@@ -171,14 +178,6 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
         return true;
     }
 
-    public void setLimit(int limit) {
-        this.limit = limit;
-    }
-
-    public void setThreadCount(long threadCount) {
-        this.threadCount = threadCount;
-    }
-
     protected SoapUIOptions initCommandLineOptions() {
         SoapUIOptions options = new SoapUIOptions("loadtestrunner");
         options.addOption("e", true, "Sets the endpoint");
@@ -205,26 +204,6 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
         return options;
     }
 
-    public SoapUILoadTestRunner() {
-        this(TITLE);
-    }
-
-    public SoapUILoadTestRunner(String title) {
-        super(title);
-    }
-
-    public void setLoadTest(String loadTest) {
-        this.loadTest = loadTest;
-    }
-
-    public void setPrintReport(boolean printReport) {
-        this.printReport = printReport;
-    }
-
-    public void setSaveAfterRun(boolean saveAfterRun) {
-        this.saveAfterRun = saveAfterRun;
-    }
-
     /**
      * Runs the testcases as configured with setXXX methods
      *
@@ -240,8 +219,7 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
 
         // WsdlProject project = new WsdlProject( projectFile,
         // getProjectPassword() );
-        WsdlProject project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(projectFile,
-                getProjectPassword());
+        WsdlProject project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(projectFile, getProjectPassword());
 
         if (project.isDisabled()) {
             throw new Exception("Failed to load SoapUI project file [" + projectFile + "]");
@@ -264,15 +242,19 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
 
         if (suiteCount == 0) {
             log.warn("No test-suites matched argument [" + testSuite + "]");
-        } else if (testCaseCount == 0) {
+        }
+        else if (testCaseCount == 0) {
             log.warn("No test-cases matched argument [" + testCase + "]");
-        } else if (loadTestCount == 0) {
+        }
+        else if (loadTestCount == 0) {
             log.warn("No load-tests matched argument [" + loadTest + "]");
-        } else {
+        }
+        else {
             if (saveAfterRun && !project.isRemote()) {
                 try {
                     project.save();
-                } catch (Throwable t) {
+                }
+                catch (Throwable t) {
                     log.error("Failed to save project", t);
                 }
             }
@@ -288,6 +270,26 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
         }
 
         return true;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public void setThreadCount(long threadCount) {
+        this.threadCount = threadCount;
+    }
+
+    public void setLoadTest(String loadTest) {
+        this.loadTest = loadTest;
+    }
+
+    public void setPrintReport(boolean printReport) {
+        this.printReport = printReport;
+    }
+
+    public void setSaveAfterRun(boolean saveAfterRun) {
+        this.saveAfterRun = saveAfterRun;
     }
 
     /**
@@ -307,7 +309,8 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
             if (testCase == null || name.equalsIgnoreCase(testCase)) {
                 runTestCase(suite.getTestCaseAt(c));
                 testCaseCount++;
-            } else {
+            }
+            else {
                 log.info("Skipping testcase [" + name + "], filter is [" + testCase + "]");
             }
         }
@@ -328,7 +331,7 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
         for (int c = 0; c < testCase.getLoadTestCount(); c++) {
             String name = testCase.getLoadTestAt(c).getName();
             if (loadTest == null || loadTest.equalsIgnoreCase(name)) {
-                runWsdlLoadTest((WsdlLoadTest) testCase.getLoadTestAt(c));
+                runWsdlLoadTest((WsdlLoadTest)testCase.getLoadTestAt(c));
                 loadTestCount++;
             }
         }
@@ -359,8 +362,7 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
             // wait for test to finish
             while (!runner.hasStopped()) {
                 if (runner.getStatus() == Status.RUNNING) {
-                    log.info("LoadTest [" + loadTest.getName() + "] progress: " + runner.getProgress() + ", "
-                            + runner.getRunningThreadCount());
+                    log.info("LoadTest [" + loadTest.getName() + "] progress: " + runner.getProgress() + ", " + runner.getRunningThreadCount());
                 }
                 Thread.sleep(1000);
             }
@@ -375,7 +377,8 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
                 exportLog(loadTest);
                 exportStatistics(loadTest);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             log.error(e);
         }
@@ -408,11 +411,10 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
 
         int errorCnt = 0;
         for (int c = 0; c < loadTestLog.getSize(); c++) {
-            LoadTestLogEntry entry = (LoadTestLogEntry) loadTestLog.getElementAt(c);
+            LoadTestLogEntry entry = (LoadTestLogEntry)loadTestLog.getElementAt(c);
 
             if (entry != null && entry.isError()) {
-                String entryFileName = StringUtils.createFileName(loadTest.getName(), '_') + "-error-" + errorCnt++
-                        + "-entry.txt";
+                String entryFileName = StringUtils.createFileName(loadTest.getName(), '_') + "-error-" + errorCnt++ + "-entry.txt";
                 if (getOutputFolder() != null) {
                     ensureOutputFolder(loadTest);
                     entryFileName = getAbsoluteOutputFolder(loadTest) + File.separator + entryFileName;
@@ -420,7 +422,8 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
 
                 try {
                     entry.exportToFile(entryFileName);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
             }
@@ -449,36 +452,40 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
         this.testSuite = testSuite;
     }
 
-    public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-        if (loadTestRunner.getStatus() == LoadTestRunner.Status.FAILED) {
-            failedTests.add(loadTestRunner);
-        }
-    }
-
-    public void afterTestCase(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                              TestCaseRunContext runContext) {
-    }
-
-    public void afterTestStep(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                              TestCaseRunContext runContext, TestStepResult testStepResult) {
-        super.afterStep(testRunner, runContext, testStepResult);
-    }
-
     public void beforeLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
-    }
-
-    public void beforeTestCase(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                               TestCaseRunContext runContext) {
-    }
-
-    public void beforeTestStep(LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner,
-                               TestCaseRunContext runContext, TestStep testStep) {
-        super.beforeStep(testRunner, runContext, testStep);
     }
 
     public void loadTestStarted(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
     }
 
+    public void beforeTestCase(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+    ) {
+    }
+
+    public void beforeTestStep(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext, TestStep testStep
+    ) {
+        beforeStep(testRunner, runContext, testStep);
+    }
+
+    public void afterTestStep(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult testStepResult
+    ) {
+        afterStep(testRunner, runContext, testStepResult);
+    }
+
+    public void afterTestCase(
+        LoadTestRunner loadTestRunner, LoadTestRunContext context, TestCaseRunner testRunner, TestCaseRunContext runContext
+    ) {
+    }
+
     public void loadTestStopped(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+    }
+
+    public void afterLoadTest(LoadTestRunner loadTestRunner, LoadTestRunContext context) {
+        if (loadTestRunner.getStatus() == LoadTestRunner.Status.FAILED) {
+            failedTests.add(loadTestRunner);
+        }
     }
 }

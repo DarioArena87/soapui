@@ -10,7 +10,7 @@ public class FixedKerberosSchemeFactory extends KerberosSchemeFactory {
     public static final String KERBEROS_USE_CANONICAL_HOSTNAME_VM_OPTION = "httpclient.kerberos.usecanonicalname";
 
     @Override
-    public AuthScheme create(final HttpContext context) {
+    public AuthScheme create(HttpContext context) {
         boolean useCanonicalNames = VMOptionReader.getValueAsBoolean(KERBEROS_USE_CANONICAL_HOSTNAME_VM_OPTION, isUseCanonicalHostname());
         return new FixedKerberosScheme(isStripPort(), useCanonicalNames);
     }

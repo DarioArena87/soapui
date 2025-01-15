@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support.definition.support;
@@ -81,13 +81,15 @@ public class InvalidDefinitionException extends SoapUIException {
 
         if (exception != null) {
             result.append(exception.getMessage());
-        } else if (wsdlException != null) {
+        }
+        else if (wsdlException != null) {
             result.append(wsdlException.getMessage());
-        } else if (xmlException != null) {
+        }
+        else if (xmlException != null) {
             XmlError error = xmlException.getError();
-            result.append(error.getMessage()).append(" on line ").append(error.getLine()).append(", column ")
-                    .append(error.getColumn());
-        } else if (schemaException != null) {
+            result.append(error.getMessage()).append(" on line ").append(error.getLine()).append(", column ").append(error.getColumn());
+        }
+        else if (schemaException != null) {
             ArrayList<?> errorList = schemaException.getErrorList();
 
             if (errorList != null) {
@@ -97,7 +99,7 @@ public class InvalidDefinitionException extends SoapUIException {
                 for (int c = 0; c < errorList.size(); c++) {
                     Object error = errorList.get(c);
                     if (error instanceof XmlError) {
-                        XmlError xmlError = (XmlError) error;
+                        XmlError xmlError = (XmlError)error;
                         String sourceName = xmlError.getSourceName();
                         String message = xmlError.getMessage();
 
@@ -112,7 +114,8 @@ public class InvalidDefinitionException extends SoapUIException {
 
                             doubles.put(message, sourceName);
                         }
-                    } else {
+                    }
+                    else {
                         if (appended) {
                             result.append("<hr>");
                         }
@@ -128,7 +131,9 @@ public class InvalidDefinitionException extends SoapUIException {
 
     public void show() {
         UISupport.showExtendedInfo("Error loading WSDL",
-                "There was something wrong with the WSDL you are trying to import",
-                StringUtils.toHtml(getDetailedMessage()), new Dimension(600, 300));
+                                   "There was something wrong with the WSDL you are trying to import",
+                                   StringUtils.toHtml(getDetailedMessage()),
+                                   new Dimension(600, 300)
+        );
     }
 }

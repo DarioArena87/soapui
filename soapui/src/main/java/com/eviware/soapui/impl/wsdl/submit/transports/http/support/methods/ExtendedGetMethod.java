@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.methods;
@@ -40,7 +40,7 @@ import java.net.URL;
  */
 
 public final class ExtendedGetMethod extends HttpGet implements ExtendedHttpMethod {
-    private HttpMethodSupport httpMethodSupport;
+    private final HttpMethodSupport httpMethodSupport;
 
     public ExtendedGetMethod() {
         httpMethodSupport = new HttpMethodSupport();
@@ -54,24 +54,16 @@ public final class ExtendedGetMethod extends HttpGet implements ExtendedHttpMeth
         httpMethodSupport.setDumpFile(dumpFile);
     }
 
-    public boolean hasResponse() {
-        return httpMethodSupport.hasResponse();
-    }
-
-    public void afterReadResponse(SSLSession session) {
-        httpMethodSupport.afterReadResponse(session);
-    }
-
-    public String getResponseCharSet() {
-        return httpMethodSupport.getResponseCharset();
-    }
-
     public long getMaxSize() {
         return httpMethodSupport.getMaxSize();
+    }    public boolean hasResponse() {
+        return httpMethodSupport.hasResponse();
     }
 
     public void setMaxSize(long maxSize) {
         httpMethodSupport.setMaxSize(maxSize);
+    }    public void afterReadResponse(SSLSession session) {
+        httpMethodSupport.afterReadResponse(session);
     }
 
     public long getResponseReadTime() {
@@ -80,10 +72,6 @@ public final class ExtendedGetMethod extends HttpGet implements ExtendedHttpMeth
 
     public long getResponseReadTimeNanos() {
         return httpMethodSupport.getResponseReadTimeNanos();
-    }
-
-    public void afterWriteRequest() {
-        httpMethodSupport.afterWriteRequest();
     }
 
     public void initStartTime() {
@@ -100,6 +88,12 @@ public final class ExtendedGetMethod extends HttpGet implements ExtendedHttpMeth
 
     public SSLInfo getSSLInfo() {
         return httpMethodSupport.getSSLInfo();
+    }    public void afterWriteRequest() {
+        httpMethodSupport.afterWriteRequest();
+    }
+
+    public String getResponseCharSet() {
+        return httpMethodSupport.getResponseCharset();
     }
 
     public String getResponseContentType() {
@@ -109,6 +103,14 @@ public final class ExtendedGetMethod extends HttpGet implements ExtendedHttpMeth
     public String getMethod() {
         return RestRequestInterface.HttpMethod.GET.toString();
     }
+
+    public HttpEntity getEntity() {
+        return null;
+    }
+
+
+
+
 
     public HttpEntity getRequestEntity() {
         return null;
@@ -134,9 +136,7 @@ public final class ExtendedGetMethod extends HttpGet implements ExtendedHttpMeth
         httpMethodSupport.setDecompress(decompress);
     }
 
-    public HttpEntity getEntity() {
-        return null;
-    }
+
 
     public void setHttpResponse(HttpResponse httpResponse) {
         httpMethodSupport.setHttpResponse(httpResponse);
@@ -158,7 +158,8 @@ public final class ExtendedGetMethod extends HttpGet implements ExtendedHttpMeth
         byte[] rawdata = getResponseBody();
         if (rawdata != null) {
             return EncodingUtil.getString(rawdata, getResponseCharSet());
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -176,5 +177,4 @@ public final class ExtendedGetMethod extends HttpGet implements ExtendedHttpMeth
     public URL getURL() throws MalformedURLException {
         return getURI().toURL();
     }
-
 }

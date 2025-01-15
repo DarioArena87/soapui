@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.support;
@@ -27,7 +27,7 @@ import org.apache.xmlbeans.XmlObject;
 
 public class WadlInterfaceDefinition extends XmlSchemaBasedInterfaceDefinition<RestService> {
     private ApplicationDocument applicationDocument;
-    private Logger log = LogManager.getLogger(WadlInterfaceDefinition.class);
+    private final Logger log = LogManager.getLogger(WadlInterfaceDefinition.class);
 
     public WadlInterfaceDefinition(RestService iface) {
         super(iface);
@@ -36,14 +36,16 @@ public class WadlInterfaceDefinition extends XmlSchemaBasedInterfaceDefinition<R
     public WadlInterfaceDefinition load(DefinitionLoader loader) throws Exception {
         try {
             XmlObject obj = loader.loadXmlObject(loader.getBaseURI(), null);
-            applicationDocument = (ApplicationDocument) obj.changeType(ApplicationDocument.type);
-        } catch (Exception e) {
+            applicationDocument = (ApplicationDocument)obj.changeType(ApplicationDocument.type);
+        }
+        catch (Exception e) {
             throw new InvalidDefinitionException(e);
         }
 
         if (!loader.isAborted()) {
-            super.loadSchemaTypes(loader);
-        } else {
+            loadSchemaTypes(loader);
+        }
+        else {
             throw new Exception("Loading of WADL from [" + loader.getBaseURI() + "] was aborted");
         }
 

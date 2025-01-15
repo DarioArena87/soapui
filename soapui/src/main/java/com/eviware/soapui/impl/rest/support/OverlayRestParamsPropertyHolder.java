@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.support;
@@ -29,70 +29,20 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
 public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder {
-    private RestParamsPropertyHolder parent;
-    private RestParamsPropertyHolder overlay;
-    private Set<TestPropertyListener> listeners = new HashSet<TestPropertyListener>();
+    private final RestParamsPropertyHolder parent;
+    private final RestParamsPropertyHolder overlay;
+    private final Set<TestPropertyListener> listeners = new HashSet<TestPropertyListener>();
 
     public OverlayRestParamsPropertyHolder(RestParamsPropertyHolder parent, RestParamsPropertyHolder overlay) {
         this.parent = parent;
         this.overlay = overlay;
         parent.addTestPropertyListener(new ParentListener());
         overlay.addTestPropertyListener(new OverlayListener());
-    }
-
-    public void addParameter(RestParamProperty prop) {
-        overlay.addParameter(prop);
-    }
-
-    @Override
-    public void setParameterLocation(RestParamProperty parameter, NewRestResourceActionBase.ParamLocation newLocation) {
-        overlay.setParameterLocation(parameter, newLocation);
-    }
-
-    public RestParamProperty addProperty(String name) {
-        return overlay.addProperty(name);
-    }
-
-    public void clear() {
-        overlay.clear();
-    }
-
-    public boolean containsKey(Object key) {
-        return overlay.containsKey(key) || parent.containsKey(key);
-    }
-
-    public boolean containsValue(Object value) {
-        return overlay.containsValue(value) || parent.containsValue(value);
-    }
-
-    public Set<java.util.Map.Entry<String, TestProperty>> entrySet() {
-        return getProperties().entrySet();
-    }
-
-    public RestParamProperty get(Object key) {
-        return overlay.containsKey(key) ? overlay.get(key) : parent.get(key);
-    }
-
-    public ModelItem getModelItem() {
-        return overlay.getModelItem();
-    }
-
-    public Map<String, TestProperty> getProperties() {
-        HashMap<String, TestProperty> result = new HashMap<String, TestProperty>();
-
-        for (TestProperty p : values()) {
-            result.put(p.getName(), p);
-        }
-
-        return result;
-    }
-
-    public String getPropertiesLabel() {
-        return overlay.getPropertiesLabel();
     }
 
     public RestParamProperty getProperty(String name) {
@@ -103,12 +53,8 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
         return values().toArray(new RestParamProperty[]{})[index];
     }
 
-    public int getPropertyCount() {
-        return values().size();
-    }
-
-    public PropertyExpansion[] getPropertyExpansions() {
-        return overlay.getPropertyExpansions();
+    public void resetValues() {
+        overlay.resetValues();
     }
 
     public int getPropertyIndex(String name) {
@@ -122,20 +68,142 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
         return -1;
     }
 
+    public void saveTo(Properties props) {
+        for (TestProperty prop : values()) {
+            props.setProperty(prop.getName(), prop.getValue() != null ? prop.getValue() : "");
+        }
+    }
+
+    public PropertyExpansion[] getPropertyExpansions() {
+        return overlay.getPropertyExpansions();
+    }
+
     public String[] getPropertyNames() {
         return keySet().toArray(new String[]{});
+    }
+
+    public void setPropertyValue(String name, String value) {
+        overlay.setPropertyValue(name, value);
     }
 
     public String getPropertyValue(String name) {
         return overlay.hasProperty(name) ? overlay.getPropertyValue(name) : parent.getPropertyValue(name);
     }
 
+    public Map<String, TestProperty> getProperties() {
+        HashMap<String, TestProperty> result = new HashMap<String, TestProperty>();
+
+        for (TestProperty p : values()) {
+            result.put(p.getName(), p);
+        }
+
+        return result;
+    }
+
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeTestPropertyListener(TestPropertyListener listener) {
+        listeners.remove(listener);
+    }
+
     public boolean hasProperty(String name) {
         return containsKey(name);
     }
 
+    public ModelItem getModelItem() {
+        return overlay.getModelItem();
+    }
+
+    public int getPropertyCount() {
+        return values().size();
+    }
+
+    public List<TestProperty> getPropertyList() {
+        return overlay.getPropertyList();
+    }
+
+    public String getPropertiesLabel() {
+        return overlay.getPropertiesLabel();
+    }
+
+    public void setPropertiesLabel(String propertiesLabel) {
+        overlay.setPropertiesLabel(propertiesLabel);
+    }
+
+    public RestParamProperty addProperty(String name) {
+        return overlay.addProperty(name);
+    }
+
+    public RestParamProperty removeProperty(String propertyName) {
+        return overlay.containsKey(propertyName) ? overlay.removeProperty(propertyName) : parent.removeProperty(propertyName);
+    }
+
+    public RestParamProperty get(Object key) {
+        return overlay.containsKey(key) ? overlay.get(key) : parent.get(key);
+    }
+
+    public void addParameter(RestParamProperty prop) {
+        overlay.addParameter(prop);
+    }
+
+    @Override
+    public void setParameterLocation(RestParamProperty parameter, NewRestResourceActionBase.ParamLocation newLocation) {
+        overlay.setParameterLocation(parameter, newLocation);
+    }
+
+    public boolean renameProperty(String name, String newName) {
+        RestParamProperty restParamProperty = get(name);
+
+        if (restParamProperty != null) {
+            restParamProperty.setName(newName);
+            put(newName, restParamProperty);
+            remove(name);
+            return true;
+        }
+        return overlay.renameProperty(name, newName);
+    }
+
+    public void moveProperty(String propertyName, int targetIndex) {
+        if (overlay.containsKey(propertyName)) {
+            overlay.moveProperty(propertyName, targetIndex);
+        }
+        else if (parent.containsKey(propertyName)) {
+            parent.moveProperty(propertyName, targetIndex);
+        }
+    }
+
+    public int size() {
+        return getPropertyCount();
+    }
+
     public boolean isEmpty() {
         return overlay.isEmpty() && parent.isEmpty();
+    }
+
+    public boolean containsKey(Object key) {
+        return overlay.containsKey(key) || parent.containsKey(key);
+    }
+
+    public boolean containsValue(Object value) {
+        return overlay.containsValue(value) || parent.containsValue(value);
+    }
+
+    public TestProperty put(String key, TestProperty value) {
+        return overlay.put(key, value);
+    }
+
+    public TestProperty remove(Object key) {
+        return overlay.remove(key);
+    }
+
+    public void putAll(Map<? extends String, ? extends TestProperty> m) {
+        overlay.putAll(m);
+    }
+
+    public void clear() {
+        overlay.clear();
     }
 
     public Set<String> keySet() {
@@ -146,66 +214,6 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
         return names;
     }
 
-    public void moveProperty(String propertyName, int targetIndex) {
-        if (overlay.containsKey(propertyName)) {
-            overlay.moveProperty(propertyName, targetIndex);
-        } else if (parent.containsKey(propertyName)) {
-            parent.moveProperty(propertyName, targetIndex);
-        }
-
-    }
-
-    public TestProperty put(String key, TestProperty value) {
-        return overlay.put(key, value);
-    }
-
-    public void putAll(Map<? extends String, ? extends TestProperty> m) {
-        overlay.putAll(m);
-    }
-
-    public TestProperty remove(Object key) {
-        return overlay.remove(key);
-    }
-
-    public RestParamProperty removeProperty(String propertyName) {
-        return overlay.containsKey(propertyName) ?
-                overlay.removeProperty(propertyName) : parent.removeProperty(propertyName);
-    }
-
-    public boolean renameProperty(String name, String newName) {
-        RestParamProperty restParamProperty = this.get(name);
-
-        if (restParamProperty != null) {
-            restParamProperty.setName(newName);
-            this.put(newName, restParamProperty);
-            this.remove(name);
-            return true;
-        }
-        return overlay.renameProperty(name, newName);
-    }
-
-    public void resetValues() {
-        overlay.resetValues();
-    }
-
-    public void saveTo(Properties props) {
-        for (TestProperty prop : values()) {
-            props.setProperty(prop.getName(), prop.getValue() != null ? prop.getValue() : "");
-        }
-    }
-
-    public void setPropertiesLabel(String propertiesLabel) {
-        overlay.setPropertiesLabel(propertiesLabel);
-    }
-
-    public void setPropertyValue(String name, String value) {
-        overlay.setPropertyValue(name, value);
-    }
-
-    public int size() {
-        return getPropertyCount();
-    }
-
     public Collection<TestProperty> values() {
         // List<TestProperty> values = new
         // ArrayList<TestProperty>(overlay.values());
@@ -213,7 +221,8 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
         for (TestProperty prop : parent.values()) {
             if (overlay.hasProperty(prop.getName())) {
                 values.add(overlay.getProperty(prop.getName()));
-            } else {
+            }
+            else {
                 values.add(prop);
             }
         }
@@ -223,6 +232,10 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
             }
         }
         return values;
+    }
+
+    public Set<Entry<String, TestProperty>> entrySet() {
+        return getProperties().entrySet();
     }
 
     private void firePropertyAdded(String name) {
@@ -260,23 +273,12 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
         }
     }
 
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeTestPropertyListener(TestPropertyListener listener) {
-        listeners.remove(listener);
-    }
-
     private class ParentListener implements TestPropertyListener {
 
         public void propertyAdded(String name) {
             if (!overlay.hasProperty(name)) {
                 firePropertyAdded(name);
             }
-        }
-
-        public void propertyMoved(String name, int oldIndex, int newIndex) {
         }
 
         public void propertyRemoved(String name) {
@@ -290,9 +292,11 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
                 if (!overlay.hasProperty(newName)) {
                     firePropertyAdded(newName);
                 }
-            } else if (overlay.hasProperty(newName)) {
+            }
+            else if (overlay.hasProperty(newName)) {
                 firePropertyRemoved(oldName);
-            } else {
+            }
+            else {
                 firePropertyRenamed(oldName, newName);
             }
         }
@@ -301,6 +305,9 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
             if (!overlay.hasProperty(name)) {
                 firePropertyValueChanged(name, oldValue, newValue);
             }
+        }
+
+        public void propertyMoved(String name, int oldIndex, int newIndex) {
         }
     }
 
@@ -311,23 +318,17 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
                 if (!parent.getPropertyValue(name).equals(overlay.getPropertyValue(name))) {
                     firePropertyValueChanged(name, parent.getPropertyValue(name), overlay.getPropertyValue(name));
                 }
-            } else {
-                firePropertyAdded(name);
             }
-        }
-
-        public void propertyMoved(String name, int oldIndex, int newIndex) {
-            if (parent.hasProperty(name)) {
-                firePropertyValueChanged(name, null, parent.getPropertyValue(name));
-            } else {
-                firePropertyMoved(name, oldIndex, newIndex);
+            else {
+                firePropertyAdded(name);
             }
         }
 
         public void propertyRemoved(String name) {
             if (parent.hasProperty(name)) {
                 firePropertyValueChanged(name, null, parent.getPropertyValue(name));
-            } else {
+            }
+            else {
                 firePropertyRemoved(name);
             }
         }
@@ -335,12 +336,15 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
         public void propertyRenamed(String oldName, String newName) {
             if (!parent.hasProperty(oldName) && !parent.hasProperty(newName)) {
                 firePropertyRenamed(oldName, newName);
-            } else if (parent.hasProperty(oldName) && parent.hasProperty(newName)) {
+            }
+            else if (parent.hasProperty(oldName) && parent.hasProperty(newName)) {
                 firePropertyValueChanged(oldName, overlay.getPropertyValue(newName), parent.getPropertyValue(oldName));
                 firePropertyValueChanged(newName, parent.getPropertyValue(newName), overlay.getPropertyValue(newName));
-            } else if (parent.hasProperty(oldName)) {
+            }
+            else if (parent.hasProperty(oldName)) {
                 firePropertyAdded(newName);
-            } else {
+            }
+            else {
                 firePropertyRemoved(oldName);
             }
         }
@@ -348,10 +352,14 @@ public class OverlayRestParamsPropertyHolder implements RestParamsPropertyHolder
         public void propertyValueChanged(String name, String oldValue, String newValue) {
             firePropertyValueChanged(name, oldValue, newValue);
         }
-    }
 
-    public List<TestProperty> getPropertyList() {
-        return overlay.getPropertyList();
+        public void propertyMoved(String name, int oldIndex, int newIndex) {
+            if (parent.hasProperty(name)) {
+                firePropertyValueChanged(name, null, parent.getPropertyValue(name));
+            }
+            else {
+                firePropertyMoved(name, oldIndex, newIndex);
+            }
+        }
     }
-
 }

@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
@@ -25,10 +25,7 @@ import org.syntax.jedit.KeywordMap;
  * @version $Id: TSQLTokenMarker.java,v 1.9 1999/12/13 03:40:30 sp Exp $
  */
 public class TSQLTokenMarker extends SQLTokenMarker {
-    // public members
-    public TSQLTokenMarker() {
-        super(getKeywordMap(), true);
-    }
+    private static KeywordMap tsqlKeywords;
 
     public static KeywordMap getKeywordMap() {
         if (tsqlKeywords == null) {
@@ -41,6 +38,11 @@ public class TSQLTokenMarker extends SQLTokenMarker {
             addSystemTables();
         }
         return tsqlKeywords;
+    }
+
+    // public members
+    public TSQLTokenMarker() {
+        super(getKeywordMap(), true);
     }
 
     private static void addKeywords() {
@@ -963,6 +965,4 @@ public class TSQLTokenMarker extends SQLTokenMarker {
         tsqlKeywords.add("systypes", Token.KEYWORD3);
         tsqlKeywords.add("sysusers", Token.KEYWORD3);
     }
-
-    private static KeywordMap tsqlKeywords;
 }

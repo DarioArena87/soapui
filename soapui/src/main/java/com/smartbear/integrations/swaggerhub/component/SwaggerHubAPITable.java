@@ -9,14 +9,14 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 public class SwaggerHubAPITable extends TableView {
-    private ObservableList<SwaggerHubAPITableModel> tableModels = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
+    private final ObservableList<SwaggerHubAPITableModel> tableModels = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
 
     public SwaggerHubAPITable() {
         configure();
     }
 
     private void configure() {
-        setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        setColumnResizePolicy(CONSTRAINED_RESIZE_POLICY);
         getStyleClass().add("text-12px");
 
         TableColumn name = new TableColumn("Name");

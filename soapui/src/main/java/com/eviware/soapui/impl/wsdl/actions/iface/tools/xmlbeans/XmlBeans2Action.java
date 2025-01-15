@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.xmlbeans;
@@ -44,6 +44,7 @@ import java.io.File;
  */
 
 public class XmlBeans2Action extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "XmlBeans2Action";
     private final static String XSBTARGET = "class/xsb target";
     private final static String SRCTARGET = "src target";
     private final static String SRCONLY = "src only";
@@ -59,7 +60,6 @@ public class XmlBeans2Action extends AbstractToolsAction<Interface> {
     private final static String ALLOWMDEF = "allowmdef";
     private final static String CATALOG = "catalog file";
     private final static String XSDCONFIG = "xsdconfig";
-    public static final String SOAPUI_ACTION_ID = "XmlBeans2Action";
     private String output;
 
     public XmlBeans2Action() {
@@ -68,7 +68,7 @@ public class XmlBeans2Action extends AbstractToolsAction<Interface> {
 
     @Override
     public boolean applies(Interface target) {
-        Interface iface = (Interface) target;
+        Interface iface = target;
         return !iface.getProject().hasNature(Project.JBOSSWS_NATURE_ID);
     }
 
@@ -89,8 +89,7 @@ public class XmlBeans2Action extends AbstractToolsAction<Interface> {
 
         mainForm.addTextField(XSBTARGET, "Target directory for CLASS and XSB files", XForm.FieldType.PROJECT_FOLDER);
         mainForm.addTextField(SRCTARGET, "Target directory for generated JAVA files", XForm.FieldType.PROJECT_FOLDER);
-        mainForm.addTextField(JARFILE, "The name of the output JAR that will contain the result of compilation",
-                XForm.FieldType.PROJECT_FILE);
+        mainForm.addTextField(JARFILE, "The name of the output JAR that will contain the result of compilation", XForm.FieldType.PROJECT_FILE);
 
         mainForm.addCheckBox(SRCONLY, "(Do not compile JAVA files or jar the output)");
         mainForm.addCheckBox(DOWNLOADS, "(Permit network downloads for imports and includes)");
@@ -100,23 +99,17 @@ public class XmlBeans2Action extends AbstractToolsAction<Interface> {
         mainForm.addCheckBox(NOVDOC, "(Do not validate contents of <documentation> elements)");
         mainForm.addCheckBox(DEBUG, "(Compile with debug symbols)");
 
-        mainForm.addComboBox(JAVASOURCE, new String[]{"1.5", "1.4"},
-                "Generate Java source compatible for the specified Java version");
+        mainForm.addComboBox(JAVASOURCE, new String[]{"1.5", "1.4"}, "Generate Java source compatible for the specified Java version");
 
-        mainForm.addTextField(ALLOWMDEF,
-                "Ignore multiple defs in given namespaces. Use  ##local  to specify the no-namespace in that list",
-                XForm.FieldType.TEXT);
-        mainForm.addTextField(CATALOG, "Catalog file to use for resolving external entities",
-                XForm.FieldType.PROJECT_FILE);
-        mainForm.addTextField(XSDCONFIG, "Path to .xsdconfig file containing type-mapping information",
-                XForm.FieldType.PROJECT_FILE);
+        mainForm.addTextField(ALLOWMDEF, "Ignore multiple defs in given namespaces. Use  ##local  to specify the no-namespace in that list", XForm.FieldType.TEXT);
+        mainForm.addTextField(CATALOG, "Catalog file to use for resolving external entities", XForm.FieldType.PROJECT_FILE);
+        mainForm.addTextField(XSDCONFIG, "Path to .xsdconfig file containing type-mapping information", XForm.FieldType.PROJECT_FILE);
 
         mainForm.addCheckBox(VERBOSE, "(Print more informational messages)");
 
         buildArgsForm(builder, false, "scomp");
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.XMLBEANS_HELP_URL, modelItem),
-                "Specify arguments for XmlBeans 2.X scomp", UISupport.TOOL_ICON);
+        return builder.buildDialog(buildDefaultActions(HelpUrls.XMLBEANS_HELP_URL, modelItem), "Specify arguments for XmlBeans 2.X scomp", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {

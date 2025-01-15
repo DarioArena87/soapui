@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.registry;
@@ -57,21 +57,13 @@ import java.util.List;
 
 public class WsdlTestRequestStepFactory extends WsdlTestStepFactory {
     public static final String REQUEST_TYPE = "request";
+    public static final String STEP_NAME = "Name";
     private static final String CREATE_OPTIONAL_ELEMENTS_IN_REQUEST = "Create optional elements";
     private static final String ADD_SOAP_RESPONSE_ASSERTION = "Add SOAP Response Assertion";
     private static final String ADD_SOAP_FAULT_ASSERTION = "Add Not SOAP Fault Assertion";
     private static final String ADD_SCHEMA_ASSERTION = "Add Schema Assertion";
-    public static final String STEP_NAME = "Name";
     private XFormDialog dialog;
     private StringToStringMap dialogValues = new StringToStringMap();
-
-    public WsdlTestRequestStepFactory() {
-        super(REQUEST_TYPE, "SOAP Request", "Submits a SOAP request and validates its response", "/soap_request_step.png");
-    }
-
-    public WsdlTestStep buildTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
-        return new WsdlTestRequestStep(testCase, config, forLoadTest);
-    }
 
     public static TestStepConfig createConfig(WsdlRequest request, String stepName) {
         RequestStepConfig requestStepConfig = RequestStepConfig.Factory.newInstance();
@@ -94,15 +86,15 @@ public class WsdlTestRequestStepFactory extends WsdlTestStepFactory {
         testRequestConfig.setUseWsReliableMessaging(request.isWsrmEnabled());
 
         if (request.getConfig().isSetWsaConfig()) {
-            testRequestConfig.setWsaConfig((WsaConfigConfig) request.getConfig().getWsaConfig().copy());
+            testRequestConfig.setWsaConfig((WsaConfigConfig)request.getConfig().getWsaConfig().copy());
         }
 
         if (request.getConfig().isSetWsrmConfig()) {
-            testRequestConfig.setWsrmConfig((WsrmConfigConfig) request.getConfig().getWsrmConfig().copy());
+            testRequestConfig.setWsrmConfig((WsrmConfigConfig)request.getConfig().getWsrmConfig().copy());
         }
 
-        if ((CredentialsConfig) request.getConfig().getCredentials() != null) {
-            testRequestConfig.setCredentials((CredentialsConfig) request.getConfig().getCredentials().copy());
+        if (request.getConfig().getCredentials() != null) {
+            testRequestConfig.setCredentials((CredentialsConfig)request.getConfig().getCredentials().copy());
         }
 
         testRequestConfig.setWssPasswordType(request.getConfig().getWssPasswordType());
@@ -130,8 +122,7 @@ public class WsdlTestRequestStepFactory extends WsdlTestStepFactory {
             testRequestConfig.setEndpoint(endpoints[0]);
         }
 
-        String requestContent = operation.createRequest(SoapUI.getSettings().getBoolean(
-                WsdlSettings.XML_GENERATION_ALWAYS_INCLUDE_OPTIONAL_ELEMENTS));
+        String requestContent = operation.createRequest(SoapUI.getSettings().getBoolean(WsdlSettings.XML_GENERATION_ALWAYS_INCLUDE_OPTIONAL_ELEMENTS));
         testRequestConfig.addNewRequest().setStringValue(requestContent);
 
         // add ws-a action
@@ -145,6 +136,14 @@ public class WsdlTestRequestStepFactory extends WsdlTestStepFactory {
         testStep.setConfig(requestStepConfig);
 
         return testStep;
+    }
+
+    public WsdlTestRequestStepFactory() {
+        super(REQUEST_TYPE, "SOAP Request", "Submits a SOAP request and validates its response", "/soap_request_step.png");
+    }
+
+    public WsdlTestStep buildTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
+        return new WsdlTestRequestStep(testCase, config, forLoadTest);
     }
 
     public TestStepConfig createNewTestStep(WsdlTestCase testCase, String name) {
@@ -165,7 +164,7 @@ public class WsdlTestRequestStepFactory extends WsdlTestStepFactory {
         if (op != null) {
             int ix = options.indexOf(op);
             if (ix != -1) {
-                WsdlOperation operation = (WsdlOperation) operations.get(ix);
+                WsdlOperation operation = (WsdlOperation)operations.get(ix);
 
                 if (dialog == null) {
                     buildDialog();
@@ -182,6 +181,22 @@ public class WsdlTestRequestStepFactory extends WsdlTestStepFactory {
         }
 
         return null;
+    }
+
+    public boolean canCreate() {
+        return true;
+    }
+
+    @Override
+    public boolean canAddTestStepToTestCase(WsdlTestCase testCase) {
+        for (Interface iface : testCase.getTestSuite().getProject().getInterfaceList()) {
+            if (iface instanceof WsdlInterface && iface.getOperationCount() > 0) {
+                return true;
+            }
+        }
+
+        UISupport.showErrorMessage("Missing SOAP Operations in Project");
+        return false;
     }
 
     public TestStepConfig createNewTestStep(WsdlOperation operation, StringToStringMap values) {
@@ -228,10 +243,6 @@ public class WsdlTestRequestStepFactory extends WsdlTestStepFactory {
         return testStep;
     }
 
-    public boolean canCreate() {
-        return true;
-    }
-
     private void buildDialog() {
         XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Add Request to TestCase");
         XForm mainForm = builder.createForm("Basic");
@@ -243,21 +254,8 @@ public class WsdlTestRequestStepFactory extends WsdlTestStepFactory {
         mainForm.addCheckBox(ADD_SOAP_FAULT_ASSERTION, "(adds validation that response is not a SOAP Fault)");
         mainForm.addCheckBox(CREATE_OPTIONAL_ELEMENTS_IN_REQUEST, "(creates optional content in sample request)");
 
-        dialog = builder.buildDialog(builder.buildOkCancelActions(),
-                "Specify options for adding a new request to a TestCase", UISupport.OPTIONS_ICON);
+        dialog = builder.buildDialog(builder.buildOkCancelActions(), "Specify options for adding a new request to a TestCase", UISupport.OPTIONS_ICON);
 
         dialogValues.put(ADD_SOAP_RESPONSE_ASSERTION, Boolean.TRUE.toString());
-    }
-
-    @Override
-    public boolean canAddTestStepToTestCase(WsdlTestCase testCase) {
-        for (Interface iface : testCase.getTestSuite().getProject().getInterfaceList()) {
-            if (iface instanceof WsdlInterface && iface.getOperationCount() > 0) {
-                return true;
-            }
-        }
-
-        UISupport.showErrorMessage("Missing SOAP Operations in Project");
-        return false;
     }
 }

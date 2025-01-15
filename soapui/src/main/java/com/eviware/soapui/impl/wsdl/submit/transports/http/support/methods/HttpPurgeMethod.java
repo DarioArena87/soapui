@@ -11,18 +11,16 @@ import java.net.URI;
 public class HttpPurgeMethod extends HttpRequestBase {
 
     public HttpPurgeMethod() {
-        super();
     }
 
-    public HttpPurgeMethod(final URI uri) {
-        super();
+    public HttpPurgeMethod(URI uri) {
         setURI(uri);
     }
 
     /**
      * @throws IllegalArgumentException if the uri is invalid.
      */
-    public HttpPurgeMethod(final String uri) {
+    public HttpPurgeMethod(String uri) {
         this(URI.create(uri));
     }
 

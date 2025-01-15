@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes;
@@ -35,9 +35,9 @@ import java.util.List;
  */
 
 public class WorkspaceTreeNode extends AbstractModelItemTreeNode<Workspace> {
-    private InternalWorkspaceListener workspaceListener = new InternalWorkspaceListener();
-    private List<ProjectTreeNode> projectNodes = new ArrayList<ProjectTreeNode>();
-    private ReorderPropertyChangeListener propertyChangeListener = new ReorderPropertyChangeListener();
+    private final InternalWorkspaceListener workspaceListener = new InternalWorkspaceListener();
+    private final List<ProjectTreeNode> projectNodes = new ArrayList<ProjectTreeNode>();
+    private final ReorderPropertyChangeListener propertyChangeListener = new ReorderPropertyChangeListener();
 
     public WorkspaceTreeNode(Workspace workspace, SoapUITreeModel treeModel) {
         super(workspace, null, treeModel);
@@ -65,7 +65,7 @@ public class WorkspaceTreeNode extends AbstractModelItemTreeNode<Workspace> {
     }
 
     public Workspace getWorkspace() {
-        return (Workspace) getModelItem();
+        return getModelItem();
     }
 
     private class InternalWorkspaceListener extends WorkspaceListenerAdapter {
@@ -83,15 +83,16 @@ public class WorkspaceTreeNode extends AbstractModelItemTreeNode<Workspace> {
                 getTreeModel().notifyNodeRemoved(treeNode);
                 projectNodes.remove(treeNode);
                 project.removePropertyChangeListener(propertyChangeListener);
-            } else {
+            }
+            else {
                 throw new RuntimeException("Removing unkown project");
             }
         }
 
         public void projectChanged(Project project) {
-            getTreeModel().notifyStructureChanged(
-                    new TreeModelEvent(WorkspaceTreeNode.this, new Object[]{getTreeModel().getPath(
-                            WorkspaceTreeNode.this)}));
+            getTreeModel().notifyStructureChanged(new TreeModelEvent(WorkspaceTreeNode.this, new Object[]{
+                getTreeModel().getPath(WorkspaceTreeNode.this)
+            }));
         }
     }
 }

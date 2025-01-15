@@ -35,6 +35,18 @@ import java.io.Serializable;
 
 @Plugin(name = "SOAPUI", category = "Core", elementType = "appender")
 public class SoapUIAppender extends AbstractAppender {
+    @PluginFactory
+    @SuppressWarnings("unused")
+    public static SoapUIAppender createAppender(
+        @PluginAttribute("name") String name, @PluginElement("Layout") Layout<? extends Serializable> layout, @PluginElement("Filter") Filter filter
+    ) {
+
+        if (layout == null) {
+            layout = PatternLayout.createDefaultLayout();
+        }
+        return new SoapUIAppender(name, filter, layout);
+    }
+
     public SoapUIAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
         super(name, filter, layout);
     }
@@ -42,18 +54,5 @@ public class SoapUIAppender extends AbstractAppender {
     @Override
     public void append(LogEvent event) {
         SoapUI.log(event);
-    }
-
-    @PluginFactory
-    @SuppressWarnings("unused")
-    public static SoapUIAppender createAppender(
-            @PluginAttribute("name") String name,
-            @PluginElement("Layout") Layout<? extends Serializable> layout,
-            @PluginElement("Filter") final Filter filter) {
-
-        if (layout == null) {
-            layout = PatternLayout.createDefaultLayout();
-        }
-        return new SoapUIAppender(name, filter, layout);
     }
 }

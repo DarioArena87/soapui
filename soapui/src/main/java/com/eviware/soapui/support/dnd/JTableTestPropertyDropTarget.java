@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.dnd;
@@ -49,36 +49,39 @@ public class JTableTestPropertyDropTarget implements DropTargetListener {
         }
     }
 
-    public void dragExit(DropTargetEvent dtde) {
-    }
-
     public void dragOver(DropTargetDragEvent dtde) {
         if (!isAcceptable(dtde.getTransferable(), dtde.getLocation())) {
             dtde.rejectDrag();
-        } else {
+        }
+        else {
             dtde.acceptDrag(dtde.getDropAction());
         }
+    }
+
+    public void dropActionChanged(DropTargetDragEvent dtde) {
+    }
+
+    public void dragExit(DropTargetEvent dtde) {
     }
 
     public void drop(DropTargetDropEvent dtde) {
         if (!isAcceptable(dtde.getTransferable(), dtde.getLocation())) {
             dtde.rejectDrop();
-        } else {
+        }
+        else {
             try {
                 Transferable transferable = dtde.getTransferable();
                 Object transferData = transferable.getTransferData(transferable.getTransferDataFlavors()[0]);
                 if (transferData instanceof PropertyModelItem) {
                     dtde.acceptDrop(dtde.getDropAction());
-                    PropertyModelItem modelItem = (PropertyModelItem) transferData;
+                    PropertyModelItem modelItem = (PropertyModelItem)transferData;
 
                     String xpath = modelItem.getXPath();
                     if (xpath == null && XmlUtils.seemsToBeXml(modelItem.getProperty().getValue())) {
-                        xpath = UISupport.selectXPath("Create PropertyExpansion", "Select XPath below", modelItem
-                                .getProperty().getValue(), null);
+                        xpath = UISupport.selectXPath("Create PropertyExpansion", "Select XPath below", modelItem.getProperty().getValue(), null);
 
                         if (xpath != null) {
-                            xpath = PropertyExpansionUtils.shortenXPathForPropertyExpansion(xpath, modelItem.getProperty()
-                                    .getValue());
+                            xpath = PropertyExpansionUtils.shortenXPathForPropertyExpansion(xpath, modelItem.getProperty().getValue());
                         }
                     }
 
@@ -91,13 +94,11 @@ public class JTableTestPropertyDropTarget implements DropTargetListener {
 
                     dtde.dropComplete(true);
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
-    }
-
-    public void dropActionChanged(DropTargetDragEvent dtde) {
     }
 
     public boolean isAcceptable(Transferable transferable, Point point) {
@@ -114,10 +115,10 @@ public class JTableTestPropertyDropTarget implements DropTargetListener {
                 try {
                     Object modelItem = transferable.getTransferData(flavor);
                     if (modelItem instanceof PropertyModelItem) {
-                        return PropertyExpansionUtils.canExpandProperty(this.modelItem,
-                                ((PropertyModelItem) modelItem).getProperty());
+                        return PropertyExpansionUtils.canExpandProperty(this.modelItem, ((PropertyModelItem)modelItem).getProperty());
                     }
-                } catch (Exception ex) {
+                }
+                catch (Exception ex) {
                     SoapUI.logError(ex);
                 }
             }

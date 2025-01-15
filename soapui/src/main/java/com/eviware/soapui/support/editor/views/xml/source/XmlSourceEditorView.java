@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.views.xml.source;
@@ -20,6 +20,7 @@ import com.eviware.soapui.SoapUI;
 import com.eviware.soapui.impl.wsdl.submit.transports.http.DocumentContent;
 import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpander;
+import com.eviware.soapui.model.testsuite.AssertionError;
 import com.eviware.soapui.settings.UISettings;
 import com.eviware.soapui.support.DocumentListenerAdapter;
 import com.eviware.soapui.support.UISupport;
@@ -53,36 +54,11 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -100,7 +76,8 @@ import static com.eviware.soapui.support.JsonUtil.seemsToBeJsonContentType;
 
 public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorView<XmlDocument> {
     private static final String RSYNTAXAREA_THEME = "/rsyntaxarea-theme/soapui.xml";
-
+    private final boolean readOnly;
+    public boolean isLocating;
     private RSyntaxTextArea editArea;
     private RTextScrollPane editorScrollPane;
     private ValidateMessageXmlAction validateXmlAction;
@@ -108,21 +85,17 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
     private JScrollPane errorScrollPane;
     private DefaultListModel errorListModel;
     private boolean updating;
-    public boolean isLocating;
     private JPopupMenu inputPopup;
     private PreviewCorner previewCorner;
     private T modelItem;
-
     private EnableLineNumbersAction enableLineNumbersAction;
     private GoToLineAction goToLineAction;
     private SaveXmlTextAreaAction saveXmlTextAreaAction;
-
     // Read only views don't need these
     private FormatXmlAction formatXmlAction;
     private LoadXmlTextAreaAction loadXmlTextAreaAction;
     private InsertBase64FileTextAreaAction insertBase64FileTextAreaAction;
     private FindAndReplaceDialogView findAndReplaceDialog;
-    private final boolean readOnly;
 
     public XmlSourceEditorView(XmlEditor<XmlDocument> xmlEditor, T modelItem, boolean readOnly) {
         this(xmlEditor, modelItem, readOnly, "XML");
@@ -140,7 +113,8 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
         try {
             Theme theme = Theme.load(XmlSourceEditorView.class.getResourceAsStream(RSYNTAXAREA_THEME));
             theme.apply(editArea);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SoapUI.logError(e, "Could not load XML editor color theme file");
         }
 
@@ -207,7 +181,8 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
             if (!readOnly) {
                 editArea.getInputMap().put(KeyStroke.getKeyStroke("meta L"), loadXmlTextAreaAction);
             }
-        } else {
+        }
+        else {
             editArea.getInputMap().put(KeyStroke.getKeyStroke("alt V"), validateXmlAction);
             editArea.getInputMap().put(KeyStroke.getKeyStroke("ctrl S"), saveXmlTextAreaAction);
             editArea.getInputMap().put(KeyStroke.getKeyStroke("alt L"), enableLineNumbersAction);
@@ -218,7 +193,6 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
                 editArea.getInputMap().put(KeyStroke.getKeyStroke("ctrl L"), loadXmlTextAreaAction);
             }
         }
-
 
         editorScrollPane.setLineNumbersEnabled(SoapUI.getSettings().getBoolean(UISettings.SHOW_XML_LINE_NUMBERS));
         editorScrollPane.setFoldIndicatorEnabled(true);
@@ -281,6 +255,149 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
         }
     }
 
+    public RSyntaxTextArea getInputArea() {
+        getComponent();
+        return editArea;
+    }
+
+    protected ValidationError[] validateXml(String xml) {
+        try {
+            XmlUtils.createXmlObject(xml, new XmlOptions().setLoadLineNumbers());
+        }
+        catch (XmlException e) {
+            List<ValidationError> result = new ArrayList<ValidationError>();
+
+            if (e.getErrors() != null) {
+                for (Object error : e.getErrors()) {
+                    if (error instanceof XmlError) {
+                        result.add(new AssertionError((XmlError)error));
+                    }
+                    else {
+                        result.add(new AssertionError(error.toString()));
+                    }
+                }
+            }
+
+            if (result.isEmpty()) {
+                result.add(new AssertionError(e.toString()));
+            }
+
+            return result.toArray(new ValidationError[result.size()]);
+        }
+
+        return null;
+    }
+
+    public boolean activate(XmlLocation location) {
+        super.activate(location);
+
+        if (location != null) {
+            setLocation(location);
+        }
+
+        editArea.requestFocus();
+
+        return true;
+    }
+
+    public JComponent getComponent() {
+        if (splitter == null) {
+            buildUI();
+        }
+
+        return splitter;
+    }
+
+    public void setEditable(boolean enabled) {
+        getComponent();
+        editArea.setEditable(enabled);
+    }
+
+    @Override
+    public int getSupportScoreForContentType(String contentType) {
+        return contentType.toLowerCase().endsWith("xml") ? 2 : 0;
+    }
+
+    public int getCurrentLine() {
+        if (editArea == null) {
+            return -1;
+        }
+        return editArea.getCaretLineNumber();
+    }
+
+    public int getCurrentColumn() {
+        if (editArea == null) {
+            return -1;
+        }
+
+        try {
+            int pos = editArea.getCaretPosition();
+            int line = editArea.getLineOfOffset(pos);
+
+            return pos - editArea.getLineStartOffset(line);
+        }
+        catch (BadLocationException e) {
+            SoapUI.logError(e, "Unable to get the current column. ");
+            return -1;
+        }
+    }
+
+    public String getText() {
+        if (editArea == null) {
+            return null;
+        }
+        return editArea.getText();
+    }
+
+    public boolean validate() {
+        ValidationError[] errors = validateXml(PropertyExpander.expandProperties(getModelItem(), editArea.getText()));
+
+        errorListModel.clear();
+        if (errors == null || errors.length == 0) {
+            splitter.setDividerLocation(1.0);
+            splitter.setDividerSize(0);
+            errorScrollPane.setVisible(false);
+            return true;
+        }
+        else {
+            Toolkit.getDefaultToolkit().beep();
+            for (ValidationError error : errors) {
+                errorListModel.addElement(error);
+            }
+            errorScrollPane.setVisible(true);
+            splitter.setDividerLocation(0.8);
+            splitter.setDividerSize(10);
+            return false;
+        }
+    }
+
+    @Override
+    public void documentUpdated() {
+        if (!updating) {
+            updating = true;
+
+            DocumentContent rawDocumentContent = getDocument().getDocumentContent(EditorDocument.Format.RAW);
+            String contentType = rawDocumentContent.getContentType();
+            if (rawDocumentContent.getContentAsString() == null) {
+                editArea.setText("");
+                editArea.setEnabled(false);
+            }
+            else if (seemsToBeJsonContentType(contentType) && readOnly) {
+                editArea.setText("The content you are trying to view cannot be viewed as XML");
+                editArea.setEnabled(false);
+            }
+            else {
+                int caretPosition = editArea.getCaretPosition();
+                editArea.setEnabled(true);
+                String contentAsString = getDocument().getDocumentContent(EditorDocument.Format.XML).getContentAsString();
+                editArea.setText(contentAsString);
+                editArea.setCaretPosition(caretPosition < contentAsString.length() ? caretPosition : 0);
+            }
+
+            updating = false;
+        }
+    }
+
     @Override
     public void release() {
         super.release();
@@ -289,7 +406,139 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
         modelItem = null;
     }
 
+    public XmlLocation getEditorLocation() {
+        return new XmlLocation(getCurrentLine() + 1, getCurrentColumn());
+    }
+
+    @Override
+    public void setLocation(EditorLocation<XmlDocument> location) {
+        int line = location.getLine() - 1;
+        if (line >= 0) {
+            try {
+                int caretLine = editArea.getCaretLineNumber();
+                int offset = editArea.getLineStartOffset(line);
+                editArea.setCaretPosition(offset + location.getColumn());
+                int scrollLine = line + (line > caretLine ? 3 : -3);
+                if (scrollLine >= editArea.getLineCount()) {
+                    scrollLine = editArea.getLineCount() - 1;
+                }
+                else if (scrollLine < 0) {
+                    scrollLine = 0;
+                }
+
+                editArea.scrollRectToVisible(new Rectangle(scrollLine, location.getColumn()));
+            }
+            catch (RuntimeException ignore) {
+            }
+            catch (BadLocationException e) {
+                SoapUI.logError(e, "Unable to set the location in the XML document.");
+            }
+        }
+    }
+
+    public void locationChanged(EditorLocation<XmlDocument> location) {
+        isLocating = true;
+        setLocation(location);
+        isLocating = false;
+    }
+
+    public boolean saveDocument(boolean validate) {
+        return !validate || validate();
+    }
+
+    public JPopupMenu getEditorPopup() {
+        return editArea.getPopupMenu();
+    }
+
+    public boolean hasFocus() {
+        return editArea.hasFocus();
+    }
+
+    public boolean isInspectable() {
+        return true;
+    }
+
+    public ValidateMessageXmlAction getValidateXmlAction() {
+        return validateXmlAction;
+    }
+
+    private final static class ValidationListMouseAdapter extends MouseAdapter {
+        private final JList list;
+
+        private final RSyntaxTextArea textArea;
+
+        public ValidationListMouseAdapter(JList list, RSyntaxTextArea editArea) {
+            this.list = list;
+            textArea = editArea;
+        }
+
+        public void mouseClicked(MouseEvent e) {
+            if (e.getClickCount() < 2) {
+                return;
+            }
+
+            int ix = list.getSelectedIndex();
+            if (ix == -1) {
+                return;
+            }
+
+            Object obj = list.getModel().getElementAt(ix);
+            if (obj instanceof ValidationError) {
+                ValidationError error = (ValidationError)obj;
+                if (error.getLineNumber() >= 0) {
+                    try {
+                        textArea.setCaretPosition(textArea.getLineStartOffset(error.getLineNumber() - 1));
+                    }
+                    catch (BadLocationException e1) {
+                        SoapUI.logError(e1, "Unable to set the caret position. This is most likely a bug.");
+                    }
+                    textArea.requestFocus();
+                }
+                else {
+                    Toolkit.getDefaultToolkit().beep();
+                }
+            }
+            else {
+                Toolkit.getDefaultToolkit().beep();
+            }
+        }
+    }
+
+    public static class JEditorStatusBarTargetProxy implements JEditorStatusBarTarget {
+        private final RSyntaxTextArea textArea;
+
+        public JEditorStatusBarTargetProxy(RSyntaxTextArea area) {
+            textArea = area;
+        }
+
+        @Override
+        public void addCaretListener(CaretListener listener) {
+            textArea.addCaretListener(listener);
+        }
+
+        @Override
+        public int getCaretPosition() {
+            return textArea.getCaretPosition();
+        }
+
+        @Override
+        public void removeCaretListener(CaretListener listener) {
+            textArea.removeCaretListener(listener);
+        }
+
+        @Override
+        public int getLineStartOffset(int line) throws Exception {
+            return textArea.getLineStartOffset(line);
+        }
+
+        @Override
+        public int getLineOfOffset(int offset) throws Exception {
+            return textArea.getLineOfOffset(offset);
+        }
+    }
+
     private final class FindAndReplaceDialogView extends AbstractAction {
+        private final String title;
         private JDialog dialog;
         private JCheckBox caseCheck;
         private JRadioButton allButton;
@@ -302,15 +551,15 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
         private JButton replaceAllButton;
         private JComboBox findCombo;
         private JComboBox replaceCombo;
-        private final String title;
 
         public FindAndReplaceDialogView(String title) {
             super(title);
             this.title = title;
             if (UISupport.isMac()) {
-                putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("meta F"));
-            } else {
-                putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("ctrl F"));
+                putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("meta F"));
+            }
+            else {
+                putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("ctrl F"));
             }
         }
 
@@ -430,7 +679,7 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
             UISupport.initDialogActions(dialog, null, findButton);
         }
 
-        protected SearchContext createSearchAndReplaceContext() {
+        private SearchContext createSearchAndReplaceContext() {
             if (findCombo.getSelectedItem() == null) {
                 return null;
             }
@@ -451,7 +700,7 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
             return context;
         }
 
-        protected SearchContext createSearchContext() {
+        private SearchContext createSearchContext() {
             if (findCombo.getSelectedItem() == null) {
                 return null;
             }
@@ -505,7 +754,6 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
                     UISupport.showErrorMessage("String [" + context.getSearchFor() + "] not found");
                 }
             }
-
         }
 
         private class ReplaceAllAction extends AbstractAction {
@@ -526,7 +774,6 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
                     UISupport.showErrorMessage("String [" + context.getSearchFor() + "] not found");
                 }
             }
-
         }
 
         private class CloseAction extends AbstractAction {
@@ -541,129 +788,16 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
                 dialog.setVisible(false);
             }
         }
-
-    }
-
-    private final static class ValidationListMouseAdapter extends MouseAdapter {
-        private final JList list;
-
-        private final RSyntaxTextArea textArea;
-
-        public ValidationListMouseAdapter(JList list, RSyntaxTextArea editArea) {
-            this.list = list;
-            this.textArea = editArea;
-        }
-
-        public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() < 2) {
-                return;
-            }
-
-            int ix = list.getSelectedIndex();
-            if (ix == -1) {
-                return;
-            }
-
-            Object obj = list.getModel().getElementAt(ix);
-            if (obj instanceof ValidationError) {
-                ValidationError error = (ValidationError) obj;
-                if (error.getLineNumber() >= 0) {
-                    try {
-                        textArea.setCaretPosition(textArea.getLineStartOffset(error.getLineNumber() - 1));
-                    } catch (BadLocationException e1) {
-                        SoapUI.logError(e1, "Unable to set the caret position. This is most likely a bug.");
-                    }
-                    textArea.requestFocus();
-                } else {
-                    Toolkit.getDefaultToolkit().beep();
-                }
-            } else {
-                Toolkit.getDefaultToolkit().beep();
-            }
-        }
-    }
-
-    public RSyntaxTextArea getInputArea() {
-        getComponent();
-        return editArea;
-    }
-
-    public static class JEditorStatusBarTargetProxy implements JEditorStatusBarTarget {
-        private final RSyntaxTextArea textArea;
-
-        public JEditorStatusBarTargetProxy(RSyntaxTextArea area) {
-            textArea = area;
-        }
-
-        @Override
-        public void addCaretListener(CaretListener listener) {
-            textArea.addCaretListener(listener);
-        }
-
-        @Override
-        public int getCaretPosition() {
-            return textArea.getCaretPosition();
-        }
-
-        @Override
-        public void removeCaretListener(CaretListener listener) {
-            textArea.removeCaretListener(listener);
-        }
-
-        @Override
-        public int getLineStartOffset(int line) throws Exception {
-            return textArea.getLineStartOffset(line);
-        }
-
-        @Override
-        public int getLineOfOffset(int offset) throws Exception {
-            return textArea.getLineOfOffset(offset);
-        }
-    }
-
-    public void setEditable(boolean enabled) {
-        getComponent();
-        editArea.setEditable(enabled);
-    }
-
-    @Override
-    public int getSupportScoreForContentType(String contentType ) {
-        return contentType.toLowerCase().endsWith("xml")? 2 : 0;
-    }
-
-    protected ValidationError[] validateXml(String xml) {
-        try {
-            XmlUtils.createXmlObject(xml, new XmlOptions().setLoadLineNumbers());
-        } catch (XmlException e) {
-            List<ValidationError> result = new ArrayList<ValidationError>();
-
-            if (e.getErrors() != null) {
-                for (Object error : e.getErrors()) {
-                    if (error instanceof XmlError) {
-                        result.add(new com.eviware.soapui.model.testsuite.AssertionError((XmlError) error));
-                    } else {
-                        result.add(new com.eviware.soapui.model.testsuite.AssertionError(error.toString()));
-                    }
-                }
-            }
-
-            if (result.isEmpty()) {
-                result.add(new com.eviware.soapui.model.testsuite.AssertionError(e.toString()));
-            }
-
-            return result.toArray(new ValidationError[result.size()]);
-        }
-
-        return null;
     }
 
     public class ValidateMessageXmlAction extends AbstractAction {
         public ValidateMessageXmlAction() {
             super("Validate");
             if (UISupport.isMac()) {
-                putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("shift meta V"));
-            } else {
-                putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("alt V"));
+                putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("shift meta V"));
+            }
+            else {
+                putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("alt V"));
             }
         }
 
@@ -672,154 +806,5 @@ public class XmlSourceEditorView<T extends ModelItem> extends AbstractXmlEditorV
                 UISupport.showInfoMessage("Validation OK");
             }
         }
-    }
-
-    public boolean activate(XmlLocation location) {
-        super.activate(location);
-
-        if (location != null) {
-            setLocation(location);
-        }
-
-        editArea.requestFocus();
-
-        return true;
-    }
-
-    public JComponent getComponent() {
-        if (splitter == null) {
-            buildUI();
-        }
-
-        return splitter;
-    }
-
-    public XmlLocation getEditorLocation() {
-        return new XmlLocation(getCurrentLine() + 1, getCurrentColumn());
-    }
-
-    @Override
-    public void setLocation(EditorLocation<XmlDocument> location) {
-        int line = location.getLine() - 1;
-        if (line >= 0) {
-            try {
-                int caretLine = editArea.getCaretLineNumber();
-                int offset = editArea.getLineStartOffset(line);
-                editArea.setCaretPosition(offset + location.getColumn());
-                int scrollLine = line + (line > caretLine ? 3 : -3);
-                if (scrollLine >= editArea.getLineCount()) {
-                    scrollLine = editArea.getLineCount() - 1;
-                } else if (scrollLine < 0) {
-                    scrollLine = 0;
-                }
-
-                editArea.scrollRectToVisible(new Rectangle(scrollLine, location.getColumn()));
-            } catch (RuntimeException ignore) {
-            } catch (BadLocationException e) {
-                SoapUI.logError(e, "Unable to set the location in the XML document.");
-            }
-        }
-    }
-
-    public int getCurrentLine() {
-        if (editArea == null) {
-            return -1;
-        }
-        return editArea.getCaretLineNumber();
-    }
-
-    public int getCurrentColumn() {
-        if (editArea == null) {
-            return -1;
-        }
-
-        try {
-            int pos = editArea.getCaretPosition();
-            int line = editArea.getLineOfOffset(pos);
-
-            return pos - editArea.getLineStartOffset(line);
-        } catch (BadLocationException e) {
-            SoapUI.logError(e, "Unable to get the current column. ");
-            return -1;
-        }
-    }
-
-    public String getText() {
-        if (editArea == null) {
-            return null;
-        }
-        return editArea.getText();
-    }
-
-    public boolean validate() {
-        ValidationError[] errors = validateXml(PropertyExpander.expandProperties(getModelItem(), editArea.getText()));
-
-        errorListModel.clear();
-        if (errors == null || errors.length == 0) {
-            splitter.setDividerLocation(1.0);
-            splitter.setDividerSize(0);
-            errorScrollPane.setVisible(false);
-            return true;
-        } else {
-            Toolkit.getDefaultToolkit().beep();
-            for (ValidationError error : errors) {
-                errorListModel.addElement(error);
-            }
-            errorScrollPane.setVisible(true);
-            splitter.setDividerLocation(0.8);
-            splitter.setDividerSize(10);
-            return false;
-        }
-    }
-
-    @Override
-    public void documentUpdated() {
-        if (!updating) {
-            updating = true;
-
-            final DocumentContent rawDocumentContent = getDocument().getDocumentContent(EditorDocument.Format.RAW);
-            final String contentType = rawDocumentContent.getContentType();
-            if (rawDocumentContent.getContentAsString() == null) {
-                editArea.setText("");
-                editArea.setEnabled(false);
-            } else if (seemsToBeJsonContentType(contentType) && readOnly) {
-                editArea.setText("The content you are trying to view cannot be viewed as XML");
-                editArea.setEnabled(false);
-            } else {
-                int caretPosition = editArea.getCaretPosition();
-                editArea.setEnabled(true);
-                final String contentAsString = getDocument().getDocumentContent(EditorDocument.Format.XML).getContentAsString();
-                editArea.setText(contentAsString);
-                editArea.setCaretPosition(caretPosition < contentAsString.length() ? caretPosition : 0);
-            }
-
-            updating = false;
-        }
-    }
-
-    public boolean saveDocument(boolean validate) {
-        return validate ? validate() : true;
-    }
-
-    public void locationChanged(EditorLocation<XmlDocument> location) {
-        isLocating = true;
-        setLocation(location);
-        isLocating = false;
-    }
-
-    public JPopupMenu getEditorPopup() {
-        return editArea.getPopupMenu();
-    }
-
-    public boolean hasFocus() {
-        return editArea.hasFocus();
-    }
-
-    public boolean isInspectable() {
-        return true;
-    }
-
-    public ValidateMessageXmlAction getValidateXmlAction() {
-        return validateXmlAction;
     }
 }

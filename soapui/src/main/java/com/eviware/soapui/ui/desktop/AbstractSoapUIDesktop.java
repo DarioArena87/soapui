@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.ui.desktop;
@@ -37,7 +37,7 @@ import com.eviware.soapui.model.workspace.Workspace;
 import com.eviware.soapui.security.SecurityTest;
 import com.eviware.soapui.support.action.swing.ActionList;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -53,8 +53,8 @@ public abstract class AbstractSoapUIDesktop implements SoapUIDesktop {
     private final InternalInterfaceListener interfaceListener = new InternalInterfaceListener();
     private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
     private final InternalMockServiceListener mockServiceListener = new InternalMockServiceListener();
-    private Set<DesktopListener> listeners = new HashSet<DesktopListener>();
-    private InternalWorkspaceListener workspaceListener = new InternalWorkspaceListener();
+    private final Set<DesktopListener> listeners = new HashSet<DesktopListener>();
+    private final InternalWorkspaceListener workspaceListener = new InternalWorkspaceListener();
 
     public AbstractSoapUIDesktop(Workspace workspace) {
         this.workspace = workspace;
@@ -68,10 +68,6 @@ public abstract class AbstractSoapUIDesktop implements SoapUIDesktop {
         for (int c = 0; c < workspace.getProjectCount(); c++) {
             listenToProject(workspace.getProjectAt(c));
         }
-    }
-
-    public ActionList getActions() {
-        return null;
     }
 
     private void listenToProject(Project project) {
@@ -96,6 +92,38 @@ public abstract class AbstractSoapUIDesktop implements SoapUIDesktop {
 
     public void removeDesktopListener(DesktopListener listener) {
         listeners.remove(listener);
+    }
+
+    public ActionList getActions() {
+        return null;
+    }
+
+    public void release() {
+        for (int c = 0; c < workspace.getProjectCount(); c++) {
+            Project project = workspace.getProjectAt(c);
+            project.removeProjectListener(projectListener);
+
+            for (int i = 0; i < project.getInterfaceCount(); i++) {
+                project.getInterfaceAt(i).removeInterfaceListener(interfaceListener);
+            }
+
+            for (int i = 0; i < project.getTestSuiteCount(); i++) {
+                project.getTestSuiteAt(i).removeTestSuiteListener(testSuiteListener);
+            }
+
+            for (int i = 0; i < project.getMockServiceCount(); i++) {
+                project.getMockServiceAt(i).removeMockServiceListener(mockServiceListener);
+            }
+        }
+
+        workspace.removeWorkspaceListener(workspaceListener);
+    }
+
+    public void init() {
+    }
+
+    @Override
+    public void showInspector(JComponent component) {
     }
 
     public void closeDependantPanels(ModelItem modelItem) {
@@ -136,33 +164,33 @@ public abstract class AbstractSoapUIDesktop implements SoapUIDesktop {
     }
 
     private class InternalWorkspaceListener extends WorkspaceListenerAdapter {
+        public void projectAdded(Project project) {
+            listenToProject(project);
+        }
+
         public void projectRemoved(Project project) {
             project.removeProjectListener(projectListener);
             closeDependantPanels(project);
         }
-
-        public void projectAdded(Project project) {
-            listenToProject(project);
-        }
     }
 
     private class InternalProjectListener extends ProjectListenerAdapter {
+        public void interfaceAdded(Interface iface) {
+            iface.addInterfaceListener(interfaceListener);
+        }
+
         public void interfaceRemoved(Interface iface) {
             iface.removeInterfaceListener(interfaceListener);
             closeDependantPanels(iface);
         }
 
+        public void testSuiteAdded(TestSuite testSuite) {
+            testSuite.addTestSuiteListener(testSuiteListener);
+        }
+
         public void testSuiteRemoved(TestSuite testSuite) {
             testSuite.removeTestSuiteListener(testSuiteListener);
             closeDependantPanels(testSuite);
-        }
-
-        public void interfaceAdded(Interface iface) {
-            iface.addInterfaceListener(interfaceListener);
-        }
-
-        public void testSuiteAdded(TestSuite testSuite) {
-            testSuite.addTestSuiteListener(testSuiteListener);
         }
 
         public void mockServiceAdded(MockService mockService) {
@@ -211,33 +239,5 @@ public abstract class AbstractSoapUIDesktop implements SoapUIDesktop {
         public void mockResponseRemoved(MockResponse request) {
             closeDependantPanels(request);
         }
-    }
-
-    public void release() {
-        for (int c = 0; c < workspace.getProjectCount(); c++) {
-            Project project = workspace.getProjectAt(c);
-            project.removeProjectListener(projectListener);
-
-            for (int i = 0; i < project.getInterfaceCount(); i++) {
-                project.getInterfaceAt(i).removeInterfaceListener(interfaceListener);
-            }
-
-            for (int i = 0; i < project.getTestSuiteCount(); i++) {
-                project.getTestSuiteAt(i).removeTestSuiteListener(testSuiteListener);
-            }
-
-            for (int i = 0; i < project.getMockServiceCount(); i++) {
-                project.getMockServiceAt(i).removeMockServiceListener(mockServiceListener);
-            }
-        }
-
-        workspace.removeWorkspaceListener(workspaceListener);
-    }
-
-    public void init() {
-    }
-
-    @Override
-    public void showInspector(JComponent component) {
     }
 }

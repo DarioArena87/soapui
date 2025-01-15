@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock.dispatch;
@@ -41,24 +41,10 @@ import org.apache.xmlbeans.XmlCursor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 
-import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
-import javax.swing.Action;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,10 +53,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDispatcher implements
-        PropertyChangeListener {
+public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDispatcher implements PropertyChangeListener {
     private MockOperationQueryMatchDispatchConfig conf;
-    private List<Query> queries = new ArrayList<Query>();
+    private final List<Query> queries = new ArrayList<Query>();
     private PresentationModel<Query> queryDetailFormPresentationModel;
     private QueryItemListModel queryItemListModel;
     private JList itemList;
@@ -79,29 +64,24 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
     private JButton renameButton;
     private SimpleBindingForm detailForm;
     private JButton runButton;
-    private JButton declareNsButton = new JButton(new DeclareNamespacesAction());
-    private JButton extractFromCurrentButton = new JButton(new ExtractFromCurrentAction());
+    private final JButton declareNsButton = new JButton(new DeclareNamespacesAction());
+    private final JButton extractFromCurrentButton = new JButton(new ExtractFromCurrentAction());
 
     public QueryMatchMockOperationDispatcher(MockOperation mockOperation) {
         super(mockOperation);
 
         try {
-            conf = MockOperationQueryMatchDispatchConfig.Factory.parse(((WsdlMockOperation) mockOperation).getConfig().getDispatchConfig().xmlText());
+            conf = MockOperationQueryMatchDispatchConfig.Factory.parse(((WsdlMockOperation)mockOperation).getConfig().getDispatchConfig().xmlText());
 
             for (MockOperationQueryMatchDispatchConfig.Query query : conf.getQueryList()) {
                 queries.add(new Query(query));
             }
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             e.printStackTrace();
         }
 
         mockOperation.addPropertyChangeListener("mockResponses", this);
-    }
-
-    @Override
-    public void release() {
-        getMockOperation().removePropertyChangeListener("mockResponses", this);
-        super.release();
     }
 
     @Override
@@ -113,8 +93,9 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
     }
 
     @Override
-    public boolean hasDefaultResponse() {
-        return true;
+    public void release() {
+        getMockOperation().removePropertyChangeListener("mockResponses", this);
+        super.release();
     }
 
     protected Component buildQueryListComponent() {
@@ -125,7 +106,7 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
         itemList.setCellRenderer(new QueryItemListCellRenderer());
         itemList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                queryDetailFormPresentationModel.setBean((Query) itemList.getSelectedValue());
+                queryDetailFormPresentationModel.setBean((Query)itemList.getSelectedValue());
                 setEnabled();
             }
         });
@@ -183,8 +164,7 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
         detailForm.append(buildQueryToolbar());
         detailForm.appendTextArea("query", "XPath", "The XPath to query in the request");
         detailForm.appendTextArea("match", "Expected Value", "The value to match");
-        JComboBox comboBox = detailForm.appendComboBox("response", "Dispatch to", new MockResponsesComboBoxModel(),
-                "The MockResponse to dispatch to");
+        JComboBox comboBox = detailForm.appendComboBox("response", "Dispatch to", new MockResponsesComboBoxModel(), "The MockResponse to dispatch to");
         UISupport.setFixedSize(comboBox, 150, 20);
         detailForm.appendCheckBox("disabled", "Disabled", "Disables this Query");
 
@@ -197,8 +177,7 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
         addQueryToolbarActions(toolBar);
 
         toolBar.addGlue();
-        toolBar.addFixed(ModelItemDesktopPanel.createActionButton(new ShowOnlineHelpAction(
-                HelpUrls.MOCKOPERATION_QUERYMATCHDISPATCH_HELP_URL), true));
+        toolBar.addFixed(ModelItemDesktopPanel.createActionButton(new ShowOnlineHelpAction(HelpUrls.MOCKOPERATION_QUERYMATCHDISPATCH_HELP_URL), true));
 
         return toolBar;
     }
@@ -208,8 +187,7 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
         toolBar.addFixed(extractFromCurrentButton);
     }
 
-    public WsdlMockResponse selectMockResponse(MockRequest request, MockResult result)
-            throws DispatchException {
+    public WsdlMockResponse selectMockResponse(MockRequest request, MockResult result) throws DispatchException {
         Map<String, XmlCursor> cursorCache = new HashMap<String, XmlCursor>();
 
         try {
@@ -236,13 +214,13 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
                         String value = PropertyExpander.expandProperties(request.getContext(), query.getMatch());
 
                         if (value.equals(XmlUtils.getValueForMatch(cursor))) {
-                            WsdlMockRunContext requestContext = (WsdlMockRunContext) request.getRequestContext();
+                            WsdlMockRunContext requestContext = (WsdlMockRunContext)request.getRequestContext();
                             requestContext.put("usedQueryMatch", query.getName());
 
                             WsdlMockResponse resp = null;
-                            for (MockResponse mockResponse : this.getMockOperation().getMockResponses()) {
+                            for (MockResponse mockResponse : getMockOperation().getMockResponses()) {
                                 if (query.getResponse().equals(mockResponse.getName())) {
-                                    resp = (WsdlMockResponse) mockResponse;
+                                    resp = (WsdlMockResponse)mockResponse;
                                 }
                             }
                             // return getMockOperation().getMockResponseByName(
@@ -251,7 +229,7 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
                                 return resp;
                             }
 
-                            return ((WsdlMockOperation) getMockOperation()).getMockResponseByName(query.getResponse());
+                            return ((WsdlMockOperation)getMockOperation()).getMockResponseByName(query.getResponse());
                         }
                     }
 
@@ -260,15 +238,22 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
             }
 
             return null;
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             throw new DispatchException(e);
-        } finally {
+        }
+        finally {
             for (XmlCursor cursor : cursorCache.values()) {
                 if (cursor != null) {
                     cursor.dispose();
                 }
             }
         }
+    }
+
+    @Override
+    public boolean hasDefaultResponse() {
+        return true;
     }
 
     public Query addQuery(String name) {
@@ -326,6 +311,14 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
         }
     }
 
+    private void saveConfig() {
+        ((WsdlMockOperation)getMockOperation()).getConfig().getDispatchConfig().set(conf);
+    }
+
+    protected Query getSelectedQuery() {
+        return queryDetailFormPresentationModel == null ? null : queryDetailFormPresentationModel.getBean();
+    }
+
     public static class Factory implements MockOperationDispatchFactory {
         public MockOperationDispatcher build(MockOperation mockOperation) {
             return new QueryMatchMockOperationDispatcher(mockOperation);
@@ -333,7 +326,7 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
     }
 
     public class Query extends AbstractPropertyChangeNotifier {
-        private MockOperationQueryMatchDispatchConfig.Query config;
+        private final MockOperationQueryMatchDispatchConfig.Query config;
 
         protected Query(MockOperationQueryMatchDispatchConfig.Query config) {
             this.config = config;
@@ -399,10 +392,6 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
         }
     }
 
-    private void saveConfig() {
-        ((WsdlMockOperation) getMockOperation()).getConfig().getDispatchConfig().set(conf);
-    }
-
     private class QueryItemListModel extends AbstractListModel {
         public int getSize() {
             return getQueryCount();
@@ -447,14 +436,10 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
         }
     }
 
-    protected Query getSelectedQuery() {
-        return queryDetailFormPresentationModel == null ? null : queryDetailFormPresentationModel.getBean();
-    }
-
     private final class AddAction extends AbstractAction {
         public AddAction() {
-            putValue(Action.SHORT_DESCRIPTION, "Adds a new Match");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds a new Match");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -469,8 +454,8 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
 
     private final class CopyAction extends AbstractAction {
         public CopyAction() {
-            putValue(Action.SHORT_DESCRIPTION, "Copies the selected Match");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/clone.png"));
+            putValue(SHORT_DESCRIPTION, "Copies the selected Match");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/clone.png"));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -495,8 +480,8 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
 
     private final class DeleteAction extends AbstractAction {
         public DeleteAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Deletes the selected Property Transfer");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
+            putValue(SHORT_DESCRIPTION, "Deletes the selected Property Transfer");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -516,8 +501,8 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
 
     private final class RenameAction extends AbstractAction {
         public RenameAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/rename.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Renames the selected Property Transfer");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/rename.gif"));
+            putValue(SHORT_DESCRIPTION, "Renames the selected Property Transfer");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -537,8 +522,8 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
 
     private final class DeclareNamespacesAction extends AbstractAction {
         public DeclareNamespacesAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/declareNs.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Declare request namespaces in current query");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/declareNs.gif"));
+            putValue(SHORT_DESCRIPTION, "Declare request namespaces in current query");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -551,13 +536,13 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
                 MockResult lastResult = getMockOperation().getLastMockResult();
                 String content = null;
                 if (lastResult == null) {
-                    if (!UISupport.confirm("Missing last result, declare from default request instead?",
-                            "Declare Namespaces")) {
+                    if (!UISupport.confirm("Missing last result, declare from default request instead?", "Declare Namespaces")) {
                         return;
                     }
 
                     content = getMockOperation().getOperation().createRequest(true);
-                } else {
+                }
+                else {
                     content = lastResult.getMockRequest().getRequestContent();
                 }
 
@@ -567,7 +552,8 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
                 }
 
                 selectedQuery.setQuery(XmlUtils.declareXPathNamespaces(content) + path);
-            } catch (Exception e1) {
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1);
             }
         }
@@ -575,20 +561,21 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
 
     private final class RunAction extends AbstractAction {
         public RunAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Runs Queries on last request");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Runs Queries on last request");
         }
 
         public void actionPerformed(ActionEvent e) {
             MockResult result = getMockOperation().getLastMockResult();
             if (result != null) {
                 try {
-                    UISupport.showInfoMessage("Selected ["
-                            + selectMockResponse(result.getMockRequest(), result).getName() + "]");
-                } catch (DispatchException e1) {
+                    UISupport.showInfoMessage("Selected [" + selectMockResponse(result.getMockRequest(), result).getName() + "]");
+                }
+                catch (DispatchException e1) {
                     UISupport.showErrorMessage(e1);
                 }
-            } else {
+            }
+            else {
                 UISupport.showErrorMessage("Missing request to query");
             }
         }
@@ -597,7 +584,7 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
     private final class ExtractFromCurrentAction extends AbstractAction {
         public ExtractFromCurrentAction() {
             super("Extract");
-            putValue(Action.SHORT_DESCRIPTION, "Extracts the current value into the Value field");
+            putValue(SHORT_DESCRIPTION, "Extracts the current value into the Value field");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -611,7 +598,8 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
 
             if (result != null && StringUtils.hasContent(result.getMockRequest().getRequestContent())) {
                 content = result.getMockRequest().getRequestContent();
-            } else {
+            }
+            else {
                 if (!UISupport.confirm("Missing last result, extract from default request instead?", "Extract Match")) {
                     return;
                 }
@@ -628,12 +616,15 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
                 cursor.selectPath(selectedQuery.getQuery());
                 if (!cursor.toNextSelection()) {
                     UISupport.showErrorMessage("Missing match in request");
-                } else {
+                }
+                else {
                     selectedQuery.setMatch(XmlUtils.getValueForMatch(cursor));
                 }
-            } catch (Throwable e1) {
+            }
+            catch (Throwable e1) {
                 SoapUI.logError(e1);
-            } finally {
+            }
+            finally {
                 if (cursor != null) {
                     cursor.dispose();
                 }
@@ -642,20 +633,21 @@ public class QueryMatchMockOperationDispatcher extends AbstractMockOperationDisp
     }
 
     private class QueryItemListCellRenderer extends DefaultListCellRenderer {
-        private Color defaultForeground;
+        private final Color defaultForeground;
 
         private QueryItemListCellRenderer() {
-            this.defaultForeground = getForeground();
+            defaultForeground = getForeground();
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
-            JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
+            JLabel component = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-            Query query = (Query) value;
+            Query query = (Query)value;
             component.setText(query.getName());
-            component.setForeground(((Query) value).isDisabled() ? Color.GRAY : defaultForeground);
+            component.setForeground(((Query)value).isDisabled() ? Color.GRAY : defaultForeground);
 
             return component;
         }

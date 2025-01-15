@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.endpoint;
@@ -37,27 +37,12 @@ import com.eviware.soapui.support.components.MetricsPanel;
 import com.eviware.soapui.support.swing.JTableFactory;
 import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,14 +52,13 @@ import java.util.List;
 
 public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements PropertyChangeListener {
 
+    private final DefaultEndpointStrategy strategy;
     // package protected to facilitate unit testing
     public JTable table;
-
     private EndpointsTableModel tableModel;
     private JButton deleteButton;
     private JButton assignButton;
-    private Interface iface;
-    private final DefaultEndpointStrategy strategy;
+    private final Interface iface;
 
     public DefaultEndpointStrategyConfigurationPanel(Interface iface, DefaultEndpointStrategy strategy) {
         super(new BorderLayout());
@@ -105,8 +89,7 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
         });
 
         for (int c = 0; c < table.getColumnCount(); c++) {
-            table.getColumnModel().getColumn(c)
-                    .setHeaderRenderer(new MetricsPanel.InternalHeaderRenderer(getBackground()));
+            table.getColumnModel().getColumn(c).setHeaderRenderer(new MetricsPanel.InternalHeaderRenderer(getBackground()));
         }
 
         table.getColumnModel().getColumn(0).setPreferredWidth(250);
@@ -114,26 +97,22 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
         InternalRowCellrenderer internalRowCellRendered = new InternalRowCellrenderer();
         table.getColumnModel().getColumn(tableModel.getPasswordColumnIndex()).setCellRenderer(internalRowCellRendered);
         if (iface instanceof WsdlInterface) {
-            JComboBox wssTypeCombo = new JComboBox(new String[]{WsdlRequest.PW_TYPE_NONE, WsdlRequest.PW_TYPE_TEXT,
-                    WsdlRequest.PW_TYPE_DIGEST});
+            JComboBox wssTypeCombo = new JComboBox(new String[]{
+                WsdlRequest.PW_TYPE_NONE, WsdlRequest.PW_TYPE_TEXT, WsdlRequest.PW_TYPE_DIGEST
+            });
             wssTypeCombo.setEditable(true);
 
             table.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(wssTypeCombo));
-            table.getColumnModel().getColumn(6)
-                    .setCellEditor(new OutgoingWssCellEditor(((WsdlInterface) iface).getProject().getWssContainer()));
-            table.getColumnModel().getColumn(7)
-                    .setCellEditor(new IncomingWssCellEditor(((WsdlInterface) iface).getProject().getWssContainer()));
-            table.getColumnModel()
-                    .getColumn(8)
-                    .setCellEditor(
-                            new DefaultCellEditor(new JComboBox(new String[]{EndpointConfig.Mode.OVERRIDE.toString(),
-                                    EndpointConfig.Mode.COMPLEMENT.toString(), EndpointConfig.Mode.COPY.toString()})));
-        } else {
-            table.getColumnModel()
-                    .getColumn(4)
-                    .setCellEditor(
-                            new DefaultCellEditor(new JComboBox(new String[]{EndpointConfig.Mode.OVERRIDE.toString(),
-                                    EndpointConfig.Mode.COMPLEMENT.toString(), EndpointConfig.Mode.COPY.toString()})));
+            table.getColumnModel().getColumn(6).setCellEditor(new OutgoingWssCellEditor(((WsdlInterface)iface).getProject().getWssContainer()));
+            table.getColumnModel().getColumn(7).setCellEditor(new IncomingWssCellEditor(((WsdlInterface)iface).getProject().getWssContainer()));
+            table.getColumnModel().getColumn(8).setCellEditor(new DefaultCellEditor(new JComboBox(new String[]{
+                EndpointConfig.Mode.OVERRIDE.toString(), EndpointConfig.Mode.COMPLEMENT.toString(), EndpointConfig.Mode.COPY.toString()
+            })));
+        }
+        else {
+            table.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(new JComboBox(new String[]{
+                EndpointConfig.Mode.OVERRIDE.toString(), EndpointConfig.Mode.COMPLEMENT.toString(), EndpointConfig.Mode.COPY.toString()
+            })));
         }
         setBackground(Color.WHITE);
 
@@ -175,10 +154,76 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
         return toolbar;
     }
 
+    public void release() {
+        iface.removePropertyChangeListener(Interface.ENDPOINT_PROPERTY, this);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        tableModel.refresh();
+    }
+
+    private static class IncomingWssCellEditor extends DefaultCellEditor {
+        private final WssContainer wssContainer;
+
+        public IncomingWssCellEditor(WssContainer wssContainer) {
+            super(new JComboBox());
+            this.wssContainer = wssContainer;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            JComboBox comboBox = (JComboBox)super.getTableCellEditorComponent(table, value, isSelected, row, column);
+
+            DefaultComboBoxModel model = new DefaultComboBoxModel(wssContainer.getIncomingWssNames());
+            model.addElement("");
+
+            comboBox.setModel(model);
+
+            return comboBox;
+        }
+    }
+
+    private static class OutgoingWssCellEditor extends DefaultCellEditor {
+        private final WssContainer wssContainer;
+
+        public OutgoingWssCellEditor(WssContainer wssContainer) {
+            super(new JComboBox());
+            this.wssContainer = wssContainer;
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            JComboBox comboBox = (JComboBox)super.getTableCellEditorComponent(table, value, isSelected, row, column);
+
+            DefaultComboBoxModel model = new DefaultComboBoxModel(wssContainer.getOutgoingWssNames());
+            model.addElement("");
+
+            comboBox.setModel(model);
+
+            return comboBox;
+        }
+    }
+
+    public static class InternalRowCellrenderer extends DefaultCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
+        ) {
+            Component component;
+            if (value != null && ((String)value).length() > 0) {
+                component = super.getTableCellRendererComponent(table, "********", isSelected, hasFocus, row, column);
+            }
+            else {
+                component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+            return component;
+        }
+    }
+
     private class AddAction extends AbstractAction {
         public AddAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Adds a new endpoint to the list");
+            putValue(SHORT_DESCRIPTION, "Adds a new endpoint to the list");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -200,8 +245,7 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
 
         public AssignAction() {
             super("Assign");
-            putValue(Action.SHORT_DESCRIPTION,
-                    "Assigns the selected endpoint to Requests/TestRequests for this Interface");
+            putValue(SHORT_DESCRIPTION, "Assigns the selected endpoint to Requests/TestRequests for this Interface");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -220,28 +264,27 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
             list.add(2, ALL_REQUESTS_AND_TEST_REQUESTS);
             list.add(3, ALL_REQUESTS_WITH_NO_ENDPOINT);
 
-            Object endpoint = UISupport.prompt("Assign selected endpoint and authorization to..", "Assign Endpoint",
-                    list.toArray(), ALL_REQUESTS_WITH_NO_ENDPOINT);
+            Object endpoint = UISupport.prompt("Assign selected endpoint and authorization to..", "Assign Endpoint", list.toArray(), ALL_REQUESTS_WITH_NO_ENDPOINT);
 
             if (endpoint == null) {
                 return;
             }
 
-            boolean specialEndpoint = endpoint.equals(ALL_REQUESTS)
-                    || endpoint.equals(ALL_TEST_REQUESTS)
-                    || endpoint.equals(ALL_REQUESTS_AND_TEST_REQUESTS)
-                    || endpoint.equals(ALL_REQUESTS_WITH_NO_ENDPOINT);
+            boolean specialEndpoint = endpoint.equals(ALL_REQUESTS) ||
+                                      endpoint.equals(ALL_TEST_REQUESTS) ||
+                                      endpoint.equals(ALL_REQUESTS_AND_TEST_REQUESTS) ||
+                                      endpoint.equals(ALL_REQUESTS_WITH_NO_ENDPOINT);
 
-            if (endpoint.equals(ALL_REQUESTS) || endpoint.equals(ALL_REQUESTS_WITH_NO_ENDPOINT)
-                    || endpoint.equals(ALL_REQUESTS_AND_TEST_REQUESTS) || !specialEndpoint) {
+            if (endpoint.equals(ALL_REQUESTS) || endpoint.equals(ALL_REQUESTS_WITH_NO_ENDPOINT) || endpoint.equals(ALL_REQUESTS_AND_TEST_REQUESTS) || !specialEndpoint) {
                 for (Operation operation : iface.getAllOperations()) {
                     for (int i = 0; i < operation.getRequestCount(); i++) {
-                        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>) operation.getRequestAt(i);
+                        AbstractHttpRequest<?> request = (AbstractHttpRequest<?>)operation.getRequestAt(i);
                         String ep = request.getEndpoint();
 
-                        if (endpoint.equals(ALL_REQUESTS) || endpoint.equals(ALL_REQUESTS_AND_TEST_REQUESTS)
-                                || (endpoint.equals(ALL_REQUESTS_WITH_NO_ENDPOINT) && ep == null)
-                                || (ep.equals(endpoint))) {
+                        if (endpoint.equals(ALL_REQUESTS) ||
+                            endpoint.equals(ALL_REQUESTS_AND_TEST_REQUESTS) ||
+                            (endpoint.equals(ALL_REQUESTS_WITH_NO_ENDPOINT) && ep == null) ||
+                            (ep.equals(endpoint))) {
                             request.setEndpoint(selectedEndpoint);
 
                             request.setUsername(defaults.getUsername());
@@ -249,10 +292,10 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
                             request.setDomain(defaults.getDomain());
 
                             if (request instanceof WsdlRequest) {
-                                ((WsdlRequest) request).setWssPasswordType(defaults.getWssType());
-                                ((WsdlRequest) request).setWssTimeToLive(defaults.getWssTimeToLive());
-                                ((WsdlRequest) request).setOutgoingWss(defaults.getOutgoingWss());
-                                ((WsdlRequest) request).setIncomingWss(defaults.getIncomingWss());
+                                ((WsdlRequest)request).setWssPasswordType(defaults.getWssType());
+                                ((WsdlRequest)request).setWssTimeToLive(defaults.getWssTimeToLive());
+                                ((WsdlRequest)request).setOutgoingWss(defaults.getOutgoingWss());
+                                ((WsdlRequest)request).setIncomingWss(defaults.getIncomingWss());
                             }
                         }
                     }
@@ -264,17 +307,16 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
                     for (TestCase testCase : testSuite.getTestCaseList()) {
                         for (TestStep testStep : testCase.getTestStepList()) {
                             if (testStep instanceof HttpRequestTestStep) {
-                                AbstractHttpRequest<?> httpRequest = ((HttpRequestTestStep) testStep).getHttpRequest();
+                                AbstractHttpRequest<?> httpRequest = ((HttpRequestTestStep)testStep).getHttpRequest();
                                 String ep = httpRequest.getEndpoint();
-                                if (httpRequest.getOperation() != null && httpRequest.getOperation().getInterface() == iface
-                                        && (specialEndpoint || ep.equals(endpoint))) {
+                                if (httpRequest.getOperation() != null && httpRequest.getOperation().getInterface() == iface && (specialEndpoint || ep.equals(endpoint))) {
                                     httpRequest.setEndpoint(selectedEndpoint);
 
                                     httpRequest.setUsername(defaults.getUsername());
                                     httpRequest.setPassword(defaults.getPassword());
                                     httpRequest.setDomain(defaults.getDomain());
                                     if (httpRequest instanceof WsdlRequest) {
-                                        WsdlTestRequest testRequest = (WsdlTestRequest) httpRequest;
+                                        WsdlTestRequest testRequest = (WsdlTestRequest)httpRequest;
                                         testRequest.setWssPasswordType(defaults.getWssType());
                                         testRequest.setWssTimeToLive(defaults.getWssTimeToLive());
                                         testRequest.setOutgoingWss(defaults.getOutgoingWss());
@@ -292,7 +334,7 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
     private class DeleteAction extends AbstractAction {
         public DeleteAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Deletes the selected endpoint from the list");
+            putValue(SHORT_DESCRIPTION, "Deletes the selected endpoint from the list");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -352,29 +394,6 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
             return 5;
         }
 
-        @Override
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return "Endpoint";
-                case 1:
-                    return "Username";
-                case 2:
-                    return "Password";
-                case 3:
-                    return "Domain";
-                case 4:
-                    return "Mode";
-            }
-
-            return null;
-        }
-
-        @Override
-        public int getPasswordColumnIndex() {
-            return 2;
-        }
-
         public Object getValueAt(int rowIndex, int columnIndex) {
             String endpoint = getEndpointAt(rowIndex);
             EndpointDefaults defaults = strategy.getEndpointDefaults(endpoint);
@@ -390,6 +409,24 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
                     return defaults.getDomain();
                 case 4:
                     return defaults.getMode();
+            }
+
+            return null;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0:
+                    return "Endpoint";
+                case 1:
+                    return "Username";
+                case 2:
+                    return "Password";
+                case 3:
+                    return "Domain";
+                case 4:
+                    return "Mode";
             }
 
             return null;
@@ -429,42 +466,15 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
             }
         }
 
+        @Override
+        public int getPasswordColumnIndex() {
+            return 2;
+        }
     }
 
     private class WsdlEndpointsTableModel extends EndpointsTableModel {
         public int getColumnCount() {
             return 9;
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return "Endpoint";
-                case 1:
-                    return "Username";
-                case 2:
-                    return "Password";
-                case 3:
-                    return "Domain";
-                case 4:
-                    return "WSS-Type";
-                case 5:
-                    return "WSS-TimeToLive";
-                case 6:
-                    return "Outgoing WSS";
-                case 7:
-                    return "Incoming WSS";
-                case 8:
-                    return "Mode";
-            }
-
-            return null;
-        }
-
-        @Override
-        public int getPasswordColumnIndex() {
-            return 2;
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -490,6 +500,32 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
                     return defaults.getIncomingWss();
                 case 8:
                     return defaults.getMode();
+            }
+
+            return null;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0:
+                    return "Endpoint";
+                case 1:
+                    return "Username";
+                case 2:
+                    return "Password";
+                case 3:
+                    return "Domain";
+                case 4:
+                    return "WSS-Type";
+                case 5:
+                    return "WSS-TimeToLive";
+                case 6:
+                    return "Outgoing WSS";
+                case 7:
+                    return "Incoming WSS";
+                case 8:
+                    return "Mode";
             }
 
             return null;
@@ -544,70 +580,10 @@ public class DefaultEndpointStrategyConfigurationPanel extends JPanel implements
                 }
             }
         }
-    }
-
-    private static class IncomingWssCellEditor extends DefaultCellEditor {
-        private final WssContainer wssContainer;
-
-        public IncomingWssCellEditor(WssContainer wssContainer) {
-            super(new JComboBox());
-            this.wssContainer = wssContainer;
-        }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            JComboBox comboBox = (JComboBox) super.getTableCellEditorComponent(table, value, isSelected, row, column);
-
-            DefaultComboBoxModel model = new DefaultComboBoxModel(wssContainer.getIncomingWssNames());
-            model.addElement("");
-
-            comboBox.setModel(model);
-
-            return comboBox;
+        public int getPasswordColumnIndex() {
+            return 2;
         }
     }
-
-    private static class OutgoingWssCellEditor extends DefaultCellEditor {
-        private final WssContainer wssContainer;
-
-        public OutgoingWssCellEditor(WssContainer wssContainer) {
-            super(new JComboBox());
-            this.wssContainer = wssContainer;
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            JComboBox comboBox = (JComboBox) super.getTableCellEditorComponent(table, value, isSelected, row, column);
-
-            DefaultComboBoxModel model = new DefaultComboBoxModel(wssContainer.getOutgoingWssNames());
-            model.addElement("");
-
-            comboBox.setModel(model);
-
-            return comboBox;
-        }
-    }
-
-    public void release() {
-        iface.removePropertyChangeListener(Interface.ENDPOINT_PROPERTY, this);
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        tableModel.refresh();
-    }
-
-    public static class InternalRowCellrenderer extends DefaultCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            Component component;
-            if (value != null && ((String) value).length() > 0) {
-                component = super.getTableCellRendererComponent(table, "********", isSelected, hasFocus, row, column);
-            } else {
-                component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            }
-            return component;
-        }
-    }
-
 }

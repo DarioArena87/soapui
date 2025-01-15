@@ -25,11 +25,11 @@ public class OAuth1AdvancedOptionsDialog {
     }
 
     private void setAccessTokenOptions(OAuth1Profile profile, XFormDialog dialog) {
-        XFormRadioGroup accessTokenPositionField = (XFormRadioGroup) dialog.getFormField(Form.ACCESS_TOKEN_POSITION);
+        XFormRadioGroup accessTokenPositionField = (XFormRadioGroup)dialog.getFormField(Form.ACCESS_TOKEN_POSITION);
 
         AccessTokenPositionConfig.Enum[] accessTokenPositions = new AccessTokenPositionConfig.Enum[]{
-                AccessTokenPositionConfig.HEADER,
-                AccessTokenPositionConfig.QUERY};
+            AccessTokenPositionConfig.HEADER, AccessTokenPositionConfig.QUERY
+        };
         accessTokenPositionField.setOptions(accessTokenPositions);
 
         dialog.setValue(Form.ACCESS_TOKEN_POSITION, profile.getAccessTokenPosition().toString());
@@ -38,7 +38,6 @@ public class OAuth1AdvancedOptionsDialog {
     @AForm(name = "Form.Title", description = "Form.Description", helpUrl = HelpUrls.OAUTH_ADVANCED_OPTIONS)
     public interface Form {
         @AField(description = "Form.AccessTokenPosition.Description", type = AField.AFieldType.RADIOGROUP)
-        public final static String ACCESS_TOKEN_POSITION = messages.get("Form.SendAuthParameters.Label");
-
+        String ACCESS_TOKEN_POSITION = messages.get("Form.SendAuthParameters.Label");
     }
 }

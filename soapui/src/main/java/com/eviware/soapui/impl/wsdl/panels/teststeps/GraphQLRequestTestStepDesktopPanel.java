@@ -45,15 +45,9 @@ import com.eviware.soapui.support.editor.xml.support.DefaultXmlDocument;
 import com.eviware.soapui.support.log.JLogList;
 import net.miginfocom.swing.MigLayout;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
@@ -61,12 +55,11 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.util.Date;
 
-public class GraphQLRequestTestStepDesktopPanel extends
-        AbstractHttpXmlRequestDesktopPanel<GraphQLTestRequestStepInterface, GraphQLTestRequestInterface> {
+public class GraphQLRequestTestStepDesktopPanel extends AbstractHttpXmlRequestDesktopPanel<GraphQLTestRequestStepInterface, GraphQLTestRequestInterface> {
     private static final RestRequestInterface.HttpMethod[] graphQLMethods = {RestRequestInterface.HttpMethod.GET, RestRequestInterface.HttpMethod.POST};
     private JLogList logArea;
-    private InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
-    private InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
+    private final InternalTestMonitorListener testMonitorListener = new InternalTestMonitorListener();
+    private final InternalAssertionsListener assertionsListener = new InternalAssertionsListener();
     private JButton addAssertionButton;
     private JUndoableTextField pathTextField;
 
@@ -88,8 +81,9 @@ public class GraphQLRequestTestStepDesktopPanel extends
         getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
     }
 
-    protected EditorView getRequestEditorView(GraphQLRequestMessageEditor editor,
-                                              GraphQLTestRequestInterface graphQLRequest) {
+    protected EditorView getRequestEditorView(
+        GraphQLRequestMessageEditor editor, GraphQLTestRequestInterface graphQLRequest
+    ) {
         return new GraphQLRequestContentView(editor, graphQLRequest);
     }
 
@@ -103,8 +97,8 @@ public class GraphQLRequestTestStepDesktopPanel extends
 
         AuthInspectorFactory authInspectorFactory = new AuthInspectorFactory();
         HttpHeadersInspectorFactory httpHeadersInspectorFactory = new HttpHeadersInspectorFactory();
-        graphQLRequestMessageEditor.addInspector((XmlInspector) authInspectorFactory.createRequestInspector(graphQLRequestMessageEditor, getRequest()));
-        graphQLRequestMessageEditor.addInspector((XmlInspector) httpHeadersInspectorFactory.createRequestInspector(graphQLRequestMessageEditor, getRequest()));
+        graphQLRequestMessageEditor.addInspector((XmlInspector)authInspectorFactory.createRequestInspector(graphQLRequestMessageEditor, getRequest()));
+        graphQLRequestMessageEditor.addInspector((XmlInspector)httpHeadersInspectorFactory.createRequestInspector(graphQLRequestMessageEditor, getRequest()));
 
         return graphQLRequestMessageEditor;
     }
@@ -112,33 +106,6 @@ public class GraphQLRequestTestStepDesktopPanel extends
     @Override
     protected ModelItemXmlEditor<?, ?> buildResponseEditor() {
         return new GraphQLResponseMessageEditor(getRequest());
-    }
-
-    public class GraphQLRequestMessageEditor extends ModelItemXmlEditor<GraphQLTestRequestInterface, XmlDocument> {
-        public GraphQLRequestMessageEditor(GraphQLTestRequestInterface modelItem) {
-            super(new DefaultXmlDocument(), modelItem);
-        }
-    }
-
-    public class GraphQLResponseMessageEditor extends HttpResponseMessageEditor {
-        public GraphQLResponseMessageEditor(GraphQLTestRequestInterface modelItem) {
-            super(modelItem);
-        }
-    }
-
-    @Override
-    public void setContent(JComponent content) {
-        inspectorPanel.setContentComponent(content);
-    }
-
-    @Override
-    public void removeContent(JComponent content) {
-        inspectorPanel.setContentComponent(null);
-    }
-
-    @Override
-    protected String getHelpUrl() {
-        return HelpUrls.GRAPHQL_REQUEST_HELP_URL;
     }
 
     protected JComponent buildLogPanel() {
@@ -155,24 +122,13 @@ public class GraphQLRequestTestStepDesktopPanel extends
     }
 
     @Override
-    protected void insertButtons(JXToolBar toolbar) {
-        toolbar.add(addAssertionButton);
-    }
-
-    @Override
-    protected JComponent buildEndpointComponent() {
-        return null;
-    }
-
-    @Override
     protected JComponent buildContent() {
         JComponent component = super.buildContent();
 
         inspectorPanel = JInspectorPanelFactory.build(component);
         assertionsPanel = buildAssertionsPanel();
 
-        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions ("
-                + getModelItem().getAssertionCount() + ")", "Assertions for this request", true);
+        assertionInspector = new JComponentInspector<JComponent>(assertionsPanel, "Assertions (" + getModelItem().getAssertionCount() + ")", "Assertions for this request", true);
 
         inspectorPanel.addInspector(assertionInspector);
 
@@ -186,6 +142,124 @@ public class GraphQLRequestTestStepDesktopPanel extends
         getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
 
         return inspectorPanel.getComponent();
+    }
+
+    @Override
+    protected JComponent buildToolbar() {
+        addAssertionButton = createActionButton(new AddAssertionAction(getRequest()), true);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(super.buildToolbar(), BorderLayout.NORTH);
+
+        JPanel lowerToolbar = new JPanel(new MigLayout("", "0[][grow][]0", "0[]0"));
+        addToolbarComponents(lowerToolbar);
+
+        panel.add(lowerToolbar);
+        return panel;
+    }
+
+    @Override
+    protected JComponent buildEndpointComponent() {
+        return null;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(RestTestRequestInterface.STATUS_PROPERTY)) {
+            updateStatusIcon();
+        }
+        else if (evt.getPropertyName().equals("path")) {
+            getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
+        }
+        else if (evt.getPropertyName().equals(AbstractHttpRequest.ENDPOINT_PROPERTY)) {
+            getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
+            if (updating) {
+                return;
+            }
+
+            updating = true;
+            pathTextField.setText(String.valueOf(evt.getNewValue()));
+            updating = false;
+        }
+        super.propertyChange(evt);
+    }
+
+    @Override
+    protected String getHelpUrl() {
+        return HelpUrls.GRAPHQL_REQUEST_HELP_URL;
+    }
+
+    @Override
+    protected void insertButtons(JXToolBar toolbar) {
+        toolbar.add(addAssertionButton);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            enabled = !SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem().getTestCase()) && !SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase());
+        }
+
+        super.setEnabled(enabled);
+        addAssertionButton.setEnabled(enabled);
+        assertionsPanel.setEnabled(enabled);
+
+        if (SoapUI.getTestMonitor().hasRunningLoadTest(getRequest().getTestCase()) || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase())) {
+            getRequest().removeSubmitListener(this);
+        }
+        else {
+            getRequest().addSubmitListener(this);
+        }
+    }
+
+    @Override
+    protected Submit doSubmit() throws Request.SubmitException {
+        return getRequest().submit(new WsdlTestRunContext(getModelItem()), true);
+    }
+
+    @Override
+    public boolean beforeSubmit(Submit submit, SubmitContext context) {
+        boolean result = super.beforeSubmit(submit, context);
+        startTime = System.currentTimeMillis();
+        return result;
+    }
+
+    @Override
+    protected void logMessages(String message, String infoMessage) {
+        super.logMessages(message, infoMessage);
+        logArea.addLine(DateUtil.formatExtraFull(new Date(startTime)) + " - " + message);
+    }
+
+    @Override
+    public boolean onClose(boolean canCancel) {
+        if (super.onClose(canCancel)) {
+            if (assertionsPanel != null) {
+                assertionsPanel.release();
+            }
+            if (inspectorPanel != null) {
+                inspectorPanel.release();
+            }
+            if (testMonitorListener != null) {
+                SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
+            }
+            GraphQLTestRequestInterface testRequestInterface = getRequest();
+            if (testRequestInterface != null) {
+                testRequestInterface.removeAssertionsListener(assertionsListener);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public void setContent(JComponent content) {
+        inspectorPanel.setContentComponent(content);
+    }
+
+    @Override
+    public void removeContent(JComponent content) {
+        inspectorPanel.setContentComponent(null);
     }
 
     private void updateStatusIcon() {
@@ -266,7 +340,7 @@ public class GraphQLRequestTestStepDesktopPanel extends
         methodCombo.setToolTipText("Select HTTP method");
         methodCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                getRequest().setMethod((RestRequestInterface.HttpMethod) methodCombo.getSelectedItem());
+                getRequest().setMethod((RestRequestInterface.HttpMethod)methodCombo.getSelectedItem());
             }
         });
 
@@ -274,77 +348,6 @@ public class GraphQLRequestTestStepDesktopPanel extends
         panel.add(methodCombo);
 
         toolbar.add(panel);
-    }
-
-    @Override
-    protected JComponent buildToolbar() {
-        addAssertionButton = createActionButton(new AddAssertionAction(getRequest()), true);
-
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(super.buildToolbar(), BorderLayout.NORTH);
-
-        JPanel lowerToolbar = new JPanel(new MigLayout("", "0[][grow][]0", "0[]0"));
-        addToolbarComponents(lowerToolbar);
-
-        panel.add(lowerToolbar);
-        return panel;
-    }
-
-
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (enabled == true) {
-            enabled = !SoapUI.getTestMonitor().hasRunningLoadTest(getModelItem().getTestCase())
-                    && !SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase());
-        }
-
-        super.setEnabled(enabled);
-        addAssertionButton.setEnabled(enabled);
-        assertionsPanel.setEnabled(enabled);
-
-        if (SoapUI.getTestMonitor().hasRunningLoadTest(getRequest().getTestCase())
-                || SoapUI.getTestMonitor().hasRunningSecurityTest(getModelItem().getTestCase())) {
-            getRequest().removeSubmitListener(this);
-        } else {
-            getRequest().addSubmitListener(this);
-        }
-    }
-
-    @Override
-    protected Submit doSubmit() throws Request.SubmitException {
-        return getRequest().submit(new WsdlTestRunContext(getModelItem()), true);
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RestTestRequestInterface.STATUS_PROPERTY)) {
-            updateStatusIcon();
-        } else if (evt.getPropertyName().equals("path")) {
-            getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
-        } else if (evt.getPropertyName().equals(AbstractHttpRequest.ENDPOINT_PROPERTY)) {
-            getSubmitButton().setEnabled(getSubmit() == null && StringUtils.hasContent(getRequest().getEndpoint()));
-            if (updating) {
-                return;
-            }
-
-            updating = true;
-            pathTextField.setText(String.valueOf(evt.getNewValue()));
-            updating = false;
-        }
-        super.propertyChange(evt);
-    }
-
-    @Override
-    public boolean beforeSubmit(Submit submit, SubmitContext context) {
-        boolean result = super.beforeSubmit(submit, context);
-        startTime = System.currentTimeMillis();
-        return result;
-    }
-
-    @Override
-    protected void logMessages(String message, String infoMessage) {
-        super.logMessages(message, infoMessage);
-        logArea.addLine(DateUtil.formatExtraFull(new Date(startTime)) + " - " + message);
     }
 
     protected AssertionsPanel buildAssertionsPanel() {
@@ -357,34 +360,19 @@ public class GraphQLRequestTestStepDesktopPanel extends
         };
     }
 
-    @Override
-    public boolean onClose(boolean canCancel) {
-        if (super.onClose(canCancel)) {
-            if (assertionsPanel != null) {
-                assertionsPanel.release();
-            }
-            if (inspectorPanel != null) {
-                inspectorPanel.release();
-            }
-            if (testMonitorListener != null) {
-                SoapUI.getTestMonitor().removeTestMonitorListener(testMonitorListener);
-            }
-            GraphQLTestRequestInterface testRequestInterface = getRequest();
-            if (testRequestInterface != null) {
-                testRequestInterface.removeAssertionsListener(assertionsListener);
-            }
-            return true;
+    public class GraphQLRequestMessageEditor extends ModelItemXmlEditor<GraphQLTestRequestInterface, XmlDocument> {
+        public GraphQLRequestMessageEditor(GraphQLTestRequestInterface modelItem) {
+            super(new DefaultXmlDocument(), modelItem);
         }
+    }
 
-        return false;
+    public class GraphQLResponseMessageEditor extends HttpResponseMessageEditor {
+        public GraphQLResponseMessageEditor(GraphQLTestRequestInterface modelItem) {
+            super(modelItem);
+        }
     }
 
     private class InternalTestMonitorListener extends TestMonitorListenerAdapter {
-        @Override
-        public void loadTestFinished(LoadTestRunner runner) {
-            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
-        }
-
         @Override
         public void loadTestStarted(LoadTestRunner runner) {
             if (runner.getLoadTest().getTestCase() == getModelItem().getTestCase()) {
@@ -392,7 +380,8 @@ public class GraphQLRequestTestStepDesktopPanel extends
             }
         }
 
-        public void securityTestFinished(SecurityTestRunner runner) {
+        @Override
+        public void loadTestFinished(LoadTestRunner runner) {
             setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
 
@@ -402,8 +391,7 @@ public class GraphQLRequestTestStepDesktopPanel extends
             }
         }
 
-        @Override
-        public void testCaseFinished(TestCaseRunner runner) {
+        public void securityTestFinished(SecurityTestRunner runner) {
             setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
 
@@ -412,6 +400,11 @@ public class GraphQLRequestTestStepDesktopPanel extends
             if (runner.getTestCase() == getModelItem().getTestCase()) {
                 setEnabled(false);
             }
+        }
+
+        @Override
+        public void testCaseFinished(TestCaseRunner runner) {
+            setEnabled(!SoapUI.getTestMonitor().hasRunningTest(getModelItem().getTestCase()));
         }
     }
 

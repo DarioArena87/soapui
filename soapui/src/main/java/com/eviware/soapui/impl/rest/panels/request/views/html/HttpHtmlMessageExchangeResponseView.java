@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.request.views.html;
@@ -28,14 +28,8 @@ import com.eviware.soapui.support.editor.inspectors.attachments.ContentTypeHandl
 import com.eviware.soapui.support.editor.views.AbstractXmlEditorView;
 import com.eviware.soapui.support.editor.xml.XmlEditor;
 
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -43,8 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 @SuppressWarnings("unchecked")
-public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<HttpResponseDocument> implements
-        PropertyChangeListener {
+public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<HttpResponseDocument> implements PropertyChangeListener {
     private final MessageExchangeModelItem messageExchangeModelItem;
     private JPanel panel;
     private WebViewBasedBrowserComponent browser;
@@ -70,15 +63,12 @@ public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<H
         return panel;
     }
 
+    public void setEditable(boolean enabled) {
+    }
+
     @Override
-    public void release() {
-        super.release();
-
-        if (browser != null) {
-            browser.close(true);
-        }
-
-        messageExchangeModelItem.removePropertyChangeListener(this);
+    public int getSupportScoreForContentType(String contentType) {
+        return contentType.toLowerCase().endsWith("html") ? 2 : 0;
     }
 
     private Component buildStatus() {
@@ -100,7 +90,8 @@ public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<H
             initialized = true;
             if (SoapUI.isBrowserDisabled()) {
                 contentPanel.add(new JLabel("Browser component is disabled."));
-            } else {
+            }
+            else {
                 browser = WebViewBasedBrowserComponentFactory.createBrowserComponent(false);
                 Component component = browser.getComponent();
                 component.setMinimumSize(new Dimension(100, 100));
@@ -121,6 +112,25 @@ public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<H
         return deactivated;
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("messageExchange")) {
+            if (browser != null && evt.getNewValue() != null && isActive()) {
+                setEditorContent(((JProxyServletWsdlMonitorMessageExchange)evt.getNewValue()));
+            }
+        }
+    }
+
+    @Override
+    public void release() {
+        super.release();
+
+        if (browser != null) {
+            browser.close(true);
+        }
+
+        messageExchangeModelItem.removePropertyChangeListener(this);
+    }
+
     protected void setEditorContent(JProxyServletWsdlMonitorMessageExchange jproxyServletWsdlMonitorMessageExchange) {
         if (browser == null) {
             return;
@@ -131,10 +141,12 @@ public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<H
                 try {
                     String content = jproxyServletWsdlMonitorMessageExchange.getResponseContent();
                     browser.setContent(content, contentType);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else if (isSupportedContentType(contentType)) {
+            }
+            else if (isSupportedContentType(contentType)) {
                 try {
                     String ext = ContentTypeHandler.getExtensionForContentType(contentType);
                     File temp = File.createTempFile("response", "." + ext);
@@ -143,13 +155,16 @@ public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<H
                     fileOutputStream.close();
                     browser.navigate(temp.toURI().toURL().toString());
                     temp.deleteOnExit();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else {
+            }
+            else {
                 browser.setContent("unsupported content-type [" + contentType + "]");
             }
-        } else {
+        }
+        else {
             browser.setContent("-missing content-");
         }
     }
@@ -163,17 +178,18 @@ public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<H
             return;
         }
         if (messageExchangeModelItem2 != null && messageExchangeModelItem2.getMessageExchange() != null) {
-            String contentType = messageExchangeModelItem2.getMessageExchange().getResponseHeaders()
-                    .get("Content-Type", "");
+            String contentType = messageExchangeModelItem2.getMessageExchange().getResponseHeaders().get("Content-Type", "");
             if (contentType.contains("html") || contentType.contains("text")) {
                 try {
 
-                    final String content = messageExchangeModelItem2.getMessageExchange().getResponseContent();
+                    String content = messageExchangeModelItem2.getMessageExchange().getResponseContent();
                     browser.setContent(content, contentType);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else if (!contentType.contains("xml")) {
+            }
+            else if (!contentType.contains("xml")) {
                 try {
                     String ext = ContentTypeHandler.getExtensionForContentType(contentType);
                     File temp = File.createTempFile("response", "." + ext);
@@ -182,15 +198,16 @@ public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<H
                     fileOutputStream.close();
                     browser.navigate(temp.toURI().toURL().toString());
                     temp.deleteOnExit();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        } else {
+        }
+        else {
             browser.setContent("<missing content>");
         }
     }
-
 
     private void writeHttpBody(byte[] rawResponse, FileOutputStream out) throws IOException {
         int index = 0;
@@ -216,24 +233,7 @@ public class HttpHtmlMessageExchangeResponseView extends AbstractXmlEditorView<H
         return UISupport.createToolbar();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("messageExchange")) {
-            if (browser != null && evt.getNewValue() != null && isActive()) {
-                setEditorContent(((JProxyServletWsdlMonitorMessageExchange) evt.getNewValue()));
-            }
-        }
-    }
-
     public boolean saveDocument(boolean validate) {
         return false;
     }
-
-    public void setEditable(boolean enabled) {
-    }
-
-    @Override
-    public int getSupportScoreForContentType(String contentType ) {
-        return contentType.toLowerCase().endsWith("html")? 2 : 0;
-    }
-
 }

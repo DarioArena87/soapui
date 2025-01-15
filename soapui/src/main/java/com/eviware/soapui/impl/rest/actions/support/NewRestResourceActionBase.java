@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.support;
@@ -71,7 +71,6 @@ public abstract class NewRestResourceActionBase<T extends ModelItem> extends Abs
 
             createMethodAndRequestFor(resource);
         }
-
     }
 
     protected RestResource createRestResource(T item, String path) {
@@ -97,21 +96,18 @@ public abstract class NewRestResourceActionBase<T extends ModelItem> extends Abs
             }
         }
 
-        if (possibleParent != null
-                && UISupport.confirm("Create resource as child to [" + possibleParent.getName() + "]",
-                CONFIRM_DIALOG_TITLE)) {
+        if (possibleParent != null && UISupport.confirm("Create resource as child to [" + possibleParent.getName() + "]", CONFIRM_DIALOG_TITLE)) {
             // adjust path
             String strippedPath = pathWithoutEndpoint;
             if (pathWithoutEndpoint.length() > 0 && possibleParent.getFullPath().length() > 0) {
                 strippedPath = pathWithoutEndpoint.substring(possibleParent.getFullPath().length() + 1);
             }
             return possibleParent.addNewChildResource(extractNameFromPath(strippedPath), strippedPath);
-        } else {
-            String pathWithoutLeadingSlash = pathWithoutEndpoint.startsWith("/") ? pathWithoutEndpoint.substring(1) :
-                    pathWithoutEndpoint;
+        }
+        else {
+            String pathWithoutLeadingSlash = pathWithoutEndpoint.startsWith("/") ? pathWithoutEndpoint.substring(1) : pathWithoutEndpoint;
             return addResourceTo(item, extractNameFromPath(pathWithoutEndpoint), pathWithoutLeadingSlash);
         }
-
     }
 
     protected abstract List<RestResource> getResourcesFor(T item);
@@ -121,7 +117,8 @@ public abstract class NewRestResourceActionBase<T extends ModelItem> extends Abs
     private String removeEndpointFrom(String path) {
         try {
             return new URL(path).getPath();
-        } catch (MalformedURLException ignore) {
+        }
+        catch (MalformedURLException ignore) {
             return path;
         }
     }
@@ -137,7 +134,8 @@ public abstract class NewRestResourceActionBase<T extends ModelItem> extends Abs
         if (path.contains("?") || path.contains(";")) {
             int parametersIndex = findParametersIndex(path);
             strippedPath = path.substring(0, parametersIndex);
-        } else {
+        }
+        else {
             strippedPath = path;
         }
         return strippedPath;
@@ -146,8 +144,7 @@ public abstract class NewRestResourceActionBase<T extends ModelItem> extends Abs
     private int findParametersIndex(String path) {
         int semicolonIndex = path.indexOf(';');
         int questionMarkIndex = path.indexOf('?');
-        return Math.min(semicolonIndex == -1 ? Integer.MAX_VALUE : semicolonIndex,
-                questionMarkIndex == -1 ? Integer.MAX_VALUE : questionMarkIndex);
+        return Math.min(semicolonIndex == -1 ? Integer.MAX_VALUE : semicolonIndex, questionMarkIndex == -1 ? Integer.MAX_VALUE : questionMarkIndex);
     }
 
     private void createMethodAndRequestFor(RestResource resource) {
@@ -161,15 +158,14 @@ public abstract class NewRestResourceActionBase<T extends ModelItem> extends Abs
     //TODO: Make this non-inner!
 
     public enum ParamLocation {
-        RESOURCE, METHOD
-
+        RESOURCE,
+        METHOD
     }
 
     @AForm(name = "Form.Title", description = "Form.Description", helpUrl = HelpUrls.NEWRESTSERVICE_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
     public interface Form {
 
         @AField(description = "Form.ServiceUrl.Description", type = AFieldType.STRING)
-        public final static String RESOURCEPATH = messages.get("Form.ResourcePath.Label");
-
+        String RESOURCEPATH = messages.get("Form.ResourcePath.Label");
     }
 }

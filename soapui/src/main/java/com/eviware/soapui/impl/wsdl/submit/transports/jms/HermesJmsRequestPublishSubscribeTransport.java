@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.jms;
@@ -36,8 +36,7 @@ public class HermesJmsRequestPublishSubscribeTransport extends HermesJmsRequestT
         JMSConnectionHolder jmsConnectionHolder = null;
         try {
             init(submitContext, request);
-            String clientIDString = StringUtils.hasContent(clientID) ? clientID : jmsEndpoint.getSessionName() + "-"
-                    + jmsEndpoint.getReceive();
+            String clientIDString = StringUtils.hasContent(clientID) ? clientID : jmsEndpoint.getSessionName() + "-" + jmsEndpoint.getReceive();
             jmsConnectionHolder = new JMSConnectionHolder(jmsEndpoint, hermes, true, clientIDString, username, password);
 
             // session
@@ -49,23 +48,24 @@ public class HermesJmsRequestPublishSubscribeTransport extends HermesJmsRequestT
 
             topicDurableSubsriber = createDurableSubscription(submitContext, topicSession, jmsConnectionHolder);
 
-            Message messagePublish = messagePublish(submitContext, request, topicSession,
-                    jmsConnectionHolder.getHermes(), topicPublish, topicSubscribe);
+            Message messagePublish = messagePublish(submitContext, request, topicSession, jmsConnectionHolder.getHermes(), topicPublish, topicSubscribe);
 
             return makeResponse(submitContext, request, timeStarted, messagePublish, topicDurableSubsriber);
-        } catch (JMSException jmse) {
+        }
+        catch (JMSException jmse) {
             return errorResponse(submitContext, request, timeStarted, jmse);
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             SoapUI.logError(t);
-        } finally {
+        }
+        finally {
             if (topicDurableSubsriber != null) {
                 topicDurableSubsriber.close();
             }
             if (jmsConnectionHolder != null) {
                 jmsConnectionHolder.closeAll();
             }
-            closeSessionAndConnection(jmsConnectionHolder != null ? jmsConnectionHolder.getConnection() : null,
-                    topicSession);
+            closeSessionAndConnection(jmsConnectionHolder != null ? jmsConnectionHolder.getConnection() : null, topicSession);
         }
         return null;
     }

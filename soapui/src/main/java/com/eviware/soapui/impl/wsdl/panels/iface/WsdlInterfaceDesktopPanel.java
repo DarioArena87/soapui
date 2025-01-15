@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.iface;
@@ -60,19 +60,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.jdesktop.swingx.JXTable;
 import org.w3c.dom.Element;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -81,10 +69,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.wsdl.BindingOperation;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -107,20 +92,20 @@ import java.util.Map;
 
 public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterface> {
     private final static Logger logger = LogManager.getLogger(WsdlInterfaceDesktopPanel.class);
+    private final WsdlInterface iface;
     private JTabbedPane partTabs;
-    private List<RSyntaxTextArea> editors = new ArrayList<RSyntaxTextArea>();
+    private final List<RSyntaxTextArea> editors = new ArrayList<RSyntaxTextArea>();
     private JTree tree;
-    private Map<String, DefaultMutableTreeNode> groupNodes = new HashMap<String, DefaultMutableTreeNode>();
-    private Map<String, TreePath> pathMap = new HashMap<String, TreePath>();
-    private List<TreePath> navigationHistory = new ArrayList<TreePath>();
-    private StringList targetNamespaces = new StringList();
+    private final Map<String, DefaultMutableTreeNode> groupNodes = new HashMap<String, DefaultMutableTreeNode>();
+    private final Map<String, TreePath> pathMap = new HashMap<String, TreePath>();
+    private final List<TreePath> navigationHistory = new ArrayList<TreePath>();
+    private final StringList targetNamespaces = new StringList();
     private int historyIndex;
     private boolean navigating;
     private JEditorStatusBar statusBar;
     private DefaultMutableTreeNode rootNode;
     private DefaultTreeModel treeModel;
     private InternalProjectListener projectListener;
-    private final WsdlInterface iface;
     private JPanel wsiPanel;
     private WSIReportPanel reportPanel;
     private SaveWsiReportAction saveWsiReportAction;
@@ -135,7 +120,8 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
         try {
             iface.getWsdlContext().loadIfNecessary();
             buildUI();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e);
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -185,8 +171,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
         metrics = new MetricsPanel();
         JXToolBar toolbar = UISupport.createSmallToolbar();
         toolbar.addGlue();
-        toolbar.addFixed(UISupport
-                .createToolbarButton(new ShowOnlineHelpAction(HelpUrls.INTERFACE_OVERVIEW_HELP_URL)));
+        toolbar.addFixed(UISupport.createToolbarButton(new ShowOnlineHelpAction(HelpUrls.INTERFACE_OVERVIEW_HELP_URL)));
         metrics.add(toolbar, BorderLayout.NORTH);
         MetricsSection section = metrics.addSection("WSDL Definition");
 
@@ -197,7 +182,8 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
             section.addMetric("SOAP Version").set(iface.getSoapVersion().toString());
             section.addMetric("Style").set(iface.getStyle());
             section.addMetric("WS-A version").set(iface.getWsaVersion());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e);
         }
 
@@ -240,10 +226,10 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                 if (arg0.getClickCount() > 1) {
                     TreePath selectionPath = tree.getSelectionPath();
                     if (selectionPath != null) {
-                        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) selectionPath.getLastPathComponent();
+                        DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
                         Object userObject = treeNode.getUserObject();
                         if (userObject instanceof InspectItem) {
-                            InspectItem item = (InspectItem) userObject;
+                            InspectItem item = (InspectItem)userObject;
                             if (item != null && item.selector != null) {
                                 item.selector.selectNode(item);
                             }
@@ -278,8 +264,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
     private void initTreeModel(WsdlInterface iface) {
         try {
             if (iface.getWsdlContext().loadIfNecessary()) {
-                XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog("Loading Defintion", 3,
-                        "Initializing definition..", true);
+                XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog("Loading Defintion", 3, "Initializing definition..", true);
                 Loader loader = new Loader(iface);
 
                 if (progressDialog != null) {
@@ -290,7 +275,8 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                 loader = null;
                 treeModel.nodeStructureChanged(rootNode);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
@@ -301,15 +287,12 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
         toolbar.addFixed(UISupport.createToolbarButton(new BackwardAction()));
         toolbar.addFixed(UISupport.createToolbarButton(new ForwardAction()));
         toolbar.addUnrelatedGap();
-        JButton button = UISupport.createToolbarButton(SwingActionDelegate.createDelegate(
-                UpdateInterfaceAction.SOAPUI_ACTION_ID, getModelItem(), null, "/updateDefinition.gif"));
+        JButton button = UISupport.createToolbarButton(SwingActionDelegate.createDelegate(UpdateInterfaceAction.SOAPUI_ACTION_ID, getModelItem(), null, "/updateDefinition.gif"));
         button.setText(null);
         toolbar.addFixed(button);
-        button = UISupport.createToolbarButton(SwingActionDelegate.createDelegate(
-                ExportDefinitionAction.SOAPUI_ACTION_ID, getModelItem(), null, "/export.png"));
+        button = UISupport.createToolbarButton(SwingActionDelegate.createDelegate(ExportDefinitionAction.SOAPUI_ACTION_ID, getModelItem(), null, "/export.png"));
         button.setText(null);
-        toolbar.addFixed(UISupport.createToolbarButton(SwingActionDelegate.createDelegate(
-                CreateWsdlDocumentationAction.SOAPUI_ACTION_ID, iface, null, "/report.png")));
+        toolbar.addFixed(UISupport.createToolbarButton(SwingActionDelegate.createDelegate(CreateWsdlDocumentationAction.SOAPUI_ACTION_ID, iface, null, "/report.png")));
         toolbar.addFixed(button);
         toolbar.addGlue();
         button = UISupport.createToolbarButton(new ShowOnlineHelpAction(HelpUrls.WSDL_CONTENT_HELP_URL));
@@ -317,6 +300,127 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
         toolbar.addFixed(button);
 
         return toolbar;
+    }
+
+    public List<DefaultMutableTreeNode> mapTreeItems(
+        XmlObject xmlObject,
+        DefaultMutableTreeNode treeRoot,
+        boolean createEmpty,
+        int tabIndex,
+        String groupName,
+        String query,
+        String nameQuery,
+        boolean sort,
+        NodeSelector selector
+    ) {
+        List<DefaultMutableTreeNode> resultNodes = new ArrayList<DefaultMutableTreeNode>();
+
+        try {
+            XmlObject[] items = xmlObject.selectPath(query);
+            List<DefaultMutableTreeNode> treeNodes = new ArrayList<DefaultMutableTreeNode>();
+
+            DefaultMutableTreeNode root = treeRoot;
+            if (groupName != null) {
+                String groupKey = new TreePath(root.getPath()) + "/" + groupName;
+                root = groupNodes.get(groupKey);
+                if (root == null && (items.length > 0 || createEmpty)) {
+                    root = new DefaultMutableTreeNode(groupName);
+                    treeRoot.add(root);
+                    groupNodes.put(groupKey, root);
+                }
+                else if (root != null) {
+                    Enumeration<?> children = root.children();
+                    while (children.hasMoreElements()) {
+                        treeNodes.add((DefaultMutableTreeNode)children.nextElement());
+                    }
+                }
+            }
+
+            if (items.length == 0) {
+                return resultNodes;
+            }
+
+            for (XmlObject item : items) {
+                XmlObject[] selectPath = item.selectPath(nameQuery);
+                if (selectPath.length > 0) {
+                    DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(new InspectItem(item, selectPath[0], tabIndex, selector));
+                    treeNodes.add(treeNode);
+                    resultNodes.add(treeNode);
+                }
+            }
+
+            if (sort) {
+                Collections.sort(treeNodes, new Comparator<DefaultMutableTreeNode>() {
+
+                    public int compare(DefaultMutableTreeNode o1, DefaultMutableTreeNode o2) {
+                        return o1.toString().compareTo(o2.toString());
+                    }
+                });
+            }
+
+            root.removeAllChildren();
+
+            for (DefaultMutableTreeNode treeNode : treeNodes) {
+                root.add(treeNode);
+
+                String path = "/" + getTreeNodeName(treeNode);
+                TreePath treePath = new TreePath(treeNode.getPath());
+                while (treeNode.getParent() != null) {
+                    treeNode = (DefaultMutableTreeNode)treeNode.getParent();
+                    path = "/" + getTreeNodeName(treeNode) + path;
+                }
+
+                pathMap.put(path, treePath);
+            }
+        }
+        catch (Throwable e) {
+            SoapUI.log("Failed to map items for query [" + query + "]:[" + nameQuery + "]");
+            SoapUI.logError(e);
+        }
+
+        return resultNodes;
+    }
+
+    private String getTreeNodeName(DefaultMutableTreeNode treeNode) {
+        Object userObject = treeNode.getUserObject();
+        if (userObject instanceof InspectItem) {
+            return ((InspectItem)userObject).getName();
+        }
+        else {
+            return treeNode.toString();
+        }
+    }
+
+    public boolean onClose(boolean canCancel) {
+        if (projectListener != null) {
+            getModelItem().getProject().removeProjectListener(projectListener);
+        }
+
+        return release();
+    }
+
+    public boolean dependsOn(ModelItem modelItem) {
+        return modelItem == getModelItem() || modelItem == getModelItem().getProject();
+    }
+
+    private void simpleSelect(InspectItem item, String attribute, String targetGroup) {
+        Element elm = item.getElement();
+        String type = elm.getAttribute(attribute);
+        if (type.length() > 0) {
+            int ix = type.indexOf(':');
+            if (ix != -1) {
+                type = type.substring(ix + 1);
+            }
+
+            TreePath treePath = pathMap.get("/" + getModelItem().getName() + "/" + targetGroup + "/" + type);
+            if (treePath != null) {
+                tree.setSelectionPath(treePath);
+            }
+        }
+    }
+
+    protected interface NodeSelector {
+        void selectNode(InspectItem item);
     }
 
     private final class InternalProjectListener extends ProjectListenerAdapter {
@@ -331,7 +435,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                 groupNodes.clear();
                 pathMap.clear();
                 targetNamespaces.clear();
-                initTreeModel((WsdlInterface) iface);
+                initTreeModel((WsdlInterface)iface);
                 operationsTableModel.fireTableDataChanged();
                 updatingInterface = false;
             }
@@ -353,9 +457,9 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                     historyIndex = navigationHistory.size() - 1;
                 }
 
-                DefaultMutableTreeNode tn = (DefaultMutableTreeNode) newLeadSelectionPath.getLastPathComponent();
+                DefaultMutableTreeNode tn = (DefaultMutableTreeNode)newLeadSelectionPath.getLastPathComponent();
                 if (tn.getUserObject() instanceof InspectItem) {
-                    InspectItem item = (InspectItem) tn.getUserObject();
+                    InspectItem item = (InspectItem)tn.getUserObject();
 
                     partTabs.setSelectedIndex(item.getTabIndex());
                     statusBar.setInfo(item.getDescription());
@@ -365,10 +469,12 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                     try {
                         if (lineNumber > 0 && editor.getLineStartOffset(lineNumber) >= 0) {
                             editor.setCaretPosition(editor.getLineStartOffset(lineNumber));
-                        } else {
+                        }
+                        else {
                             editor.setCaretPosition(0);
                         }
-                    } catch (BadLocationException e1) {
+                    }
+                    catch (BadLocationException e1) {
                         SoapUI.logError(e1, "Unable to reset the caret position");
                     }
                 }
@@ -381,8 +487,8 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
 
     private class Loader implements Worker {
         private static final String DEFINITION_PARTS_SECTION = "Definition Parts";
-        private ProgressDialog progressDialog;
         private final WsdlInterface iface;
+        private ProgressDialog progressDialog;
         private JProgressBar progressBar;
 
         public Loader(WsdlInterface iface) {
@@ -406,17 +512,43 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                 }
 
                 return null;
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 logger.error("Failed to load WSDL; " + e.getClass().getSimpleName() + "; " + e.getMessage());
-                add(new JLabel("Failed to load WSDL; " + e.toString()), BorderLayout.NORTH);
+                add(new JLabel("Failed to load WSDL; " + e), BorderLayout.NORTH);
 
                 SoapUI.logError(e);
 
                 return e;
-            } finally {
+            }
+            finally {
                 section.finish();
             }
+        }
 
+        public void finished() {
+            if (progressDialog != null) {
+                progressDialog.setVisible(false);
+            }
+
+            progressDialog = null;
+        }
+
+        public boolean onCancel() {
+            progressBar = new JProgressBar(0, 1);
+            progressBar.setSize(new Dimension(120, 20));
+            progressBar.setStringPainted(true);
+            progressBar.setString("Loading Definition..");
+            progressBar.setIndeterminate(true);
+
+            ButtonBarBuilder builder = ButtonBarBuilder.createLeftToRightBuilder();
+            builder.addGlue();
+            builder.addFixed(progressBar);
+            builder.addGlue();
+            builder.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            partTabs.addTab("Loading.. ", builder.getPanel());
+            return true;
         }
 
         private void addTab(String url, String content) throws Exception {
@@ -431,7 +563,8 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
 
             if (progressBar != null) {
                 progressBar.setString(title);
-            } else if (progressDialog != null) {
+            }
+            else if (progressDialog != null) {
                 progressDialog.setProgress(1, title);
             }
 
@@ -474,216 +607,190 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
             targetNamespaces.add(SchemaUtils.getTargetNamespace(xmlObject));
 
             int tabCount = partTabs.getTabCount() - 1;
-            mapTreeItems(xmlObject, treeRoot, false, tabCount, "Complex Types",
-                    "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:complexType[@name!='']", "@name", true,
-                    null);
+            mapTreeItems(xmlObject,
+                         treeRoot,
+                         false,
+                         tabCount,
+                         "Complex Types",
+                         "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:complexType[@name!='']",
+                         "@name",
+                         true,
+                         null
+            );
 
-            mapTreeItems(xmlObject, treeRoot, false, tabCount, "Simple Types",
-                    "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:simpleType[@name!='']", "@name", true,
-                    null);
+            mapTreeItems(xmlObject,
+                         treeRoot,
+                         false,
+                         tabCount,
+                         "Simple Types",
+                         "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:simpleType[@name!='']",
+                         "@name",
+                         true,
+                         null
+            );
 
-            mapTreeItems(xmlObject, treeRoot, false, tabCount, "Anonymous Complex Types",
-                    "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:complexType[not(exists(@name))]",
-                    "parent::node()/@name", true, null);
+            mapTreeItems(xmlObject,
+                         treeRoot,
+                         false,
+                         tabCount,
+                         "Anonymous Complex Types",
+                         "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:complexType[not(exists(@name))]",
+                         "parent::node()/@name",
+                         true,
+                         null
+            );
 
-            mapTreeItems(xmlObject, treeRoot, false, tabCount, "Global Elements",
-                    "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:schema/xs:element[@name!='']", "@name",
-                    true, new GlobalElementSelector());
+            mapTreeItems(xmlObject,
+                         treeRoot,
+                         false,
+                         tabCount,
+                         "Global Elements",
+                         "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:schema/xs:element[@name!='']",
+                         "@name",
+                         true,
+                         new GlobalElementSelector()
+            );
 
-            mapTreeItems(xmlObject, treeRoot, false, tabCount, "Schemas",
-                    "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:schema", "@targetNamespace", true, null);
+            mapTreeItems(xmlObject, treeRoot, false, tabCount, "Schemas", "declare namespace xs='http://www.w3.org/2001/XMLSchema';//xs:schema", "@targetNamespace", true, null);
 
-            List<DefaultMutableTreeNode> messages = mapTreeItems(xmlObject, treeRoot, false, tabCount, "Messages",
-                    "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';//wsdl:message", "@name", true, null);
+            List<DefaultMutableTreeNode> messages = mapTreeItems(xmlObject,
+                                                                 treeRoot,
+                                                                 false,
+                                                                 tabCount,
+                                                                 "Messages",
+                                                                 "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';//wsdl:message",
+                                                                 "@name",
+                                                                 true,
+                                                                 null
+            );
 
             for (DefaultMutableTreeNode treeNode : messages) {
-                mapTreeItems(
-                        ((InspectItem) treeNode.getUserObject()).item,
-                        treeNode,
-                        false,
-                        tabCount,
-                        null,
-                        "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:part",
-                        "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';concat('part: name=[', @name, '] type=[', @type, '] element=[', @element, ']' )",
-                        true, new PartSelector());
+                mapTreeItems(((InspectItem)treeNode.getUserObject()).item,
+                             treeNode,
+                             false,
+                             tabCount,
+                             null,
+                             "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:part",
+                             "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';concat('part: name=[', @name, '] type=[', @type, '] element=[', @element, ']' )",
+                             true,
+                             new PartSelector()
+                );
             }
 
-            List<DefaultMutableTreeNode> portTypes = mapTreeItems(xmlObject, treeRoot, false, tabCount, "PortTypes",
-                    "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';//wsdl:portType", "@name", true, null);
+            List<DefaultMutableTreeNode> portTypes = mapTreeItems(xmlObject,
+                                                                  treeRoot,
+                                                                  false,
+                                                                  tabCount,
+                                                                  "PortTypes",
+                                                                  "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';//wsdl:portType",
+                                                                  "@name",
+                                                                  true,
+                                                                  null
+            );
 
             for (DefaultMutableTreeNode treeNode : portTypes) {
-                List<DefaultMutableTreeNode> operationNodes = mapTreeItems(
-                        ((InspectItem) treeNode.getUserObject()).item, treeNode, false, tabCount, null,
-                        "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:operation", "@name", true, null);
+                List<DefaultMutableTreeNode> operationNodes = mapTreeItems(((InspectItem)treeNode.getUserObject()).item,
+                                                                           treeNode,
+                                                                           false,
+                                                                           tabCount,
+                                                                           null,
+                                                                           "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:operation",
+                                                                           "@name",
+                                                                           true,
+                                                                           null
+                );
 
                 for (DefaultMutableTreeNode treeNode2 : operationNodes) {
-                    mapTreeItems(((InspectItem) treeNode2.getUserObject()).item, treeNode2, false, tabCount, null,
-                            "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:*",
-                            "concat( @name, ' [', local-name(), '], message=[', @message, ']' )", false, new MessageSelector());
+                    mapTreeItems(((InspectItem)treeNode2.getUserObject()).item,
+                                 treeNode2,
+                                 false,
+                                 tabCount,
+                                 null,
+                                 "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:*",
+                                 "concat( @name, ' [', local-name(), '], message=[', @message, ']' )",
+                                 false,
+                                 new MessageSelector()
+                    );
                 }
             }
 
-            List<DefaultMutableTreeNode> bindings = mapTreeItems(
-                    xmlObject,
-                    treeRoot,
-                    false,
-                    tabCount,
-                    "Bindings",
-                    "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';//wsdl:binding",
-                    "declare namespace wsdlsoap='http://schemas.xmlsoap.org/wsdl/soap/';concat( @name, ' [style=', wsdlsoap:binding[1]/@style, ']' )",
-                    true, null);
+            List<DefaultMutableTreeNode> bindings = mapTreeItems(xmlObject,
+                                                                 treeRoot,
+                                                                 false,
+                                                                 tabCount,
+                                                                 "Bindings",
+                                                                 "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';//wsdl:binding",
+                                                                 "declare namespace wsdlsoap='http://schemas.xmlsoap.org/wsdl/soap/';concat( @name, ' [style=', wsdlsoap:binding[1]/@style, ']' )",
+                                                                 true,
+                                                                 null
+            );
 
             for (DefaultMutableTreeNode treeNode : bindings) {
-                List<DefaultMutableTreeNode> operationNodes = mapTreeItems(
-                        ((InspectItem) treeNode.getUserObject()).item,
-                        treeNode,
-                        false,
-                        tabCount,
-                        null,
-                        "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:operation",
-                        "declare namespace wsdlsoap='http://schemas.xmlsoap.org/wsdl/soap/';concat( @name, ' [soapAction=', wsdlsoap:operation/@soapAction, ']' )",
-                        true, null);
+                List<DefaultMutableTreeNode> operationNodes = mapTreeItems(((InspectItem)treeNode.getUserObject()).item,
+                                                                           treeNode,
+                                                                           false,
+                                                                           tabCount,
+                                                                           null,
+                                                                           "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:operation",
+                                                                           "declare namespace wsdlsoap='http://schemas.xmlsoap.org/wsdl/soap/';concat( @name, ' [soapAction=', wsdlsoap:operation/@soapAction, ']' )",
+                                                                           true,
+                                                                           null
+                );
 
                 for (DefaultMutableTreeNode treeNode2 : operationNodes) {
-                    mapTreeItems(((InspectItem) treeNode2.getUserObject()).item, treeNode2, false, tabCount, null,
-                            "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:*",
-                            "concat( @name, ' [', local-name(), ']' )", false, new BindingOperationSelector());
+                    mapTreeItems(((InspectItem)treeNode2.getUserObject()).item,
+                                 treeNode2,
+                                 false,
+                                 tabCount,
+                                 null,
+                                 "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:*",
+                                 "concat( @name, ' [', local-name(), ']' )",
+                                 false,
+                                 new BindingOperationSelector()
+                    );
                 }
             }
 
-            List<DefaultMutableTreeNode> services = mapTreeItems(xmlObject, treeRoot, false, tabCount, "Services",
-                    "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';//wsdl:service", "@name", true, null);
+            List<DefaultMutableTreeNode> services = mapTreeItems(xmlObject,
+                                                                 treeRoot,
+                                                                 false,
+                                                                 tabCount,
+                                                                 "Services",
+                                                                 "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';//wsdl:service",
+                                                                 "@name",
+                                                                 true,
+                                                                 null
+            );
 
             for (DefaultMutableTreeNode treeNode : services) {
-                mapTreeItems(((InspectItem) treeNode.getUserObject()).item, treeNode, false, tabCount, null,
-                        "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:port",
-                        "concat( 'port: name=[', @name, '] binding=[', @binding, ']' )", true, new PortSelector());
+                mapTreeItems(((InspectItem)treeNode.getUserObject()).item,
+                             treeNode,
+                             false,
+                             tabCount,
+                             null,
+                             "declare namespace wsdl='http://schemas.xmlsoap.org/wsdl/';wsdl:port",
+                             "concat( 'port: name=[', @name, '] binding=[', @binding, ']' )",
+                             true,
+                             new PortSelector()
+                );
             }
 
             tree.expandRow(0);
             editors.add(inputArea);
         }
-
-        public void finished() {
-            if (progressDialog != null) {
-                progressDialog.setVisible(false);
-            }
-
-            progressDialog = null;
-        }
-
-        public boolean onCancel() {
-            progressBar = new JProgressBar(0, 1);
-            progressBar.setSize(new Dimension(120, 20));
-            progressBar.setStringPainted(true);
-            progressBar.setString("Loading Definition..");
-            progressBar.setIndeterminate(true);
-
-            ButtonBarBuilder builder = ButtonBarBuilder.createLeftToRightBuilder();
-            builder.addGlue();
-            builder.addFixed(progressBar);
-            builder.addGlue();
-            builder.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-            partTabs.addTab("Loading.. ", builder.getPanel());
-            return true;
-        }
-    }
-
-    public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == getModelItem() || modelItem == getModelItem().getProject();
-    }
-
-    public List<DefaultMutableTreeNode> mapTreeItems(XmlObject xmlObject, DefaultMutableTreeNode treeRoot,
-                                                     boolean createEmpty, int tabIndex, String groupName, String query, String nameQuery, boolean sort,
-                                                     NodeSelector selector) {
-        List<DefaultMutableTreeNode> resultNodes = new ArrayList<DefaultMutableTreeNode>();
-
-        try {
-            XmlObject[] items = xmlObject.selectPath(query);
-            List<DefaultMutableTreeNode> treeNodes = new ArrayList<DefaultMutableTreeNode>();
-
-            DefaultMutableTreeNode root = treeRoot;
-            if (groupName != null) {
-                String groupKey = new TreePath(root.getPath()).toString() + "/" + groupName;
-                root = groupNodes.get(groupKey);
-                if (root == null && (items.length > 0 || createEmpty)) {
-                    root = new DefaultMutableTreeNode(groupName);
-                    treeRoot.add(root);
-                    groupNodes.put(groupKey, root);
-                } else if (root != null) {
-                    Enumeration<?> children = root.children();
-                    while (children.hasMoreElements()) {
-                        treeNodes.add((DefaultMutableTreeNode) children.nextElement());
-                    }
-                }
-            }
-
-            if (items.length == 0) {
-                return resultNodes;
-            }
-
-            for (XmlObject item : items) {
-                XmlObject[] selectPath = item.selectPath(nameQuery);
-                if (selectPath.length > 0) {
-                    DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(new InspectItem(item, selectPath[0],
-                            tabIndex, selector));
-                    treeNodes.add(treeNode);
-                    resultNodes.add(treeNode);
-                }
-            }
-
-            if (sort) {
-                Collections.sort(treeNodes, new Comparator<DefaultMutableTreeNode>() {
-
-                    public int compare(DefaultMutableTreeNode o1, DefaultMutableTreeNode o2) {
-                        return o1.toString().compareTo(o2.toString());
-                    }
-                });
-            }
-
-            root.removeAllChildren();
-
-            for (DefaultMutableTreeNode treeNode : treeNodes) {
-                root.add(treeNode);
-
-                String path = "/" + getTreeNodeName(treeNode);
-                TreePath treePath = new TreePath(treeNode.getPath());
-                while (treeNode.getParent() != null) {
-                    treeNode = (DefaultMutableTreeNode) treeNode.getParent();
-                    path = "/" + getTreeNodeName(treeNode) + path;
-                }
-
-                pathMap.put(path, treePath);
-            }
-        } catch (Throwable e) {
-            SoapUI.log("Failed to map items for query [" + query + "]:[" + nameQuery + "]");
-            SoapUI.logError(e);
-        }
-
-        return resultNodes;
-    }
-
-    private String getTreeNodeName(DefaultMutableTreeNode treeNode) {
-        Object userObject = treeNode.getUserObject();
-        if (userObject instanceof InspectItem) {
-            return ((InspectItem) userObject).getName();
-        } else {
-            return treeNode.toString();
-        }
     }
 
     private final class InspectItem {
         private final XmlObject item;
-        private String name;
         private final int tabIndex;
-        private XmlLineNumber lineNumber;
         private final NodeSelector selector;
+        private String name;
+        private XmlLineNumber lineNumber;
 
         public InspectItem(XmlObject item, XmlObject nameObj, int tabIndex, NodeSelector selector) {
             this.item = item;
             this.selector = selector;
-            this.name = XmlUtils.getNodeValue(nameObj.getDomNode());
+            name = XmlUtils.getNodeValue(nameObj.getDomNode());
             if (name == null) {
                 name = nameObj.toString();
             }
@@ -695,7 +802,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
 
             for (Object o : list) {
                 if (o instanceof XmlLineNumber) {
-                    lineNumber = (XmlLineNumber) o;
+                    lineNumber = (XmlLineNumber)o;
                 }
             }
 
@@ -729,36 +836,8 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
         }
 
         public Element getElement() {
-            return (Element) item.getDomNode();
+            return (Element)item.getDomNode();
         }
-    }
-
-    public boolean onClose(boolean canCancel) {
-        if (projectListener != null) {
-            getModelItem().getProject().removeProjectListener(projectListener);
-        }
-
-        return release();
-    }
-
-    private void simpleSelect(InspectItem item, String attribute, String targetGroup) {
-        Element elm = item.getElement();
-        String type = elm.getAttribute(attribute);
-        if (type.length() > 0) {
-            int ix = type.indexOf(':');
-            if (ix != -1) {
-                type = type.substring(ix + 1);
-            }
-
-            TreePath treePath = pathMap.get("/" + getModelItem().getName() + "/" + targetGroup + "/" + type);
-            if (treePath != null) {
-                tree.setSelectionPath(treePath);
-            }
-        }
-    }
-
-    protected interface NodeSelector {
-        public void selectNode(InspectItem item);
     }
 
     public class PartSelector implements NodeSelector {
@@ -768,7 +847,8 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
             String element = elm.getAttribute("element");
             if (type.length() > 0) {
                 simpleSelect(item, "type", "Complex Types");
-            } else if (element.length() > 0) {
+            }
+            else if (element.length() > 0) {
                 simpleSelect(item, "element", "Global Elements");
             }
         }
@@ -797,8 +877,8 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
             Element elm = item.getElement();
             String name = elm.getAttribute("name");
 
-            Element operationElm = (Element) elm.getParentNode();
-            Element bindingElm = (Element) operationElm.getParentNode();
+            Element operationElm = (Element)elm.getParentNode();
+            Element bindingElm = (Element)operationElm.getParentNode();
 
             String type = bindingElm.getAttribute("type");
 
@@ -808,8 +888,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                     type = type.substring(ix + 1);
                 }
 
-                TreePath treePath = pathMap.get("/" + getModelItem().getName() + "/PortTypes/" + type + "/"
-                        + operationElm.getAttribute("name") + "/" + name);
+                TreePath treePath = pathMap.get("/" + getModelItem().getName() + "/PortTypes/" + type + "/" + operationElm.getAttribute("name") + "/" + name);
                 if (treePath != null) {
                     tree.setSelectionPath(treePath);
                 }
@@ -820,7 +899,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
     private class BackwardAction extends AbstractAction {
         public BackwardAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/arrow_left.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Navigate to previous selection");
+            putValue(SHORT_DESCRIPTION, "Navigate to previous selection");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -836,7 +915,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
     private class ForwardAction extends AbstractAction {
         public ForwardAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/arrow_right.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Navigate to next selection");
+            putValue(SHORT_DESCRIPTION, "Navigate to next selection");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -846,14 +925,13 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                 tree.setSelectionPath(navigationHistory.get(historyIndex));
                 navigating = false;
             }
-
         }
     }
 
     private class RunWSIAction extends AbstractAction {
         public RunWSIAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Creates a WS-I report for this interface");
+            putValue(SHORT_DESCRIPTION, "Creates a WS-I report for this interface");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -879,7 +957,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
     private class WSIOptionsAction extends AbstractAction {
         public WSIOptionsAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Sets WS-I report creation options");
+            putValue(SHORT_DESCRIPTION, "Sets WS-I report creation options");
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -890,7 +968,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
     private class SaveWsiReportAction extends AbstractAction {
         public SaveWsiReportAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/export.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Saved the current WS-I report to a file");
+            putValue(SHORT_DESCRIPTION, "Saved the current WS-I report to a file");
 
             setEnabled(false);
         }
@@ -903,28 +981,12 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
     }
 
     private class OperationsTableModel extends AbstractTableModel {
-        public int getColumnCount() {
-            return 4;
-        }
-
         public int getRowCount() {
             return iface.getOperationCount();
         }
 
-        @Override
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return "Name";
-                case 1:
-                    return "Use";
-                case 2:
-                    return "One-Way";
-                case 3:
-                    return "Action";
-            }
-
-            return null;
+        public int getColumnCount() {
+            return 4;
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -940,7 +1002,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                     return operation.getName();
                 case 1: {
                     boolean in = WsdlUtils.isInputSoapEncoded(bindingOperation);
-                    boolean out = operation.isUnidirectional() ? false : WsdlUtils.isOutputSoapEncoded(bindingOperation);
+                    boolean out = !operation.isUnidirectional() && WsdlUtils.isOutputSoapEncoded(bindingOperation);
 
                     if (out && in) {
                         return "SOAP Encoding";
@@ -955,6 +1017,22 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                     return operation.getAction();
                 case 2:
                     return Boolean.valueOf(operation.isUnidirectional());
+            }
+
+            return null;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0:
+                    return "Name";
+                case 1:
+                    return "Use";
+                case 2:
+                    return "One-Way";
+                case 3:
+                    return "Action";
             }
 
             return null;

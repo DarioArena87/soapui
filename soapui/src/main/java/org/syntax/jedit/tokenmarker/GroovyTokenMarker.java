@@ -12,17 +12,13 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
 import org.syntax.jedit.KeywordMap;
 
 public class GroovyTokenMarker extends CTokenMarker {
-    public GroovyTokenMarker() {
-        super(false, getKeywords());
-    }
-
     public static KeywordMap getKeywords() {
         KeywordMap groovyKeywords = new KeywordMap(false);
         groovyKeywords.add("as", Token.KEYWORD1);
@@ -56,6 +52,10 @@ public class GroovyTokenMarker extends CTokenMarker {
         groovyKeywords.add("while", Token.KEYWORD1);
 
         return groovyKeywords;
+    }
+
+    public GroovyTokenMarker() {
+        super(false, getKeywords());
     }
 
     // private members

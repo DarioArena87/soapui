@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.jaxb;
@@ -42,6 +42,7 @@ import java.io.File;
  */
 
 public class JaxbXjcAction extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "JaxbXjcAction";
     private final static String PACKAGE = "package";
     private final static String OUTPUT = "output";
     private final static String NOVALIDATION = "no validation";
@@ -52,8 +53,6 @@ public class JaxbXjcAction extends AbstractToolsAction<Interface> {
     private final static String READONLY = "read-only";
     private final static String NPA = "npa";
     private final static String VERBOSE = "verbose";
-    public static final String SOAPUI_ACTION_ID = "JaxbXjcAction";
-
     // Configure the behavior of this action:
     private String output = null;
 
@@ -63,7 +62,7 @@ public class JaxbXjcAction extends AbstractToolsAction<Interface> {
 
     @Override
     public boolean applies(Interface target) {
-        Interface iface = (Interface) target;
+        Interface iface = target;
         return !iface.getProject().hasNature(Project.JBOSSWS_NATURE_ID);
     }
 
@@ -95,12 +94,10 @@ public class JaxbXjcAction extends AbstractToolsAction<Interface> {
         mainForm.addTextField(PACKAGE, "the target package", XForm.FieldType.JAVA_PACKAGE);
 
         mainForm.addTextField(BINDINGS, "external bindings file(s), comma-separated", XForm.FieldType.PROJECT_FILE);
-        mainForm.addTextField(CATALOG, "catalog files to resolve external entity references",
-                XForm.FieldType.PROJECT_FILE);
+        mainForm.addTextField(CATALOG, "catalog files to resolve external entity references", XForm.FieldType.PROJECT_FILE);
         mainForm.addTextField(CLASSPATH, "where to find user class files", XForm.FieldType.PROJECT_FOLDER);
 
-        mainForm.addTextField(HTTPPROXY, "set HTTP/HTTPS proxy. Format is [user[:password]@]proxyHost[:proxyPort]",
-                XForm.FieldType.TEXT);
+        mainForm.addTextField(HTTPPROXY, "set HTTP/HTTPS proxy. Format is [user[:password]@]proxyHost[:proxyPort]", XForm.FieldType.TEXT);
         mainForm.addCheckBox(READONLY, "(generated files will be in read-only mode)");
         mainForm.addCheckBox(NOVALIDATION, "(do not resolve strict validation of the input schema(s))");
         mainForm.addCheckBox(NPA, "(suppress generation of package level annotations (**/package-info.java))");
@@ -109,8 +106,7 @@ public class JaxbXjcAction extends AbstractToolsAction<Interface> {
 
         buildArgsForm(builder, false, "xjc");
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.JABXJC_HELP_URL, modelItem),
-                "Specify arguments for the JAXB 2 xjc compiler", UISupport.TOOL_ICON);
+        return builder.buildDialog(buildDefaultActions(HelpUrls.JABXJC_HELP_URL, modelItem), "Specify arguments for the JAXB 2 xjc compiler", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {

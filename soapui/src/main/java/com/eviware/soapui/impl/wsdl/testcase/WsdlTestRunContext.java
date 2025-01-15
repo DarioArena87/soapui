@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.testcase;
@@ -40,7 +40,7 @@ public class WsdlTestRunContext extends AbstractSubmitContext<TestModelItem> imp
     private final TestCaseRunner testRunner;
     private int currentStepIndex;
     private TestCase testCase;
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     public WsdlTestRunContext(TestCaseRunner testRunner, StringToObjectMap properties, TestModelItem testModelItem) {
         super(testModelItem, properties);
@@ -63,25 +63,16 @@ public class WsdlTestRunContext extends AbstractSubmitContext<TestModelItem> imp
         return getTestCase().getTestStepAt(currentStepIndex);
     }
 
-    @Override
-    public void setProperty(String name, Object value) {
-        Object oldValue = new Object();
-        super.setProperty(name, value, getTestCase());
-        if (pcs != null) {
-            pcs.firePropertyChange(name, oldValue, value);
-        }
-    }
-
     public int getCurrentStepIndex() {
         return currentStepIndex;
     }
 
-    public void setCurrentStep(int index) {
-        currentStepIndex = index;
-    }
-
     public TestCaseRunner getTestRunner() {
         return testRunner;
+    }
+
+    public TestCase getTestCase() {
+        return testRunner == null ? testCase : testRunner.getTestCase();
     }
 
     public Object getProperty(String testStepName, String propertyName) {
@@ -89,8 +80,17 @@ public class WsdlTestRunContext extends AbstractSubmitContext<TestModelItem> imp
         return testStep == null ? null : testStep.getPropertyValue(propertyName);
     }
 
-    public TestCase getTestCase() {
-        return testRunner == null ? testCase : testRunner.getTestCase();
+    public void setCurrentStep(int index) {
+        currentStepIndex = index;
+    }
+
+    @Override
+    public void setProperty(String name, Object value) {
+        Object oldValue = new Object();
+        setProperty(name, value, getTestCase());
+        if (pcs != null) {
+            pcs.firePropertyChange(name, oldValue, value);
+        }
     }
 
     @Override
@@ -131,10 +131,13 @@ public class WsdlTestRunContext extends AbstractSubmitContext<TestModelItem> imp
         return oldValue;
     }
 
+    public String expand(String content) {
+        return PropertyExpander.expandProperties(this, content);
+    }
+
     public Object getProperty(String name) {
-        WsdlTestCase testCase = (WsdlTestCase) getTestCase();
-        TestStep testStep = currentStepIndex >= 0 && currentStepIndex < testCase.getTestStepCount() ? testCase
-                .getTestStepAt(currentStepIndex) : null;
+        WsdlTestCase testCase = (WsdlTestCase)getTestCase();
+        TestStep testStep = currentStepIndex >= 0 && currentStepIndex < testCase.getTestStepCount() ? testCase.getTestStepAt(currentStepIndex) : null;
 
         return getProperty(name, testStep, testCase);
     }
@@ -142,10 +145,6 @@ public class WsdlTestRunContext extends AbstractSubmitContext<TestModelItem> imp
     public void reset() {
         resetProperties();
         currentStepIndex = 0;
-    }
-
-    public String expand(String content) {
-        return PropertyExpander.expandProperties(this, content);
     }
 
     public Settings getSettings() {

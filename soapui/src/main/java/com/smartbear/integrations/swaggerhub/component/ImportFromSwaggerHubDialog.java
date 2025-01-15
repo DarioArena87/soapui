@@ -15,8 +15,20 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Control;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -41,8 +53,8 @@ import static javafx.scene.control.Alert.AlertType.ERROR;
 import static javafx.scene.control.Alert.AlertType.WARNING;
 
 public class ImportFromSwaggerHubDialog extends Dialog {
-    private static final String UNSUPPORTED_OAS_VERSION_MESSAGE = "SoapUI OS can work only with OAS version 2.0";
     public static final Logger log = LoggerFactory.getLogger(ImportFromSwaggerHubDialog.class);
+    private static final String UNSUPPORTED_OAS_VERSION_MESSAGE = "SoapUI OS can work only with OAS version 2.0";
     private static final String GETTING_LIST_OF_DEFINITIONS_ERROR = "Cannot get list of definitions from SwaggerHub";
     private static final int CONTENT_PANE_WIDTH = 710;
     private static final int CONTENT_PANE_HEIGHT = 525;
@@ -61,10 +73,10 @@ public class ImportFromSwaggerHubDialog extends Dialog {
     protected void buildDialog() {
         initModality(Modality.APPLICATION_MODAL);
         Scene scene = getDialogPane().getScene();
-        Stage stage = (Stage) scene.getWindow();
+        Stage stage = (Stage)scene.getWindow();
         setResizable(false);
         setTitle("Import from SwaggerHub");
-        String css = this.getClass().getResource("/css/swaggerhub-plugin.css").toExternalForm();
+        String css = getClass().getResource("/css/swaggerhub-plugin.css").toExternalForm();
         scene.getStylesheets().add(css);
         createButtons();
 
@@ -100,19 +112,19 @@ public class ImportFromSwaggerHubDialog extends Dialog {
         ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
         getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
 
-        Button okButton = (Button) getDialogPane().lookupButton(okButtonType);
+        Button okButton = (Button)getDialogPane().lookupButton(okButtonType);
         okButton.getStyleClass().add("ok-button");
 
         okButton.setOnAction(event -> handleOk());
         okButton.addEventFilter(ActionEvent.ACTION, event -> {
-            SwaggerHubAPITableModel model = (SwaggerHubAPITableModel) table.getSelectionModel().getSelectedItem();
+            SwaggerHubAPITableModel model = (SwaggerHubAPITableModel)table.getSelectionModel().getSelectedItem();
             if (model == null) {
                 buildAlert("Please select API for import", "Select API", WARNING).showAndWait();
                 event.consume();
             }
         });
 
-        Button cancelButton = (Button) getDialogPane().lookupButton(cancelButtonType);
+        Button cancelButton = (Button)getDialogPane().lookupButton(cancelButtonType);
         cancelButton.getStyleClass().add("cancel-button");
     }
 
@@ -134,7 +146,8 @@ public class ImportFromSwaggerHubDialog extends Dialog {
             if (StringUtils.hasContent(searchQuery)) {
                 try {
                     uri += "&query=" + URLEncoder.encode(searchQuery.trim(), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
+                }
+                catch (UnsupportedEncodingException e) {
                     log.error(e.getMessage(), e);
                 }
             }
@@ -143,18 +156,19 @@ public class ImportFromSwaggerHubDialog extends Dialog {
                 HttpGet get = new HttpGet(uri);
                 HttpResponse response = HttpClientSupport.getHttpClient().execute(get);
 
-                List<ApiDescriptor> descriptors = new ApisJsonImporter().importApis(
-                        new String(ByteStreams.toByteArray(response.getEntity().getContent())));
+                List<ApiDescriptor> descriptors = new ApisJsonImporter().importApis(new String(ByteStreams.toByteArray(response.getEntity().getContent())));
 
                 Platform.runLater(() -> {
                     for (ApiDescriptor descriptor : descriptors) {
                         table.addDescription(descriptor);
                     }
                 });
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.error(GETTING_LIST_OF_DEFINITIONS_ERROR, e);
                 Platform.runLater(() -> buildAlert(GETTING_LIST_OF_DEFINITIONS_ERROR, "Error", ERROR).showAndWait());
-            } finally {
+            }
+            finally {
                 Platform.runLater(() -> {
                     stackPane.getChildren().remove(progressIndicator);
                     searchButton.setDisable(false);
@@ -166,7 +180,7 @@ public class ImportFromSwaggerHubDialog extends Dialog {
     private List<RestService> importApis() {
         List<RestService> result = new ArrayList<>();
         try {
-            SwaggerHubAPITableModel model = (SwaggerHubAPITableModel) table.getSelectionModel().getSelectedItem();
+            SwaggerHubAPITableModel model = (SwaggerHubAPITableModel)table.getSelectionModel().getSelectedItem();
             ApiDescriptor descriptor = model.getDescriptor();
             String defaultVersionUrl = descriptor.swaggerUrl;
 
@@ -184,13 +198,15 @@ public class ImportFromSwaggerHubDialog extends Dialog {
             String version = descriptor.versions[selectedVersion];
             if (version.startsWith("*-")) {
                 version = version.substring(2).trim();
-            } else if (version.startsWith("*") || version.startsWith("-")) {
+            }
+            else if (version.startsWith("*") || version.startsWith("-")) {
                 version = version.substring(1).trim();
             }
 
             String selectedVersionUrl = defaultVersionUrl.substring(0, defaultVersionUrl.lastIndexOf('/')) + "/" + version;
             Collections.addAll(result, importer.importSwagger(selectedVersionUrl));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         return result;
@@ -247,7 +263,7 @@ public class ImportFromSwaggerHubDialog extends Dialog {
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.setStyle("-fx-background-color: white");
         dialogPane.getStyleClass().add("default-text");
-        Stage stage = (Stage) dialogPane.getScene().getWindow();
+        Stage stage = (Stage)dialogPane.getScene().getWindow();
 
         return alert;
     }

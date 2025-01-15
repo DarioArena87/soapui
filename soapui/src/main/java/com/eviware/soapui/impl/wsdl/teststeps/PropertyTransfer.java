@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -69,9 +69,6 @@ import static com.eviware.soapui.tools.PropertyExpansionRemover.removeExpansions
 
 public class PropertyTransfer implements PropertyChangeNotifier {
 
-
-    private final static Logger log = LogManager.getLogger(PropertyTransfer.class);
-
     public final static String SOURCE_PATH_PROPERTY = PropertyTransfer.class.getName() + "@sourcePath";
     public final static String SOURCE_TYPE_PROPERTY = PropertyTransfer.class.getName() + "@sourceProperty";
     public final static String SOURCE_STEP_PROPERTY = PropertyTransfer.class.getName() + "@sourceStep";
@@ -81,8 +78,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
     public final static String NAME_PROPERTY = PropertyTransfer.class.getName() + "@name";
     public final static String DISABLED_PROPERTY = PropertyTransfer.class.getName() + "@disabled";
     public final static String CONFIG_PROPERTY = PropertyTransfer.class.getName() + "@config";
-
-    private TestStep testStep;
+    private final static Logger log = LogManager.getLogger(PropertyTransfer.class);
+    private final TestStep testStep;
 
     // create local copies since a deleted/changed property transfer can be referenced from a result
     private PropertyTransferConfig config;
@@ -99,12 +96,12 @@ public class PropertyTransfer implements PropertyChangeNotifier {
     private TestProperty currentTargetProperty;
     private TestProperty currentSourceProperty;
 
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private StepNameChangeListener stepNameChangeListener = new StepNameChangeListener();
-    private InternalTestPropertyListener propertyNameChangeListener = new InternalTestPropertyListener();
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private final StepNameChangeListener stepNameChangeListener = new StepNameChangeListener();
+    private final InternalTestPropertyListener propertyNameChangeListener = new InternalTestPropertyListener();
     private TestCase testCase;
 
-    private InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
+    private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
 
     public PropertyTransfer(TestStep testStep) {
         this(testStep, PropertyTransferConfig.Factory.newInstance());
@@ -114,7 +111,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         this.testStep = testStep;
 
         if (testStep != null) {
-            this.testCase = testStep.getTestCase();
+            testCase = testStep.getTestCase();
             testCase.getTestSuite().addTestSuiteListener(testSuiteListener);
         }
 
@@ -125,86 +122,26 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         this.config = config;
     }
 
-    void setConfig(PropertyTransferConfig config) {
-        releaseListeners();
-
-        this.config = config;
-
-        if (!config.isSetSetNullOnMissingSource()) {
-            config.setSetNullOnMissingSource(true);
-        }
-
-        if (!config.isSetTransferTextContent()) {
-            config.setTransferTextContent(true);
-        }
-        sourceStep = config.getSourceStep();
-        if (sourceStep == null) {
-            sourceStep = getSourceStepName();
-            if (sourceStep != null) {
-                config.setSourceStep(sourceStep);
-            }
-        } else {
-            sourceStep = sourceStep.trim();
-        }
-
-        currentSourceStep = getPropertyHolder(sourceStep);
-
-        sourceType = config.getSourceType();
-        currentSourceProperty = currentSourceStep == null || sourceType == null ? null : currentSourceStep
-                .getProperty(sourceType);
-
-        sourcePath = config.getSourcePath();
-
-        targetStep = config.getTargetStep();
-        if (targetStep == null) {
-            targetStep = getTargetStepName();
-            if (targetStep != null) {
-                config.setTargetStep(targetStep);
-            }
-        } else {
-            targetStep = targetStep.trim();
-        }
-
-        currentTargetStep = getPropertyHolder(targetStep);
-
-        targetType = config.getTargetType();
-        currentTargetProperty = currentTargetStep == null || targetType == null ? null : currentTargetStep
-                .getProperty(targetType);
-
-        targetPath = config.getTargetPath();
-        if (!config.getUpgraded()) {
-            if (shouldConvertSourceProperty()) {
-                setSourcePropertyName(WsdlTestStepWithProperties.RESPONSE_AS_XML);
-            }
-            config.setUpgraded(true);
-        }
-
-        name = config.getName();
-        initListeners();
-
-        propertyChangeSupport.firePropertyChange(CONFIG_PROPERTY, null, null);
-    }
-
     private boolean shouldConvertSourceProperty() {
-        return testStep!=null && testStep.getProperties().containsKey(WsdlTestStepWithProperties.RESPONSE_AS_XML)
-                && config.getSourcePath() != null
-                && getSourcePathLanguage() != PathLanguage.JSONPATH
-                && sourcePropertyIsResponse();
+        return testStep != null &&
+               testStep.getProperties().containsKey(WsdlTestStepWithProperties.RESPONSE_AS_XML) &&
+               config.getSourcePath() != null &&
+               getSourcePathLanguage() != PathLanguage.JSONPATH &&
+               sourcePropertyIsResponse();
     }
 
     private boolean sourcePropertyIsResponse() {
         TestProperty property = getSourceProperty();
-        return property != null && property.getName() != null &&
-                property.getName().equals(WsdlTestStepWithProperties.RESPONSE);
+        return property != null && property.getName() != null && property.getName().equals(WsdlTestStepWithProperties.RESPONSE);
+    }
+
+    public PathLanguage getSourcePathLanguage() {
+        return transferLanguageFromPropertyTransferType(getConfig().getType());
     }
 
     public void setSourcePathLanguage(PathLanguage language) {
         PropertyTransferTypesConfig.Enum languageEnum = language == null ? null : PropertyTransferTypesConfig.Enum.forInt(language.ordinal() + 1);
         getConfig().setType(languageEnum);
-    }
-
-    public PathLanguage getSourcePathLanguage() {
-        return transferLanguageFromPropertyTransferType(getConfig().getType());
     }
 
     private PathLanguage transferLanguageFromPropertyTransferType(PropertyTransferTypesConfig.Enum savedLanguage) {
@@ -214,19 +151,18 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         return PathLanguage.valueOf(savedLanguage.toString());
     }
 
-    public void setTargetPathLanguage(PathLanguage language) {
-        getConfig().setTargetTransferType(PropertyTransferTypesConfig.Enum.forInt(language.ordinal() + 1));
-    }
-
     public PathLanguage getTargetPathLanguage() {
         return transferLanguageFromPropertyTransferType(getConfig().getTargetTransferType());
+    }
+
+    public void setTargetPathLanguage(PathLanguage language) {
+        getConfig().setTargetTransferType(PropertyTransferTypesConfig.Enum.forInt(language.ordinal() + 1));
     }
 
     private void initListeners() {
         if (currentSourceStep != null) {
             if (currentSourceStep instanceof TestStep) {
-                ((TestStep) currentSourceStep)
-                        .addPropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
+                ((TestStep)currentSourceStep).addPropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
             }
 
             currentSourceStep.addTestPropertyListener(propertyNameChangeListener);
@@ -234,8 +170,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
         if (currentTargetStep != null) {
             if (currentTargetStep instanceof TestStep) {
-                ((TestStep) currentTargetStep)
-                        .addPropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
+                ((TestStep)currentTargetStep).addPropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
             }
 
             currentTargetStep.addTestPropertyListener(propertyNameChangeListener);
@@ -245,8 +180,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
     public void releaseListeners() {
         if (currentSourceStep != null) {
             if (currentSourceStep instanceof TestStep) {
-                ((TestStep) currentSourceStep).removePropertyChangeListener(TestStep.NAME_PROPERTY,
-                        stepNameChangeListener);
+                ((TestStep)currentSourceStep).removePropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
             }
 
             currentSourceStep.removeTestPropertyListener(propertyNameChangeListener);
@@ -254,8 +188,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
         if (currentTargetStep != null) {
             if (currentTargetStep instanceof TestStep) {
-                ((TestStep) currentTargetStep).removePropertyChangeListener(TestStep.NAME_PROPERTY,
-                        stepNameChangeListener);
+                ((TestStep)currentTargetStep).removePropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
             }
 
             currentTargetStep.removeTestPropertyListener(propertyNameChangeListener);
@@ -276,12 +209,86 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         return config;
     }
 
+    void setConfig(PropertyTransferConfig config) {
+        releaseListeners();
+
+        this.config = config;
+
+        if (!config.isSetSetNullOnMissingSource()) {
+            config.setSetNullOnMissingSource(true);
+        }
+
+        if (!config.isSetTransferTextContent()) {
+            config.setTransferTextContent(true);
+        }
+        sourceStep = config.getSourceStep();
+        if (sourceStep == null) {
+            sourceStep = getSourceStepName();
+            if (sourceStep != null) {
+                config.setSourceStep(sourceStep);
+            }
+        }
+        else {
+            sourceStep = sourceStep.trim();
+        }
+
+        currentSourceStep = getPropertyHolder(sourceStep);
+
+        sourceType = config.getSourceType();
+        currentSourceProperty = currentSourceStep == null || sourceType == null ? null : currentSourceStep.getProperty(sourceType);
+
+        sourcePath = config.getSourcePath();
+
+        targetStep = config.getTargetStep();
+        if (targetStep == null) {
+            targetStep = getTargetStepName();
+            if (targetStep != null) {
+                config.setTargetStep(targetStep);
+            }
+        }
+        else {
+            targetStep = targetStep.trim();
+        }
+
+        currentTargetStep = getPropertyHolder(targetStep);
+
+        targetType = config.getTargetType();
+        currentTargetProperty = currentTargetStep == null || targetType == null ? null : currentTargetStep.getProperty(targetType);
+
+        targetPath = config.getTargetPath();
+        if (!config.getUpgraded()) {
+            if (shouldConvertSourceProperty()) {
+                setSourcePropertyName(WsdlTestStepWithProperties.RESPONSE_AS_XML);
+            }
+            config.setUpgraded(true);
+        }
+
+        name = config.getName();
+        initListeners();
+
+        propertyChangeSupport.firePropertyChange(CONFIG_PROPERTY, null, null);
+    }
+
     public String getSourcePath() {
         return sourcePath;
     }
 
+    public void setSourcePath(String path) {
+        String old = sourcePath;
+        sourcePath = path;
+        config.setSourcePath(path);
+        propertyChangeSupport.firePropertyChange(SOURCE_PATH_PROPERTY, old, path);
+    }
+
     public String getTargetPath() {
         return targetPath;
+    }
+
+    public void setTargetPath(String path) {
+        String old = targetPath;
+        targetPath = path;
+        config.setTargetPath(path);
+        propertyChangeSupport.firePropertyChange(TARGET_PATH_PROPERTY, old, path);
     }
 
     public TestProperty getSourceProperty() {
@@ -314,17 +321,18 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
             if (bothPathsAreXmlBased()) {
                 return transferXPathToXml(getSourceProperty(), getTargetProperty(), context);
-            } else {
+            }
+            else {
                 Object sourceValue = readSourceValue(context);
                 sourceValue = entitizeIfApplicable(sourceValue);
                 if (isResponseProperty(sourceProperty) && sourceValue instanceof String) {
-                    sourceValue = removeExpansions((String) sourceValue);
+                    sourceValue = removeExpansions((String)sourceValue);
                 }
                 return writeTargetValue(sourceValue, context);
             }
-        } catch (Exception e) {
-            throw new PropertyTransferException(e.getMessage(), getSourceStepName(), sourceProperty, getTargetStepName(),
-                    targetProperty);
+        }
+        catch (Exception e) {
+            throw new PropertyTransferException(e.getMessage(), getSourceStepName(), sourceProperty, getTargetStepName(), targetProperty);
         }
     }
 
@@ -334,8 +342,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
     }
 
     private Object entitizeIfApplicable(Object sourceValue) {
-        if (sourceValue instanceof String && StringUtils.hasContent((String) sourceValue) && getEntitize()) {
-            return XmlUtils.entitize((String) sourceValue);
+        if (sourceValue instanceof String && StringUtils.hasContent((String)sourceValue) && getEntitize()) {
+            return XmlUtils.entitize((String)sourceValue);
         }
         return sourceValue;
     }
@@ -344,9 +352,11 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         String sourceValue = getSourceProperty().getValue();
         if (!hasSourcePath()) {
             return sourceValue;
-        } else if (getSourcePathLanguage() == PathLanguage.JSONPATH) {
+        }
+        else if (getSourcePathLanguage() == PathLanguage.JSONPATH) {
             return new JsonPathFacade(sourceValue).readObjectValue(getSourcePath());
-        } else {
+        }
+        else {
             XmlObject sourceXml = XmlUtils.createXmlObject(sourceValue);
             XmlCursor sourceCursor = sourceXml.newCursor();
 
@@ -362,7 +372,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                     if (sourceCursor.toNextToken() != TokenType.START && !getSetNullOnMissingSource() && !getIgnoreEmpty()) {
                         throw new Exception("Missing match for Source XQuery [" + pathExpression + "]");
                     }
-                } else {
+                }
+                else {
                     sourceCursor.selectPath(pathExpression);
                 }
 
@@ -379,25 +390,27 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                     sourceNode = sourceNode.getFirstChild();
                     if (sourceNode != null) {
                         sourceNodeType = sourceNode.getNodeType();
-                    } else {
+                    }
+                    else {
                         throw new Exception("Missing source value for " + getSourcePropertyName());
                     }
                 }
 
                 if (sourceNodeType == Node.TEXT_NODE || sourceNodeType == Node.ATTRIBUTE_NODE) {
                     value = sourceNode.getNodeValue();
-                } else if (sourceNodeType == Node.ELEMENT_NODE) {
+                }
+                else if (sourceNodeType == Node.ELEMENT_NODE) {
                     if (getTransferTextContent()) {
-                        value = XmlUtils.getElementText((Element) sourceNode);
+                        value = XmlUtils.getElementText((Element)sourceNode);
                     }
 
                     if (value == null || !getTransferTextContent()) {
-                        value = sourceCursor.getObject().xmlText(
-                                new XmlOptions().setSaveOuter().setSaveAggressiveNamespaces());
+                        value = sourceCursor.getObject().xmlText(new XmlOptions().setSaveOuter().setSaveAggressiveNamespaces());
                     }
                 }
                 return value;
-            } finally {
+            }
+            finally {
                 if (sourceCursor != null) {
                     sourceCursor.dispose();
                 }
@@ -409,13 +422,15 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         String stringValue = value == null ? null : String.valueOf(value);
         if (!hasTargetPath()) {
             getTargetProperty().setValue(stringValue);
-        } else {
+        }
+        else {
             String targetPath = PropertyExpander.expandProperties(context, getTargetPath());
             if (getTargetPathLanguage() == PathLanguage.JSONPATH) {
                 JsonPathFacade jsonPathFacade = new JsonPathFacade(getTargetProperty().getValue());
                 jsonPathFacade.writeValue(targetPath, value);
                 getTargetProperty().setValue(jsonPathFacade.getCurrentJson());
-            } else {
+            }
+            else {
                 XmlObject targetXml = XmlObject.Factory.parse(getTargetProperty().getValue());
                 XmlCursor targetCursor = targetXml.newCursor();
 
@@ -445,18 +460,17 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                     getTargetProperty().setValue(targetXml.xmlText(new XmlOptions().setSaveAggressiveNamespaces()));
 
                     return result.toArray(new String[result.size()]);
-                } finally {
+                }
+                finally {
                     targetCursor.dispose();
                 }
             }
-
         }
         return new String[]{stringValue};
     }
 
     private boolean bothPathsAreXmlBased() {
-        return hasSourcePath() && hasTargetPath() && getSourcePathLanguage() != PathLanguage.JSONPATH &&
-                getTargetPathLanguage() != PathLanguage.JSONPATH;
+        return hasSourcePath() && hasTargetPath() && getSourcePathLanguage() != PathLanguage.JSONPATH && getTargetPathLanguage() != PathLanguage.JSONPATH;
     }
 
     private boolean hasTargetPath() {
@@ -469,18 +483,19 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         return path != null && path.trim().length() > 0;
     }
 
-    protected String[] transferXPathToXml(TestProperty sourceProperty, TestProperty targetProperty,
-                                          SubmitContext context) throws Exception {
+    protected String[] transferXPathToXml(
+        TestProperty sourceProperty, TestProperty targetProperty, SubmitContext context
+    ) throws Exception {
         XmlCursor sourceXml;
         try {
             String sourcePropertyValue = sourceProperty.getValue();
             if (isResponseProperty(sourceProperty)) {
                 sourcePropertyValue = removeExpansions(sourceProperty.getValue());
             }
-            XmlObject sourceXmlObject = sourcePropertyValue == null ? null : XmlUtils
-                    .createXmlObject(sourcePropertyValue);
+            XmlObject sourceXmlObject = sourcePropertyValue == null ? null : XmlUtils.createXmlObject(sourcePropertyValue);
             sourceXml = sourceXmlObject == null ? null : sourceXmlObject.newCursor();
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             throw new Exception("Error parsing source property [" + e.getMessage() + "]");
         }
 
@@ -490,7 +505,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
             String targetPropertyValue = targetProperty.getValue();
             targetXmlObject = XmlUtils.createXmlObject(targetPropertyValue);
             targetXml = targetXmlObject.newCursor();
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             throw new Exception("Error parsing target property [" + e.getMessage() + "]");
         }
 
@@ -515,7 +531,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                         }
                     }
                 }
-            } else if (getSourcePathLanguage() == PathLanguage.XQUERY) {
+            }
+            else if (getSourcePathLanguage() == PathLanguage.XQUERY) {
                 String sp = PropertyExpander.expandProperties(context, getSourcePath());
                 XmlCursor resultCursor = sourceXml.execQuery(sp);
                 sourceXml.dispose();
@@ -529,7 +546,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                                 break;
                             }
                         }
-                    } else if (!getIgnoreEmpty()) {
+                    }
+                    else if (!getIgnoreEmpty()) {
                         throw new Exception("Missing match for Source XQuery [" + sp + "]");
                     }
                 }
@@ -540,7 +558,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                     lastSource = sourceXml.newCursor();
                     result.add(transferXmlValue(sourceXml, targetXml));
                 }
-            } else {
+            }
+            else {
                 String sp = PropertyExpander.expandProperties(context, getSourcePath());
                 sourceXml.selectPath(sp);
 
@@ -552,10 +571,12 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                                 break;
                             }
                         }
-                    } else if (!getIgnoreEmpty()) {
+                    }
+                    else if (!getIgnoreEmpty()) {
                         throw new Exception("Missing match for Source XPath [" + sp + "]");
                     }
-                } else {
+                }
+                else {
                     boolean hasSource = sourceXml.toNextSelection();
                     boolean hasTarget = targetXml.toNextSelection();
 
@@ -589,7 +610,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
             }
 
             return result.toArray(new String[result.size()]);
-        } finally {
+        }
+        finally {
             if (sourceXml != null) {
                 sourceXml.dispose();
             }
@@ -609,13 +631,14 @@ public class PropertyTransfer implements PropertyChangeNotifier {
             node = node.getFirstChild();
             if (node != null) {
                 targetNodeType = node.getNodeType();
-            } else {
+            }
+            else {
                 throw new Exception("Missing source value for " + getSourcePropertyName());
             }
         }
 
         if (!XmlUtils.setNodeValue(node, value)) {
-            throw new Exception("Failed to set value to node [" + node.toString() + "] of type [" + targetNodeType + "]");
+            throw new Exception("Failed to set value to node [" + node + "] of type [" + targetNodeType + "]");
         }
 
         return value;
@@ -650,7 +673,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
             sourceNode = sourceNode.getFirstChild();
             if (sourceNode != null) {
                 sourceNodeType = sourceNode.getNodeType();
-            } else {
+            }
+            else {
                 throw new Exception("Missing source value for " + source);
             }
         }
@@ -666,8 +690,9 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
                     destNode.setNodeValue(value);
                 }
-            } else if (config.getTransferTextContent() && destNodeType == Node.ELEMENT_NODE) {
-                value = XmlUtils.getElementText((Element) sourceNode);
+            }
+            else if (config.getTransferTextContent() && destNodeType == Node.ELEMENT_NODE) {
+                value = XmlUtils.getElementText((Element)sourceNode);
                 if (value == null && sourceNode.getFirstChild() != null) {
                     value = source.getObject().xmlText(new XmlOptions().setSaveOuter().setSaveAggressiveNamespaces());
 
@@ -675,25 +700,24 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                         value = XmlUtils.entitize(value);
                     }
 
-                    destNode.getParentNode().replaceChild(destNode.getOwnerDocument().importNode(sourceNode, true),
-                            destNode);
-                } else if (!getIgnoreEmpty() || (value != null && value.length() > 0)) {
+                    destNode.getParentNode().replaceChild(destNode.getOwnerDocument().importNode(sourceNode, true), destNode);
+                }
+                else if (!getIgnoreEmpty() || (value != null && value.length() > 0)) {
                     if (getEntitize()) {
                         value = XmlUtils.entitize(value);
                     }
 
-                    XmlUtils.setElementText((Element) destNode, value);
+                    XmlUtils.setElementText((Element)destNode, value);
                 }
-            } else {
-                destNode.getParentNode().replaceChild(
-                        destNode.getOwnerDocument().importNode(sourceNode, true), destNode);
+            }
+            else {
+                destNode.getParentNode().replaceChild(destNode.getOwnerDocument().importNode(sourceNode, true), destNode);
 
                 value = dest.xmlText();
             }
         }
         // text to attribute?
-        else if ((sourceNodeType == Node.TEXT_NODE && destNodeType == Node.ATTRIBUTE_NODE)
-                || (sourceNodeType == Node.ATTRIBUTE_NODE && destNodeType == Node.TEXT_NODE)) {
+        else if ((sourceNodeType == Node.TEXT_NODE && destNodeType == Node.ATTRIBUTE_NODE) || (sourceNodeType == Node.ATTRIBUTE_NODE && destNodeType == Node.TEXT_NODE)) {
             value = sourceNode.getNodeValue();
             if (!getIgnoreEmpty() || (value != null && value.length() > 0)) {
                 if (getEntitize()) {
@@ -702,9 +726,9 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
                 destNode.setNodeValue(value);
             }
-        } else if (sourceNodeType == Node.ELEMENT_NODE && destNodeType == Node.ATTRIBUTE_NODE
-                || destNodeType == Node.TEXT_NODE) {
-            value = XmlUtils.getElementText((Element) sourceNode);
+        }
+        else if (sourceNodeType == Node.ELEMENT_NODE && destNodeType == Node.ATTRIBUTE_NODE || destNodeType == Node.TEXT_NODE) {
+            value = XmlUtils.getElementText((Element)sourceNode);
             if (!getIgnoreEmpty() || (value != null && value.length() > 0)) {
                 if (getEntitize()) {
                     value = XmlUtils.entitize(value);
@@ -712,8 +736,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
                 destNode.setNodeValue(value);
             }
-        } else if (destNodeType == Node.ELEMENT_NODE && sourceNodeType == Node.ATTRIBUTE_NODE
-                || sourceNodeType == Node.TEXT_NODE) {
+        }
+        else if (destNodeType == Node.ELEMENT_NODE && sourceNodeType == Node.ATTRIBUTE_NODE || sourceNodeType == Node.TEXT_NODE) {
             // hmm.. not sure xmlbeans handles this ok
             value = sourceNode.getNodeValue();
             if (!getIgnoreEmpty() || (value != null && value.length() > 0)) {
@@ -721,7 +745,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                     value = XmlUtils.entitize(value);
                 }
 
-                XmlUtils.setElementText((Element) destNode, value);
+                XmlUtils.setElementText((Element)destNode, value);
             }
         }
 
@@ -754,7 +778,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         String old = getSourcePropertyName();
 
         // check for change
-        if ((name == null && old == null) || (name != null && old != null && name.equals(old))) {
+        if ((name == null && old == null) || (name != null && name.equals(old))) {
             return;
         }
 
@@ -801,7 +825,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         String old = getTargetPropertyName();
 
         // check for change
-        if ((name == null && old == null) || (name != null && old != null && name.equals(old))) {
+        if ((name == null && old == null) || (name != null && name.equals(old))) {
             return;
         }
 
@@ -820,20 +844,6 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
     public String getName() {
         return config.getName();
-    }
-
-    public void setSourcePath(String path) {
-        String old = sourcePath;
-        sourcePath = path;
-        config.setSourcePath(path);
-        propertyChangeSupport.firePropertyChange(SOURCE_PATH_PROPERTY, old, path);
-    }
-
-    public void setTargetPath(String path) {
-        String old = targetPath;
-        targetPath = path;
-        config.setTargetPath(path);
-        propertyChangeSupport.firePropertyChange(TARGET_PATH_PROPERTY, old, path);
     }
 
     public void setName(String name) {
@@ -856,7 +866,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
             return null;
         }
 
-        HttpRequestTestStep step = testCase.findPreviousStepOfType(this.testStep, HttpRequestTestStep.class);
+        HttpRequestTestStep step = testCase.findPreviousStepOfType(testStep, HttpRequestTestStep.class);
         return step == null ? null : step.getName();
     }
 
@@ -864,7 +874,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         String old = getSourceStepName();
 
         // check for change
-        if ((sourceStep == null && old == null) || (sourceStep != null && old != null && sourceStep.equals(old))) {
+        if ((sourceStep == null && old == null) || (sourceStep != null && sourceStep.equals(old))) {
             return;
         }
 
@@ -877,8 +887,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
         if (currentSourceStep != null) {
             if (currentSourceStep instanceof TestStep) {
-                ((TestStep) currentSourceStep).removePropertyChangeListener(TestStep.NAME_PROPERTY,
-                        stepNameChangeListener);
+                ((TestStep)currentSourceStep).removePropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
             }
 
             currentSourceStep.removeTestPropertyListener(propertyNameChangeListener);
@@ -887,12 +896,12 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         currentSourceStep = getPropertyHolder(sourceStep);
         if (currentSourceStep != null) {
             if (currentSourceStep instanceof TestStep) {
-                ((TestStep) currentSourceStep)
-                        .addPropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
+                ((TestStep)currentSourceStep).addPropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
             }
 
             currentSourceStep.addTestPropertyListener(propertyNameChangeListener);
-        } else {
+        }
+        else {
             log.warn("Failed to get sourceStep [" + sourceStep + "]");
         }
 
@@ -913,7 +922,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
             return null;
         }
 
-        HttpRequestTestStep step = testCase.findNextStepOfType(this.testStep, HttpRequestTestStep.class);
+        HttpRequestTestStep step = testCase.findNextStepOfType(testStep, HttpRequestTestStep.class);
         return step == null ? null : step.getName();
     }
 
@@ -921,7 +930,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         String old = getTargetStepName();
 
         // check for change
-        if ((targetStep == null && old == null) || (targetStep != null && old != null && targetStep.equals(old))) {
+        if ((targetStep == null && old == null) || (targetStep != null && targetStep.equals(old))) {
             return;
         }
 
@@ -934,8 +943,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
         if (currentTargetStep != null) {
             if (currentTargetStep instanceof TestStep) {
-                ((TestStep) currentTargetStep).removePropertyChangeListener(TestStep.NAME_PROPERTY,
-                        stepNameChangeListener);
+                ((TestStep)currentTargetStep).removePropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
             }
 
             currentTargetStep.removeTestPropertyListener(propertyNameChangeListener);
@@ -944,12 +952,12 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         currentTargetStep = getPropertyHolder(targetStep);
         if (currentTargetStep != null) {
             if (currentTargetStep instanceof TestStep) {
-                ((TestStep) currentTargetStep)
-                        .addPropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
+                ((TestStep)currentTargetStep).addPropertyChangeListener(TestStep.NAME_PROPERTY, stepNameChangeListener);
             }
 
             currentTargetStep.addTestPropertyListener(propertyNameChangeListener);
-        } else {
+        }
+        else {
             log.warn("Failed to get targetStep [" + targetStep + "]");
         }
 
@@ -1071,6 +1079,41 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         config.setTransferChildNodes(b);
     }
 
+    @SuppressWarnings("unchecked")
+    public void resolve(ResolveContext<?> context, PropertyTransfersTestStep parent) {
+        if (isDisabled()) {
+            return;
+        }
+
+        if (getSourceProperty() == null) {
+            if (context.hasThisModelItem(parent, "Resolve source property", getConfig().getSourceStep())) {
+                return;
+            }
+            context.addPathToResolve(parent, "Resolve source property", getConfig().getSourceStep())
+                   .addResolvers(new DisablePropertyTransferResolver(this), new CreateMissingPropertyResolver(this, parent), new ChooseAnotherPropertySourceResolver(this, parent));
+        }
+        else {
+            if (context.hasThisModelItem(parent, "Resolve source property", getConfig().getSourceStep())) {
+                PathToResolve path = context.getPath(parent, "Resolve source property", getConfig().getSourceStep());
+                path.setSolved(true);
+            }
+        }
+
+        if (getTargetProperty() == null) {
+            if (context.hasThisModelItem(parent, "Resolve target property", getConfig().getTargetStep())) {
+                return;
+            }
+            context.addPathToResolve(parent, "Resolve target property", getConfig().getTargetStep())
+                   .addResolvers(new DisablePropertyTransferResolver(this), new CreateMissingPropertyResolver(this, parent), new ChooseAnotherPropertyTargetResolver(this, parent));
+        }
+        else {
+            if (context.hasThisModelItem(parent, "Resolve target property", getConfig().getTargetStep())) {
+                PathToResolve path = context.getPath(parent, "Resolve target property", getConfig().getTargetStep());
+                path.setSolved(true);
+            }
+        }
+    }
+
     private final class InternalTestSuiteListener extends TestSuiteListenerAdapter {
         public void testStepRemoved(TestStep testStep, int index) {
             if (testStep.getTestCase() == testCase) {
@@ -1094,8 +1137,8 @@ public class PropertyTransfer implements PropertyChangeNotifier {
 
     private class StepNameChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            String oldName = (String) evt.getOldValue();
-            String newValue = (String) evt.getNewValue();
+            String oldName = (String)evt.getOldValue();
+            String newValue = (String)evt.getNewValue();
 
             if (newValue == null) {
                 log.error("Tried to change stepname to null!");
@@ -1124,6 +1167,42 @@ public class PropertyTransfer implements PropertyChangeNotifier {
      */
 
     private class InternalTestPropertyListener extends TestPropertyListenerAdapter {
+        public void propertyRemoved(String name) {
+            if (name.equals(sourceType)) {
+                log.warn("source property for transfer [" +
+                         getName() +
+                         "] in teststep [" +
+                         testStep.getName() +
+                         "/" +
+                         testStep.getTestCase().getName() +
+                         "/" +
+                         testStep.getTestCase().getTestSuite().getName() +
+                         "] set to null, was [" +
+                         name +
+                         "]");
+
+                currentSourceProperty = null;
+                setSourcePropertyName(null);
+            }
+
+            if (name.equals(targetType)) {
+                log.warn("target property for transfer [" +
+                         getName() +
+                         "] in teststep [" +
+                         testStep.getName() +
+                         "/" +
+                         testStep.getTestCase().getName() +
+                         "/" +
+                         testStep.getTestCase().getTestSuite().getName() +
+                         "] set to null, was [" +
+                         name +
+                         "]");
+
+                currentTargetProperty = null;
+                setTargetPropertyName(null);
+            }
+        }
+
         public void propertyRenamed(String oldName, String newName) {
             if (oldName.equals(sourceType)) {
                 sourceType = newName;
@@ -1137,61 +1216,5 @@ public class PropertyTransfer implements PropertyChangeNotifier {
                 propertyChangeSupport.firePropertyChange(TARGET_TYPE_PROPERTY, oldName, targetType);
             }
         }
-
-        public void propertyRemoved(String name) {
-            if (name.equals(sourceType)) {
-                log.warn("source property for transfer [" + getName() + "] in teststep [" + testStep.getName() + "/"
-                        + testStep.getTestCase().getName() + "/" + testStep.getTestCase().getTestSuite().getName()
-                        + "] set to null, was [" + name + "]");
-
-                currentSourceProperty = null;
-                setSourcePropertyName(null);
-            }
-
-            if (name.equals(targetType)) {
-                log.warn("target property for transfer [" + getName() + "] in teststep [" + testStep.getName() + "/"
-                        + testStep.getTestCase().getName() + "/" + testStep.getTestCase().getTestSuite().getName()
-                        + "] set to null, was [" + name + "]");
-
-                currentTargetProperty = null;
-                setTargetPropertyName(null);
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public void resolve(ResolveContext<?> context, PropertyTransfersTestStep parent) {
-        if (isDisabled()) {
-            return;
-        }
-
-        if (getSourceProperty() == null) {
-            if (context.hasThisModelItem(parent, "Resolve source property", getConfig().getSourceStep())) {
-                return;
-            }
-            context.addPathToResolve(parent, "Resolve source property", getConfig().getSourceStep()).addResolvers(
-                    new DisablePropertyTransferResolver(this), new CreateMissingPropertyResolver(this, parent),
-                    new ChooseAnotherPropertySourceResolver(this, parent));
-        } else {
-            if (context.hasThisModelItem(parent, "Resolve source property", getConfig().getSourceStep())) {
-                PathToResolve path = context.getPath(parent, "Resolve source property", getConfig().getSourceStep());
-                path.setSolved(true);
-            }
-        }
-
-        if (getTargetProperty() == null) {
-            if (context.hasThisModelItem(parent, "Resolve target property", getConfig().getTargetStep())) {
-                return;
-            }
-            context.addPathToResolve(parent, "Resolve target property", getConfig().getTargetStep()).addResolvers(
-                    new DisablePropertyTransferResolver(this), new CreateMissingPropertyResolver(this, parent),
-                    new ChooseAnotherPropertyTargetResolver(this, parent));
-        } else {
-            if (context.hasThisModelItem(parent, "Resolve target property", getConfig().getTargetStep())) {
-                PathToResolve path = context.getPath(parent, "Resolve target property", getConfig().getTargetStep());
-                path.setSolved(true);
-            }
-        }
-
     }
 }

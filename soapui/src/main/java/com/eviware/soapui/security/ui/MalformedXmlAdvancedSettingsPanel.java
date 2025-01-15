@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.ui;
@@ -27,7 +27,7 @@ import com.eviware.x.form.support.AForm;
 import com.eviware.x.impl.swing.JFormDialog;
 import com.eviware.x.impl.swing.JTextFieldFormField;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 
 public class MalformedXmlAdvancedSettingsPanel {
 
@@ -36,16 +36,16 @@ public class MalformedXmlAdvancedSettingsPanel {
     private MalformedXmlAttributeConfig attributeConfig;
 
     public MalformedXmlAdvancedSettingsPanel(MalformedXmlConfig malformedXmlConfig) {
-        this.configuration = malformedXmlConfig;
-        this.attributeConfig = malformedXmlConfig.getAttributeMutation();
+        configuration = malformedXmlConfig;
+        attributeConfig = malformedXmlConfig.getAttributeMutation();
 
-        dialog = (JFormDialog) ADialogBuilder.buildDialog(AdvancedSettings.class);
+        dialog = (JFormDialog)ADialogBuilder.buildDialog(AdvancedSettings.class);
 
         initDialog();
 
-        ((JTextFieldFormField) dialog.getFormField(AdvancedSettings.NEW_ELEMENT_VALUE)).setWidth(20);
-        ((JTextFieldFormField) dialog.getFormField(AdvancedSettings.NEW_ATTRIBUTE_NAME)).setWidth(20);
-        ((JTextFieldFormField) dialog.getFormField(AdvancedSettings.NEW_ATTRIBUTE_VALUE)).setWidth(20);
+        ((JTextFieldFormField)dialog.getFormField(AdvancedSettings.NEW_ELEMENT_VALUE)).setWidth(20);
+        ((JTextFieldFormField)dialog.getFormField(AdvancedSettings.NEW_ATTRIBUTE_NAME)).setWidth(20);
+        ((JTextFieldFormField)dialog.getFormField(AdvancedSettings.NEW_ATTRIBUTE_VALUE)).setWidth(20);
     }
 
     private void initDialog() {
@@ -140,49 +140,10 @@ public class MalformedXmlAdvancedSettingsPanel {
                 configuration.setInsertInvalidCharacter(Boolean.parseBoolean(newValue));
             }
         });
-
     }
 
     public JComponent getPanel() {
         return dialog.getPanel();
-    }
-
-    @AForm(description = "Malformed XML Configuration", name = "Malformed XML Configuration")
-    protected interface AdvancedSettings {
-
-        @AField(description = "", name = "Insert new element", type = AFieldType.BOOLEAN)
-        public final static String INSERT_NEW_ELEMENT = "Insert new element";
-
-        @AField(description = "", name = "New element value", type = AFieldType.STRING)
-        public final static String NEW_ELEMENT_VALUE = "New element value";
-
-        @AField(description = "", name = "Change tag name", type = AFieldType.BOOLEAN)
-        public final static String CHANGE_TAG_NAME = "Change tag name";
-
-        @AField(description = "", name = "Leave tag open", type = AFieldType.BOOLEAN)
-        public final static String LEAVE_TAG_OPEN = "Leave tag open";
-
-        @AField(description = "", name = "Insert invalid char in xml", type = AFieldType.BOOLEAN)
-        public final static String INSERT_INVALID_CHARACTER = "Insert invalid char in xml";
-
-        @AField(description = "", name = "Mutate attributes", type = AFieldType.BOOLEAN)
-        public final static String MUTATE_ATTRIBUTES = "Mutate attributes";
-
-        @AField(description = "", name = "Insert invalid chars in attribute", type = AFieldType.BOOLEAN)
-        public final static String INSERT_INVALID_CHARS = "Insert invalid chars in attribute";
-
-        @AField(description = "", name = "Leave attribute open", type = AFieldType.BOOLEAN)
-        public final static String LEAVE_ATTRIBUTE_OPEN = "Leave attribute open";
-
-        @AField(description = "", name = "Add new attribute", type = AFieldType.BOOLEAN)
-        public final static String ADD_NEW_ATTRIBUTE = "Add new attribute";
-
-        @AField(description = "", name = "New attribute name", type = AFieldType.STRING)
-        public final static String NEW_ATTRIBUTE_NAME = "New attribute name";
-
-        @AField(description = "", name = "New attribute value", type = AFieldType.STRING)
-        public final static String NEW_ATTRIBUTE_VALUE = "New attribute value";
-
     }
 
     public void release() {
@@ -192,4 +153,40 @@ public class MalformedXmlAdvancedSettingsPanel {
         attributeConfig = null;
     }
 
+    @AForm(description = "Malformed XML Configuration", name = "Malformed XML Configuration")
+    protected interface AdvancedSettings {
+
+        @AField(description = "", name = "Insert new element", type = AFieldType.BOOLEAN)
+        String INSERT_NEW_ELEMENT = "Insert new element";
+
+        @AField(description = "", name = "New element value", type = AFieldType.STRING)
+        String NEW_ELEMENT_VALUE = "New element value";
+
+        @AField(description = "", name = "Change tag name", type = AFieldType.BOOLEAN)
+        String CHANGE_TAG_NAME = "Change tag name";
+
+        @AField(description = "", name = "Leave tag open", type = AFieldType.BOOLEAN)
+        String LEAVE_TAG_OPEN = "Leave tag open";
+
+        @AField(description = "", name = "Insert invalid char in xml", type = AFieldType.BOOLEAN)
+        String INSERT_INVALID_CHARACTER = "Insert invalid char in xml";
+
+        @AField(description = "", name = "Mutate attributes", type = AFieldType.BOOLEAN)
+        String MUTATE_ATTRIBUTES = "Mutate attributes";
+
+        @AField(description = "", name = "Insert invalid chars in attribute", type = AFieldType.BOOLEAN)
+        String INSERT_INVALID_CHARS = "Insert invalid chars in attribute";
+
+        @AField(description = "", name = "Leave attribute open", type = AFieldType.BOOLEAN)
+        String LEAVE_ATTRIBUTE_OPEN = "Leave attribute open";
+
+        @AField(description = "", name = "Add new attribute", type = AFieldType.BOOLEAN)
+        String ADD_NEW_ATTRIBUTE = "Add new attribute";
+
+        @AField(description = "", name = "New attribute name", type = AFieldType.STRING)
+        String NEW_ATTRIBUTE_NAME = "New attribute name";
+
+        @AField(description = "", name = "New attribute value", type = AFieldType.STRING)
+        String NEW_ATTRIBUTE_VALUE = "New attribute value";
+    }
 }

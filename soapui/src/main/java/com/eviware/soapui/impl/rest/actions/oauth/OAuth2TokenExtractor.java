@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.oauth;
@@ -49,28 +49,27 @@ public class OAuth2TokenExtractor {
 
     protected List<BrowserListener> browserListeners = new ArrayList<BrowserListener>();
 
-    public void extractAccessToken(final OAuth2Parameters parameters) throws OAuthSystemException, MalformedURLException, URISyntaxException, OAuthProblemException {
+    public void extractAccessToken(OAuth2Parameters parameters) throws OAuthSystemException, MalformedURLException, URISyntaxException, OAuthProblemException {
         OAuth2Profile.OAuth2Flow i = parameters.getOAuth2Flow();
         if (i.equals(OAuth2Profile.OAuth2Flow.IMPLICIT_GRANT)) {
             extractAccessTokenForImplicitGrantFlow(parameters);
-
-        } else if (i.equals(OAuth2Profile.OAuth2Flow.RESOURCE_OWNER_PASSWORD_CREDENTIALS)) {
+        }
+        else if (i.equals(OAuth2Profile.OAuth2Flow.RESOURCE_OWNER_PASSWORD_CREDENTIALS)) {
             extractAccessTokenForROPC(parameters);
-
-        } else if (i.equals(OAuth2Profile.OAuth2Flow.AUTHORIZATION_CODE_GRANT)) {
+        }
+        else if (i.equals(OAuth2Profile.OAuth2Flow.AUTHORIZATION_CODE_GRANT)) {
             extractAccessTokenForAuthorizationCodeGrantFlow(parameters);
-
-        } else if (i.equals(OAuth2Profile.OAuth2Flow.CLIENT_CREDENTIALS_GRANT)) {
+        }
+        else if (i.equals(OAuth2Profile.OAuth2Flow.CLIENT_CREDENTIALS_GRANT)) {
             extractAccessTokenForClientCredentialsGrant(parameters);
-
-        } else {
+        }
+        else {
             throw OAuthProblemException.error("Unsupported OAuth 2.0 grant flow");
         }
     }
 
-    void extractAccessTokenForAuthorizationCodeGrantFlow(final OAuth2Parameters parameters) throws URISyntaxException,
-            MalformedURLException, OAuthSystemException {
-        final UserBrowserFacade browserFacade = getBrowserFacade();
+    void extractAccessTokenForAuthorizationCodeGrantFlow(OAuth2Parameters parameters) throws URISyntaxException, MalformedURLException, OAuthSystemException {
+        UserBrowserFacade browserFacade = getBrowserFacade();
         addBrowserInteractionHandler(browserFacade, parameters);
         addExternalListeners(browserFacade);
         browserFacade.addBrowserListener(new BrowserListenerAdapter() {
@@ -100,7 +99,7 @@ public class OAuth2TokenExtractor {
         parameters.waitingForAuthorization();
     }
 
-    void extractAccessTokenForROPC(final OAuth2Parameters parameters) throws OAuthProblemException, OAuthSystemException {
+    void extractAccessTokenForROPC(OAuth2Parameters parameters) throws OAuthProblemException, OAuthSystemException {
         OAuthClientRequest accessTokenRequest = getClientRequestForROPC(parameters);
         OAuthClient oAuthClient = getOAuthClient();
 
@@ -111,21 +110,20 @@ public class OAuth2TokenExtractor {
         parameters.setRefreshTokenInProfile(oAuthToken.getRefreshToken());
     }
 
-    public OAuthClientRequest getClientRequestForROPC(final OAuth2Parameters parameters) throws OAuthSystemException {
-        OAuthClientRequest accessTokenRequest = OAuthClientRequest
-                .tokenLocation(parameters.accessTokenUri)
-                .setGrantType(GrantType.PASSWORD)
-                .setClientId(parameters.clientId)
-                .setClientSecret(parameters.clientSecret)
-                .setUsername(parameters.resourceOwnerName)
-                .setPassword(parameters.resourceOwnerPassword)
-                .setScope(parameters.scope)
-                .buildBodyMessage();
+    public OAuthClientRequest getClientRequestForROPC(OAuth2Parameters parameters) throws OAuthSystemException {
+        OAuthClientRequest accessTokenRequest = OAuthClientRequest.tokenLocation(parameters.accessTokenUri)
+                                                                  .setGrantType(GrantType.PASSWORD)
+                                                                  .setClientId(parameters.clientId)
+                                                                  .setClientSecret(parameters.clientSecret)
+                                                                  .setUsername(parameters.resourceOwnerName)
+                                                                  .setPassword(parameters.resourceOwnerPassword)
+                                                                  .setScope(parameters.scope)
+                                                                  .buildBodyMessage();
 
         return accessTokenRequest;
     }
 
-    public void extractAccessTokenForClientCredentialsGrant(final OAuth2Parameters parameters) throws OAuthProblemException, OAuthSystemException {
+    public void extractAccessTokenForClientCredentialsGrant(OAuth2Parameters parameters) throws OAuthProblemException, OAuthSystemException {
         OAuthClientRequest accessTokenRequest = getClientRequestForClientCredentialsGrant(parameters);
         OAuthClient oAuthClient = getOAuthClient();
 
@@ -136,21 +134,19 @@ public class OAuth2TokenExtractor {
         parameters.setRefreshTokenInProfile(oAuthToken.getRefreshToken());
     }
 
-    public OAuthClientRequest getClientRequestForClientCredentialsGrant(final OAuth2Parameters parameters) throws OAuthSystemException {
-        OAuthClientRequest accessTokenRequest = OAuthClientRequest
-                .tokenLocation(parameters.accessTokenUri)
-                .setGrantType(GrantType.CLIENT_CREDENTIALS)
-                .setClientId(parameters.clientId)
-                .setClientSecret(parameters.clientSecret)
-                .setScope(parameters.scope)
-                .buildBodyMessage();
+    public OAuthClientRequest getClientRequestForClientCredentialsGrant(OAuth2Parameters parameters) throws OAuthSystemException {
+        OAuthClientRequest accessTokenRequest = OAuthClientRequest.tokenLocation(parameters.accessTokenUri)
+                                                                  .setGrantType(GrantType.CLIENT_CREDENTIALS)
+                                                                  .setClientId(parameters.clientId)
+                                                                  .setClientSecret(parameters.clientSecret)
+                                                                  .setScope(parameters.scope)
+                                                                  .buildBodyMessage();
 
         return accessTokenRequest;
     }
 
-    void extractAccessTokenForImplicitGrantFlow(final OAuth2Parameters parameters) throws OAuthSystemException,
-            URISyntaxException, MalformedURLException {
-        final UserBrowserFacade browserFacade = getBrowserFacade();
+    void extractAccessTokenForImplicitGrantFlow(OAuth2Parameters parameters) throws OAuthSystemException, URISyntaxException, MalformedURLException {
+        UserBrowserFacade browserFacade = getBrowserFacade();
         addBrowserInteractionHandler(browserFacade, parameters);
         addExternalListeners(browserFacade);
         browserFacade.addBrowserListener(new BrowserListenerAdapter() {
@@ -179,25 +175,24 @@ public class OAuth2TokenExtractor {
     }
 
     void refreshAccessToken(OAuth2Parameters parameters) throws OAuthProblemException, OAuthSystemException {
-        OAuthClientRequest accessTokenRequest = OAuthClientRequest
-                .tokenLocation(parameters.accessTokenUri)
-                .setGrantType(GrantType.REFRESH_TOKEN)
-                .setClientId(parameters.clientId)
-                .setClientSecret(parameters.clientSecret)
-                .setRefreshToken(parameters.refreshToken)
-                .buildBodyMessage();
+        OAuthClientRequest accessTokenRequest = OAuthClientRequest.tokenLocation(parameters.accessTokenUri)
+                                                                  .setGrantType(GrantType.REFRESH_TOKEN)
+                                                                  .setClientId(parameters.clientId)
+                                                                  .setClientSecret(parameters.clientSecret)
+                                                                  .setRefreshToken(parameters.refreshToken)
+                                                                  .buildBodyMessage();
 
         OAuthClient oAuthClient = getOAuthClient();
 
         OAuthToken oAuthToken = oAuthClient.accessToken(accessTokenRequest, OAuthJSONAccessTokenResponse.class).getOAuthToken();
         parameters.applyRetrievedAccessToken(oAuthToken.getAccessToken());
         parameters.setAccessTokenIssuedTimeInProfile(TimeUtils.getCurrentTimeInSeconds());
-	// Due to RFC6749 6. the client MUST discard the old refresh token if the server issues a new token
-	// and replace it with the new one.
-	String newRefreshToken = oAuthToken.getRefreshToken();
-	if (newRefreshToken!=null && !newRefreshToken.equals(parameters.refreshToken)) {
-           parameters.setRefreshTokenInProfile(newRefreshToken);
-	}
+        // Due to RFC6749 6. the client MUST discard the old refresh token if the server issues a new token
+        // and replace it with the new one.
+        String newRefreshToken = oAuthToken.getRefreshToken();
+        if (newRefreshToken != null && !newRefreshToken.equals(parameters.refreshToken)) {
+            parameters.setRefreshTokenInProfile(newRefreshToken);
+        }
     }
 
     public void addBrowserListener(BrowserListener listener) {
@@ -212,7 +207,7 @@ public class OAuth2TokenExtractor {
         return new WebViewUserBrowserFacade();
     }
 
-	/* Helper methods */
+    /* Helper methods */
 
     private void setRetrievedCanceledStatus(OAuth2Parameters parameters) {
         parameters.retrivalCanceled();
@@ -231,15 +226,14 @@ public class OAuth2TokenExtractor {
         browserFacade.addBrowserListener(new BrowserInteractionMonitor(browserFacade, parameters.getJavaScripts()));
     }
 
-    private String createAuthorizationURL(OAuth2Parameters parameters, String responseType)
-            throws OAuthSystemException {
-        return OAuthClientRequest
-                .authorizationLocation(parameters.authorizationUri)
-                .setClientId(parameters.clientId)
-                .setResponseType(responseType)
-                .setScope(parameters.scope)
-                .setRedirectURI(parameters.redirectUri)
-                .buildQueryMessage().getLocationUri();
+    private String createAuthorizationURL(OAuth2Parameters parameters, String responseType) throws OAuthSystemException {
+        return OAuthClientRequest.authorizationLocation(parameters.authorizationUri)
+                                 .setClientId(parameters.clientId)
+                                 .setResponseType(responseType)
+                                 .setScope(parameters.scope)
+                                 .setRedirectURI(parameters.redirectUri)
+                                 .buildQueryMessage()
+                                 .getLocationUri();
     }
 
     private String extractFormData(String url) {
@@ -263,23 +257,21 @@ public class OAuth2TokenExtractor {
     }
 
     private String extractAuthorizationCodeFromForm(String formData, String parameterName) {
-        return (String) OAuthUtils.decodeForm(formData).get(parameterName);
+        return (String)OAuthUtils.decodeForm(formData).get(parameterName);
     }
 
     private void getAccessTokenAndSaveToProfile(UserBrowserFacade browserFacade, OAuth2Parameters parameters, String authorizationCode) {
         if (authorizationCode != null) {
             try {
                 parameters.receivedAuthorizationCode();
-                OAuthClientRequest accessTokenRequest = OAuthClientRequest
-                        .tokenLocation(parameters.accessTokenUri)
-                        .setGrantType(GrantType.AUTHORIZATION_CODE)
-                        .setClientId(parameters.clientId)
-                        .setClientSecret(parameters.clientSecret)
-                        .setRedirectURI(parameters.redirectUri)
-                        .setCode(authorizationCode)
-                        .buildBodyMessage();
-                OAuthToken token = getOAuthClient().accessToken(accessTokenRequest, OAuth2AccessTokenResponse.class)
-                        .getOAuthToken();
+                OAuthClientRequest accessTokenRequest = OAuthClientRequest.tokenLocation(parameters.accessTokenUri)
+                                                                          .setGrantType(GrantType.AUTHORIZATION_CODE)
+                                                                          .setClientId(parameters.clientId)
+                                                                          .setClientSecret(parameters.clientSecret)
+                                                                          .setRedirectURI(parameters.redirectUri)
+                                                                          .setCode(authorizationCode)
+                                                                          .buildBodyMessage();
+                OAuthToken token = getOAuthClient().accessToken(accessTokenRequest, OAuth2AccessTokenResponse.class).getOAuthToken();
                 if (token != null && token.getAccessToken() != null) {
                     parameters.setAccessTokenInProfile(token.getAccessToken());
                     parameters.setRefreshTokenInProfile(token.getRefreshToken());
@@ -290,20 +282,22 @@ public class OAuth2TokenExtractor {
 
                     browserFacade.close();
                 }
-            } catch (OAuthSystemException e) {
+            }
+            catch (OAuthSystemException e) {
                 SoapUI.logError(e);
-            } catch (OAuthProblemException e) {
+            }
+            catch (OAuthProblemException e) {
                 SoapUI.logError(e);
             }
         }
     }
 
-	/* Helper class that runs automation JavaScripts registered in the OAuth2 profile */
+    /* Helper class that runs automation JavaScripts registered in the OAuth2 profile */
 
     private class BrowserInteractionMonitor extends BrowserListenerAdapter {
         private final List<String> javaScripts;
         int pageIndex = 0;
-        private UserBrowserFacade browserFacade;
+        private final UserBrowserFacade browserFacade;
 
         public BrowserInteractionMonitor(UserBrowserFacade browserFacade, List<String> javaScripts) {
             this.browserFacade = browserFacade;
@@ -316,12 +310,12 @@ public class OAuth2TokenExtractor {
                 String script = javaScripts.get(pageIndex);
                 try {
                     browserFacade.executeJavaScript(script);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.log.warn("Error when running JavaScript [" + script + "]: " + e.getMessage());
                 }
                 pageIndex++;
             }
         }
-
     }
 }

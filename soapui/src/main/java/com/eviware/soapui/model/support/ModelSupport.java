@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.support;
@@ -51,7 +51,7 @@ public class ModelSupport {
         List<T> result = new ArrayList<T>();
         for (ModelItem child : modelItem.getChildren()) {
             if (child.getClass().equals(childType)) {
-                result.add((T) child);
+                result.add((T)child);
             }
         }
 
@@ -71,9 +71,7 @@ public class ModelSupport {
 
     public static String[] getNames(String[] firstItems, List<? extends ModelItem> list) {
         String[] names = new String[list.size() + firstItems.length];
-        for (int c = 0; c < firstItems.length; c++) {
-            names[c] = firstItems[c];
-        }
+        System.arraycopy(firstItems, 0, names, 0, firstItems.length);
 
         for (int c = 0; c < list.size(); c++) {
             names[c + firstItems.length] = list.get(c).getName();
@@ -84,9 +82,7 @@ public class ModelSupport {
 
     public static String[] getNames(List<? extends ModelItem> list, String[] lastItems) {
         String[] names = new String[list.size() + lastItems.length];
-        for (int c = 0; c < lastItems.length; c++) {
-            names[c + list.size()] = lastItems[c];
-        }
+        System.arraycopy(lastItems, 0, names, 0 + list.size(), lastItems.length);
 
         for (int c = 0; c < list.size(); c++) {
             names[c] = list.get(c).getName();
@@ -107,12 +103,12 @@ public class ModelSupport {
 
         for (ModelItem child : root.getChildren()) {
             if (child.getId().equals(id)) {
-                return (T) child;
+                return (T)child;
             }
 
             ModelItem result = findModelItemById(id, child);
             if (result != null) {
-                return (T) result;
+                return (T)result;
             }
         }
 
@@ -142,7 +138,7 @@ public class ModelSupport {
             modelItem = modelItem.getParent();
         }
 
-        return (Project) modelItem;
+        return (Project)modelItem;
     }
 
     public static TestCase getModelItemTestCase(ModelItem modelItem) {
@@ -154,11 +150,11 @@ public class ModelSupport {
             modelItem = modelItem.getParent();
         }
 
-        return (TestCase) modelItem;
+        return (TestCase)modelItem;
     }
 
     public static String getResourceRoot(AbstractWsdlModelItem<?> testStep) {
-        WsdlProject project = (WsdlProject) getModelItemProject(testStep);
+        WsdlProject project = (WsdlProject)getModelItemProject(testStep);
         if (project == null) {
             return null;
         }
@@ -173,7 +169,7 @@ public class ModelSupport {
 
         for (ModelItem child : modelItem.getChildren()) {
             if (child instanceof AbstractWsdlModelItem<?>) {
-                createNewIds((AbstractWsdlModelItem<?>) child);
+                createNewIds((AbstractWsdlModelItem<?>)child);
             }
         }
     }
@@ -182,10 +178,6 @@ public class ModelSupport {
         for (AbstractWsdlModelItem<?> modelItem : modelItems) {
             createNewIds(modelItem);
         }
-    }
-
-    public interface ModelItemFilter<T extends ModelItem> {
-        public boolean accept(T modelItem);
     }
 
     public static boolean dependsOn(ModelItem source, ModelItem target) {
@@ -205,8 +197,25 @@ public class ModelSupport {
         return false;
     }
 
+    public static boolean isOneOf(ModelItem modelItem, Object... classes) {
+        for (Object clazz : classes) {
+            if (clazz instanceof Class && ((Class)clazz).isAssignableFrom(modelItem.getClass())) {
+                return true;
+            }
+            else if (clazz instanceof ModelItem && clazz.getClass().isAssignableFrom(modelItem.getClass())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public interface ModelItemFilter<T extends ModelItem> {
+        boolean accept(T modelItem);
+    }
+
     public static class InterfaceTypeFilter implements ModelItemFilter<Interface> {
-        private String type;
+        private final String type;
 
         public InterfaceTypeFilter(String type) {
             this.type = type;
@@ -215,19 +224,5 @@ public class ModelSupport {
         public boolean accept(Interface modelItem) {
             return modelItem.getInterfaceType().equals(type);
         }
-
-    }
-
-    public static boolean isOneOf(ModelItem modelItem, Object... classes) {
-        for (Object clazz : classes) {
-            if (clazz instanceof Class && ((Class) clazz).isAssignableFrom(modelItem.getClass())) {
-                return true;
-            } else if (clazz instanceof ModelItem &&
-                    clazz.getClass().isAssignableFrom(modelItem.getClass())) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

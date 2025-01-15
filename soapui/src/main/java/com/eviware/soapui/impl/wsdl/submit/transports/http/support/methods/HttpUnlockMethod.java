@@ -11,18 +11,16 @@ import java.net.URI;
 public class HttpUnlockMethod extends HttpRequestBase {
 
     public HttpUnlockMethod() {
-        super();
     }
 
-    public HttpUnlockMethod(final URI uri) {
-        super();
+    public HttpUnlockMethod(URI uri) {
         setURI(uri);
     }
 
     /**
      * @throws IllegalArgumentException if the uri is invalid.
      */
-    public HttpUnlockMethod(final String uri) {
+    public HttpUnlockMethod(String uri) {
         this(URI.create(uri));
     }
 

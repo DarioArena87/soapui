@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.actions;
@@ -47,9 +47,8 @@ import java.util.List;
 public class NewWadlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
     public static final String SOAPUI_ACTION_ID = "NewWadlProjectAction";
     public static final String DEFAULT_PROJECT_NAME = "REST Project";
-    private XFormDialog dialog;
-
     public static final MessageSupport messages = MessageSupport.getMessages(NewWadlProjectAction.class);
+    private XFormDialog dialog;
 
     public NewWadlProjectAction() {
         super(messages.get("Title"), messages.get("Description"));
@@ -62,7 +61,8 @@ public class NewWadlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
 
         if (param instanceof String) {
             dialog.setValue(Form.INITIALWADL, param.toString());
-        } else {
+        }
+        else {
             dialog.setValue(Form.INITIALWADL, "");
         }
 
@@ -73,7 +73,8 @@ public class NewWadlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
 
                 if (projectName.length() == 0) {
                     UISupport.showErrorMessage(messages.get("MissingProjectNameError"));
-                } else {
+                }
+                else {
                     project = workspace.createProject(projectName, null);
 
                     if (project != null) {
@@ -94,9 +95,11 @@ public class NewWadlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
                         break;
                     }
                 }
-            } catch (InvalidDefinitionException ex) {
+            }
+            catch (InvalidDefinitionException ex) {
                 ex.show();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 UISupport.showErrorMessage(ex);
                 if (project != null) {
                     workspace.removeProject(project);
@@ -148,12 +151,12 @@ public class NewWadlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
     }
 
     private void importWadl(WsdlProject project, String url) {
-        RestService restService = (RestService) project
-                .addNewInterface(project.getName(), RestServiceFactory.REST_TYPE);
+        RestService restService = (RestService)project.addNewInterface(project.getName(), RestServiceFactory.REST_TYPE);
         UISupport.select(restService);
         try {
             new WadlImporter(restService).initFromWadl(url);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e);
         }
     }
@@ -161,6 +164,6 @@ public class NewWadlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
     @AForm(name = "Form.Title", description = "Form.Description", helpUrl = HelpUrls.NEW_WADL_PROJECT_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
     public interface Form {
         @AField(description = "Form.InitialWadl.Description", type = AField.AFieldType.FILE)
-        public final static String INITIALWADL = messages.get("Form.InitialWadl.Label");
+        String INITIALWADL = messages.get("Form.InitialWadl.Label");
     }
 }

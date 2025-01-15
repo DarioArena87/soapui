@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes;
@@ -32,22 +32,16 @@ import javax.swing.Action;
 import java.awt.event.ActionEvent;
 
 public class PropertyTreeNode extends AbstractModelItemTreeNode<PropertyModelItem> {
-    private boolean readOnly;
     private final TestProperty property;
-
-    protected PropertyTreeNode(TestProperty property, ModelItem parent, TestPropertyHolder holder,
-                               SoapUITreeModel treeModel) {
-        super(new PropertyModelItem(property, property.isReadOnly()), parent, treeModel);
-        this.property = property;
-        readOnly = property.isReadOnly();
-    }
+    private final boolean readOnly;
 
     public static String buildName(TestProperty property) {
         String name = property.getName();
         String value = property.getValue();
         if (value == null) {
             value = "";
-        } else {
+        }
+        else {
             if (value.length() > 12) {
                 value = value.substring(0, 12) + "..";
             }
@@ -58,6 +52,14 @@ public class PropertyTreeNode extends AbstractModelItemTreeNode<PropertyModelIte
         return name + " : " + value;
     }
 
+    protected PropertyTreeNode(
+        TestProperty property, ModelItem parent, TestPropertyHolder holder, SoapUITreeModel treeModel
+    ) {
+        super(new PropertyModelItem(property, property.isReadOnly()), parent, treeModel);
+        this.property = property;
+        readOnly = property.isReadOnly();
+    }
+
     @Override
     public ActionList getActions() {
         if (!readOnly) {
@@ -66,7 +68,8 @@ public class PropertyTreeNode extends AbstractModelItemTreeNode<PropertyModelIte
             actions.addAction(setPropertyValueAction);
             actions.setDefaultAction(setPropertyValueAction);
             return actions;
-        } else {
+        }
+        else {
             return super.getActions();
         }
     }
@@ -74,7 +77,7 @@ public class PropertyTreeNode extends AbstractModelItemTreeNode<PropertyModelIte
     private class SetPropertyValueAction extends AbstractAction {
         public SetPropertyValueAction() {
             super("Set Value");
-            putValue(Action.SHORT_DESCRIPTION, "Prompts to set the value of this property");
+            putValue(SHORT_DESCRIPTION, "Prompts to set the value of this property");
         }
 
         public void actionPerformed(ActionEvent e) {

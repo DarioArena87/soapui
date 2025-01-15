@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.loadtest;
@@ -50,24 +50,10 @@ import com.eviware.soapui.ui.support.DesktopListenerAdapter;
 import com.eviware.soapui.ui.support.KeySensitiveModelItemDesktopPanel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JSpinner;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -85,36 +71,35 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
     private static final String SECONDS_LIMIT = "Seconds";
     private static final String RUNS_LIMIT = "Total Runs";
     private static final String RUNS_PER_THREAD_LIMIT = "Runs per Thread";
+    public boolean loadTestIsRunning;
+    protected JButton runButton;
+    protected JButton cancelButton;
+    protected JButton statisticsGraphButton;
+    protected JSpinner threadsSpinner;
+    protected JComboBox strategyCombo;
+    protected JPanel loadStrategyConfigurationPanel;
+    protected JButton resetButton;
+    protected JButton optionsButton;
+    protected JButton testTimesGraphButton;
+    protected JProgressBar progressBar;
+    protected JButton exportButton;
     @SuppressWarnings("unused")
     private JSplitPane mainSplit;
     @SuppressWarnings("unused")
     private JTabbedPane mainTabs;
     @SuppressWarnings("unused")
     private JPanel graphPanel;
-    protected JButton runButton;
-    protected JButton cancelButton;
-    protected JButton statisticsGraphButton;
     private WsdlLoadTestRunner runner;
-    protected JSpinner threadsSpinner;
-    private LoadTestRunListener internalLoadTestListener = new InternalLoadTestListener();
-    protected JComboBox strategyCombo;
-    protected JPanel loadStrategyConfigurationPanel;
-    protected JButton resetButton;
-    private LoadTestLog loadTestLog;
-    protected JButton optionsButton;
-    protected JButton testTimesGraphButton;
+    private final LoadTestRunListener internalLoadTestListener = new InternalLoadTestListener();
+    private final LoadTestLog loadTestLog;
     @SuppressWarnings("unused")
     private Object limit;
     private JSpinner limitSpinner;
     private JComboBox limitTypeCombo;
     private SpinnerNumberModel limitSpinnerModel;
-    protected JProgressBar progressBar;
     private StatisticsDesktopPanel statisticsDesktopPanel;
     private StatisticsHistoryDesktopPanel statisticsHistoryDesktopPanel;
-
-    public boolean loadTestIsRunning;
-    private InternalDesktopListener desktopListener;
-    protected JButton exportButton;
+    private final InternalDesktopListener desktopListener;
     private JLoadTestAssertionsTable assertionsTable;
     private JStatisticsTable statisticsTable;
     private GroovyEditorComponent tearDownGroovyEditor;
@@ -151,14 +136,10 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
     }
 
     protected void addInspectors(JInspectorPanel inspectorPanel) {
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildLog(), "LoadTest Log",
-                "The current LoadTest execution log", true));
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildAssertions(), "LoadTest Assertions",
-                "The assertions for this LoadTest", true));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildSetupScriptPanel(), "Setup Script",
-                "Script to run before tunning a TestCase"));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildTearDownScriptPanel(), "TearDown Script",
-                "Script to run after a TestCase Run"));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildLog(), "LoadTest Log", "The current LoadTest execution log", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildAssertions(), "LoadTest Assertions", "The assertions for this LoadTest", true));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildSetupScriptPanel(), "Setup Script", "Script to run before tunning a TestCase"));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildTearDownScriptPanel(), "TearDown Script", "Script to run after a TestCase Run"));
     }
 
     protected GroovyEditorComponent buildTearDownScriptPanel() {
@@ -203,8 +184,7 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         statisticsGraphButton.setEnabled(getModelItem().getHistoryLimit() != 0);
         testTimesGraphButton.setEnabled(getModelItem().getHistoryLimit() != 0);
 
-        AbstractAction optionsDelegate = SwingActionDelegate.createDelegate(LoadTestOptionsAction.SOAPUI_ACTION_ID,
-                loadTest);
+        AbstractAction optionsDelegate = SwingActionDelegate.createDelegate(LoadTestOptionsAction.SOAPUI_ACTION_ID, loadTest);
         optionsDelegate.putValue(Action.SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
         optionsButton = UISupport.createToolbarButton(optionsDelegate);
 
@@ -252,7 +232,7 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         threadsSpinner.getModel().addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                getModelItem().setThreadCount(((SpinnerNumberModel) threadsSpinner.getModel()).getNumber().intValue());
+                getModelItem().setThreadCount(((SpinnerNumberModel)threadsSpinner.getModel()).getNumber().intValue());
             }
         });
 
@@ -284,7 +264,7 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         limitSpinner.getModel().addChangeListener(new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                int intValue = ((SpinnerNumberModel) limitSpinner.getModel()).getNumber().intValue();
+                int intValue = ((SpinnerNumberModel)limitSpinner.getModel()).getNumber().intValue();
                 getModelItem().setTestLimit(intValue);
             }
         });
@@ -295,12 +275,14 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         toolbar.addFixed(limitSpinner);
         toolbar.addSeparator();
 
-        limitTypeCombo = new JComboBox(new String[]{WsdlLoadTestDesktopPanel.RUNS_LIMIT,
-                WsdlLoadTestDesktopPanel.SECONDS_LIMIT, WsdlLoadTestDesktopPanel.RUNS_PER_THREAD_LIMIT});
+        limitTypeCombo = new JComboBox(new String[]{
+            RUNS_LIMIT, SECONDS_LIMIT, RUNS_PER_THREAD_LIMIT
+        });
 
         if (getModelItem().getLimitType() == LoadTestLimitTypesConfig.TIME) {
             limitTypeCombo.setSelectedIndex(1);
-        } else if (getModelItem().getLimitType() == LoadTestLimitTypesConfig.COUNT_PER_THREAD) {
+        }
+        else if (getModelItem().getLimitType() == LoadTestLimitTypesConfig.COUNT_PER_THREAD) {
             limitTypeCombo.setSelectedIndex(2);
         }
 
@@ -310,11 +292,13 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         limitTypeCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 Object item = e.getItem();
-                if (WsdlLoadTestDesktopPanel.RUNS_LIMIT.equals(item)) {
+                if (RUNS_LIMIT.equals(item)) {
                     getModelItem().setLimitType(LoadTestLimitTypesConfig.COUNT);
-                } else if (WsdlLoadTestDesktopPanel.SECONDS_LIMIT.equals(item)) {
+                }
+                else if (SECONDS_LIMIT.equals(item)) {
                     getModelItem().setLimitType(LoadTestLimitTypesConfig.TIME);
-                } else if (WsdlLoadTestDesktopPanel.RUNS_PER_THREAD_LIMIT.equals(item)) {
+                }
+                else if (RUNS_PER_THREAD_LIMIT.equals(item)) {
                     getModelItem().setLimitType(LoadTestLimitTypesConfig.COUNT_PER_THREAD);
                 }
             }
@@ -357,11 +341,54 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         return release();
     }
 
+    public boolean dependsOn(ModelItem modelItem) {
+        WsdlLoadTest loadTest = getModelItem();
+
+        return modelItem == loadTest ||
+               modelItem == loadTest.getTestCase() ||
+               modelItem == loadTest.getTestCase().getTestSuite() ||
+               modelItem == loadTest.getTestCase().getTestSuite().getProject();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(WsdlLoadTest.THREADCOUNT_PROPERTY)) {
+            threadsSpinner.setValue(evt.getNewValue());
+        }
+        else if (evt.getPropertyName().equals(WsdlLoadTest.HISTORYLIMIT_PROPERTY)) {
+            long lng = (Long)evt.getNewValue();
+
+            statisticsGraphButton.setEnabled(lng != 0);
+            testTimesGraphButton.setEnabled(lng != 0);
+        }
+
+        super.propertyChange(evt);
+    }
+
+    public void setLoadStrategy(String type) {
+        LoadStrategyFactory factory = LoadStrategyRegistry.getInstance().getFactory(type);
+        LoadStrategy loadStrategy = factory.create(getModelItem());
+        getModelItem().setLoadStrategy(loadStrategy);
+        loadStrategyConfigurationPanel.removeAll();
+        loadStrategyConfigurationPanel.add(loadStrategy.getConfigurationPanel(), BorderLayout.CENTER);
+        loadStrategyConfigurationPanel.revalidate();
+    }
+
+    @Override
+    protected void renameModelItem() {
+        SoapUI.getActionRegistry().performAction("RenameLoadTestAction", getModelItem(), null);
+    }
+
+    @Override
+    protected void cloneModelItem() {
+        SoapUI.getActionRegistry().performAction("CloneLoadTestAction", getModelItem(), null);
+    }
+
     private final class InternalDesktopListener extends DesktopListenerAdapter {
         public void desktopPanelClosed(DesktopPanel desktopPanel) {
             if (desktopPanel == statisticsDesktopPanel) {
                 statisticsDesktopPanel = null;
-            } else if (desktopPanel == statisticsHistoryDesktopPanel) {
+            }
+            else if (desktopPanel == statisticsHistoryDesktopPanel) {
                 statisticsHistoryDesktopPanel = null;
             }
         }
@@ -369,8 +396,8 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
 
     public class RunLoadTestAction extends AbstractAction {
         public RunLoadTestAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Runs this LoadTest");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Runs this LoadTest");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -381,10 +408,8 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
                 return;
             }
 
-            if (loadtest.getLimitType() == LoadTestLimitTypesConfig.COUNT
-                    && loadtest.getTestLimit() < loadtest.getThreadCount()) {
-                if (!UISupport.confirm("The run limit is set to a lower count than number of threads\nRun Anyway?",
-                        "Run LoadTest")) {
+            if (loadtest.getLimitType() == LoadTestLimitTypesConfig.COUNT && loadtest.getTestLimit() < loadtest.getThreadCount()) {
+                if (!UISupport.confirm("The run limit is set to a lower count than number of threads\nRun Anyway?", "Run LoadTest")) {
                     return;
                 }
             }
@@ -396,8 +421,8 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
 
     public class ResetAction extends AbstractAction {
         public ResetAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/reset_loadtest_statistics.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Resets statistics for this LoadTest");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/reset_loadtest_statistics.gif"));
+            putValue(SHORT_DESCRIPTION, "Resets statistics for this LoadTest");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -407,8 +432,8 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
 
     public class ShowStatisticsGraphAction extends AbstractAction {
         public ShowStatisticsGraphAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/stats_graph.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Shows the statistics graph");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/stats_graph.gif"));
+            putValue(SHORT_DESCRIPTION, "Shows the statistics graph");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -422,8 +447,8 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
 
     public class ShowTestTimesGraphAction extends AbstractAction {
         public ShowTestTimesGraphAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/samples_graph.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Shows the Statistics History graph");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/samples_graph.gif"));
+            putValue(SHORT_DESCRIPTION, "Shows the Statistics History graph");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -438,8 +463,8 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
     public class CancelRunTestCaseAction extends AbstractAction {
 
         public CancelRunTestCaseAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/stop.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Stops running this LoadTest");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/stop.png"));
+            putValue(SHORT_DESCRIPTION, "Stops running this LoadTest");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -450,23 +475,6 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         }
     }
 
-    public boolean dependsOn(ModelItem modelItem) {
-        WsdlLoadTest loadTest = getModelItem();
-
-        return modelItem == loadTest || modelItem == loadTest.getTestCase()
-                || modelItem == loadTest.getTestCase().getTestSuite()
-                || modelItem == loadTest.getTestCase().getTestSuite().getProject();
-    }
-
-    public void setLoadStrategy(String type) {
-        LoadStrategyFactory factory = LoadStrategyRegistry.getInstance().getFactory(type);
-        LoadStrategy loadStrategy = factory.create(getModelItem());
-        getModelItem().setLoadStrategy(loadStrategy);
-        loadStrategyConfigurationPanel.removeAll();
-        loadStrategyConfigurationPanel.add(loadStrategy.getConfigurationPanel(), BorderLayout.CENTER);
-        loadStrategyConfigurationPanel.revalidate();
-    }
-
     private class InternalLoadTestListener extends LoadTestRunListenerAdapter {
         public void beforeLoadTest(LoadTestRunner testRunner, LoadTestRunContext context) {
             loadTestLog.clear();
@@ -475,7 +483,8 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
             if (getModelItem().getTestLimit() > 0) {
                 progressBar.setValue(0);
                 progressBar.setString(null);
-            } else {
+            }
+            else {
                 progressBar.setString("...");
             }
 
@@ -506,7 +515,8 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
             if (progressBar.isIndeterminate()) {
                 progressBar.setIndeterminate(false);
                 progressBar.setValue(0);
-            } else if (testRunner.getStatus() == Status.FINISHED) {
+            }
+            else if (testRunner.getStatus() == Status.FINISHED) {
                 progressBar.setValue(100);
             }
 
@@ -514,7 +524,6 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
                 UISupport.showErrorMessage("LoadTest failed; " + testRunner.getReason());
             }
         }
-
     }
 
     private class ProgressBarUpdater implements Runnable {
@@ -529,58 +538,45 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
                         progressBar.setIndeterminate(true);
                         progressBar.setString("...");
                     }
-                } else {
+                }
+                else {
                     if (loadTestIsRunning && progressBar.isIndeterminate()) {
                         progressBar.setIndeterminate(false);
                         progressBar.setString(null);
                     }
 
-                    progressBar.setValue(runner == null ? 0 : (int) (runner.getProgress() * 100));
+                    progressBar.setValue(runner == null ? 0 : (int)(runner.getProgress() * 100));
                 }
 
                 try {
                     Thread.sleep(500);
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e) {
                     SoapUI.logError(e);
                 }
             }
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(WsdlLoadTest.THREADCOUNT_PROPERTY)) {
-            threadsSpinner.setValue(evt.getNewValue());
-        } else if (evt.getPropertyName().equals(WsdlLoadTest.HISTORYLIMIT_PROPERTY)) {
-            long lng = (Long) evt.getNewValue();
-
-            statisticsGraphButton.setEnabled(lng != 0);
-            testTimesGraphButton.setEnabled(lng != 0);
+    private class SetupScriptGroovyEditorModel extends AbstractGroovyEditorModel {
+        public SetupScriptGroovyEditorModel() {
+            super(new String[]{"log", "context", "loadTestRunner"}, WsdlLoadTestDesktopPanel.this.getModelItem(), "Setup");
         }
 
-        super.propertyChange(evt);
-    }
-
-    private class SetupScriptGroovyEditorModel extends AbstractGroovyEditorModel {
         @Override
         public Action createRunAction() {
             return new AbstractAction() {
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        MockLoadTestRunner mockTestRunner = new MockLoadTestRunner(
-                                WsdlLoadTestDesktopPanel.this.getModelItem(), SoapUI.ensureGroovyLog());
-                        WsdlLoadTestDesktopPanel.this.getModelItem().runSetupScript(
-                                new MockLoadTestRunContext(mockTestRunner), mockTestRunner);
-                    } catch (Exception e1) {
+                        MockLoadTestRunner mockTestRunner = new MockLoadTestRunner(WsdlLoadTestDesktopPanel.this.getModelItem(), SoapUI.ensureGroovyLog());
+                        WsdlLoadTestDesktopPanel.this.getModelItem().runSetupScript(new MockLoadTestRunContext(mockTestRunner), mockTestRunner);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
             };
-        }
-
-        public SetupScriptGroovyEditorModel() {
-            super(new String[]{"log", "context", "loadTestRunner"}, WsdlLoadTestDesktopPanel.this.getModelItem(),
-                    "Setup");
         }
 
         public String getScript() {
@@ -593,26 +589,24 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
     }
 
     private class TearDownScriptGroovyEditorModel extends AbstractGroovyEditorModel {
+        public TearDownScriptGroovyEditorModel() {
+            super(new String[]{"log", "context", "loadTestRunner"}, WsdlLoadTestDesktopPanel.this.getModelItem(), "TearDown");
+        }
+
         @Override
         public Action createRunAction() {
             return new AbstractAction() {
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        MockLoadTestRunner mockTestRunner = new MockLoadTestRunner(
-                                WsdlLoadTestDesktopPanel.this.getModelItem(), SoapUI.ensureGroovyLog());
-                        WsdlLoadTestDesktopPanel.this.getModelItem().runTearDownScript(
-                                new MockLoadTestRunContext(mockTestRunner), mockTestRunner);
-                    } catch (Exception e1) {
+                        MockLoadTestRunner mockTestRunner = new MockLoadTestRunner(WsdlLoadTestDesktopPanel.this.getModelItem(), SoapUI.ensureGroovyLog());
+                        WsdlLoadTestDesktopPanel.this.getModelItem().runTearDownScript(new MockLoadTestRunContext(mockTestRunner), mockTestRunner);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
             };
-        }
-
-        public TearDownScriptGroovyEditorModel() {
-            super(new String[]{"log", "context", "loadTestRunner"}, WsdlLoadTestDesktopPanel.this.getModelItem(),
-                    "TearDown");
         }
 
         public String getScript() {
@@ -622,15 +616,5 @@ public class WsdlLoadTestDesktopPanel extends KeySensitiveModelItemDesktopPanel<
         public void setScript(String text) {
             WsdlLoadTestDesktopPanel.this.getModelItem().setTearDownScript(text);
         }
-    }
-
-    @Override
-    protected void renameModelItem() {
-        SoapUI.getActionRegistry().performAction("RenameLoadTestAction", getModelItem(), null);
-    }
-
-    @Override
-    protected void cloneModelItem() {
-        SoapUI.getActionRegistry().performAction("CloneLoadTestAction", getModelItem(), null);
     }
 }

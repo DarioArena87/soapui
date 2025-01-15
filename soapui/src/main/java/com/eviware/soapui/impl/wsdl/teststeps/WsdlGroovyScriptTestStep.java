@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -39,7 +39,7 @@ import com.smartbear.soapui.core.Logging;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 
 import static com.eviware.soapui.impl.wsdl.teststeps.Script.RESULT_PROPERTY;
 import static com.eviware.soapui.impl.wsdl.teststeps.Script.SCRIPT_PROPERTY;
@@ -56,7 +56,7 @@ public class WsdlGroovyScriptTestStep extends WsdlTestStepWithProperties impleme
     private Object scriptResult;
     private ImageIcon failedIcon;
     private ImageIcon okIcon;
-    private SoapUIScriptEngine scriptEngine;
+    private final SoapUIScriptEngine scriptEngine;
 
     public WsdlGroovyScriptTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
         super(testCase, config, true, forLoadTest);
@@ -71,7 +71,8 @@ public class WsdlGroovyScriptTestStep extends WsdlTestStepWithProperties impleme
             if (!forLoadTest) {
                 saveScript(config);
             }
-        } else {
+        }
+        else {
             readConfig(config);
         }
 
@@ -89,7 +90,8 @@ public class WsdlGroovyScriptTestStep extends WsdlTestStepWithProperties impleme
         if (forLoadTest && !isDisabled()) {
             try {
                 scriptEngine.compile();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -124,10 +126,11 @@ public class WsdlGroovyScriptTestStep extends WsdlTestStepWithProperties impleme
         SoapUI.ensureGroovyLog();
 
         WsdlTestStepResult result = new WsdlTestStepResult(this);
-        Logger log = (Logger) context.getProperty("log");
+        Logger log = (Logger)context.getProperty("log");
         if (log == null) {
             log = logger;
-        } else {
+        }
+        else {
             Logging.addAppender(log.getName(), Logging.getAppender(Logging.GLOBAL_GROOVY_LOG));
         }
 
@@ -144,11 +147,10 @@ public class WsdlGroovyScriptTestStep extends WsdlTestStepWithProperties impleme
                     result.stopTimer();
 
                     if (scriptResult != null) {
-                        result.addMessage("Script-result: " + scriptResult.toString());
+                        result.addMessage("Script-result: " + scriptResult);
                         // FIXME The property should not me hard coded
                         firePropertyValueChanged(RESULT_PROPERTY, null, String.valueOf(result));
                     }
-
                 }
             }
 
@@ -156,12 +158,15 @@ public class WsdlGroovyScriptTestStep extends WsdlTestStepWithProperties impleme
             Status testRunnerStatus = testRunner.getStatus();
             if (testRunnerStatus == Status.FAILED) {
                 result.setStatus(TestStepStatus.FAILED);
-            } else if (testRunnerStatus == Status.CANCELED) {
+            }
+            else if (testRunnerStatus == Status.CANCELED) {
                 result.setStatus(TestStepStatus.CANCELED);
-            } else {
+            }
+            else {
                 result.setStatus(TestStepStatus.OK);
             }
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             String errorLineNumber = GroovyUtils.extractErrorLineNumber(e);
 
             SoapUI.logError(e);
@@ -172,7 +177,8 @@ public class WsdlGroovyScriptTestStep extends WsdlTestStepWithProperties impleme
             }
             result.setError(e);
             result.setStatus(TestStepStatus.FAILED);
-        } finally {
+        }
+        finally {
             if (!isForLoadTest()) {
                 setIcon(result.getStatus() == TestStepStatus.FAILED ? failedIcon : okIcon);
             }

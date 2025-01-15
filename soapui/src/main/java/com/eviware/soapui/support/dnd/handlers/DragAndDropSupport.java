@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.dnd.handlers;
@@ -32,8 +32,7 @@ import java.util.Set;
 public class DragAndDropSupport {
 
     public static boolean copyTestStep(WsdlTestStep source, WsdlTestCase target, int defaultPosition) {
-        String name = UISupport.prompt("Enter name for copied TestStep", "Copy TestStep",
-                target == source.getTestCase() ? "Copy of " + source.getName() : source.getName());
+        String name = UISupport.prompt("Enter name for copied TestStep", "Copy TestStep", target == source.getTestCase() ? "Copy of " + source.getName() : source.getName());
         if (name == null) {
             return false;
         }
@@ -42,8 +41,7 @@ public class DragAndDropSupport {
         WsdlProject targetProject = target.getTestSuite().getProject();
 
         if (sourceProject != targetProject) {
-            if (!importRequiredInterfaces(targetProject, new HashSet<Interface>(source.getRequiredInterfaces()),
-                    "Copy Test Step")) {
+            if (!importRequiredInterfaces(targetProject, new HashSet<Interface>(source.getRequiredInterfaces()), "Copy Test Step")) {
                 return false;
             }
         }
@@ -79,7 +77,7 @@ public class DragAndDropSupport {
             }
 
             for (Interface iface : requiredInterfaces) {
-                ((WsdlProject) project).importInterface((AbstractInterface<?>) iface, true, true);
+                ((WsdlProject)project).importInterface((AbstractInterface<?>)iface, true, true);
             }
         }
 
@@ -92,14 +90,16 @@ public class DragAndDropSupport {
 
             if (defaultPosition == -1) {
                 target.moveTestStep(ix, target.getTestStepCount() - ix);
-            } else if (ix >= 0 && defaultPosition != ix) {
+            }
+            else if (ix >= 0 && defaultPosition != ix) {
                 int offset = defaultPosition - ix;
                 if (offset > 0) {
                     offset--;
                 }
                 target.moveTestStep(ix, offset);
             }
-        } else {
+        }
+        else {
             String name = UISupport.prompt("Enter name for moved TestStep", "Move TestStep", source.getName());
             if (name == null) {
                 return false;
@@ -109,13 +109,12 @@ public class DragAndDropSupport {
             WsdlProject targetProject = target.getTestSuite().getProject();
 
             if (sourceProject != targetProject) {
-                if (!importRequiredInterfaces(targetProject, new HashSet<Interface>(source.getRequiredInterfaces()),
-                        "Move Test Step")) {
+                if (!importRequiredInterfaces(targetProject, new HashSet<Interface>(source.getRequiredInterfaces()), "Move Test Step")) {
                     return false;
                 }
             }
 
-            final WsdlTestStep result = target.importTestStep(source, name, defaultPosition, false);
+            WsdlTestStep result = target.importTestStep(source, name, defaultPosition, false);
             if (result == null) {
                 return false;
             }
@@ -124,5 +123,4 @@ public class DragAndDropSupport {
 
         return true;
     }
-
 }

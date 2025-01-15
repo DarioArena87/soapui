@@ -6,16 +6,16 @@ import com.eviware.soapui.impl.actions.NewWsdlProjectAction;
 import com.eviware.soapui.impl.rest.actions.explorer.EndpointExplorerAction;
 import com.eviware.soapui.model.workspace.Workspace;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 public class StarterPageButtonCallback {
 
     public static String CALLBACK = "buttonCallback";
 
-    private WorkspaceImpl workspace;
+    private final WorkspaceImpl workspace;
 
     public StarterPageButtonCallback(Workspace workspace) {
-        this.workspace = (WorkspaceImpl) workspace;
+        this.workspace = (WorkspaceImpl)workspace;
     }
 
     public void createSoapProject() {

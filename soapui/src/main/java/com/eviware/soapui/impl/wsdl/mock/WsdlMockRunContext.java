@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock;
@@ -45,9 +45,9 @@ import java.util.Set;
  */
 
 public class WsdlMockRunContext implements MockRunContext, Map<String, Object>, TestCaseRunContext, Cloneable {
-    private DefaultPropertyExpansionContext properties;
     private final MockService mockService;
     private final WsdlTestRunContext context;
+    private DefaultPropertyExpansionContext properties;
     private MockResponse mockResponse;
 
     public WsdlMockRunContext(MockService mockService, WsdlTestRunContext context) {
@@ -61,20 +61,35 @@ public class WsdlMockRunContext implements MockRunContext, Map<String, Object>, 
         return mockService;
     }
 
+    public MockResponse getMockResponse() {
+        return mockResponse;
+    }
+
+    public void setMockResponse(MockResponse mockResponse) {
+        this.mockResponse = mockResponse;
+    }
+
+    public synchronized StringToStringMap toStringToStringMap() {
+        synchronized (properties) {
+            StringToStringMap result = new StringToStringMap();
+
+            for (String key : properties.keySet()) {
+                Object value = properties.get(key);
+                if (value != null) {
+                    result.put(key, value.toString());
+                }
+            }
+
+            return result;
+        }
+    }
+
+    public MockRunner getMockRunner() {
+        return mockService.getMockRunner();
+    }
+
     public Object getProperty(String name) {
         return get(name);
-    }
-
-    public synchronized boolean hasProperty(String name) {
-        synchronized (properties) {
-            return properties.containsKey(name);
-        }
-    }
-
-    public synchronized Object removeProperty(String name) {
-        synchronized (properties) {
-            return properties.remove(name);
-        }
     }
 
     public synchronized void setProperty(String name, Object value) {
@@ -98,30 +113,73 @@ public class WsdlMockRunContext implements MockRunContext, Map<String, Object>, 
         }
     }
 
-    public synchronized StringToStringMap toStringToStringMap() {
+    public synchronized boolean hasProperty(String name) {
         synchronized (properties) {
-            StringToStringMap result = new StringToStringMap();
-
-            for (String key : properties.keySet()) {
-                Object value = properties.get(key);
-                if (value != null) {
-                    result.put(key, value.toString());
-                }
-            }
-
-            return result;
+            return properties.containsKey(name);
         }
     }
 
-    public synchronized void clear() {
+    public synchronized Object removeProperty(String name) {
         synchronized (properties) {
-            properties.clear();
+            return properties.remove(name);
+        }
+    }
+
+    public synchronized String[] getPropertyNames() {
+        synchronized (properties) {
+            return properties.keySet().toArray(new String[properties.size()]);
+        }
+    }
+
+    public ModelItem getModelItem() {
+        return mockResponse == null ? mockService : mockResponse;
+    }
+
+    public synchronized String expand(String content) {
+        synchronized (properties) {
+            return PropertyExpander.expandProperties(this, content);
+        }
+    }
+
+    public synchronized StringToObjectMap getProperties() {
+        synchronized (properties) {
+            return properties;
+        }
+    }
+
+    public synchronized int hashCode() {
+        synchronized (properties) {
+            return properties.hashCode();
+        }
+    }
+
+    public synchronized boolean equals(Object arg0) {
+        synchronized (properties) {
+            return properties.equals(arg0);
         }
     }
 
     public synchronized Object clone() {
         synchronized (properties) {
             return properties.clone();
+        }
+    }
+
+    public synchronized String toString() {
+        synchronized (properties) {
+            return properties.toString();
+        }
+    }
+
+    public synchronized int size() {
+        synchronized (properties) {
+            return properties.size();
+        }
+    }
+
+    public synchronized boolean isEmpty() {
+        synchronized (properties) {
+            return properties.isEmpty();
         }
     }
 
@@ -134,18 +192,6 @@ public class WsdlMockRunContext implements MockRunContext, Map<String, Object>, 
     public synchronized boolean containsValue(Object arg0) {
         synchronized (properties) {
             return properties.containsValue(arg0);
-        }
-    }
-
-    public synchronized Set<Entry<String, Object>> entrySet() {
-        synchronized (properties) {
-            return properties.entrySet();
-        }
-    }
-
-    public synchronized boolean equals(Object arg0) {
-        synchronized (properties) {
-            return properties.equals(arg0);
         }
     }
 
@@ -187,27 +233,15 @@ public class WsdlMockRunContext implements MockRunContext, Map<String, Object>, 
         }
     }
 
-    public synchronized int hashCode() {
-        synchronized (properties) {
-            return properties.hashCode();
-        }
-    }
-
-    public synchronized boolean isEmpty() {
-        synchronized (properties) {
-            return properties.isEmpty();
-        }
-    }
-
-    public synchronized Set<String> keySet() {
-        synchronized (properties) {
-            return properties.keySet();
-        }
-    }
-
     public synchronized Object put(String arg0, Object arg1) {
         synchronized (properties) {
             return properties.put(arg0, arg1);
+        }
+    }
+
+    public synchronized Object remove(Object arg0) {
+        synchronized (properties) {
+            return properties.remove(arg0);
         }
     }
 
@@ -219,27 +253,27 @@ public class WsdlMockRunContext implements MockRunContext, Map<String, Object>, 
         }
     }
 
-    public synchronized Object remove(Object arg0) {
+    public synchronized void clear() {
         synchronized (properties) {
-            return properties.remove(arg0);
+            properties.clear();
         }
     }
 
-    public synchronized int size() {
+    public synchronized Set<String> keySet() {
         synchronized (properties) {
-            return properties.size();
-        }
-    }
-
-    public synchronized String toString() {
-        synchronized (properties) {
-            return properties.toString();
+            return properties.keySet();
         }
     }
 
     public synchronized Collection<Object> values() {
         synchronized (properties) {
             return properties.values();
+        }
+    }
+
+    public synchronized Set<Entry<String, Object>> entrySet() {
+        synchronized (properties) {
+            return properties.entrySet();
         }
     }
 
@@ -251,10 +285,6 @@ public class WsdlMockRunContext implements MockRunContext, Map<String, Object>, 
         return context == null ? -1 : context.getCurrentStepIndex();
     }
 
-    public synchronized Object getProperty(String testStep, String propertyName) {
-        return context == null ? null : context.getProperty(testStep, propertyName);
-    }
-
     public synchronized TestCaseRunner getTestRunner() {
         return context == null ? null : context.getTestRunner();
     }
@@ -263,46 +293,15 @@ public class WsdlMockRunContext implements MockRunContext, Map<String, Object>, 
         return context == null ? null : context.getTestCase();
     }
 
+    public synchronized Object getProperty(String testStep, String propertyName) {
+        return context == null ? null : context.getProperty(testStep, propertyName);
+    }
+
     public synchronized Settings getSettings() {
         return context == null ? mockService.getSettings() : context.getTestCase().getSettings();
     }
 
-    public void setMockResponse(MockResponse mockResponse) {
-        this.mockResponse = mockResponse;
-    }
-
-    public MockResponse getMockResponse() {
-        return mockResponse;
-    }
-
-    public ModelItem getModelItem() {
-        return mockResponse == null ? mockService : mockResponse;
-    }
-
-    public synchronized String expand(String content) {
-        synchronized (properties) {
-            return PropertyExpander.expandProperties(this, content);
-        }
-    }
-
-    public synchronized String[] getPropertyNames() {
-        synchronized (properties) {
-            return properties.keySet().toArray(new String[properties.size()]);
-        }
-    }
-
-    public synchronized StringToObjectMap getProperties() {
-        synchronized (properties) {
-            return properties;
-        }
-    }
-
-    public MockRunner getMockRunner() {
-        return mockService.getMockRunner();
-    }
-
     public void reset() {
-        properties = (DefaultPropertyExpansionContext) (context == null ? new DefaultPropertyExpansionContext(
-                mockService) : context.getProperties());
+        properties = (DefaultPropertyExpansionContext)(context == null ? new DefaultPropertyExpansionContext(mockService) : context.getProperties());
     }
 }

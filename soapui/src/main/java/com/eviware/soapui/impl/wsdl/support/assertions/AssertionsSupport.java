@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.assertions;
@@ -44,10 +44,10 @@ import java.util.Map;
  */
 
 public class AssertionsSupport implements PropertyChangeListener {
-    private List<AssertionsListener> assertionsListeners = new ArrayList<AssertionsListener>();
-    private List<WsdlMessageAssertion> assertions = new ArrayList<WsdlMessageAssertion>();
     private final Assertable assertable;
-    private AssertableConfig assertableConfig;
+    private final List<AssertionsListener> assertionsListeners = new ArrayList<AssertionsListener>();
+    private final List<WsdlMessageAssertion> assertions = new ArrayList<WsdlMessageAssertion>();
+    private final AssertableConfig assertableConfig;
 
     public AssertionsSupport(Assertable assertable, AssertableConfig assertableConfig) {
         this.assertable = assertable;
@@ -63,13 +63,15 @@ public class AssertionsSupport implements PropertyChangeListener {
             WsdlMessageAssertion assertion = TestAssertionRegistry.getInstance().buildAssertion(config, assertable);
             if (assertion == null) {
                 return null;
-            } else {
+            }
+            else {
                 assertions.add(assertion);
                 assertion.addPropertyChangeListener(this);
 
                 return assertion;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return null;
         }
@@ -78,7 +80,7 @@ public class AssertionsSupport implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent event) {
         if (assertable instanceof PropertyChangeListener) {
             if (!ModelItem.NAME_PROPERTY.equals(event.getPropertyName())) {
-                ((PropertyChangeListener) assertable).propertyChange(event);
+                ((PropertyChangeListener)assertable).propertyChange(event);
             }
         }
     }
@@ -144,7 +146,6 @@ public class AssertionsSupport implements PropertyChangeListener {
         assertableConfig.insertAssertion(newConf, ix + offset);
         fireAssertionMoved(newAssertion, ix, offset);
         return newAssertion;
-
     }
 
     public void release() {
@@ -192,7 +193,8 @@ public class AssertionsSupport implements PropertyChangeListener {
             TestAssertionConfig config = assertionList.get(i);
             if (TestAssertionRegistry.getInstance().canBuildAssertion(config)) {
                 assertions.get(i - mod).updateConfig(config);
-            } else {
+            }
+            else {
                 mod++;
             }
         }
@@ -234,8 +236,9 @@ public class AssertionsSupport implements PropertyChangeListener {
         return result;
     }
 
-    public WsdlMessageAssertion importAssertion(WsdlMessageAssertion source, boolean overwrite, boolean createCopy,
-                                                String newName) {
+    public WsdlMessageAssertion importAssertion(
+        WsdlMessageAssertion source, boolean overwrite, boolean createCopy, String newName
+    ) {
         TestAssertionConfig conf = assertableConfig.addNewAssertion();
         conf.set(source.getConfig());
         conf.setName(newName);
@@ -261,13 +264,12 @@ public class AssertionsSupport implements PropertyChangeListener {
 
     public TestAssertion cloneAssertion(TestAssertion source, String name) {
         TestAssertionConfig conf = assertableConfig.addNewAssertion();
-        conf.set(((WsdlMessageAssertion) source).getConfig());
+        conf.set(((WsdlMessageAssertion)source).getConfig());
         conf.setName(name);
 
         WsdlMessageAssertion result = addWsdlAssertion(conf);
         fireAssertionAdded(result);
         return result;
-
     }
 
     public WsdlMessageAssertion addWsdlAssertion(String assertionLabel) {
@@ -278,16 +280,15 @@ public class AssertionsSupport implements PropertyChangeListener {
             String name = assertionLabel;
             while (getAssertionByName(name.trim()) != null) {
                 name = UISupport.prompt(
-                        "Specify unique name of Assertion",
-                        "Rename Assertion",
-                        assertionLabel
-                                + " "
-                                + (getAssertionsOfType(TestAssertionRegistry.getInstance().getAssertionClassType(
-                                assertionConfig)).size()));
+                    "Specify unique name of Assertion",
+                    "Rename Assertion",
+                    assertionLabel + " " + (getAssertionsOfType(TestAssertionRegistry.getInstance().getAssertionClassType(assertionConfig)).size())
+                );
                 if (name == null) {
                     if (UISupport.isUsingConsoleDialogs()) {
                         name = ModelItemNamer.createName(assertionLabel, assertions);
-                    } else {
+                    }
+                    else {
                         return null;
                     }
                 }
@@ -303,7 +304,8 @@ public class AssertionsSupport implements PropertyChangeListener {
             fireAssertionAdded(assertion);
 
             return assertion;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return null;
         }
@@ -322,7 +324,8 @@ public class AssertionsSupport implements PropertyChangeListener {
             if (!assertion.isDisabled()) {
                 if (assertion.getStatus() == Assertable.AssertionStatus.FAILED) {
                     return Assertable.AssertionStatus.FAILED;
-                } else if (assertion.getStatus() == Assertable.AssertionStatus.VALID) {
+                }
+                else if (assertion.getStatus() == Assertable.AssertionStatus.VALID) {
                     assertionStatus = Assertable.AssertionStatus.VALID;
                 }
             }

@@ -12,13 +12,13 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
-import javax.swing.text.Segment;
-
 import org.syntax.jedit.KeywordMap;
+
+import javax.swing.text.Segment;
 
 /**
  * SQL token marker.
@@ -27,7 +27,12 @@ import org.syntax.jedit.KeywordMap;
  * @version $Id: SQLTokenMarker.java,v 1.6 1999/04/19 05:38:20 sp Exp $
  */
 public class SQLTokenMarker extends TokenMarker {
+    // protected members
+    protected boolean isTSQL = false;
     private int offset, lastOffset, lastKeyword, length;
+    // private members
+    private final KeywordMap keywords;
+    private char literalChar = 0;
 
     // public members
     public SQLTokenMarker(KeywordMap k) {
@@ -52,7 +57,8 @@ public class SQLTokenMarker extends TokenMarker {
                         i++;
                         addToken((i + 1) - lastOffset, Token.COMMENT1);
                         lastOffset = i + 1;
-                    } else if (token == Token.NULL) {
+                    }
+                    else if (token == Token.NULL) {
                         searchBack(line, i);
                         addToken(1, Token.OPERATOR);
                         lastOffset = i + 1;
@@ -118,7 +124,8 @@ public class SQLTokenMarker extends TokenMarker {
                             token = Token.COMMENT1;
                             lastOffset = i;
                             i++;
-                        } else {
+                        }
+                        else {
                             searchBack(line, i);
                             addToken(1, Token.OPERATOR);
                             lastOffset = i + 1;
@@ -132,7 +139,8 @@ public class SQLTokenMarker extends TokenMarker {
                             addToken(length - i, Token.COMMENT1);
                             lastOffset = length;
                             break loop;
-                        } else {
+                        }
+                        else {
                             searchBack(line, i);
                             addToken(1, Token.OPERATOR);
                             lastOffset = i + 1;
@@ -140,8 +148,7 @@ public class SQLTokenMarker extends TokenMarker {
                     }
                     break;
                 case '!':
-                    if (isTSQL && token == Token.NULL && length - i >= 2
-                            && (line.array[i + 1] == '=' || line.array[i + 1] == '<' || line.array[i + 1] == '>')) {
+                    if (isTSQL && token == Token.NULL && length - i >= 2 && (line.array[i + 1] == '=' || line.array[i + 1] == '<' || line.array[i + 1] == '>')) {
                         searchBack(line, i);
                         addToken(1, Token.OPERATOR);
                         lastOffset = i + 1;
@@ -154,7 +161,8 @@ public class SQLTokenMarker extends TokenMarker {
                         literalChar = line.array[i];
                         addToken(i - lastOffset, Token.NULL);
                         lastOffset = i;
-                    } else if (token == Token.LITERAL1 && literalChar == line.array[i]) {
+                    }
+                    else if (token == Token.LITERAL1 && literalChar == line.array[i]) {
                         token = Token.NULL;
                         literalChar = 0;
                         addToken((i + 1) - lastOffset, Token.LITERAL1);
@@ -173,13 +181,6 @@ public class SQLTokenMarker extends TokenMarker {
         }
         return token;
     }
-
-    // protected members
-    protected boolean isTSQL = false;
-
-    // private members
-    private KeywordMap keywords;
-    private char literalChar = 0;
 
     private void searchBack(Segment line, int pos) {
         searchBack(line, pos, true);

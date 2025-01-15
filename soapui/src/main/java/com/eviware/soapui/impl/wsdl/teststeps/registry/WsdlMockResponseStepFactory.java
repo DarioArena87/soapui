@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.registry;
@@ -56,9 +56,64 @@ public class WsdlMockResponseStepFactory extends WsdlTestStepFactory {
     private static XFormDialog dialog;
     private static WsdlProject project;
 
+    public static TestStepConfig createConfig(WsdlOperation operation, boolean interactive) {
+        return createConfig(operation, null, interactive);
+    }
+
+    public static TestStepConfig createConfig(WsdlRequest request, boolean interactive) {
+        return createConfig(request.getOperation(), request, interactive);
+    }
+
+    public static TestStepConfig createConfig(WsdlOperation operation, WsdlRequest request, boolean interactive) {
+        if (interactive) {
+            ensureDialog();
+
+            dialog.setValue(CreateForm.INTERFACE, operation.getInterface().getName());
+            dialog.setValue(CreateForm.OPERATION, operation.getName());
+            dialog.setBooleanValue(CreateForm.CREATE_RESPONSE, request.getResponse() == null);
+
+            return createFromDialog(operation.getInterface().getProject(), request.getName() + " Response");
+        }
+        else {
+            TestStepConfig testStepConfig = TestStepConfig.Factory.newInstance();
+            testStepConfig.setType(MOCKRESPONSE_TYPE);
+            testStepConfig.setName("Mock Response");
+
+            MockResponseStepConfig config = MockResponseStepConfig.Factory.newInstance();
+            config.setInterface(operation.getInterface().getName());
+            config.setOperation(operation.getName());
+            MockResponseConfig response = config.addNewResponse();
+            response.addNewResponseContent();
+
+            if (request != null && request.getResponse() != null) {
+                CompressedStringSupport.setString(response.getResponseContent(), request.getResponse().getContentAsString());
+            }
+
+            testStepConfig.addNewConfig().set(config);
+            return testStepConfig;
+        }
+    }
+
+    public static TestStepConfig createNewTestStep(WsdlMockResponse mockResponse) {
+        WsdlOperation operation = mockResponse.getMockOperation().getOperation();
+        if (operation == null) {
+            UISupport.showErrorMessage("Missing operation for this mock response");
+            return null;
+        }
+
+        ensureDialog();
+
+        dialog.setValue(CreateForm.INTERFACE, operation.getInterface().getName());
+        dialog.setValue(CreateForm.OPERATION, operation.getName());
+        dialog.setBooleanValue(CreateForm.CREATE_RESPONSE, false);
+        dialog.setIntValue(CreateForm.PORT, mockResponse.getMockOperation().getMockService().getPort());
+        dialog.setValue(CreateForm.PATH, mockResponse.getMockOperation().getMockService().getPath());
+
+        return createFromDialog(operation.getInterface().getProject(), mockResponse.getMockOperation().getName() + " - " + mockResponse.getName());
+    }
+
     public WsdlMockResponseStepFactory() {
-        super(MOCKRESPONSE_TYPE, "SOAP Mock Response", "Waits for a request and returns the specified response",
-                "/mockResponseStep.gif");
+        super(MOCKRESPONSE_TYPE, "SOAP Mock Response", "Waits for a request and returns the specified response", "/mockResponseStep.gif");
     }
 
     public WsdlTestStep buildTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
@@ -71,15 +126,31 @@ public class WsdlMockResponseStepFactory extends WsdlTestStepFactory {
         return createFromDialog(testCase.getTestSuite().getProject(), name);
     }
 
+    public boolean canCreate() {
+        return true;
+    }
+
+    @Override
+    public boolean canAddTestStepToTestCase(WsdlTestCase testCase) {
+        for (Interface iface : testCase.getTestSuite().getProject().getInterfaceList()) {
+            if (iface instanceof WsdlInterface && iface.getOperationCount() > 0) {
+
+                return true;
+            }
+        }
+
+        UISupport.showErrorMessage("Missing SOAP Operations to Mock in Project");
+        return false;
+    }
+
     private static void ensureDialog() {
         if (dialog == null) {
             dialog = ADialogBuilder.buildDialog(CreateForm.class);
             dialog.getFormField(CreateForm.INTERFACE).addFormFieldListener(new XFormFieldListener() {
 
                 public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
-                    WsdlInterface iface = (WsdlInterface) project.getInterfaceByName(newValue);
-                    dialog.setOptions(CreateForm.OPERATION,
-                            new ModelItemNames<Operation>(iface.getOperationList()).getNames());
+                    WsdlInterface iface = (WsdlInterface)project.getInterfaceByName(newValue);
+                    dialog.setOptions(CreateForm.OPERATION, new ModelItemNames<Operation>(iface.getOperationList()).getNames());
                 }
             });
 
@@ -106,8 +177,7 @@ public class WsdlMockResponseStepFactory extends WsdlTestStepFactory {
 
             dialog.setValue(CreateForm.NAME, name);
             dialog.setOptions(CreateForm.INTERFACE, new ModelItemNames<Interface>(interfaces).getNames());
-            dialog.setOptions(CreateForm.OPERATION,
-                    new ModelItemNames<Operation>(interfaces.get(0).getOperationList()).getNames());
+            dialog.setOptions(CreateForm.OPERATION, new ModelItemNames<Operation>(interfaces.get(0).getOperationList()).getNames());
 
             if (!dialog.show()) {
                 return null;
@@ -126,21 +196,27 @@ public class WsdlMockResponseStepFactory extends WsdlTestStepFactory {
             config.getResponse().addNewResponseContent();
 
             if (dialog.getBooleanValue(CreateForm.CREATE_RESPONSE)) {
-                WsdlInterface iface = (WsdlInterface) project.getInterfaceByName(config.getInterface());
-                String response = iface.getOperationByName(config.getOperation()).createResponse(
-                        project.getSettings().getBoolean(WsdlSettings.XML_GENERATION_ALWAYS_INCLUDE_OPTIONAL_ELEMENTS));
+                WsdlInterface iface = (WsdlInterface)project.getInterfaceByName(config.getInterface());
+                String response = iface.getOperationByName(config.getOperation())
+                                       .createResponse(project.getSettings().getBoolean(WsdlSettings.XML_GENERATION_ALWAYS_INCLUDE_OPTIONAL_ELEMENTS));
 
                 CompressedStringSupport.setString(config.getResponse().getResponseContent(), response);
             }
 
             testStepConfig.addNewConfig().set(config);
             return testStepConfig;
-        } finally {
+        }
+        finally {
             WsdlMockResponseStepFactory.project = null;
         }
     }
 
-    @AForm(description = "Specify options for new MockResponse step", name = "New MockResponse Step", helpUrl = HelpUrls.CREATEMOCKRESPONSESTEP_HELP_URL, icon = UISupport.OPTIONS_ICON_PATH)
+    @AForm(
+        description = "Specify options for new MockResponse step",
+        name = "New MockResponse Step",
+        helpUrl = HelpUrls.CREATEMOCKRESPONSESTEP_HELP_URL,
+        icon = UISupport.OPTIONS_ICON_PATH
+    )
     private class CreateForm {
         @AField(description = "The name of the MockResponse step", name = "Name", type = AFieldType.STRING)
         public static final String NAME = "Name";
@@ -159,80 +235,5 @@ public class WsdlMockResponseStepFactory extends WsdlTestStepFactory {
 
         @AField(description = "Specifies the path to listen on", name = "Path")
         public final static String PATH = "Path";
-    }
-
-    public static TestStepConfig createConfig(WsdlOperation operation, boolean interactive) {
-        return createConfig(operation, null, interactive);
-    }
-
-    public static TestStepConfig createConfig(WsdlRequest request, boolean interactive) {
-        return createConfig(request.getOperation(), request, interactive);
-    }
-
-    public static TestStepConfig createConfig(WsdlOperation operation, WsdlRequest request, boolean interactive) {
-        if (interactive) {
-            ensureDialog();
-
-            dialog.setValue(CreateForm.INTERFACE, operation.getInterface().getName());
-            dialog.setValue(CreateForm.OPERATION, operation.getName());
-            dialog.setBooleanValue(CreateForm.CREATE_RESPONSE, request.getResponse() == null);
-
-            return createFromDialog(operation.getInterface().getProject(), request.getName() + " Response");
-        } else {
-            TestStepConfig testStepConfig = TestStepConfig.Factory.newInstance();
-            testStepConfig.setType(MOCKRESPONSE_TYPE);
-            testStepConfig.setName("Mock Response");
-
-            MockResponseStepConfig config = MockResponseStepConfig.Factory.newInstance();
-            config.setInterface(operation.getInterface().getName());
-            config.setOperation(operation.getName());
-            MockResponseConfig response = config.addNewResponse();
-            response.addNewResponseContent();
-
-            if (request != null && request.getResponse() != null) {
-                CompressedStringSupport.setString(response.getResponseContent(), request.getResponse()
-                        .getContentAsString());
-            }
-
-            testStepConfig.addNewConfig().set(config);
-            return testStepConfig;
-        }
-    }
-
-    public static TestStepConfig createNewTestStep(WsdlMockResponse mockResponse) {
-        WsdlOperation operation = mockResponse.getMockOperation().getOperation();
-        if (operation == null) {
-            UISupport.showErrorMessage("Missing operation for this mock response");
-            return null;
-        }
-
-        ensureDialog();
-
-        dialog.setValue(CreateForm.INTERFACE, operation.getInterface().getName());
-        dialog.setValue(CreateForm.OPERATION, operation.getName());
-        dialog.setBooleanValue(CreateForm.CREATE_RESPONSE, false);
-        dialog.setIntValue(CreateForm.PORT, mockResponse.getMockOperation().getMockService().getPort());
-        dialog.setValue(CreateForm.PATH, mockResponse.getMockOperation().getMockService().getPath());
-
-        return createFromDialog(operation.getInterface().getProject(), mockResponse.getMockOperation().getName() + " - "
-                + mockResponse.getName());
-    }
-
-    public boolean canCreate() {
-        return true;
-    }
-
-    @Override
-    public boolean canAddTestStepToTestCase(WsdlTestCase testCase) {
-        for (Interface iface : testCase.getTestSuite().getProject().getInterfaceList()) {
-            if (iface instanceof WsdlInterface && iface.getOperationCount() > 0) {
-
-                return true;
-            }
-        }
-
-        UISupport.showErrorMessage("Missing SOAP Operations to Mock in Project");
-        return false;
-
     }
 }

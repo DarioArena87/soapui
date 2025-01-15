@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.swing;
@@ -33,22 +33,21 @@ import java.awt.event.ActionEvent;
 
 public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMenuListener {
     private final JTextComponent textComponent;
-    private CutAction cutAction;
-    private CopyAction copyAction;
-    private PasteAction pasteAction;
-    private ClearAction clearAction;
-    private SelectAllAction selectAllAction;
+    private final CutAction cutAction;
+    private final CopyAction copyAction;
+    private final PasteAction pasteAction;
+    private final ClearAction clearAction;
+    private final SelectAllAction selectAllAction;
     private UndoAction undoAction;
     private RedoAction redoAction;
 
     public static JTextComponentPopupMenu add(JTextComponent textComponent) {
-        JPopupMenu componentPopupMenu = textComponent instanceof RSyntaxTextArea ? ((RSyntaxTextArea) textComponent)
-                .getPopupMenu() : textComponent.getComponentPopupMenu();
+        JPopupMenu componentPopupMenu = textComponent instanceof RSyntaxTextArea ? ((RSyntaxTextArea)textComponent).getPopupMenu() : textComponent.getComponentPopupMenu();
         //		JPopupMenu componentPopupMenu = textComponent.getComponentPopupMenu();
 
         // double-check
         if (componentPopupMenu instanceof JTextComponentPopupMenu) {
-            return (JTextComponentPopupMenu) componentPopupMenu;
+            return (JTextComponentPopupMenu)componentPopupMenu;
         }
 
         JTextComponentPopupMenu popupMenu = new JTextComponentPopupMenu(textComponent);
@@ -57,14 +56,13 @@ public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMe
             while (componentPopupMenu.getComponentCount() > 0) {
                 Component comp = componentPopupMenu.getComponent(componentPopupMenu.getComponentCount() - 1);
                 if (comp instanceof AbstractButton) {
-                    if ("Copy".equals(((AbstractButton) comp).getText())
-                            || "Cut".equals(((AbstractButton) comp).getText())
-                            || "Paste".equals(((AbstractButton) comp).getText())
-                            || "Undo".equals(((AbstractButton) comp).getText())
-                            || "Redo".equals(((AbstractButton) comp).getText())
-                            || "Can\'t Redo".equals(((AbstractButton) comp).getText())
-                            || "Can\'t Undo".equals(((AbstractButton) comp).getText())
-                            || "Select All".equals(((AbstractButton) comp).getText())) {
+                    if ("Copy".equals(((AbstractButton)comp).getText()) ||
+                        "Cut".equals(((AbstractButton)comp).getText()) ||
+                        "Paste".equals(((AbstractButton)comp).getText()) ||
+                        "Undo".equals(((AbstractButton)comp).getText()) ||
+                        "Redo".equals(((AbstractButton)comp).getText()) ||
+                        "Can't Redo".equals(((AbstractButton)comp).getText()) || "Can't Undo".equals(((AbstractButton)comp).getText()) ||
+                        "Select All".equals(((AbstractButton)comp).getText())) {
                         componentPopupMenu.remove(comp);
                         continue;
                     }
@@ -83,8 +81,9 @@ public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMe
         }
 
         if (textComponent instanceof RSyntaxTextArea) {
-            ((RSyntaxTextArea) textComponent).setPopupMenu(popupMenu);
-        } else {
+            ((RSyntaxTextArea)textComponent).setPopupMenu(popupMenu);
+        }
+        else {
             textComponent.setComponentPopupMenu(popupMenu);
         }
         return popupMenu;
@@ -119,10 +118,33 @@ public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMe
         addPopupMenuListener(this);
     }
 
+    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+        if (textComponent instanceof Undoable) {
+            undoAction.setEnabled(((Undoable)textComponent).canUndo());
+            redoAction.setEnabled(((Undoable)textComponent).canRedo());
+        }
+
+        if (textComponent instanceof RSyntaxTextArea) {
+            undoAction.setEnabled(((RSyntaxTextArea)textComponent).canUndo());
+            redoAction.setEnabled(((RSyntaxTextArea)textComponent).canRedo());
+        }
+
+        cutAction.setEnabled(textComponent.getSelectionEnd() != textComponent.getSelectionStart());
+        copyAction.setEnabled(cutAction.isEnabled());
+        clearAction.setEnabled(cutAction.isEnabled());
+        selectAllAction.setEnabled(textComponent.getText().length() > 0);
+    }
+
+    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+    }
+
+    public void popupMenuCanceled(PopupMenuEvent e) {
+    }
+
     private final class CutAction extends AbstractAction {
         public CutAction() {
             super("Cut");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu X"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu X"));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -133,7 +155,7 @@ public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMe
     private final class CopyAction extends AbstractAction {
         public CopyAction() {
             super("Copy");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu C"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu C"));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -144,7 +166,7 @@ public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMe
     private final class PasteAction extends AbstractAction {
         public PasteAction() {
             super("Paste");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu V"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu V"));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -165,7 +187,7 @@ public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMe
     private final class SelectAllAction extends AbstractAction {
         public SelectAllAction() {
             super("Select All");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu A"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu A"));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -176,14 +198,15 @@ public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMe
     private final class UndoAction extends AbstractAction {
         public UndoAction() {
             super("Undo");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu Z"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu Z"));
         }
 
         public void actionPerformed(ActionEvent e) {
             if (textComponent instanceof RSyntaxTextArea) {
-                ((RSyntaxTextArea) textComponent).undoLastAction();
-            } else {
-                ((Undoable) textComponent).undo();
+                ((RSyntaxTextArea)textComponent).undoLastAction();
+            }
+            else {
+                ((Undoable)textComponent).undo();
             }
         }
     }
@@ -191,38 +214,16 @@ public final class JTextComponentPopupMenu extends JPopupMenu implements PopupMe
     private final class RedoAction extends AbstractAction {
         public RedoAction() {
             super("Redo");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("menu Y"));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("menu Y"));
         }
 
         public void actionPerformed(ActionEvent e) {
             if (textComponent instanceof RSyntaxTextArea) {
-                ((RSyntaxTextArea) textComponent).redoLastAction();
-            } else {
-                ((Undoable) textComponent).redo();
+                ((RSyntaxTextArea)textComponent).redoLastAction();
+            }
+            else {
+                ((Undoable)textComponent).redo();
             }
         }
-    }
-
-    public void popupMenuCanceled(PopupMenuEvent e) {
-    }
-
-    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-    }
-
-    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-        if (textComponent instanceof Undoable) {
-            undoAction.setEnabled(((Undoable) textComponent).canUndo());
-            redoAction.setEnabled(((Undoable) textComponent).canRedo());
-        }
-
-        if (textComponent instanceof RSyntaxTextArea) {
-            undoAction.setEnabled(((RSyntaxTextArea) textComponent).canUndo());
-            redoAction.setEnabled(((RSyntaxTextArea) textComponent).canRedo());
-        }
-
-        cutAction.setEnabled(textComponent.getSelectionEnd() != textComponent.getSelectionStart());
-        copyAction.setEnabled(cutAction.isEnabled());
-        clearAction.setEnabled(cutAction.isEnabled());
-        selectAllAction.setEnabled(textComponent.getText().length() > 0);
     }
 }

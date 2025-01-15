@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.iface;
@@ -24,7 +24,7 @@ import com.eviware.soapui.impl.wsdl.support.soap.SoapVersion;
 import com.eviware.soapui.support.components.JPropertiesTable;
 import com.eviware.soapui.ui.desktop.DesktopPanel;
 
-import java.awt.Component;
+import java.awt.*;
 
 /**
  * PanelBuilder for WsdlInterface
@@ -46,10 +46,12 @@ public class WsdlInterfacePanelBuilder extends EmptyPanelBuilder<WsdlInterface> 
         table.addProperty("Cached", "cached", false);
         table.addProperty("Style", "style", false);
         // TODO extract info from wsdl if by default ws addresing is implemented
-        table.addProperty("WS-A version", "wsaVersion", new Object[]{WsaVersionTypeConfig.NONE.toString(),
-                WsaVersionTypeConfig.X_200408.toString(), WsaVersionTypeConfig.X_200508.toString()});
-        table.addProperty("WS-A anonymous", "anonymous", new Object[]{AnonymousTypeConfig.OPTIONAL.toString(),
-                AnonymousTypeConfig.REQUIRED.toString(), AnonymousTypeConfig.PROHIBITED.toString()});
+        table.addProperty("WS-A version", "wsaVersion", new Object[]{
+            WsaVersionTypeConfig.NONE.toString(), WsaVersionTypeConfig.X_200408.toString(), WsaVersionTypeConfig.X_200508.toString()
+        });
+        table.addProperty("WS-A anonymous", "anonymous", new Object[]{
+            AnonymousTypeConfig.OPTIONAL.toString(), AnonymousTypeConfig.REQUIRED.toString(), AnonymousTypeConfig.PROHIBITED.toString()
+        });
 
         table.setPropertyObject(iface);
 
@@ -60,11 +62,11 @@ public class WsdlInterfacePanelBuilder extends EmptyPanelBuilder<WsdlInterface> 
         return true;
     }
 
-    public DesktopPanel buildDesktopPanel(WsdlInterface iface) {
-        return new WsdlInterfaceDesktopPanel(iface);
-    }
-
     public boolean hasDesktopPanel() {
         return true;
+    }
+
+    public DesktopPanel buildDesktopPanel(WsdlInterface iface) {
+        return new WsdlInterfaceDesktopPanel(iface);
     }
 }

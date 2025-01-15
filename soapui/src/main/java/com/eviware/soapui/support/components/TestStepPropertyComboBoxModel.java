@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -19,17 +19,16 @@ package com.eviware.soapui.support.components;
 import com.eviware.soapui.impl.wsdl.teststeps.WsdlTestStep;
 import com.eviware.soapui.model.support.TestPropertyListenerAdapter;
 
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class TestStepPropertyComboBoxModel extends AbstractListModel implements ComboBoxModel {
     private WsdlTestStep testStep;
-    private List<String> names;
+    private final List<String> names;
     private String selectedName;
-    private InternalTestPropertyListener testStepListener = new InternalTestPropertyListener();
+    private final InternalTestPropertyListener testStepListener = new InternalTestPropertyListener();
 
     public TestStepPropertyComboBoxModel(WsdlTestStep testStep) {
         this.testStep = testStep;
@@ -75,12 +74,12 @@ public class TestStepPropertyComboBoxModel extends AbstractListModel implements 
         setSelectedItem(null);
     }
 
-    public Object getElementAt(int index) {
-        return names.get(index);
-    }
-
     public int getSize() {
         return names.size();
+    }
+
+    public Object getElementAt(int index) {
+        return names.get(index);
     }
 
     private final class InternalTestPropertyListener extends TestPropertyListenerAdapter {
@@ -117,7 +116,6 @@ public class TestStepPropertyComboBoxModel extends AbstractListModel implements 
         public void propertyMoved(String name, int oldIndex, int newIndex) {
             fireContentsChanged(TestStepPropertyComboBoxModel.this, 0, getSize() - 1);
         }
-
     }
 
     public Object getSelectedItem() {
@@ -129,7 +127,7 @@ public class TestStepPropertyComboBoxModel extends AbstractListModel implements 
             return;
         }
 
-        if (anItem != null && selectedName != null && anItem.equals(selectedName)) {
+        if (anItem != null && anItem.equals(selectedName)) {
             return;
         }
 

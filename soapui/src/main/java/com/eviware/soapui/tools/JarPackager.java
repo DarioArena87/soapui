@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.tools;
@@ -37,7 +37,8 @@ public class JarPackager {
         File toFile = new File(toDir, fromFile.getName());
         try {
             copyFile(fromFile, toFile);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             log.error(e.getMessage(), e);
         }
         return toFile;
@@ -52,58 +53,29 @@ public class JarPackager {
                 if (file.isDirectory()) {
                     if (toFile.exists() || toFile.mkdir()) {
                         copyAllFromTo(file, toFile, filter);
-                    } else {
+                    }
+                    else {
                         log.error("Could not create directory " + toFile.getAbsolutePath());
                     }
-                } else {
+                }
+                else {
                     try {
                         copyFile(file, toFile);
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e) {
                         log.error(e.getMessage(), e);
                     }
                 }
             }
-        } else {
+        }
+        else {
             log.error(fromDir.getAbsolutePath() + " or " + toDir.getAbsolutePath() + " is not directory!");
         }
     }
 
-    private static void copyFile(File fromFile, File toFile) throws IOException {
-        FileInputStream from = null;
-        FileOutputStream to = null;
-        try {
-            from = new FileInputStream(fromFile);
-            to = new FileOutputStream(toFile);
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-
-            while ((bytesRead = from.read(buffer)) != -1) {
-                to.write(buffer, 0, bytesRead); // write
-            }
-        } catch (Exception e) {
-            log.error(e);
-        } finally {
-            if (from != null) {
-                try {
-                    from.close();
-                } catch (IOException e) {
-                    throw e;
-                }
-            }
-            if (to != null) {
-                try {
-                    to.close();
-                } catch (IOException e) {
-                    throw e;
-                }
-            }
-        }
-
-    }
-
     public static void createJarArchive(File archiveFile, File root, File... tobeJared) {
         try {
-            byte buffer[] = new byte[BUFFER_SIZE];
+            byte[] buffer = new byte[BUFFER_SIZE];
             // Open archive file
             log.info("Creating archive [" + archiveFile.getAbsolutePath() + "]");
             FileOutputStream stream = new FileOutputStream(archiveFile);
@@ -115,8 +87,7 @@ public class JarPackager {
                 }
 
                 // Add archive entry
-                String jarName = tobeJared[i].isDirectory() ? tobeJared[i].getAbsolutePath() + "/" : tobeJared[i]
-                        .getAbsolutePath();
+                String jarName = tobeJared[i].isDirectory() ? tobeJared[i].getAbsolutePath() + "/" : tobeJared[i].getAbsolutePath();
                 jarName = jarName.replace(root.getAbsolutePath(), "").substring(1);
                 jarName = jarName.replace(File.separatorChar, '/');
                 JarEntry jarAdd = new JarEntry(jarName);
@@ -143,11 +114,48 @@ public class JarPackager {
             out.close();
             stream.close();
             log.info("Adding completed OK");
-        } catch (FileNotFoundException ex) {
+        }
+        catch (FileNotFoundException ex) {
             log.error(ex.getMessage(), ex);
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             log.error(ex.getMessage(), ex);
         }
     }
 
+    private static void copyFile(File fromFile, File toFile) throws IOException {
+        FileInputStream from = null;
+        FileOutputStream to = null;
+        try {
+            from = new FileInputStream(fromFile);
+            to = new FileOutputStream(toFile);
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+
+            while ((bytesRead = from.read(buffer)) != -1) {
+                to.write(buffer, 0, bytesRead); // write
+            }
+        }
+        catch (Exception e) {
+            log.error(e);
+        }
+        finally {
+            if (from != null) {
+                try {
+                    from.close();
+                }
+                catch (IOException e) {
+                    throw e;
+                }
+            }
+            if (to != null) {
+                try {
+                    to.close();
+                }
+                catch (IOException e) {
+                    throw e;
+                }
+            }
+        }
+    }
 }

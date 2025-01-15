@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.actions;
@@ -33,18 +33,9 @@ import com.eviware.soapui.ui.desktop.DesktopPanel;
 import com.eviware.soapui.ui.support.DefaultDesktopPanel;
 import org.jdesktop.swingx.JXTable;
 
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,9 +49,9 @@ import java.util.List;
  */
 
 public class ShowMessageExchangeAction extends AbstractAction {
-    private DefaultDesktopPanel desktopPanel;
     private final MessageExchange messageExchange;
     private final String ownerName;
+    private DefaultDesktopPanel desktopPanel;
     private MessageExchangeResponseMessageEditor responseMessageEditor;
     private MessageExchangeRequestMessageEditor requestMessageEditor;
 
@@ -73,7 +64,8 @@ public class ShowMessageExchangeAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         try {
             UISupport.showDesktopPanel(buildFrame());
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             SoapUI.logError(ex);
         }
     }
@@ -105,8 +97,7 @@ public class ShowMessageExchangeAction extends AbstractAction {
 
         JPanel tabPanel = UISupport.createTabPanel(messageTabs, true);
 
-        Component descriptionPanel = UISupport.buildDescription("MessageExchange Results",
-                "See the request/response message below", null);
+        Component descriptionPanel = UISupport.buildDescription("MessageExchange Results", "See the request/response message below", null);
         tabPanel.add(descriptionPanel, BorderLayout.NORTH);
 
         return tabPanel;
@@ -134,14 +125,14 @@ public class ShowMessageExchangeAction extends AbstractAction {
         List<AssertedXPath> assertedXPaths = new ArrayList<AssertedXPath>();
 
         if (messageExchange instanceof RequestAssertedMessageExchange) {
-            AssertedXPath[] xpaths = ((RequestAssertedMessageExchange) messageExchange).getAssertedXPathsForRequest();
+            AssertedXPath[] xpaths = ((RequestAssertedMessageExchange)messageExchange).getAssertedXPathsForRequest();
             if (xpaths != null && xpaths.length > 0) {
                 assertedXPaths.addAll(Arrays.asList(xpaths));
             }
         }
 
         if (messageExchange instanceof ResponseAssertedMessageExchange) {
-            AssertedXPath[] xpaths = ((ResponseAssertedMessageExchange) messageExchange).getAssertedXPathsForResponse();
+            AssertedXPath[] xpaths = ((ResponseAssertedMessageExchange)messageExchange).getAssertedXPathsForResponse();
             if (xpaths != null && xpaths.length > 0) {
                 assertedXPaths.addAll(Arrays.asList(xpaths));
             }
@@ -169,8 +160,7 @@ public class ShowMessageExchangeAction extends AbstractAction {
 
     private Component buildMessagesTab() {
         String[] messages = messageExchange.getMessages();
-        return messages == null || messages.length == 0 ? new JLabel("No messages to display") : new JScrollPane(
-                new JList(messages));
+        return messages == null || messages.length == 0 ? new JLabel("No messages to display") : new JScrollPane(new JList(messages));
     }
 
     private Component buildResponseTab() {

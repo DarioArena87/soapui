@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.tree.nodes;
@@ -33,8 +33,8 @@ import java.util.List;
  */
 
 public class OperationTreeNode extends AbstractModelItemTreeNode<Operation> {
-    private List<RequestTreeNode> requestNodes = new ArrayList<RequestTreeNode>();
-    private ReorderPropertyChangeListener propertyChangeListener = new ReorderPropertyChangeListener();
+    private final List<RequestTreeNode> requestNodes = new ArrayList<RequestTreeNode>();
+    private final ReorderPropertyChangeListener propertyChangeListener = new ReorderPropertyChangeListener();
 
     public OperationTreeNode(Operation operation, SoapUITreeModel treeModel) {
         super(operation, operation.getInterface(), treeModel);
@@ -59,7 +59,7 @@ public class OperationTreeNode extends AbstractModelItemTreeNode<Operation> {
     }
 
     public Operation getOperation() {
-        return (Operation) getModelItem();
+        return getModelItem();
     }
 
     public void requestAdded(Request request) {
@@ -76,7 +76,8 @@ public class OperationTreeNode extends AbstractModelItemTreeNode<Operation> {
             getTreeModel().notifyNodeRemoved(requestTreeNode);
             requestNodes.remove(requestTreeNode);
             request.removePropertyChangeListener(propertyChangeListener);
-        } else {
+        }
+        else {
             throw new RuntimeException("Removing unknown request");
         }
     }

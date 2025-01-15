@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.auth;
@@ -38,8 +38,7 @@ import com.eviware.x.impl.swing.JLabelFormField;
 import com.eviware.x.impl.swing.JTextFieldFormField;
 import com.jgoodies.forms.layout.FormLayout;
 
-import javax.swing.Action;
-import javax.swing.JLabel;
+import javax.swing.*;
 import java.util.List;
 
 /**
@@ -48,8 +47,8 @@ import java.util.List;
 public class AuthorizationSelectionDialog<T extends AbstractHttpRequest> {
 
     private static final MessageSupport messages = MessageSupport.getMessages(AuthorizationSelectionDialog.class);
-    private T request;
-    private List<String> basicAuthTypes;
+    private final T request;
+    private final List<String> basicAuthTypes;
     private JTextFieldFormField profileNameField;
     private JLabelFormField hintTextLabel;
 
@@ -61,12 +60,12 @@ public class AuthorizationSelectionDialog<T extends AbstractHttpRequest> {
 
     private void buildAndShowDialog() {
         FormLayout layout = new FormLayout("5px,100px,5px,left:default,5px:grow(1.0)");
-        final XFormDialog dialog = ADialogBuilder.buildDialog(AuthorizationTypeForm.class, null, layout);
+        XFormDialog dialog = ADialogBuilder.buildDialog(AuthorizationTypeForm.class, null, layout);
 
-        profileNameField = (JTextFieldFormField) dialog.getFormField(AuthorizationTypeForm.OAUTH_PROFILE_NAME_FIELD);
+        profileNameField = (JTextFieldFormField)dialog.getFormField(AuthorizationTypeForm.OAUTH_PROFILE_NAME_FIELD);
         profileNameField.addFormFieldListener(new ProfileNameFieldListener(dialog));
 
-        hintTextLabel = (JLabelFormField) dialog.getFormField(AuthorizationTypeForm.OAUTH2_PROFILE_NAME_HINT_TEXT_LABEL);
+        hintTextLabel = (JLabelFormField)dialog.getFormField(AuthorizationTypeForm.OAUTH2_PROFILE_NAME_HINT_TEXT_LABEL);
         setHintTextColor();
 
         setProfileNameAndHintTextVisibility(request.getAuthType());
@@ -107,7 +106,8 @@ public class AuthorizationSelectionDialog<T extends AbstractHttpRequest> {
 
             getOAuth2ProfileContainer().addNewOAuth2Profile(profileName);
             authTypeEnum = CredentialsConfig.AuthType.O_AUTH_2_0;
-        } else if (CredentialsConfig.AuthType.O_AUTH_1_0.toString().equals(authType)) {
+        }
+        else if (CredentialsConfig.AuthType.O_AUTH_1_0.toString().equals(authType)) {
             profileName = dialog.getValue(AuthorizationTypeForm.OAUTH_PROFILE_NAME_FIELD);
             if (ProfileSelectionForm.isReservedProfileName(profileName)) {
                 UISupport.showErrorMessage(messages.get("AuthorizationSelectionDialog.Error.ReservedProfileName", profileName));
@@ -120,7 +120,8 @@ public class AuthorizationSelectionDialog<T extends AbstractHttpRequest> {
 
             getOAuth1ProfileContainer().addNewOAuth1Profile(profileName);
             authTypeEnum = CredentialsConfig.AuthType.O_AUTH_1_0;
-        } else {
+        }
+        else {
             profileName = authType;
             authTypeEnum = request.getBasicAuthType(authType);
         }
@@ -128,7 +129,7 @@ public class AuthorizationSelectionDialog<T extends AbstractHttpRequest> {
     }
 
     private void setAuthTypeComboBoxOptions(XFormDialog dialog, List<String> options) {
-        JComboBoxFormField authTypesComboBox = (JComboBoxFormField) dialog.getFormField(AuthorizationTypeForm.AUTHORIZATION_TYPE);
+        JComboBoxFormField authTypesComboBox = (JComboBoxFormField)dialog.getFormField(AuthorizationTypeForm.AUTHORIZATION_TYPE);
         authTypesComboBox.setOptions(options.toArray(new String[options.size()]));
         authTypesComboBox.addFormFieldListener(new XFormFieldListener() {
             @Override
@@ -143,13 +144,13 @@ public class AuthorizationSelectionDialog<T extends AbstractHttpRequest> {
     }
 
     private void setProfileNameAndHintTextVisibility(String authorizationType) {
-        if (authorizationType.equals(CredentialsConfig.AuthType.O_AUTH_2_0.toString())
-                || authorizationType.equals(CredentialsConfig.AuthType.O_AUTH_1_0.toString())) {
-            ((JLabel) profileNameField.getComponent().getClientProperty("labeledBy")).setVisible(true);
+        if (authorizationType.equals(CredentialsConfig.AuthType.O_AUTH_2_0.toString()) || authorizationType.equals(CredentialsConfig.AuthType.O_AUTH_1_0.toString())) {
+            ((JLabel)profileNameField.getComponent().getClientProperty("labeledBy")).setVisible(true);
             profileNameField.getComponent().setVisible(true);
             hintTextLabel.getComponent().setVisible(true);
-        } else {
-            ((JLabel) profileNameField.getComponent().getClientProperty("labeledBy")).setVisible(false);
+        }
+        else {
+            ((JLabel)profileNameField.getComponent().getClientProperty("labeledBy")).setVisible(false);
             profileNameField.getComponent().setVisible(false);
             hintTextLabel.getComponent().setVisible(false);
         }
@@ -169,17 +170,16 @@ public class AuthorizationSelectionDialog<T extends AbstractHttpRequest> {
 
     @AForm(name = "AuthorizationTypeForm.Title", description = "AuthorizationTypeForm.Description", helpUrl = HelpUrls.ADD_AUTHORIZATION)
     public interface AuthorizationTypeForm {
-        public static final MessageSupport messages = MessageSupport.getMessages(AuthorizationTypeForm.class);
+        MessageSupport messages = MessageSupport.getMessages(AuthorizationTypeForm.class);
 
         @AField(description = "AuthorizationTypeForm.AuthorizationType.Description", type = AField.AFieldType.COMBOBOX)
-        public final static String AUTHORIZATION_TYPE = messages.get("AuthorizationTypeForm.AuthorizationType.Label");
+        String AUTHORIZATION_TYPE = messages.get("AuthorizationTypeForm.AuthorizationType.Label");
 
         @AField(description = "AuthorizationTypeForm.OAuth2ProfileName.Description", type = AField.AFieldType.STRING)
-        public final static String OAUTH_PROFILE_NAME_FIELD = messages.get("AuthorizationTypeForm.OAuth2ProfileName.Label");
+        String OAUTH_PROFILE_NAME_FIELD = messages.get("AuthorizationTypeForm.OAuth2ProfileName.Label");
 
         @AField(description = "AuthorizationTypeForm.OAuth2ProfileNameHintText.Description", type = AField.AFieldType.LABEL)
-        public final static String OAUTH2_PROFILE_NAME_HINT_TEXT_LABEL = messages.get("AuthorizationTypeForm.OAuth2ProfileNameHintText.Label");
-
+        String OAUTH2_PROFILE_NAME_HINT_TEXT_LABEL = messages.get("AuthorizationTypeForm.OAuth2ProfileNameHintText.Label");
     }
 
     private static class ProfileNameFieldListener implements XFormFieldListener {
@@ -195,11 +195,7 @@ public class AuthorizationSelectionDialog<T extends AbstractHttpRequest> {
             for (int actionIndex = 0; actionIndex < actionsList.getActionCount(); actionIndex++) {
                 Action action = actionsList.getActionAt(actionIndex);
                 if (action.getValue(Action.NAME).equals("OK")) {
-                    if (StringUtils.isNullOrEmpty(newValue)) {
-                        action.setEnabled(false);
-                    } else {
-                        action.setEnabled(true);
-                    }
+                    action.setEnabled(!StringUtils.isNullOrEmpty(newValue));
                 }
             }
         }

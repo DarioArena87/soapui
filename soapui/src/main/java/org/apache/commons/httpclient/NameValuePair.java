@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * $Header: /home/jerenkrantz/tmp/commons/commons-convert/cvs/home/cvs/jakarta-commons//httpclient/src/java/org/apache/commons/httpclient/NameValuePair.java,v 1.17 2004/04/18 23:51:35 jsdever Exp $
  * $Revision: 480424 $
  * $Date: 2006-11-29 06:56:49 +0100 (Wed, 29 Nov 2006) $
@@ -44,9 +44,9 @@
 
 package org.apache.commons.httpclient;
 
-import java.io.Serializable;
-
 import org.apache.commons.httpclient.util.LangUtils;
+
+import java.io.Serializable;
 
 /**
  * <p>A simple class encapsulating a name/value pair.</p>
@@ -59,6 +59,17 @@ import org.apache.commons.httpclient.util.LangUtils;
 public class NameValuePair implements Serializable {
 
     // ----------------------------------------------------------- Constructors
+
+    /**
+     * Name.
+     */
+    private String name = null;
+    /**
+     * Value.
+     */
+    private String value = null;
+
+    // ----------------------------------------------------- Instance Variables
 
     /**
      * Default constructor.
@@ -78,30 +89,7 @@ public class NameValuePair implements Serializable {
         this.value = value;
     }
 
-    // ----------------------------------------------------- Instance Variables
-
-    /**
-     * Name.
-     */
-    private String name = null;
-
-    /**
-     * Value.
-     */
-    private String value = null;
-
     // ------------------------------------------------------------- Properties
-
-    /**
-     * Set the name.
-     *
-     * @param name The new name
-     * @see #getName()
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
 
     /**
      * Return the name.
@@ -113,16 +101,15 @@ public class NameValuePair implements Serializable {
         return name;
     }
 
-
     /**
-     * Set the value.
+     * Set the name.
      *
-     * @param value The new value.
+     * @param name The new name
+     * @see #getName()
      */
-    public void setValue(String value) {
-        this.value = value;
+    public void setName(String name) {
+        this.name = name;
     }
-
 
     /**
      * Return the current value.
@@ -133,7 +120,39 @@ public class NameValuePair implements Serializable {
         return value;
     }
 
+    /**
+     * Set the value.
+     *
+     * @param value The new value.
+     */
+    public void setValue(String value) {
+        this.value = value;
+    }
+
     // --------------------------------------------------------- Public Methods
+
+    public int hashCode() {
+        int hash = LangUtils.HASH_SEED;
+        hash = LangUtils.hashCode(hash, name);
+        hash = LangUtils.hashCode(hash, value);
+        return hash;
+    }
+
+    public boolean equals(Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (this == object) {
+            return true;
+        }
+        if (object instanceof NameValuePair) {
+            NameValuePair that = (NameValuePair)object;
+            return LangUtils.equals(name, that.name) && LangUtils.equals(value, that.value);
+        }
+        else {
+            return false;
+        }
+    }
 
     /**
      * Get a String representation of this pair.
@@ -142,28 +161,5 @@ public class NameValuePair implements Serializable {
      */
     public String toString() {
         return ("name=" + name + ", " + "value=" + value);
-    }
-
-    public boolean equals(final Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        if (object instanceof NameValuePair) {
-            NameValuePair that = (NameValuePair) object;
-            return LangUtils.equals(this.name, that.name)
-                    && LangUtils.equals(this.value, that.value);
-        } else {
-            return false;
-        }
-    }
-
-    public int hashCode() {
-        int hash = LangUtils.HASH_SEED;
-        hash = LangUtils.hashCode(hash, this.name);
-        hash = LangUtils.hashCode(hash, this.value);
-        return hash;
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.json;
@@ -34,7 +34,7 @@ import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
 import junit.framework.Assert;
 import junit.framework.ComparisonFailure;
 
-import javax.swing.JTextArea;
+import javax.swing.*;
 import java.util.regex.Pattern;
 
 public class JsonPathContentAssertion extends JsonPathAssertionBase implements RequestAssertion, ResponseAssertion {
@@ -81,9 +81,7 @@ public class JsonPathContentAssertion extends JsonPathAssertionBase implements R
             if (expected.endsWith(String.valueOf(wildcard))) {
                 sb.append(".*");
             }
-            if (!Pattern.compile(sb.toString(), Pattern.DOTALL).matcher(real).matches()) {
-                return false;
-            }
+            return Pattern.compile(sb.toString(), Pattern.DOTALL).matcher(real).matches();
         }
         return true;
     }
@@ -106,11 +104,6 @@ public class JsonPathContentAssertion extends JsonPathAssertionBase implements R
     }
 
     @Override
-    public String getHelpURL() {
-        return HelpUrls.ASSERTION_JSON_CONTENT;
-    }
-
-    @Override
     protected XPathContainsAssertion getAssertion() {
         return this;
     }
@@ -118,6 +111,40 @@ public class JsonPathContentAssertion extends JsonPathAssertionBase implements R
     @Override
     public String getConfigurationDialogTitle() {
         return "JSONPath Match Configuration";
+    }
+
+    @Override
+    public String assertContent(String assertableContent, SubmitContext context, String type) throws AssertionException {
+        try {
+            if (getPath() == null) {
+                return "Missing path for JsonPath assertion";
+            }
+            if (getExpectedContent() == null) {
+                return "Missing content for JsonPath assertion";
+            }
+            String expandedPath = PropertyExpander.expandProperties(context, getPath());
+            JsonPathFacade jsonPathFacade = new JsonPathFacade(assertableContent);
+            String result = jsonPathFacade.readStringValue(expandedPath);
+            String expandedResult = PropertyExpander.expandProperties(context, result);
+
+            String expandedContent = PropertyExpander.expandProperties(context, getExpectedContent());
+
+            if (allowWildcards) {
+                assertSimilar(expandedContent, expandedResult, '*');
+            }
+            else {
+                Assert.assertEquals(expandedContent, expandedResult);
+            }
+        }
+        catch (Throwable exception) {
+            throwAssertionException(getPath(), exception);
+        }
+        return type + " matches content for [" + getPath() + "]";
+    }
+
+    @Override
+    public String getHelpURL() {
+        return HelpUrls.ASSERTION_JSON_CONTENT;
     }
 
     @Override
@@ -142,52 +169,25 @@ public class JsonPathContentAssertion extends JsonPathAssertionBase implements R
             String stringValue = readStringValue(assertableContent, expandedPath);
             if (stringValue == null) {
                 UISupport.showErrorMessage("No match in current response");
-            } else {
+            }
+            else {
                 if (contentArea != null && contentArea.isVisible()) {
                     contentArea.setText(stringValue);
-                } else {
+                }
+                else {
                     setExpectedContent(stringValue, false);
                 }
             }
-
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             UISupport.showErrorMessage("Invalid JsonPath expression.");
             SoapUI.logError(e);
         }
     }
 
-    @Override
-    public String assertContent(String assertableContent, SubmitContext context, String type) throws AssertionException {
-        try {
-            if (getPath() == null) {
-                return "Missing path for JsonPath assertion";
-            }
-            if (getExpectedContent() == null) {
-                return "Missing content for JsonPath assertion";
-            }
-            String expandedPath = PropertyExpander.expandProperties(context, getPath());
-            JsonPathFacade jsonPathFacade = new JsonPathFacade(assertableContent);
-            String result = jsonPathFacade.readStringValue(expandedPath);
-            String expandedResult = PropertyExpander.expandProperties(context, result);
-
-            String expandedContent = PropertyExpander.expandProperties(context, getExpectedContent());
-
-            if (allowWildcards) {
-                assertSimilar(expandedContent, expandedResult, '*');
-            } else {
-                Assert.assertEquals(expandedContent, expandedResult);
-            }
-
-        } catch (Throwable exception) {
-            throwAssertionException(getPath(), exception);
-        }
-        return type + " matches content for [" + getPath() + "]";
-    }
-
     public static class Factory extends JsonAssertionFactory {
         public Factory() {
-            super(JsonPathContentAssertion.ID, JsonPathContentAssertion.LABEL, JsonPathContentAssertion.DESCRIPTION,
-                    JsonPathContentAssertion.class);
+            super(ID, LABEL, DESCRIPTION, JsonPathContentAssertion.class);
         }
     }
 }

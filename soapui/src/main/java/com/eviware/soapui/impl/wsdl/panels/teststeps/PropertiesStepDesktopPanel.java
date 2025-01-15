@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.teststeps;
@@ -29,16 +29,9 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.ui.support.ModelItemDesktopPanel;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -52,15 +45,14 @@ import java.io.IOException;
  * @author Ole.Matzura
  */
 
-public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlPropertiesTestStep> implements
-        PropertyChangeListener {
+public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlPropertiesTestStep> implements PropertyChangeListener {
     private final WsdlPropertiesTestStep testStep;
+    protected boolean updatingSource;
+    protected boolean updatingTarget;
     private JTextField sourceField;
     private JTextField targetField;
     private PropertyHolderTable propertiesTable;
-    private TestRunComponentEnabler componentEnabler;
-    protected boolean updatingSource;
-    protected boolean updatingTarget;
+    private final TestRunComponentEnabler componentEnabler;
 
     public PropertiesStepDesktopPanel(WsdlPropertiesTestStep testStep) {
         super(testStep);
@@ -153,6 +145,12 @@ public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlProper
         return new PropertyHolderTable(getModelItem());
     }
 
+    @Override
+    protected boolean release() {
+        testStep.removePropertyChangeListener(this);
+        return super.release();
+    }
+
     public boolean onClose(boolean canCancel) {
         componentEnabler.release();
         propertiesTable.release();
@@ -164,21 +162,32 @@ public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlProper
     }
 
     public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == testStep || modelItem == testStep.getTestCase()
-                || modelItem == testStep.getTestCase().getTestSuite()
-                || modelItem == testStep.getTestCase().getTestSuite().getProject();
+        return modelItem == testStep ||
+               modelItem == testStep.getTestCase() ||
+               modelItem == testStep.getTestCase().getTestSuite() ||
+               modelItem == testStep.getTestCase().getTestSuite().getProject();
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (!updatingSource && evt.getPropertyName().equals(WsdlPropertiesTestStep.SOURCE_PROPERTY)) {
+            sourceField.setText(evt.getNewValue().toString());
+        }
+        else if (!updatingTarget && evt.getPropertyName().equals(WsdlPropertiesTestStep.TARGET_PROPERTY)) {
+            targetField.setText(evt.getNewValue().toString());
+        }
+
+        super.propertyChange(evt);
     }
 
     private class SetPropertiesSourceAction extends AbstractAction {
         public SetPropertiesSourceAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/set_properties_source.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Selects the properties source file");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/set_properties_source.gif"));
+            putValue(SHORT_DESCRIPTION, "Selects the properties source file");
         }
 
         public void actionPerformed(ActionEvent e) {
             String root = ModelSupport.getResourceRoot(testStep);
-            File file = UISupport.getFileDialogs().open(this, "Set properties source", "properties",
-                    "Properties Files (*.properties)", root);
+            File file = UISupport.getFileDialogs().open(this, "Set properties source", "properties", "Properties Files (*.properties)", root);
             if (file != null) {
                 updatingSource = true;
                 testStep.setSource(file.getAbsolutePath());
@@ -188,7 +197,8 @@ public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlProper
                     boolean createMissing = UISupport.confirm("Create missing properties?", "Set Properties Source");
                     int cnt = testStep.loadProperties(createMissing);
                     UISupport.showInfoMessage("Loaded " + cnt + " properties from [" + testStep.getSource() + "]");
-                } catch (IOException e1) {
+                }
+                catch (IOException e1) {
                     UISupport.showErrorMessage("Failed to load properties from [" + testStep.getSource() + "]; " + e1);
                 }
             }
@@ -197,8 +207,8 @@ public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlProper
 
     private class ReloadPropertiesFromSourceAction extends AbstractAction {
         public ReloadPropertiesFromSourceAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/reload_properties.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Reloads the current properties from the selected file");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/reload_properties.gif"));
+            putValue(SHORT_DESCRIPTION, "Reloads the current properties from the selected file");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -211,7 +221,8 @@ public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlProper
                 boolean createMissing = UISupport.confirm("Create missing properties?", "Reload Properties");
                 int cnt = testStep.loadProperties(createMissing);
                 UISupport.showInfoMessage("Loaded " + cnt + " properties from [" + testStep.getSource() + "]");
-            } catch (Exception e1) {
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage("Failed to load properties from [" + testStep.getSource() + "]; " + e1);
             }
         }
@@ -219,14 +230,13 @@ public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlProper
 
     private class SetPropertiesTargetAction extends AbstractAction {
         public SetPropertiesTargetAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/set_properties_target.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Selects the properties target file");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/set_properties_target.gif"));
+            putValue(SHORT_DESCRIPTION, "Selects the properties target file");
         }
 
         public void actionPerformed(ActionEvent e) {
             String root = ModelSupport.getResourceRoot(testStep);
-            File file = UISupport.getFileDialogs().saveAs(this, "Set properties target", "properties",
-                    "Properties Files (*.properties)", new File(root));
+            File file = UISupport.getFileDialogs().saveAs(this, "Set properties target", "properties", "Properties Files (*.properties)", new File(root));
             if (file != null) {
                 updatingTarget = true;
                 testStep.setTarget(file.getAbsolutePath());
@@ -236,37 +246,22 @@ public class PropertiesStepDesktopPanel extends ModelItemDesktopPanel<WsdlProper
                 try {
                     int cnt = testStep.saveProperties();
                     UISupport.showInfoMessage("Saved " + cnt + " properties to [" + testStep.getTarget() + "]");
-                } catch (IOException e1) {
+                }
+                catch (IOException e1) {
                     UISupport.showErrorMessage("Failed to save properties to [" + testStep.getTarget() + "]; " + e1);
                 }
             }
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (!updatingSource && evt.getPropertyName().equals(WsdlPropertiesTestStep.SOURCE_PROPERTY)) {
-            sourceField.setText(evt.getNewValue().toString());
-        } else if (!updatingTarget && evt.getPropertyName().equals(WsdlPropertiesTestStep.TARGET_PROPERTY)) {
-            targetField.setText(evt.getNewValue().toString());
-        }
-
-        super.propertyChange(evt);
-    }
-
-    @Override
-    protected boolean release() {
-        testStep.removePropertyChangeListener(this);
-        return super.release();
-    }
-
-	/*
+    /*
      * public class PropertiesTransferHandler extends
-	 * AbstractPropertiesTransferHandler { public
-	 * PropertiesTransferHandler(JComponent component) { super(component); }
-	 * 
-	 * protected StepProperty getSelectedProperty(JComponent c) { int rowIndex =
-	 * propertiesTable.getSelectedRow(); if (rowIndex == -1) return null;
-	 * 
-	 * return testStep.getTestStepPropertyAt(rowIndex); } }
-	 */
+     * AbstractPropertiesTransferHandler { public
+     * PropertiesTransferHandler(JComponent component) { super(component); }
+     *
+     * protected StepProperty getSelectedProperty(JComponent c) { int rowIndex =
+     * propertiesTable.getSelectedRow(); if (rowIndex == -1) return null;
+     *
+     * return testStep.getTestStepPropertyAt(rowIndex); } }
+     */
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.http;
@@ -43,6 +43,7 @@ import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,25 +65,6 @@ public class ProxyUtils {
         setAutoProxy(SoapUI.getSettings().getBoolean(ProxySettings.AUTO_PROXY));
     }
 
-    private static String getExpandedProperty(PropertyExpansionContext context, Settings settings, String property) {
-        String content = settings.getString(property, null);
-        return context != null ? PropertyExpander.expandProperties(context, content) : PropertyExpander.expandProperties(content);
-    }
-
-    private static CredentialsProvider getProxyCredentialsProvider(Settings settings) {
-        String proxyUsername = getExpandedProperty(null, settings, ProxySettings.USERNAME);
-        String proxyPassword = getExpandedProperty(null, settings, ProxySettings.PASSWORD);
-
-        if (!StringUtils.isNullOrEmpty(proxyUsername) && !StringUtils.isNullOrEmpty(proxyPassword)) {
-            Credentials proxyCreds = getProxyCredentials(proxyUsername, proxyPassword);
-
-            CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(AuthScope.ANY, proxyCreds);
-            return credsProvider;
-        }
-        return null;
-    }
-
     public static Credentials getProxyCredentials(String proxyUsername, String proxyPassword) {
         Credentials proxyCreds = new UsernamePasswordCredentials(proxyUsername, proxyPassword);
 
@@ -99,16 +81,6 @@ public class ProxyUtils {
         return proxyCreds;
     }
 
-    private static String getWorkstationName() {
-        String workstation = "";
-        try {
-            workstation = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException e) {
-            logger.warn("Workstation name could not be fetched.", e);
-        }
-        return workstation;
-    }
-
     public static boolean excludes(String[] excludes, String proxyHost, int proxyPort) {
         for (String excludeString : excludes) {
             String exclude = excludeString.trim();
@@ -123,14 +95,15 @@ public class ProxyUtils {
                 String excludePort = exclude.substring(ix + 1);
                 if (proxyPort != -1 && excludePort.equals(String.valueOf(proxyPort))) {
                     exclude = exclude.substring(0, ix);
-                } else {
+                }
+                else {
                     continue;
                 }
             }
 
-			/*
+            /*
              * This will exclude addresses with wildcard *, too.
-			 */
+             */
             // if( proxyHost.endsWith( exclude ) )
             // return true;
             String excludeIp = exclude.indexOf('*') >= 0 ? exclude : nslookup(exclude, true);
@@ -145,27 +118,6 @@ public class ProxyUtils {
 
         return false;
     }
-
-    private static String nslookup(String s, boolean ip) {
-
-        InetAddress host;
-        String address;
-
-        // get the bytes of the IP address
-        try {
-            host = InetAddress.getByName(s);
-            if (ip) {
-                address = host.getHostAddress();
-            } else {
-                address = host.getHostName();
-            }
-        } catch (UnknownHostException ue) {
-            return s; // no host
-        }
-
-        return address;
-
-    } // end lookup
 
     public static boolean isProxyEnabled() {
         return proxyEnabled;
@@ -189,7 +141,8 @@ public class ProxyUtils {
         if (proxyEnabled) {
             if (autoProxy) {
                 proxySelector = new ProxyVoleUtil().createAutoProxySearch().getProxySelector();
-            } else {
+            }
+            else {
                 proxySelector = getManualProxySelector(settings);
             }
             if (proxySelector != null) {
@@ -226,10 +179,64 @@ public class ProxyUtils {
     }
 
     public static ProxySelector filterHttpHttpsProxy(ProxySelector proxySelector) {
-        return new ProxyBypassListSelector(
-                Arrays.<UriFilter>asList(new SchemeProxyFilter("http", "https")),
-                proxySelector);
+        return new ProxyBypassListSelector(Collections.singletonList(new SchemeProxyFilter("http", "https")), proxySelector);
     }
+
+    public static void setForceDirectConnection(HttpParams params) {
+        OverridableProxySelectorRoutePlanner.setForceDirectConnection(params);
+    }
+
+    private static String getExpandedProperty(PropertyExpansionContext context, Settings settings, String property) {
+        String content = settings.getString(property, null);
+        return context != null ? PropertyExpander.expandProperties(context, content) : PropertyExpander.expandProperties(content);
+    }
+
+    private static CredentialsProvider getProxyCredentialsProvider(Settings settings) {
+        String proxyUsername = getExpandedProperty(null, settings, ProxySettings.USERNAME);
+        String proxyPassword = getExpandedProperty(null, settings, ProxySettings.PASSWORD);
+
+        if (!StringUtils.isNullOrEmpty(proxyUsername) && !StringUtils.isNullOrEmpty(proxyPassword)) {
+            Credentials proxyCreds = getProxyCredentials(proxyUsername, proxyPassword);
+
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(AuthScope.ANY, proxyCreds);
+            return credsProvider;
+        }
+        return null;
+    }
+
+    private static String getWorkstationName() {
+        String workstation = "";
+        try {
+            workstation = InetAddress.getLocalHost().getHostName();
+        }
+        catch (UnknownHostException e) {
+            logger.warn("Workstation name could not be fetched.", e);
+        }
+        return workstation;
+    }
+
+    private static String nslookup(String s, boolean ip) {
+
+        InetAddress host;
+        String address;
+
+        // get the bytes of the IP address
+        try {
+            host = InetAddress.getByName(s);
+            if (ip) {
+                address = host.getHostAddress();
+            }
+            else {
+                address = host.getHostName();
+            }
+        }
+        catch (UnknownHostException ue) {
+            return s; // no host
+        }
+
+        return address;
+    } // end lookup
 
     private static ProxySelector getManualProxySelector(Settings settings) {
         try {
@@ -239,14 +246,11 @@ public class ProxyUtils {
                 String[] excludes = PropertyExpander.expandProperties(settings.getString(ProxySettings.EXCLUDES, "")).split(",");
                 return new ManualProxySelector(proxyHost, Integer.valueOf(proxyPort), excludes);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e, "Unable to expand proxy settings");
         }
         return null;
-    }
-
-    public static void setForceDirectConnection(HttpParams params) {
-        OverridableProxySelectorRoutePlanner.setForceDirectConnection(params);
     }
 
     private static class ProxySettingsAuthenticator extends Authenticator {
@@ -260,11 +264,11 @@ public class ProxyUtils {
                 String proxyUsername = PropertyExpander.expandProperties(settings.getString(ProxySettings.USERNAME, null));
                 String proxyPassword = PropertyExpander.expandProperties(settings.getString(ProxySettings.PASSWORD, null));
                 return new PasswordAuthentication(proxyUsername, proxyPassword.toCharArray());
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e, "Unable to expand proxy settings");
                 return null;
             }
         }
     }
-
 }

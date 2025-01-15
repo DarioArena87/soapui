@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.support;
@@ -21,6 +21,7 @@ import com.eviware.soapui.support.types.StringToStringMap;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,11 +34,11 @@ import java.util.Map;
 public class ArgumentBuilder {
     private static final String SHADOW = "XXXXXX";
     private final StringToStringMap values;
-    private List<String> args = new ArrayList<String>();
+    private final List<String> args = new ArrayList<String>();
     /**
      * List of arguments that needs to be shadowed.
      */
-    private List<String> argsToShadow = new ArrayList<String>();
+    private final List<String> argsToShadow = new ArrayList<String>();
     private boolean isUnix;
 
     public ArgumentBuilder(StringToStringMap values) {
@@ -61,7 +62,8 @@ public class ArgumentBuilder {
             result.add(args.get(1));
             result.add(buf.toString());
             return result;
-        } else {
+        }
+        else {
             return new ArrayList<String>(args);
         }
     }
@@ -122,7 +124,7 @@ public class ArgumentBuilder {
             return false;
         }
 
-        String value = values.get(name).toString();
+        String value = values.get(name);
         if (value == null || value.length() == 0) {
             return false;
         }
@@ -141,7 +143,7 @@ public class ArgumentBuilder {
             return false;
         }
 
-        String value = values.get(name).toString();
+        String value = values.get(name);
         if (value == null || value.length() == 0) {
             return false;
         }
@@ -162,7 +164,7 @@ public class ArgumentBuilder {
             return false;
         }
 
-        String value = values.get(name).toString();
+        String value = values.get(name);
         if (value == null || value.length() == 0) {
             return false;
         }
@@ -178,15 +180,13 @@ public class ArgumentBuilder {
     }
 
     public ArgumentBuilder addArgs(String... args) {
-        for (int c = 0; c < args.length; c++) {
-            this.args.add(args[c]);
-        }
+        Collections.addAll(this.args, args);
 
         return this;
     }
 
     public boolean addBoolean(String name, String arg) {
-        if (values.containsKey(name) && Boolean.valueOf(values.get(name).toString())) {
+        if (values.containsKey(name) && Boolean.valueOf(values.get(name))) {
             args.add(arg);
             return true;
         }
@@ -218,13 +218,16 @@ public class ArgumentBuilder {
 
             if (value.indexOf('-') == 0) {
                 if (value.indexOf(' ') > 1) {
-                    buf.append(value.substring(0, 2)).append('"').append(value.substring(2)).append('"');
-                } else {
+                    buf.append(value, 0, 2).append('"').append(value.substring(2)).append('"');
+                }
+                else {
                     buf.append(value);
                 }
-            } else if (value.indexOf(' ') >= 0) {
+            }
+            else if (value.indexOf(' ') >= 0) {
                 buf.append('"').append(value).append('"');
-            } else {
+            }
+            else {
                 buf.append(value);
             }
         }
@@ -241,7 +244,7 @@ public class ArgumentBuilder {
             return false;
         }
 
-        String value = values.get(name).toString();
+        String value = values.get(name);
         if (value == null || value.length() == 0) {
             return false;
         }
@@ -260,7 +263,7 @@ public class ArgumentBuilder {
             return false;
         }
 
-        String value = values.get(name).toString();
+        String value = values.get(name);
         if (value == null || value.length() == 0) {
             return false;
         }
@@ -278,10 +281,11 @@ public class ArgumentBuilder {
 
         args.add(arg);
 
-        if (Boolean.valueOf(values.get(name).toString())) {
+        if (Boolean.valueOf(values.get(name))) {
             args.add(trueValue);
             return true;
-        } else {
+        }
+        else {
             args.add(falseValue);
             return false;
         }
@@ -290,7 +294,8 @@ public class ArgumentBuilder {
     public ArgumentBuilder startScript(String script, String windowsExt, String unixExt) {
         if (UISupport.isWindows() && windowsExt != null) {
             addArgs("cmd.exe", "/C", script + windowsExt);
-        } else {
+        }
+        else {
             isUnix = true;
 
             if (!script.startsWith(".") && !script.startsWith(File.separator)) {
@@ -306,5 +311,4 @@ public class ArgumentBuilder {
     public String[] getStringArgs() {
         return args.toArray(new String[args.size()]);
     }
-
 }

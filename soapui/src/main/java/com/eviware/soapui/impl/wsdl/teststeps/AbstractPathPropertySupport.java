@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -45,7 +45,8 @@ public abstract class AbstractPathPropertySupport {
             if (notify) {
                 notifyUpdate(value, old);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -55,7 +56,8 @@ public abstract class AbstractPathPropertySupport {
     public String get() {
         try {
             return getPropertyValue();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -69,8 +71,6 @@ public abstract class AbstractPathPropertySupport {
         return modelItem;
     }
 
-    public abstract void setPropertyValue(String value) throws Exception;
-
     protected void notifyUpdate(String value, String old) {
         modelItem.notifyPropertyChanged(modelItem.getClass().getName() + "@" + propertyName, old, value);
     }
@@ -78,7 +78,8 @@ public abstract class AbstractPathPropertySupport {
     public String expand(TestCaseRunContext context) {
         try {
             return PathUtils.expandPath(getPropertyValue(), modelItem, context);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -87,7 +88,8 @@ public abstract class AbstractPathPropertySupport {
     public String expand() {
         try {
             return PathUtils.resolveResourcePath(getPropertyValue(), modelItem);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -99,10 +101,12 @@ public abstract class AbstractPathPropertySupport {
             try {
                 if (PathUtils.isFilePath(result) && !result.startsWith("file:")) {
                     result = new File(result).toURI().toURL().toString();
-                } else {
+                }
+                else {
                     result = new URL(result).toString();
                 }
-            } catch (MalformedURLException e) {
+            }
+            catch (MalformedURLException e) {
                 SoapUI.logError(e);
             }
         }
@@ -112,6 +116,8 @@ public abstract class AbstractPathPropertySupport {
 
     public abstract String getPropertyValue() throws Exception;
 
+    public abstract void setPropertyValue(String value) throws Exception;
+
     public void resolveFile(ResolveContext<?> context, String errorDescription) {
         resolveFile(context, errorDescription, null, null, true);
     }
@@ -119,14 +125,16 @@ public abstract class AbstractPathPropertySupport {
     public boolean containsPropertyExpansion() {
         try {
             return PropertyExpansionUtils.containsPropertyExpansion(getPropertyValue());
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             SoapUI.logError(e1);
             return false;
         }
     }
 
-    public void resolveFile(ResolveContext<?> context, String errorDescription, String extension, String fileType,
-                            final boolean notify) {
+    public void resolveFile(
+        ResolveContext<?> context, String errorDescription, String extension, String fileType, boolean notify
+    ) {
         if (containsPropertyExpansion()) {
             return;
         }
@@ -135,14 +143,14 @@ public abstract class AbstractPathPropertySupport {
         if (StringUtils.hasContent(source)) {
             try {
                 new URL(source);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 File file = new File(source);
                 if (!file.exists()) {
                     if (context.hasThisModelItem(modelItem, errorDescription, source)) {
                         return;
                     }
-                    context.addPathToResolve(modelItem, errorDescription, source, new ResolveContext.FileResolver(
-                            "Select File", extension, fileType, file.getParent()) {
+                    context.addPathToResolve(modelItem, errorDescription, source, new ResolveContext.FileResolver("Select File", extension, fileType, file.getParent()) {
 
                         @Override
                         public boolean apply(File newFile) {
@@ -150,7 +158,8 @@ public abstract class AbstractPathPropertySupport {
                             return true;
                         }
                     });
-                } else {
+                }
+                else {
                     if (context.hasThisModelItem(modelItem, errorDescription, source)) {
                         context.getPath(modelItem, errorDescription, source).setSolved(true);
                     }
@@ -159,7 +168,7 @@ public abstract class AbstractPathPropertySupport {
         }
     }
 
-    public void resolveFolder(ResolveContext<?> context, String errorDescription, final boolean notify) {
+    public void resolveFolder(ResolveContext<?> context, String errorDescription, boolean notify) {
         if (containsPropertyExpansion()) {
             return;
         }
@@ -168,21 +177,22 @@ public abstract class AbstractPathPropertySupport {
         if (StringUtils.hasContent(source)) {
             try {
                 new URL(source);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 File file = new File(source);
                 if (!file.exists() || !file.isDirectory()) {
                     if (context.hasThisModelItem(modelItem, errorDescription, source)) {
                         return;
                     }
-                    context.addPathToResolve(modelItem, errorDescription, source, new ResolveContext.DirectoryResolver(
-                            "Select Directory", source) {
+                    context.addPathToResolve(modelItem, errorDescription, source, new ResolveContext.DirectoryResolver("Select Directory", source) {
                         @Override
                         public boolean apply(File newFile) {
                             set(newFile.getAbsolutePath(), notify);
                             return true;
                         }
                     });
-                } else {
+                }
+                else {
                     if (context.hasThisModelItem(modelItem, errorDescription, source)) {
                         context.getPath(modelItem, errorDescription, source).setSolved(true);
                     }

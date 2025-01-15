@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.auth;
@@ -37,19 +37,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -76,21 +65,29 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
     private static final ImageIcon AUTH_NOT_ENABLED_ICON = null;
 
     private static final Map<String, ShowOnlineHelpAction> helpActions = new HashMap<String, ShowOnlineHelpAction>();
+
+    static {
+        helpActions.put(EMPTY_PANEL, new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION));
+        helpActions.put(AbstractHttpRequest.BASIC_AUTH_PROFILE, new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION_BASIC));
+        helpActions.put(NTLM.toString(), new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION_NTLM));
+        helpActions.put(SPNEGO_KERBEROS.toString(), new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION_SPNEGO_KERBEROS));
+        helpActions.put(OAUTH_2_FORM_LABEL, new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION_OAUTH2));
+    }
+
     private final JPanel outerPanel = new JPanel(new BorderLayout());
     private final JPanel cardPanel = new JPanel(new CardLayout());
-    private T request;
+    private final T request;
     private JComboBox profileSelectionComboBox;
-    private CellConstraints cc = new CellConstraints();
+    private final CellConstraints cc = new CellConstraints();
     private BasicAuthenticationForm<T> authenticationForm;
     private OAuth2Form oAuth2Form;
     private OAuth1Form oAuth1Form;
     private JButton helpButton;
-    private ProfileListener profileListener;
+    private final ProfileListener profileListener;
     private WSSAuthenticationForm wssAuthenticationForm;
 
     protected ProfileSelectionForm(T request) {
-        super(AuthInspectorFactory.INSPECTOR_ID, "Authentication and Security-related settings",
-                true, AuthInspectorFactory.INSPECTOR_ID);
+        super(AuthInspectorFactory.INSPECTOR_ID, "Authentication and Security-related settings", true, AuthInspectorFactory.INSPECTOR_ID);
         this.request = request;
 
         buildUI();
@@ -118,11 +115,6 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
     }
 
     @Override
-    public boolean isEnabledFor(EditorView<XmlDocument> view) {
-        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
-    }
-
-    @Override
     public void release() {
         super.release();
         if (oAuth2Form != null) {
@@ -133,6 +125,11 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
         }
         getOAuth2ProfileContainer().removeOAuth2ProfileListener(profileListener);
         getOAuth1ProfileContainer().removeOAuth1ProfileListener(profileListener);
+    }
+
+    @Override
+    public boolean isEnabledFor(EditorView<XmlDocument> view) {
+        return !view.getViewId().equals(RawXmlEditorFactory.VIEW_ID);
     }
 
     protected void buildUI() {
@@ -152,7 +149,7 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
         cardPanel.add(authenticationForm.getComponent(), BASIC_FORM_LABEL);
 
         if (isSoapRequest(request)) {
-            wssAuthenticationForm = new WSSAuthenticationForm((WsdlRequest) request);
+            wssAuthenticationForm = new WSSAuthenticationForm((WsdlRequest)request);
             cardPanel.add(wssAuthenticationForm.getComponent(), WSS_FORM_LABEL);
         }
 
@@ -162,19 +159,20 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
     private JPanel createEmptyPanel() {
         JPanel panelWithText = new JPanel(new BorderLayout());
         String helpText = "<html>\n" +
-                "<body>" +
-                "</div>" +
-                "<div style=\"text-align:center\"><b>Not Yet Configured</b>" +
-                "<br>Authorization has not been set for protected services." +
-                "<br>Use the <i>Authorization</i> drop down to configure." +
-                "</div>" +
-                "</body>" +
-                "</html>";
+                          "<body>" +
+                          "</div>" +
+                          "<div style=\"text-align:center\"><b>Not Yet Configured</b>" +
+                          "<br>Authorization has not been set for protected services." +
+                          "<br>Use the <i>Authorization</i> drop down to configure." +
+                          "</div>" +
+                          "</body>" +
+                          "</html>";
         JLabel label = new JLabel(helpText);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         panelWithText.add(label, BorderLayout.CENTER);
         panelWithText.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(AbstractAuthenticationForm.CARD_BORDER_COLOR),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+                                                                   BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
         panelWithText.setBackground(AbstractAuthenticationForm.CARD_BACKGROUND_COLOR);
         return panelWithText;
     }
@@ -226,25 +224,30 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
             if (isSoapRequest(request)) {
                 wssAuthenticationForm.setButtonGroupVisibility(selectedOption.equals(AbstractHttpRequest.BASIC_AUTH_PROFILE));
                 changeAuthorizationType(WSS_FORM_LABEL, selectedOption);
-            } else {
+            }
+            else {
                 authenticationForm.setButtonGroupVisibility(selectedOption.equals(AbstractHttpRequest.BASIC_AUTH_PROFILE));
                 changeAuthorizationType(BASIC_FORM_LABEL, selectedOption);
             }
-        } else if (isRestRequest(request) && getOAuth2ProfileContainer().getOAuth2ProfileNameList().contains(selectedOption)) {
+        }
+        else if (isRestRequest(request) && getOAuth2ProfileContainer().getOAuth2ProfileNameList().contains(selectedOption)) {
             setTitle(AuthInspectorFactory.INSPECTOR_ID + " (" + selectedOption + ")");
             request.setSelectedAuthProfileAndAuthType(selectedOption, CredentialsConfig.AuthType.O_AUTH_2_0);
             oAuth2Form = new OAuth2Form(getOAuth2ProfileContainer().getProfileByName(selectedOption), this);
             cardPanel.add(oAuth2Form.getComponent(), OAUTH_2_FORM_LABEL);
             changeAuthorizationType(OAUTH_2_FORM_LABEL, selectedOption);
-        } else if (isRestRequest(request) && getOAuth1ProfileContainer().getOAuth1ProfileNameList().contains(selectedOption)) {
+        }
+        else if (isRestRequest(request) && getOAuth1ProfileContainer().getOAuth1ProfileNameList().contains(selectedOption)) {
             setTitle(AuthInspectorFactory.INSPECTOR_ID + " (" + selectedOption + ")");
             request.setSelectedAuthProfileAndAuthType(selectedOption, CredentialsConfig.AuthType.O_AUTH_1_0);
             oAuth1Form = new OAuth1Form(getOAuth1ProfileContainer().getProfileByName(selectedOption), this);
             cardPanel.add(oAuth1Form.getComponent(), OAUTH_1_FORM_LABEL);
             changeAuthorizationType(OAUTH_1_FORM_LABEL, selectedOption);
-        } else if (selectedOption.equals(OPTIONS_SEPARATOR)) {
+        }
+        else if (selectedOption.equals(OPTIONS_SEPARATOR)) {
             profileSelectionComboBox.setSelectedIndex(0);
-        } else    //selectedItem : No Authorization
+        }
+        else    //selectedItem : No Authorization
         {
             setIcon(AUTH_NOT_ENABLED_ICON);
             setTitle(AuthInspectorFactory.INSPECTOR_ID);
@@ -253,7 +256,7 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
         }
     }
 
-    private void performAddEditOperation(final String currentProfile, String selectedOption) {
+    private void performAddEditOperation(String currentProfile, String selectedOption) {
         AddEditOptions addEditOption = getAddEditOptionForDescription(selectedOption);
         switch (addEditOption) {
             case ADD:
@@ -313,8 +316,7 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
     }
 
     private void deleteCurrentProfile(String profileName) {
-        boolean confirmedDeletion = UISupport.confirm("Do you really want to delete profile '" + profileName + "' ?",
-                DELETE_PROFILE_DIALOG_TITLE);
+        boolean confirmedDeletion = UISupport.confirm("Do you really want to delete profile '" + profileName + "' ?", DELETE_PROFILE_DIALOG_TITLE);
         if (!confirmedDeletion) {
             refreshProfileSelectionComboBox(profileName);
             return;
@@ -322,9 +324,11 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
 
         if (isRestRequest(request) && getOAuth2ProfileContainer().getOAuth2ProfileNameList().contains(profileName)) {
             getOAuth2ProfileContainer().removeProfile(profileName);
-        } else if (isRestRequest(request) && getOAuth1ProfileContainer().getOAuth1ProfileNameList().contains(profileName)) {
+        }
+        else if (isRestRequest(request) && getOAuth1ProfileContainer().getOAuth1ProfileNameList().contains(profileName)) {
             getOAuth1ProfileContainer().removeProfile(profileName);
-        } else if (getBasicAuthenticationTypes().contains(profileName)) {
+        }
+        else if (getBasicAuthenticationTypes().contains(profileName)) {
             request.removeBasicAuthenticationProfile(profileName);
         }
         refreshProfileSelectionComboBox(CredentialsConfig.AuthType.NO_AUTHORIZATION.toString());
@@ -348,14 +352,12 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
             helpKey = selectedOption;
         }
         helpButton.setAction(helpActions.get(helpKey));
-
     }
 
     private void showCard(String cardName) {
-        CardLayout layout = (CardLayout) cardPanel.getLayout();
+        CardLayout layout = (CardLayout)cardPanel.getLayout();
         layout.show(cardPanel, cardName);
     }
-
 
     private OAuth2ProfileContainer getOAuth2ProfileContainer() {
         return request.getProject().getOAuth2ProfileContainer();
@@ -428,7 +430,7 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
         ADD("Add New Authorization..."),
         RENAME("Rename current..."),
         DELETE("Delete current");
-        private String description;
+        private final String description;
 
         AddEditOptions(String description) {
             this.description = description;
@@ -443,12 +445,11 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
         @Override
         public void itemStateChanged(ItemEvent e) {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                String selectedProfile = (String) e.getItem();
+                String selectedProfile = (String)e.getItem();
 
                 setAuthenticationTypeAndShowCard(selectedProfile);
                 if (!getAddEditOptions().contains(selectedProfile) && !selectedProfile.equals(OPTIONS_SEPARATOR)) {
-                    DefaultComboBoxModel profileComboBoXModel = new DefaultComboBoxModel(
-                            createOptionsForAuthorizationCombo(selectedProfile));
+                    DefaultComboBoxModel profileComboBoXModel = new DefaultComboBoxModel(createOptionsForAuthorizationCombo(selectedProfile));
                     profileComboBoXModel.setSelectedItem(selectedProfile);
                     profileSelectionComboBox.setModel(profileComboBoXModel);
                 }
@@ -476,13 +477,5 @@ public class ProfileSelectionForm<T extends AbstractHttpRequest> extends Abstrac
         public void profileAdded(OAuth1Profile profile) {
             refreshProfileSelectionComboBox(request.getSelectedAuthProfile());
         }
-    }
-
-    static {
-        helpActions.put(EMPTY_PANEL, new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION));
-        helpActions.put(AbstractHttpRequest.BASIC_AUTH_PROFILE, new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION_BASIC));
-        helpActions.put(NTLM.toString(), new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION_NTLM));
-        helpActions.put(SPNEGO_KERBEROS.toString(), new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION_SPNEGO_KERBEROS));
-        helpActions.put(OAUTH_2_FORM_LABEL, new ShowOnlineHelpAction(null, HelpUrls.AUTHORIZATION_OAUTH2));
     }
 }

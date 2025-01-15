@@ -1,28 +1,28 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
 
 /**
- * This is an example of a component, which serves as a DragSource as 
+ * This is an example of a component, which serves as a DragSource as
  * well as Drop Target.
  * To illustrate the concept, JList has been used as a droppable target
  * and a draggable source.
  * Any component can be used instead of a JList.
- * The code also contains debugging messages which can be used for 
+ * The code also contains debugging messages which can be used for
  * diagnostics and understanding the flow of events.
  *
  * @version 1.0
@@ -30,9 +30,7 @@ package com.eviware.soapui.support.components;
 
 import com.eviware.soapui.SoapUI;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
-import javax.swing.ListModel;
+import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -86,20 +84,26 @@ public class DNDList extends JList implements DropTargetListener, DragSourceList
     }
 
     /**
-     * is invoked when you are exit the DropSite without dropping
-     */
-
-    public void dragExit(DropTargetEvent event) {
-        System.out.println("dragExit");
-
-    }
-
-    /**
      * is invoked when a drag operation is going on
      */
 
     public void dragOver(DropTargetDragEvent event) {
         System.out.println("dragOver");
+    }
+
+    /**
+     * is invoked if the use modifies the current drop gesture
+     */
+
+    public void dropActionChanged(DropTargetDragEvent event) {
+    }
+
+    /**
+     * is invoked when you are exit the DropSite without dropping
+     */
+
+    public void dragExit(DropTargetEvent event) {
+        System.out.println("dragExit");
     }
 
     /**
@@ -115,24 +119,19 @@ public class DNDList extends JList implements DropTargetListener, DragSourceList
             if (transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
 
                 event.acceptDrop(DnDConstants.ACTION_MOVE);
-                String s = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+                String s = (String)transferable.getTransferData(DataFlavor.stringFlavor);
                 addElement(s);
                 event.getDropTargetContext().dropComplete(true);
-            } else {
+            }
+            else {
                 event.rejectDrop();
             }
-        } catch (Exception exception) {
+        }
+        catch (Exception exception) {
             SoapUI.logError(exception);
             System.err.println("Exception" + exception.getMessage());
             event.rejectDrop();
         }
-    }
-
-    /**
-     * is invoked if the use modifies the current drop gesture
-     */
-
-    public void dropActionChanged(DropTargetDragEvent event) {
     }
 
     /**
@@ -147,9 +146,45 @@ public class DNDList extends JList implements DropTargetListener, DragSourceList
 
             // as the name suggests, starts the dragging
             dragSource.startDrag(event, DragSource.DefaultMoveDrop, text, this);
-        } else {
+        }
+        else {
             System.out.println("nothing was selected");
         }
+    }
+
+    /**
+     * this message goes to DragSourceListener, informing it that the dragging
+     * has entered the DropSite
+     */
+
+    public void dragEnter(DragSourceDragEvent event) {
+        System.out.println(" dragEnter");
+    }
+
+    /**
+     * this message goes to DragSourceListener, informing it that the dragging is
+     * currently ocurring over the DropSite
+     */
+
+    public void dragOver(DragSourceDragEvent event) {
+        System.out.println("dragExit");
+    }
+
+    /**
+     * is invoked when the user changes the dropAction
+     */
+
+    public void dropActionChanged(DragSourceDragEvent event) {
+        System.out.println("dropActionChanged");
+    }
+
+    /**
+     * this message goes to DragSourceListener, informing it that the dragging
+     * has exited the DropSite
+     */
+
+    public void dragExit(DragSourceEvent event) {
+        System.out.println("dragExit");
     }
 
     /**
@@ -164,48 +199,11 @@ public class DNDList extends JList implements DropTargetListener, DragSourceList
     }
 
     /**
-     * this message goes to DragSourceListener, informing it that the dragging
-     * has entered the DropSite
-     */
-
-    public void dragEnter(DragSourceDragEvent event) {
-        System.out.println(" dragEnter");
-    }
-
-    /**
-     * this message goes to DragSourceListener, informing it that the dragging
-     * has exited the DropSite
-     */
-
-    public void dragExit(DragSourceEvent event) {
-        System.out.println("dragExit");
-
-    }
-
-    /**
-     * this message goes to DragSourceListener, informing it that the dragging is
-     * currently ocurring over the DropSite
-     */
-
-    public void dragOver(DragSourceDragEvent event) {
-        System.out.println("dragExit");
-
-    }
-
-    /**
-     * is invoked when the user changes the dropAction
-     */
-
-    public void dropActionChanged(DragSourceDragEvent event) {
-        System.out.println("dropActionChanged");
-    }
-
-    /**
      * adds elements to itself
      */
 
     public void addElement(Object s) {
-        ((DefaultListModel) getModel()).addElement(s.toString());
+        ((DefaultListModel)getModel()).addElement(s.toString());
     }
 
     /**
@@ -213,7 +211,6 @@ public class DNDList extends JList implements DropTargetListener, DragSourceList
      */
 
     public void removeElement() {
-        ((DefaultListModel) getModel()).removeElement(getSelectedValue());
+        ((DefaultListModel)getModel()).removeElement(getSelectedValue());
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.request;
@@ -39,11 +39,7 @@ import com.eviware.soapui.support.editor.xml.XmlDocument;
 import com.eviware.soapui.support.editor.xml.support.DefaultXmlDocument;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 
 /**
  * Abstract DesktopPanel for WsdlRequests
@@ -51,8 +47,7 @@ import javax.swing.KeyStroke;
  * @author Ole.Matzura
  */
 
-public abstract class AbstractWsdlRequestDesktopPanel<T extends ModelItem, T2 extends WsdlRequest> extends
-        AbstractHttpRequestDesktopPanel<T, T2> implements SubmitListener {
+public abstract class AbstractWsdlRequestDesktopPanel<T extends ModelItem, T2 extends WsdlRequest> extends AbstractHttpRequestDesktopPanel<T, T2> implements SubmitListener {
     private JButton recreateButton;
     private JButton cloneButton;
     private JButton createEmptyButton;
@@ -66,11 +61,12 @@ public abstract class AbstractWsdlRequestDesktopPanel<T extends ModelItem, T2 ex
     @Override
     protected void init(T2 request) {
         recreateButton = createActionButton(new RecreateRequestAction(request), true);
-        addToMockServiceButton = createActionButton(SwingActionDelegate.createDelegate(
-                AddRequestToMockServiceAction.SOAPUI_ACTION_ID, request, null, "/addToMockService.gif"), true);
+        addToMockServiceButton = createActionButton(
+            SwingActionDelegate.createDelegate(AddRequestToMockServiceAction.SOAPUI_ACTION_ID, request, null, "/addToMockService.gif"),
+            true
+        );
 
-        cloneButton = createActionButton(SwingActionDelegate.createDelegate(CloneRequestAction.SOAPUI_ACTION_ID,
-                request, null, "/clone.png"), true);
+        cloneButton = createActionButton(SwingActionDelegate.createDelegate(CloneRequestAction.SOAPUI_ACTION_ID, request, null, "/clone.png"), true);
 
         createEmptyButton = createActionButton(new CreateEmptyRequestAction(request), true);
 
@@ -88,12 +84,6 @@ public abstract class AbstractWsdlRequestDesktopPanel<T extends ModelItem, T2 ex
         return new WsdlRequestMessageEditor(new RequestXmlDocument(getRequest()));
     }
 
-    public static class OneWayResponseMessageEditor extends ModelItemXmlEditor<ModelItem, DefaultXmlDocument> {
-        public OneWayResponseMessageEditor(ModelItem modelItem) {
-            super(new DefaultXmlDocument(), modelItem);
-        }
-    }
-
     protected void insertButtons(JXToolBar toolbar) {
         toolbar.add(addToMockServiceButton);
         toolbar.add(recreateButton);
@@ -107,31 +97,6 @@ public abstract class AbstractWsdlRequestDesktopPanel<T extends ModelItem, T2 ex
         recreateButton.setEnabled(enabled);
         createEmptyButton.setEnabled(enabled);
         cloneButton.setEnabled(enabled);
-    }
-
-    public class WsdlRequestMessageEditor extends
-            AbstractHttpRequestDesktopPanel<T, T2>.AbstractHttpRequestMessageEditor<XmlDocument> {
-        public WsdlRequestMessageEditor(XmlDocument document) {
-            super(document);
-
-            XmlSourceEditorView<?> editor = getSourceEditor();
-            RSyntaxTextArea inputArea = editor.getInputArea();
-            inputArea.getInputMap().put(KeyStroke.getKeyStroke("F5"), recreateButton.getAction());
-        }
-    }
-
-    public class WsdlResponseMessageEditor extends
-            AbstractHttpRequestDesktopPanel<T, T2>.AbstractHttpResponseMessageEditor<XmlDocument> {
-        public WsdlResponseMessageEditor(XmlDocument document) {
-            super(document);
-
-            XmlSourceEditorView<?> editor = getSourceEditor();
-
-            JPopupMenu inputPopup = editor.getEditorPopup();
-            inputPopup.insert(new JSeparator(), 2);
-            inputPopup.insert(wsiValidateAction, 3);
-            inputPopup.insert(new JSeparator(), 4);
-        }
     }
 
     protected Submit doSubmit() throws SubmitException {
@@ -148,6 +113,35 @@ public abstract class AbstractWsdlRequestDesktopPanel<T extends ModelItem, T2 ex
         super.afterSubmit(submit, context);
         if (!isHasClosed()) {
             wsiValidateAction.setEnabled(submit.getResponse() != null);
+        }
+    }
+
+    public static class OneWayResponseMessageEditor extends ModelItemXmlEditor<ModelItem, DefaultXmlDocument> {
+        public OneWayResponseMessageEditor(ModelItem modelItem) {
+            super(new DefaultXmlDocument(), modelItem);
+        }
+    }
+
+    public class WsdlRequestMessageEditor extends AbstractHttpRequestDesktopPanel<T, T2>.AbstractHttpRequestMessageEditor<XmlDocument> {
+        public WsdlRequestMessageEditor(XmlDocument document) {
+            super(document);
+
+            XmlSourceEditorView<?> editor = getSourceEditor();
+            RSyntaxTextArea inputArea = editor.getInputArea();
+            inputArea.getInputMap().put(KeyStroke.getKeyStroke("F5"), recreateButton.getAction());
+        }
+    }
+
+    public class WsdlResponseMessageEditor extends AbstractHttpRequestDesktopPanel<T, T2>.AbstractHttpResponseMessageEditor<XmlDocument> {
+        public WsdlResponseMessageEditor(XmlDocument document) {
+            super(document);
+
+            XmlSourceEditorView<?> editor = getSourceEditor();
+
+            JPopupMenu inputPopup = editor.getEditorPopup();
+            inputPopup.insert(new JSeparator(), 2);
+            inputPopup.insert(wsiValidateAction, 3);
+            inputPopup.insert(new JSeparator(), 4);
         }
     }
 }

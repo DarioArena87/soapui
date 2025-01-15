@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss;
@@ -41,8 +41,8 @@ import java.util.List;
 import java.util.Vector;
 
 public class IncomingWss {
-    private IncomingWssConfig wssConfig;
     private final WssContainer container;
+    private IncomingWssConfig wssConfig;
 
     public IncomingWss(IncomingWssConfig wssConfig, WssContainer container) {
         this.wssConfig = wssConfig;
@@ -57,38 +57,36 @@ public class IncomingWss {
         return wssConfig.getDecryptCrypto();
     }
 
-    public String getDecryptPassword() {
-        return wssConfig.getDecryptPassword();
-    }
-
-    public String getName() {
-        return wssConfig.getName();
-    }
-
-    public String getSignatureCrypto() {
-        return wssConfig.getSignatureCrypto();
-    }
-
     public void setDecryptCrypto(String arg0) {
         wssConfig.setDecryptCrypto(arg0);
+    }
+
+    public String getDecryptPassword() {
+        return wssConfig.getDecryptPassword();
     }
 
     public void setDecryptPassword(String arg0) {
         wssConfig.setDecryptPassword(arg0);
     }
 
+    public String getName() {
+        return wssConfig.getName();
+    }
+
     public void setName(String arg0) {
         wssConfig.setName(arg0);
+    }
+
+    public String getSignatureCrypto() {
+        return wssConfig.getSignatureCrypto();
     }
 
     public void setSignatureCrypto(String arg0) {
         wssConfig.setSignatureCrypto(arg0);
     }
 
-    public Vector<Object> processIncoming(Document soapDocument, PropertyExpansionContext context)
-            throws WSSecurityException {
-        Element header = WSSecurityUtil.findWsseSecurityHeaderBlock(soapDocument, soapDocument.getDocumentElement(),
-                false);
+    public Vector<Object> processIncoming(Document soapDocument, PropertyExpansionContext context) throws WSSecurityException {
+        Element header = WSSecurityUtil.findWsseSecurityHeaderBlock(soapDocument, soapDocument.getDocumentElement(), false);
         if (header == null) {
             return null;
         }
@@ -106,22 +104,29 @@ public class IncomingWss {
 
             if (sig == null) {
                 sig = dec;
-            } else if (dec == null) {
+            }
+            else if (dec == null) {
                 dec = sig;
             }
 
-            List<WSSecurityEngineResult> incomingResult = wssecurityEngine.processSecurityHeader(soapDocument,
-                    (String) null, new WSSCallbackHandler(dec), sig, dec);
+            List<WSSecurityEngineResult> incomingResult = wssecurityEngine.processSecurityHeader(soapDocument, null, new WSSCallbackHandler(dec), sig, dec);
 
             Vector<Object> wssResult = new Vector<Object>();
             wssResult.setSize(incomingResult.size());
             Collections.copy(wssResult, incomingResult);
             return wssResult;
-
-        } catch (WSSecurityException e) {
+        }
+        catch (WSSecurityException e) {
             SoapUI.logError(e);
             throw e;
         }
+    }
+
+    public void updateConfig(IncomingWssConfig config) {
+        wssConfig = config;
+    }
+
+    public void resolve(ResolveContext<?> context) {
     }
 
     public class WSSCallbackHandler implements CallbackHandler {
@@ -134,12 +139,12 @@ public class IncomingWss {
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
             for (Callback callback : callbacks) {
                 if (callback instanceof WSPasswordCallback) {
-                    WSPasswordCallback cb = (WSPasswordCallback) callback;
+                    WSPasswordCallback cb = (WSPasswordCallback)callback;
                     if (StringUtils.hasContent(getDecryptPassword())) {
                         cb.setPassword(getDecryptPassword());
-                    } else {
-                        cb.setPassword(new String(UISupport.promptPassword("Password required for WSS processing",
-                                "Specify Password")));
+                    }
+                    else {
+                        cb.setPassword(new String(UISupport.promptPassword("Password required for WSS processing", "Specify Password")));
                     }
 
                     if (cb.getUsage() == WSPasswordCallback.ENCRYPTED_KEY_TOKEN) {
@@ -148,12 +153,5 @@ public class IncomingWss {
                 }
             }
         }
-    }
-
-    public void updateConfig(IncomingWssConfig config) {
-        this.wssConfig = config;
-    }
-
-    public void resolve(ResolveContext<?> context) {
     }
 }

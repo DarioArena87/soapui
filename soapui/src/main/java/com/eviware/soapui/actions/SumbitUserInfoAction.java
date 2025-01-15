@@ -47,8 +47,8 @@ public class SumbitUserInfoAction {
     private static final String DIALOG_CAPTION = "Stay Tuned!";
     private static final String DIALOG_MAIN_TEXT = "Want to stay in the loop?";
     private static final String DIALOG_DESCRIPTION = "Your privacy matters. This information will be used to provide you " +
-            "with best practices gained from our community of tens of millions of software experts, just like you. " +
-            "By submitting this form, you agree to our";
+                                                     "with best practices gained from our community of tens of millions of software experts, just like you. " +
+                                                     "By submitting this form, you agree to our";
     private static final String TERMS_OF_USE = "Terms of Use";
     private static final String PRIVACY_POLICY = "Privacy Policy";
     private static final String OK_BTN_CAPTION = "Yes, I want to know";
@@ -65,19 +65,13 @@ public class SumbitUserInfoAction {
     }
 
     private class CollectUserInfoDialog extends JDialog {
+        private static final String VALID_EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
         private JLabel title;
         private JEditorPane description;
         private JFriendlyTextField textFieldFirstName;
         private JFriendlyTextField textFieldLastName;
         private JFriendlyTextField textFieldEmail;
-        private static final String VALID_EMAIL_PATTERN =
-                "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-        private Pattern validEmailRegex;
-
-        private void setBackgroundColor(JComponent curLabel) {
-            curLabel.setOpaque(true);
-            curLabel.setBackground(Color.WHITE);
-        }
+        private final Pattern validEmailRegex;
 
         public CollectUserInfoDialog() {
             super(UISupport.getMainFrame(), DIALOG_CAPTION, true);
@@ -90,7 +84,7 @@ public class SumbitUserInfoAction {
             JPanel jBasePanel = new JPanel(new BorderLayout(5, 5));
             jBasePanel.setBorder(new LineBorder(new Color(170, 170, 170), 2));
             setBackgroundColor(jBasePanel);
-            this.add(jBasePanel);
+            add(jBasePanel);
 
             JPanel jBaseUserPanel = new JPanel(new BorderLayout(5, 5));
             setBackgroundColor(jBaseUserPanel);
@@ -101,8 +95,16 @@ public class SumbitUserInfoAction {
             jCaption.setBackground(new Color(166, 192, 229));
 
             String dialogDescription = DIALOG_DESCRIPTION +
-                    " <a href=\"" + TERMS_OF_USE_URL + "\" target=\"_top\">" + TERMS_OF_USE + "</a> and " +
-                    "<a href=\"" + PRIVACY_POLICY_URL + "\">" + PRIVACY_POLICY + "</a>.";
+                                       " <a href=\"" +
+                                       TERMS_OF_USE_URL +
+                                       "\" target=\"_top\">" +
+                                       TERMS_OF_USE +
+                                       "</a> and " +
+                                       "<a href=\"" +
+                                       PRIVACY_POLICY_URL +
+                                       "\">" +
+                                       PRIVACY_POLICY +
+                                       "</a>.";
             jBaseUserPanel.add(buildCaptionPanel(DIALOG_MAIN_TEXT, dialogDescription), BorderLayout.NORTH);
             jBaseUserPanel.add(buildControlsPanel());
 
@@ -112,6 +114,11 @@ public class SumbitUserInfoAction {
             validEmailRegex = Pattern.compile(VALID_EMAIL_PATTERN);
 
             pack();
+        }
+
+        private void setBackgroundColor(JComponent curLabel) {
+            curLabel.setOpaque(true);
+            curLabel.setBackground(Color.WHITE);
         }
 
         private JPanel buildCaptionPanel(String titleStr, String descriptionStr) {
@@ -126,8 +133,7 @@ public class SumbitUserInfoAction {
 
             Font font = UISupport.getEditorFont();
             String fontFamily = font.getFamily();
-            description = new JEditorPane("text/html", "<html>" +
-                    "<div style=\"font-size: 9px\" face=\"" + fontFamily + "\">" + descriptionStr + "</div></html>");
+            description = new JEditorPane("text/html", "<html>" + "<div style=\"font-size: 9px\" face=\"" + fontFamily + "\">" + descriptionStr + "</div></html>");
             setBackgroundColor(description);
             description.setBorder(new EmptyBorder(5, 0, 0, 0));
             description.setEditable(false);
@@ -273,7 +279,8 @@ public class SumbitUserInfoAction {
             }
             if (fieldErrors.isEmpty()) {
                 return true;
-            } else {
+            }
+            else {
                 StringBuilder buf = new StringBuilder("You must enter ");
                 int numberOfErrors = fieldErrors.size();
                 for (int i = 0; i < numberOfErrors; i++) {

@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//**
+ *//**
  * MySwing: Advanced Swing Utilites
  * Copyright (C) 2005  Santhosh Kumar T
  * <p/>
@@ -41,10 +41,10 @@ import java.awt.event.MouseEvent;
  * @email santhosh@in.fiorano.com
  */
 public class CheckTreeManager extends MouseAdapter implements TreeSelectionListener {
-    private CheckTreeSelectionModel selectionModel;
-    private TreePathSelectable selectable;
     protected JTree tree = new JTree();
     int hotspot = new JCheckBox().getPreferredSize().width;
+    private final CheckTreeSelectionModel selectionModel;
+    private final TreePathSelectable selectable;
 
     public CheckTreeManager(JTree tree, boolean dig, TreePathSelectable selectable) {
         this.tree = tree;
@@ -86,10 +86,12 @@ public class CheckTreeManager extends MouseAdapter implements TreeSelectionListe
         try {
             if (selected) {
                 selectionModel.removeSelectionPath(path);
-            } else {
+            }
+            else {
                 selectionModel.addSelectionPath(path);
             }
-        } finally {
+        }
+        finally {
             selectionModel.addTreeSelectionListener(this);
             tree.treeDidChange();
         }

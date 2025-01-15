@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//**
+ *//**
  * MySwing: Advanced Swing Utilites
  * Copyright (C) 2005  Santhosh Kumar T
  * <p/>
@@ -40,8 +40,8 @@ import java.util.Stack;
  * @email santhosh@in.fiorano.com
  */
 public class PreorderEnumeration implements Enumeration {
-    private TreeModel model;
     protected Stack stack = new Stack();
+    private final TreeModel model;
 
     public PreorderEnumeration(TreePath path, TreeModel model) {
         this(Collections.enumeration(Collections.singletonList(path)), model);
@@ -53,13 +53,12 @@ public class PreorderEnumeration implements Enumeration {
     }
 
     public boolean hasMoreElements() {
-        return (!stack.empty() &&
-                ((Enumeration) stack.peek()).hasMoreElements());
+        return (!stack.empty() && ((Enumeration)stack.peek()).hasMoreElements());
     }
 
     public Object nextElement() {
-        Enumeration enumer = (Enumeration) stack.peek();
-        TreePath path = (TreePath) enumer.nextElement();
+        Enumeration enumer = (Enumeration)stack.peek();
+        TreePath path = (TreePath)enumer.nextElement();
 
         if (!enumer.hasMoreElements()) {
             stack.pop();

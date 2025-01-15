@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.form;
@@ -19,55 +19,55 @@ package com.eviware.x.form;
 import com.eviware.soapui.support.action.swing.ActionList;
 import com.eviware.soapui.support.types.StringToStringMap;
 
-import javax.swing.Action;
+import javax.swing.*;
 
 public interface XFormDialog {
-    public final static int OK_OPTION = 1;
-    public final static int CANCEL_OPTION = 2;
+    int OK_OPTION = 1;
+    int CANCEL_OPTION = 2;
 
-    public void setValues(StringToStringMap values);
+    StringToStringMap getValues();
 
-    public StringToStringMap getValues();
+    void setValues(StringToStringMap values);
 
-    public void setVisible(boolean visible);
+    void setVisible(boolean visible);
 
-    public int getReturnValue();
+    int getReturnValue();
 
-    public void setValue(String field, String value);
+    void setValue(String field, String value);
 
-    public String getValue(String field);
+    String getValue(String field);
 
-    public boolean show();
+    boolean show();
 
-    public StringToStringMap show(StringToStringMap values);
+    StringToStringMap show(StringToStringMap values);
 
-    public boolean validate();
+    boolean validate();
 
-    public void setOptions(String field, Object[] options);
+    void setOptions(String field, Object[] options);
 
-    public XFormField getFormField(String name);
+    XFormField getFormField(String name);
 
-    public void setFormFieldProperty(String name, Object value);
+    void setFormFieldProperty(String name, Object value);
 
-    public int getValueIndex(String name);
+    int getValueIndex(String name);
 
-    public int getIntValue(String name, int defaultValue);
+    int getIntValue(String name, int defaultValue);
 
-    public boolean getBooleanValue(String name);
+    boolean getBooleanValue(String name);
 
-    public void setBooleanValue(String name, boolean b);
+    void setBooleanValue(String name, boolean b);
 
-    public void setIntValue(String name, int value);
+    void setIntValue(String name, int value);
 
-    public void setWidth(int i);
+    void setWidth(int i);
 
-    public void release();
+    void release();
 
-    public void addAction(Action action);
+    void addAction(Action action);
 
-    public XForm[] getForms();
+    XForm[] getForms();
 
-    public void setSize(int i, int j);
+    void setSize(int i, int j);
 
     ActionList getActionsList();
 }

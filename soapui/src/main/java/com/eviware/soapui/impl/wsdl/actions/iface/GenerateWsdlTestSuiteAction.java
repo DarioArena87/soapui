@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface;
@@ -57,7 +57,7 @@ public class GenerateWsdlTestSuiteAction extends AbstractSoapUIAction<WsdlInterf
         dialog.setValue(GenerateForm.REQUEST_CONTENT, "Create new empty requests");
         String[] names = ModelSupport.getNames(iface.getOperationList());
         dialog.setOptions(GenerateForm.OPERATIONS, names);
-        XFormOptionsField operationsFormField = (XFormOptionsField) dialog.getFormField(GenerateForm.OPERATIONS);
+        XFormOptionsField operationsFormField = (XFormOptionsField)dialog.getFormField(GenerateForm.OPERATIONS);
         operationsFormField.setSelectedOptions(names);
 
         WsdlProject project = iface.getProject();
@@ -74,8 +74,7 @@ public class GenerateWsdlTestSuiteAction extends AbstractSoapUIAction<WsdlInterf
             String testSuiteName = dialog.getValue(GenerateForm.TESTSUITE);
 
             if (testSuiteName.equals("<create>")) {
-                testSuiteName = UISupport.prompt("Enter name of TestSuite to create", "Generate TestSuite",
-                        iface.getName() + " TestSuite");
+                testSuiteName = UISupport.prompt("Enter name of TestSuite to create", "Generate TestSuite", iface.getName() + " TestSuite");
             }
 
             if (testSuiteName != null && testSuiteName.trim().length() > 0) {
@@ -90,7 +89,8 @@ public class GenerateWsdlTestSuiteAction extends AbstractSoapUIAction<WsdlInterf
                 boolean generateLoadTest = dialog.getBooleanValue(GenerateForm.GENERATE_LOADTEST);
                 if (style == 0) {
                     generateMulipleTestCases(testSuite, iface, useExistingRequests, generateLoadTest, operations);
-                } else if (style == 1) {
+                }
+                else if (style == 1) {
                     generateSingleTestCase(testSuite, iface, useExistingRequests, generateLoadTest, operations);
                 }
 
@@ -105,8 +105,9 @@ public class GenerateWsdlTestSuiteAction extends AbstractSoapUIAction<WsdlInterf
         return null;
     }
 
-    private void generateSingleTestCase(WsdlTestSuite testSuite, WsdlInterface iface, boolean useExisting,
-                                        boolean createLoadTest, List<String> operations) {
+    private void generateSingleTestCase(
+        WsdlTestSuite testSuite, WsdlInterface iface, boolean useExisting, boolean createLoadTest, List<String> operations
+    ) {
         WsdlTestCase testCase = testSuite.addNewTestCase(iface.getName() + " TestSuite");
 
         for (int i = 0; i < iface.getOperationCount(); i++) {
@@ -117,10 +118,10 @@ public class GenerateWsdlTestSuiteAction extends AbstractSoapUIAction<WsdlInterf
 
             if (useExisting && operation.getRequestCount() > 0) {
                 for (int x = 0; x < operation.getRequestCount(); x++) {
-                    testCase.addTestStep(WsdlTestRequestStepFactory.createConfig(operation.getRequestAt(x),
-                            operation.getName()));
+                    testCase.addTestStep(WsdlTestRequestStepFactory.createConfig(operation.getRequestAt(x), operation.getName()));
                 }
-            } else {
+            }
+            else {
                 testCase.addTestStep(WsdlTestRequestStepFactory.createConfig(operation, operation.getName()));
             }
         }
@@ -130,8 +131,9 @@ public class GenerateWsdlTestSuiteAction extends AbstractSoapUIAction<WsdlInterf
         }
     }
 
-    private void generateMulipleTestCases(WsdlTestSuite testSuite, WsdlInterface iface, boolean useExisting,
-                                          boolean createLoadTest, List<String> operations) {
+    private void generateMulipleTestCases(
+        WsdlTestSuite testSuite, WsdlInterface iface, boolean useExisting, boolean createLoadTest, List<String> operations
+    ) {
         for (int i = 0; i < iface.getOperationCount(); i++) {
             WsdlOperation operation = iface.getOperationAt(i);
             if (!operations.contains(operation.getName())) {
@@ -142,10 +144,10 @@ public class GenerateWsdlTestSuiteAction extends AbstractSoapUIAction<WsdlInterf
 
             if (useExisting && operation.getRequestCount() > 0) {
                 for (int x = 0; x < operation.getRequestCount(); x++) {
-                    testCase.addTestStep(WsdlTestRequestStepFactory.createConfig(operation.getRequestAt(x),
-                            operation.getName()));
+                    testCase.addTestStep(WsdlTestRequestStepFactory.createConfig(operation.getRequestAt(x), operation.getName()));
                 }
-            } else {
+            }
+            else {
                 testCase.addTestStep(WsdlTestRequestStepFactory.createConfig(operation, operation.getName()));
             }
 
@@ -155,17 +157,28 @@ public class GenerateWsdlTestSuiteAction extends AbstractSoapUIAction<WsdlInterf
         }
     }
 
-    @AForm(name = "Generate TestSuite", description = "Generates TestSuite with TestCase(s) for all Operations in this Interface", helpUrl = HelpUrls.GENERATE_TESTSUITE_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
+    @AForm(
+        name = "Generate TestSuite",
+        description = "Generates TestSuite with TestCase(s) for all Operations in this Interface",
+        helpUrl = HelpUrls.GENERATE_TESTSUITE_HELP_URL,
+        icon = UISupport.TOOL_ICON_PATH
+    )
     private class GenerateForm {
         @AField(name = "TestSuite", description = "The TestSuite to create or use", type = AFieldType.ENUMERATION)
         public final static String TESTSUITE = "TestSuite";
 
-        @AField(name = "Style", description = "Select the style of TestCases to create", type = AFieldType.RADIOGROUP, values = {
-                "One TestCase for each Operation", "Single TestCase with one Request for each Operation"})
+        @AField(
+            name = "Style", description = "Select the style of TestCases to create", type = AFieldType.RADIOGROUP, values = {
+            "One TestCase for each Operation", "Single TestCase with one Request for each Operation"
+        }
+        )
         public final static String STYLE = "Style";
 
-        @AField(name = "Request Content", description = "Select how to create Test Requests", type = AFieldType.RADIOGROUP, values = {
-                "Use existing Requests in Interface", "Create new empty requests"})
+        @AField(
+            name = "Request Content", description = "Select how to create Test Requests", type = AFieldType.RADIOGROUP, values = {
+            "Use existing Requests in Interface", "Create new empty requests"
+        }
+        )
         public final static String REQUEST_CONTENT = "Request Content";
 
         @AField(name = "Operations", description = "The Operations for which to Generate Tests", type = AFieldType.MULTILIST)

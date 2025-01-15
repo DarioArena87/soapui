@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.request;
@@ -22,7 +22,7 @@ import com.eviware.soapui.impl.wsdl.WsdlRequest;
 import com.eviware.soapui.support.components.JPropertiesTable;
 import com.eviware.soapui.support.types.StringList;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
 /**
  * PanelBuilder for WsdlRequest
@@ -32,14 +32,6 @@ import javax.swing.JPanel;
 
 public class WsdlRequestPanelBuilder extends EmptyPanelBuilder<WsdlRequest> {
     public WsdlRequestPanelBuilder() {
-    }
-
-    public WsdlRequestDesktopPanel buildDesktopPanel(WsdlRequest request) {
-        return new WsdlRequestDesktopPanel(request);
-    }
-
-    public boolean hasDesktopPanel() {
-        return true;
     }
 
     public JPanel buildOverviewPanel(WsdlRequest request) {
@@ -60,15 +52,16 @@ public class WsdlRequestPanelBuilder extends EmptyPanelBuilder<WsdlRequest> {
         table.addProperty("Username", "username", true);
         table.addPropertyShadow("Password", "password", true);
         table.addProperty("Domain", "domain", true);
-        table.addProperty("Authentication Type", "authType", new String[]{AuthType.GLOBAL_HTTP_SETTINGS.toString(),
-                AuthType.PREEMPTIVE.toString(), AuthType.SPNEGO_KERBEROS.toString(), AuthType.NTLM.toString()});
+        table.addProperty("Authentication Type", "authType", new String[]{
+            AuthType.GLOBAL_HTTP_SETTINGS.toString(), AuthType.PREEMPTIVE.toString(), AuthType.SPNEGO_KERBEROS.toString(), AuthType.NTLM.toString()
+        });
 
-        table.addProperty("WSS-Password Type", "wssPasswordType", new String[]{null, WsdlRequest.PW_TYPE_NONE,
-                WsdlRequest.PW_TYPE_TEXT, WsdlRequest.PW_TYPE_DIGEST});
+        table.addProperty("WSS-Password Type", "wssPasswordType", new String[]{
+            null, WsdlRequest.PW_TYPE_NONE, WsdlRequest.PW_TYPE_TEXT, WsdlRequest.PW_TYPE_DIGEST
+        });
         table.addProperty("WSS TimeToLive", "wssTimeToLive", true);
 
-        StringList keystores = new StringList(request.getOperation().getInterface().getProject().getWssContainer()
-                .getCryptoNames());
+        StringList keystores = new StringList(request.getOperation().getInterface().getProject().getWssContainer().getCryptoNames());
         keystores.add(0, null);
         table.addProperty("SSL Keystore", "sslKeystore", keystores.toStringArray());
 
@@ -84,7 +77,7 @@ public class WsdlRequestPanelBuilder extends EmptyPanelBuilder<WsdlRequest> {
 
         // preprocessing
         table.addProperty("Enable Inline Files", "inlineFilesEnabled", JPropertiesTable.BOOLEAN_OPTIONS)
-                .setDescription("Enables inline file references in elements with binary content; file:<path>");
+             .setDescription("Enables inline file references in elements with binary content; file:<path>");
         table.addProperty("Strip whitespaces", "stripWhitespaces", JPropertiesTable.BOOLEAN_OPTIONS);
         table.addProperty("Remove Empty Content", "removeEmptyContent", JPropertiesTable.BOOLEAN_OPTIONS);
         table.addProperty("Entitize Properties", "entitizeProperties", JPropertiesTable.BOOLEAN_OPTIONS);
@@ -104,5 +97,13 @@ public class WsdlRequestPanelBuilder extends EmptyPanelBuilder<WsdlRequest> {
 
     public boolean hasOverviewPanel() {
         return true;
+    }
+
+    public boolean hasDesktopPanel() {
+        return true;
+    }
+
+    public WsdlRequestDesktopPanel buildDesktopPanel(WsdlRequest request) {
+        return new WsdlRequestDesktopPanel(request);
     }
 }

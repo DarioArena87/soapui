@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.entries;
@@ -31,24 +31,21 @@ import org.apache.ws.security.message.WSSecUsernameToken;
 import org.apache.ws.security.util.Base64;
 import org.w3c.dom.Document;
 
-import javax.swing.JComponent;
+import javax.swing.*;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 public class UsernameEntry extends WssEntryBase {
-    private static final String PASSWORD_DIGEST_EXT = "PasswordDigest Ext";
-
-    private static final String PASSWORD_DIGEST = "PasswordDigest";
-
-    private static final String PASSWORD_TEXT = "PasswordText";
-
     public static final String TYPE = "Username";
-
+    private static final String PASSWORD_DIGEST_EXT = "PasswordDigest Ext";
+    private static final String PASSWORD_DIGEST = "PasswordDigest";
+    private static final String PASSWORD_TEXT = "PasswordText";
     private boolean addCreated;
     private boolean addNonce;
     private String passwordType;
 
     public void init(WSSEntryConfig config, OutgoingWss container) {
-        super.init(config, container, TYPE);
+        init(config, container, TYPE);
     }
 
     public void process(WSSecHeader secHeader, Document doc, PropertyExpansionContext context) {
@@ -64,7 +61,8 @@ public class UsernameEntry extends WssEntryBase {
         if (StringUtils.hasContent(passwordType)) {
             if (passwordType.equals(PASSWORD_TEXT)) {
                 token.setPasswordType(WSConstants.PASSWORD_TEXT);
-            } else if (passwordType.equals(PASSWORD_DIGEST) || passwordType.equals(PASSWORD_DIGEST_EXT)) {
+            }
+            else if (passwordType.equals(PASSWORD_DIGEST) || passwordType.equals(PASSWORD_DIGEST_EXT)) {
                 token.setPasswordType(WSConstants.PASSWORD_DIGEST);
             }
         }
@@ -75,9 +73,10 @@ public class UsernameEntry extends WssEntryBase {
             try {
                 MessageDigest sha = MessageDigest.getInstance("SHA-1");
                 sha.reset();
-                sha.update(password.getBytes("UTF-8"));
+                sha.update(password.getBytes(StandardCharsets.UTF_8));
                 password = Base64.encode(sha.digest());
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -97,8 +96,9 @@ public class UsernameEntry extends WssEntryBase {
         form.appendCheckBox("addNonce", "Add Nonce", "Adds a nonce");
         form.appendCheckBox("addCreated", "Add Created", "Adds a created");
 
-        form.appendComboBox("passwordType", "Password Type", new String[]{PASSWORD_TEXT, PASSWORD_DIGEST,
-                PASSWORD_DIGEST_EXT}, "The password type to generate");
+        form.appendComboBox("passwordType", "Password Type", new String[]{
+            PASSWORD_TEXT, PASSWORD_DIGEST, PASSWORD_DIGEST_EXT
+        }, "The password type to generate");
 
         return form.getPanel();
     }

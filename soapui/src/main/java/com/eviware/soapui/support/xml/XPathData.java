@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.xml;
@@ -54,11 +54,13 @@ public class XPathData {
                     int ix2 = words[1].lastIndexOf('\'');
                     String ns = words[1].substring(ix1 + 1, ix2 - ix1);
                     nsMap.put(ns, prefix);
-                } else {
+                }
+                else {
                     if (s.startsWith("count(") && s.endsWith(")")) {
                         function = "count";
                         s = s.substring("count(".length(), s.length() - ")".length());
-                    } else if (s.startsWith("exists(") && s.endsWith(")")) {
+                    }
+                    else if (s.startsWith("exists(") && s.endsWith(")")) {
                         function = "exists";
                         s = s.substring("exists(".length(), s.length() - ")".length());
                     }
@@ -70,7 +72,8 @@ public class XPathData {
                     }
                 }
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -119,8 +122,8 @@ public class XPathData {
     }
 
     @Override
-    public String toString() {
-        return getShortPath();
+    public int hashCode() {
+        return getHashKey().hashCode();
     }
 
     @Override
@@ -129,13 +132,13 @@ public class XPathData {
             return false;
         }
 
-        XPathData other = (XPathData) obj;
-        return this.getHashKey().equals(other.getHashKey());
+        XPathData other = (XPathData)obj;
+        return getHashKey().equals(other.getHashKey());
     }
 
     @Override
-    public int hashCode() {
-        return getHashKey().hashCode();
+    public String toString() {
+        return getShortPath();
     }
 
     public String getHashKey() {
@@ -247,10 +250,12 @@ public class XPathData {
                 String ns = inverseNsMap.get(words[0]);
                 if (ns != null) {
                     buf.append(ns).append(":").append(words[1]);
-                } else {
+                }
+                else {
                     buf.append(s);
                 }
-            } else {
+            }
+            else {
                 buf.append(s);
             }
         }
@@ -271,7 +276,8 @@ public class XPathData {
             String[] words = s.split(":");
             if (words.length == 2) {
                 buf.append(words[1]);
-            } else {
+            }
+            else {
                 buf.append(s);
             }
         }

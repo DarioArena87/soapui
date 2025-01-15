@@ -7,11 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import java.awt.Rectangle;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class FormatJsonAction extends AbstractAction {
@@ -24,15 +21,16 @@ public class FormatJsonAction extends AbstractAction {
     public FormatJsonAction(String title, RSyntaxTextArea textArea) {
         super(title);
         this.textArea = textArea;
-        putValue(Action.SMALL_ICON, UISupport.createImageIcon("/format_request.gif"));
-        putValue(Action.SHORT_DESCRIPTION, TOOLTIP);
+        putValue(SMALL_ICON, UISupport.createImageIcon("/format_request.gif"));
+        putValue(SHORT_DESCRIPTION, TOOLTIP);
         if (UISupport.isMac()) {
             String keyStroke = "shift meta F";
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke(keyStroke));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke(keyStroke));
             textArea.getInputMap().put(KeyStroke.getKeyStroke(keyStroke), this);
-        } else {
+        }
+        else {
             String keyStroke = "alt F";
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke(keyStroke));
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke(keyStroke));
             textArea.getInputMap().put(KeyStroke.getKeyStroke(keyStroke), this);
         }
     }
@@ -58,7 +56,8 @@ public class FormatJsonAction extends AbstractAction {
             SwingUtilities.invokeLater(() -> {
                 textArea.scrollRectToVisible(visibleRect);
             });
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error(e.getMessage());
         }
     }

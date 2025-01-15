@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.mockoperation;
@@ -35,9 +35,8 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.swing.ExtendedComboBoxModel;
 import com.eviware.soapui.ui.support.AbstractMockOperationDesktopPanel;
 
-import javax.swing.JComboBox;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
@@ -49,11 +48,10 @@ import java.awt.event.ItemListener;
 
 public class WsdlMockOperationDesktopPanel extends AbstractMockOperationDesktopPanel<WsdlMockOperation> {
     private WsdlInterface currentInterface;
-    private InternalInterfaceListener interfaceListener = new InternalInterfaceListener();
+    private final InternalInterfaceListener interfaceListener = new InternalInterfaceListener();
     private JComboBox interfaceCombo;
     private JComboBox operationCombo;
-    private InternalProjectListener projectListener = new InternalProjectListener();
-
+    private final InternalProjectListener projectListener = new InternalProjectListener();
 
     public WsdlMockOperationDesktopPanel(WsdlMockOperation mockOperation) {
         super(mockOperation);
@@ -76,14 +74,16 @@ public class WsdlMockOperationDesktopPanel extends AbstractMockOperationDesktopP
         JXToolBar toolbar = UISupport.createToolbar();
         toolbar.addSpace(3);
 
+        toolbar.addFixed(UISupport.createToolbarButton(SwingActionDelegate.createDelegate(NewMockResponseAction.SOAPUI_ACTION_ID, getModelItem(), null, "/addToMockService.gif")));
         toolbar.addFixed(UISupport.createToolbarButton(SwingActionDelegate.createDelegate(
-                NewMockResponseAction.SOAPUI_ACTION_ID, getModelItem(), null, "/addToMockService.gif")));
-        toolbar.addFixed(UISupport.createToolbarButton(SwingActionDelegate.createDelegate(
-                OpenRequestForMockOperationAction.SOAPUI_ACTION_ID, getModelItem(), null, "/open_request.gif")));
+            OpenRequestForMockOperationAction.SOAPUI_ACTION_ID,
+            getModelItem(),
+            null,
+            "/open_request.gif"
+        )));
         toolbar.addUnrelatedGap();
 
-        ModelItemNames<WsdlInterface> names = new ModelItemNames<WsdlInterface>(ModelSupport.getChildren(getModelItem()
-                .getMockService().getProject(), WsdlInterface.class));
+        ModelItemNames<WsdlInterface> names = new ModelItemNames<WsdlInterface>(ModelSupport.getChildren(getModelItem().getMockService().getProject(), WsdlInterface.class));
 
         interfaceCombo = new JComboBox(names.getNames());
         interfaceCombo.setSelectedIndex(-1);
@@ -119,7 +119,6 @@ public class WsdlMockOperationDesktopPanel extends AbstractMockOperationDesktopP
         return release();
     }
 
-
     private final class InternalInterfaceListener extends InterfaceListenerAdapter {
         @Override
         public void operationAdded(Operation operation) {
@@ -139,7 +138,7 @@ public class WsdlMockOperationDesktopPanel extends AbstractMockOperationDesktopP
 
         @Override
         public void operationUpdated(Operation operation) {
-            ExtendedComboBoxModel model = ((ExtendedComboBoxModel) operationCombo.getModel());
+            ExtendedComboBoxModel model = ((ExtendedComboBoxModel)operationCombo.getModel());
             int ix = model.getIndexOf(operation.getName());
             if (ix != -1) {
                 model.setElementAt(operation.getName(), ix);
@@ -157,9 +156,9 @@ public class WsdlMockOperationDesktopPanel extends AbstractMockOperationDesktopP
             if (selectedItem == null) {
                 operationCombo.setModel(new ExtendedComboBoxModel());
                 currentInterface = null;
-            } else {
-                currentInterface = (WsdlInterface) getModelItem().getMockService().getProject()
-                        .getInterfaceByName(selectedItem.toString());
+            }
+            else {
+                currentInterface = (WsdlInterface)getModelItem().getMockService().getProject().getInterfaceByName(selectedItem.toString());
                 ModelItemNames<Operation> names = new ModelItemNames<Operation>(currentInterface.getOperationList());
                 operationCombo.setModel(new ExtendedComboBoxModel(names.getNames()));
 
@@ -170,8 +169,7 @@ public class WsdlMockOperationDesktopPanel extends AbstractMockOperationDesktopP
 
     private final class OperationComboListener implements ItemListener {
         public void itemStateChanged(ItemEvent e) {
-            WsdlInterface iface = (WsdlInterface) getModelItem().getMockService().getProject()
-                    .getInterfaceByName(interfaceCombo.getSelectedItem().toString());
+            WsdlInterface iface = (WsdlInterface)getModelItem().getMockService().getProject().getInterfaceByName(interfaceCombo.getSelectedItem().toString());
             WsdlOperation operation = iface.getOperationByName(operationCombo.getSelectedItem().toString());
             getModelItem().setOperation(operation);
         }
@@ -190,6 +188,4 @@ public class WsdlMockOperationDesktopPanel extends AbstractMockOperationDesktopP
             }
         }
     }
-
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss;
@@ -36,16 +36,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OutgoingWss implements PropertyExpansionContainer {
-    private static final String OLD_MANUAL_SAML_ENTRY_TYPE = "SAML";
-
     public static final String WSSENTRY_PROPERTY = OutgoingWss.class.getName() + "@wssEntry";
-
+    private static final String OLD_MANUAL_SAML_ENTRY_TYPE = "SAML";
     private static final int MOVE_DOWN = 1;
     private static final int MOVE_UP = -1;
-
-    private OutgoingWssConfig config;
-    private List<WssEntry> entries = new ArrayList<WssEntry>();
     private final DefaultWssContainer container;
+    private OutgoingWssConfig config;
+    private final List<WssEntry> entries = new ArrayList<WssEntry>();
 
     public OutgoingWss(OutgoingWssConfig config, DefaultWssContainer container) {
         this.config = config;
@@ -70,20 +67,20 @@ public class OutgoingWss implements PropertyExpansionContainer {
         return config.getName();
     }
 
-    public String getPassword() {
-        return config.getPassword();
-    }
-
-    public String getUsername() {
-        return config.getUsername();
-    }
-
     public void setName(String arg0) {
         config.setName(arg0);
     }
 
+    public String getPassword() {
+        return config.getPassword();
+    }
+
     public void setPassword(String arg0) {
         config.setPassword(arg0);
+    }
+
+    public String getUsername() {
+        return config.getUsername();
     }
 
     public void setUsername(String arg0) {
@@ -94,12 +91,12 @@ public class OutgoingWss implements PropertyExpansionContainer {
         return config.getActor();
     }
 
-    public boolean getMustUnderstand() {
-        return config.getMustUnderstand();
-    }
-
     public void setActor(String arg0) {
         config.setActor(arg0);
+    }
+
+    public boolean getMustUnderstand() {
+        return config.getMustUnderstand();
     }
 
     public void setMustUnderstand(boolean arg0) {
@@ -125,16 +122,14 @@ public class OutgoingWss implements PropertyExpansionContainer {
 
     public void moveEntry(WssEntry entry, int offset) {
         int indexBeforeMove = entries.indexOf(entry);
-        if ((offset == MOVE_UP && indexBeforeMove > 0)
-                || (offset == MOVE_DOWN && indexBeforeMove < entries.size() - 1)) {
+        if ((offset == MOVE_UP && indexBeforeMove > 0) || (offset == MOVE_DOWN && indexBeforeMove < entries.size() - 1)) {
             WssEntry adjacentEntry = entries.get(indexBeforeMove + offset);
 
             entries.set(indexBeforeMove + offset, entry);
             entries.set(indexBeforeMove, adjacentEntry);
 
-            WSSEntryConfig entryConfig = (WSSEntryConfig) config.getEntryList().get(indexBeforeMove).copy();
-            WSSEntryConfig adjacentEntryConfig = (WSSEntryConfig) config.getEntryList().get(indexBeforeMove + offset)
-                    .copy();
+            WSSEntryConfig entryConfig = (WSSEntryConfig)config.getEntryList().get(indexBeforeMove).copy();
+            WSSEntryConfig adjacentEntryConfig = (WSSEntryConfig)config.getEntryList().get(indexBeforeMove + offset).copy();
 
             config.getEntryList().set(indexBeforeMove + offset, entryConfig);
             config.getEntryList().set(indexBeforeMove, adjacentEntryConfig);
@@ -151,8 +146,7 @@ public class OutgoingWss implements PropertyExpansionContainer {
     }
 
     public void processOutgoing(Document soapDocument, PropertyExpansionContext context) throws WSSecurityException {
-        Element header = WSSecurityUtil.findWsseSecurityHeaderBlock(soapDocument, soapDocument.getDocumentElement(),
-                false);
+        Element header = WSSecurityUtil.findWsseSecurityHeaderBlock(soapDocument, soapDocument.getDocumentElement(), false);
 
         while (header != null) {
             header.getParentNode().removeChild(header);
@@ -172,7 +166,8 @@ public class OutgoingWss implements PropertyExpansionContainer {
         for (WssEntry entry : entries) {
             try {
                 entry.process(secHeader, soapDocument, context);
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 SoapUI.logError(e);
             }
         }
@@ -204,7 +199,7 @@ public class OutgoingWss implements PropertyExpansionContainer {
 
         for (WssEntry entry : entries) {
             if (entry instanceof PropertyExpansionContainer) {
-                result.addAll(((PropertyExpansionContainer) entry).getPropertyExpansions());
+                result.addAll(((PropertyExpansionContainer)entry).getPropertyExpansions());
             }
         }
 

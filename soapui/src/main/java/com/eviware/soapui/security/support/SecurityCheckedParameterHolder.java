@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.support;
@@ -36,20 +36,19 @@ import java.util.Set;
  *
  * @author robert
  */
-public class SecurityCheckedParameterHolder extends SecurityScanParameterListenerAdapter implements
-        TestPropertyListener {
+public class SecurityCheckedParameterHolder extends SecurityScanParameterListenerAdapter implements TestPropertyListener {
 
-    private SecurityScan securityCheck;
+    private final SecurityScan securityCheck;
     private CheckedParametersListConfig paramsConfig;
 
-    private List<SecurityCheckedParameter> params = new ArrayList<SecurityCheckedParameter>();
-    private Map<String, SecurityCheckedParameter> paramsMap = new HashMap<String, SecurityCheckedParameter>();
+    private final List<SecurityCheckedParameter> params = new ArrayList<SecurityCheckedParameter>();
+    private final Map<String, SecurityCheckedParameter> paramsMap = new HashMap<String, SecurityCheckedParameter>();
 
-    private Set<SecurityScanParameterHolderListener> listeners = new HashSet<SecurityScanParameterHolderListener>();
+    private final Set<SecurityScanParameterHolderListener> listeners = new HashSet<SecurityScanParameterHolderListener>();
 
     public SecurityCheckedParameterHolder(SecurityScan securityCheck, CheckedParametersListConfig checkedPameters) {
         this.securityCheck = securityCheck;
-        this.paramsConfig = checkedPameters;
+        paramsConfig = checkedPameters;
 
         for (CheckedParameterConfig param : paramsConfig.getParametersList()) {
             addParameter(param);
@@ -72,7 +71,7 @@ public class SecurityCheckedParameterHolder extends SecurityScanParameterListene
         List<CheckedParameterConfig> paramsList = config.getParametersList();
         for (int c = 0; c < paramsList.size(); c++) {
             if (params.get(c) instanceof SecurityCheckedParameterImpl) {
-                ((SecurityCheckedParameterImpl) params.get(c)).setConfig(paramsList.get(c));
+                ((SecurityCheckedParameterImpl)params.get(c)).setConfig(paramsList.get(c));
             }
         }
     }
@@ -209,12 +208,6 @@ public class SecurityCheckedParameterHolder extends SecurityScanParameterListene
     }
 
     @Override
-    public void propertyMoved(String name, int oldIndex, int newIndex) {
-        // TODO Auto-generated method stub
-        // we do not care about this, we keep order by label
-    }
-
-    @Override
     public void propertyRemoved(String name) {
         ArrayList<SecurityCheckedParameter> parameterToRemove = new ArrayList<SecurityCheckedParameter>();
         for (SecurityCheckedParameter param : params) {
@@ -236,15 +229,20 @@ public class SecurityCheckedParameterHolder extends SecurityScanParameterListene
             }
         }
         for (SecurityCheckedParameter param : parameterToRemove) {
-            ((SecurityCheckedParameterImpl) param).setName(newName);
+            ((SecurityCheckedParameterImpl)param).setName(newName);
         }
-
     }
 
     @Override
     public void propertyValueChanged(String name, String oldValue, String newValue) {
         // TODO Auto-generated method stub
         // we do not cate for this
+    }
+
+    @Override
+    public void propertyMoved(String name, int oldIndex, int newIndex) {
+        // TODO Auto-generated method stub
+        // we do not care about this, we keep order by label
     }
 
     public void release() {

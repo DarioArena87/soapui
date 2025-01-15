@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -41,12 +41,6 @@
 
 package org.apache.http.localserver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Locale;
-
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -55,6 +49,13 @@ import org.apache.http.MethodNotSupportedException;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpRequestHandler;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 /**
  * A handler that generates random data.
@@ -79,8 +80,7 @@ public class RandomHandler implements HttpRequestHandler {
      * @throws HttpException in case of a problem
      * @throws IOException   in case of an IO problem
      */
-    public void handle(final HttpRequest request, final HttpResponse response, final HttpContext context)
-            throws HttpException, IOException {
+    public void handle(HttpRequest request, HttpResponse response, HttpContext context) throws HttpException, IOException {
 
         String method = request.getRequestLine().getMethod().toUpperCase(Locale.ENGLISH);
         if (!"GET".equals(method) && !"HEAD".equals(method)) {
@@ -99,13 +99,15 @@ public class RandomHandler implements HttpRequestHandler {
                     response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
                     response.setReasonPhrase("LENGTH " + length);
                 }
-            } catch (NumberFormatException nfx) {
+            }
+            catch (NumberFormatException nfx) {
                 response.setStatusCode(HttpStatus.SC_BAD_REQUEST);
                 response.setReasonPhrase(nfx.toString());
             }
-        } else {
+        }
+        else {
             // random length, but make sure at least something is sent
-            length = 1 + (int) (Math.random() * 79.0);
+            length = 1 + (int)(Math.random() * 79.0);
         }
 
         if (length >= 0) {
@@ -116,12 +118,12 @@ public class RandomHandler implements HttpRequestHandler {
                 RandomEntity entity = new RandomEntity(length);
                 entity.setContentType("text/plain; charset=US-ASCII");
                 response.setEntity(entity);
-            } else {
+            }
+            else {
                 response.setHeader("Content-Type", "text/plain; charset=US-ASCII");
                 response.setHeader("Content-Length", String.valueOf(length));
             }
         }
-
     } // handle
 
     /**
@@ -137,12 +139,7 @@ public class RandomHandler implements HttpRequestHandler {
 
         static {
             byte[] range = null;
-            try {
-                range = ("abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789")
-                        .getBytes("US-ASCII");
-            } catch (UnsupportedEncodingException uex) {
-                // never, US-ASCII is guaranteed
-            }
+            range = ("abcdefghijklmnopqrstuvwxyz" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789").getBytes(StandardCharsets.US_ASCII);
             RANGE = range;
         }
 
@@ -165,15 +162,6 @@ public class RandomHandler implements HttpRequestHandler {
             }
 
             length = len;
-        }
-
-        /**
-         * Tells that this entity is not streaming.
-         *
-         * @return false
-         */
-        public final boolean isStreaming() {
-            return false;
         }
 
         /**
@@ -213,11 +201,11 @@ public class RandomHandler implements HttpRequestHandler {
         public void writeTo(OutputStream out) throws IOException {
 
             final int blocksize = 2048;
-            int remaining = (int) length; // range checked in constructor
+            int remaining = (int)length; // range checked in constructor
             byte[] data = new byte[Math.min(remaining, blocksize)];
 
             while (remaining > 0) {
-                final int end = Math.min(remaining, data.length);
+                int end = Math.min(remaining, data.length);
 
                 double value = 0.0;
                 for (int i = 0; i < end; i++) {
@@ -226,7 +214,7 @@ public class RandomHandler implements HttpRequestHandler {
                         value = Math.random();
                     }
                     value = value * RANGE.length;
-                    int d = (int) value;
+                    int d = (int)value;
                     value = value - d;
                     data[i] = RANGE[d];
                 }
@@ -236,9 +224,15 @@ public class RandomHandler implements HttpRequestHandler {
                 remaining = remaining - end;
             }
             out.close();
-
         } // writeTo
 
+        /**
+         * Tells that this entity is not streaming.
+         *
+         * @return false
+         */
+        public final boolean isStreaming() {
+            return false;
+        }
     } // class RandomEntity
-
 } // class RandomHandler

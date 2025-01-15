@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.project;
@@ -28,7 +28,7 @@ import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
 import com.eviware.soapui.support.components.DirectoryFormComponent;
 import com.eviware.soapui.support.components.SimpleForm;
 
-import java.awt.Component;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -54,11 +54,9 @@ public class StartHermesJMS extends AbstractSoapUIAction<WsdlProject> {
             UISupport.showErrorMessage("Please set Hermes JMS path in Preferences->Tools ! ");
             if (UISupport.getMainFrame() != null) {
                 if (SoapUIPreferencesAction.getInstance().show(SoapUIPreferencesAction.INTEGRATED_TOOLS)) {
-                    hermesHome = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS,
-                            HermesUtils.defaultHermesJMSPath());
+                    hermesHome = SoapUI.getSettings().getString(ToolsSettings.HERMES_JMS, HermesUtils.defaultHermesJMSPath());
                 }
             }
-
         }
         if (!isHermesHomeValid(hermesHome)) {
             return;
@@ -68,10 +66,7 @@ public class StartHermesJMS extends AbstractSoapUIAction<WsdlProject> {
 
     private boolean isHermesHomeValid(String hermesHome) {
         File file = new File(hermesHome + File.separator + "bin" + File.separator + "hermes.bat");
-        if (file.exists()) {
-            return true;
-        }
-        return false;
+        return file.exists();
     }
 
     private void startHermesJMS(String hermesConfigPath, String hermesHome) {
@@ -88,14 +83,14 @@ public class StartHermesJMS extends AbstractSoapUIAction<WsdlProject> {
             env.put("HERMES_CONFIG", hermesConfigPath);
             env.put("JAVA_HOME", System.getProperty("java.home"));
             pb.start();
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SoapUI.logError(e);
         }
     }
 
     private String chooseFolderDialog(WsdlProject project) {
-        HermesConfigDialog chooseHermesConfigPath = new HermesConfigDialog(PropertyExpander.expandProperties(project,
-                project.getHermesConfig()));
+        HermesConfigDialog chooseHermesConfigPath = new HermesConfigDialog(PropertyExpander.expandProperties(project, project.getHermesConfig()));
         chooseHermesConfigPath.setVisible(true);
         String hermesConfigPath = chooseHermesConfigPath.getPath();
         return hermesConfigPath;
@@ -111,14 +106,12 @@ public class StartHermesJMS extends AbstractSoapUIAction<WsdlProject> {
             setVisible(false);
             folderComponent.setValue(initialPath);
             folderComponent.setInitialFolder(initialPath);
-
         }
 
         protected Component buildContent() {
 
             SimpleForm form = new SimpleForm();
-            folderComponent = new DirectoryFormComponent(
-                    "Location of desired HermesJMS configuration (hermes-config.xml)");
+            folderComponent = new DirectoryFormComponent("Location of desired HermesJMS configuration (hermes-config.xml)");
             form.addSpace(5);
             form.append("Path", folderComponent);
             form.addSpace(5);
@@ -138,6 +131,5 @@ public class StartHermesJMS extends AbstractSoapUIAction<WsdlProject> {
         public void setPath(String path) {
             this.path = path;
         }
-
     }
 }

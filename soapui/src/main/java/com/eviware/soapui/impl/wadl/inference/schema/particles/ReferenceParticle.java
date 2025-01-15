@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema.particles;
@@ -36,10 +36,10 @@ import java.util.Map;
  * @author Dain Nilsson
  */
 public class ReferenceParticle implements Particle {
-    private Schema schema;
+    private final Schema schema;
     private Particle reference;
-    private QName referenceQName;
-    private Map<String, String> attributes;
+    private final QName referenceQName;
+    private final Map<String, String> attributes;
 
     public ReferenceParticle(Schema schema, Particle reference) {
         this.schema = schema;
@@ -57,27 +57,26 @@ public class ReferenceParticle implements Particle {
         }
     }
 
-    public ReferenceParticleConfig save() {
-        ReferenceParticleConfig xml = ReferenceParticleConfig.Factory.newInstance();
-        xml.setReference(referenceQName);
-        for (Map.Entry<String, String> entry : attributes.entrySet()) {
-            MapEntryConfig mapEntry = xml.addNewAttribute();
-            mapEntry.setKey(entry.getKey());
-            mapEntry.setValue(entry.getValue());
-        }
-        return xml;
-    }
-
     private Particle getReference() {
         if (reference == null) {
-            reference = schema.getSystem().getSchemaForNamespace(referenceQName.getNamespaceURI())
-                    .getParticle(referenceQName.getLocalPart());
+            reference = schema.getSystem().getSchemaForNamespace(referenceQName.getNamespaceURI()).getParticle(referenceQName.getLocalPart());
         }
         return reference;
     }
 
     public QName getName() {
         return referenceQName;
+    }
+
+    public Particle.ParticleType getPType() {
+        return getReference().getPType();
+    }
+
+    public Type getType() {
+        return null;
+    }
+
+    public void setType(Type type) {
     }
 
     public String getAttribute(String key) {
@@ -92,33 +91,38 @@ public class ReferenceParticle implements Particle {
         attributes.put(key, value);
     }
 
-    public Type getType() {
-        return null;
-    }
-
-    public void setType(Type type) {
-    }
-
     public void validate(Context context) throws XmlException {
         context.pushPath();
         getReference().validate(context);
         context.popPath();
     }
 
+    public ReferenceParticleConfig save() {
+        ReferenceParticleConfig xml = ReferenceParticleConfig.Factory.newInstance();
+        xml.setReference(referenceQName);
+        for (Map.Entry<String, String> entry : attributes.entrySet()) {
+            MapEntryConfig mapEntry = xml.addNewAttribute();
+            mapEntry.setKey(entry.getKey());
+            mapEntry.setValue(entry.getValue());
+        }
+        return xml;
+    }
+
     @Override
     public String toString() {
-        StringBuilder s = new StringBuilder("<" + schema.getPrefixForNamespace(Settings.xsdns) + ":"
-                + getReference().getPType() + " ref=\"" + schema.getPrefixForNamespace(referenceQName.getNamespaceURI())
-                + ":" + referenceQName.getLocalPart() + "\"");
+        StringBuilder s = new StringBuilder("<" +
+                                            schema.getPrefixForNamespace(Settings.xsdns) +
+                                            ":" +
+                                            getReference().getPType() +
+                                            " ref=\"" +
+                                            schema.getPrefixForNamespace(referenceQName.getNamespaceURI()) +
+                                            ":" +
+                                            referenceQName.getLocalPart() +
+                                            "\"");
         for (Map.Entry<String, String> entry : attributes.entrySet()) {
             s.append(" " + entry.getKey() + "=\"" + entry.getValue() + "\"");
         }
         s.append("/>");
         return s.toString();
     }
-
-    public Particle.ParticleType getPType() {
-        return getReference().getPType();
-    }
-
 }

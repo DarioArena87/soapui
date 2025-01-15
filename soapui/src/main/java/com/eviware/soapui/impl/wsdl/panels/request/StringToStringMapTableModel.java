@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.request;
@@ -30,11 +30,11 @@ import java.util.List;
  */
 
 public class StringToStringMapTableModel extends AbstractTableModel implements TableModel {
-    private StringToStringMap data;
     private final String keyCaption;
     private final String valueCaption;
-    private List<String> keyList;
     private final boolean editable;
+    private StringToStringMap data;
+    private List<String> keyList;
 
     public StringToStringMapTableModel(StringToStringMap data, String keyCaption, String valueCaption, boolean editable) {
         this.data = data;
@@ -45,20 +45,16 @@ public class StringToStringMapTableModel extends AbstractTableModel implements T
         keyList = data == null ? new ArrayList<String>() : new ArrayList<String>(data.keySet());
     }
 
-    public int getColumnCount() {
-        return 2;
-    }
-
     public String getColumnName(int arg0) {
         return arg0 == 0 ? keyCaption : valueCaption;
     }
 
-    public boolean isCellEditable(int arg0, int arg1) {
-        return editable;
-    }
-
     public Class<?> getColumnClass(int arg0) {
         return String.class;
+    }
+
+    public boolean isCellEditable(int arg0, int arg1) {
+        return editable;
     }
 
     public void setValueAt(Object arg0, int arg1, int arg2) {
@@ -71,7 +67,8 @@ public class StringToStringMapTableModel extends AbstractTableModel implements T
             data.put(arg0.toString(), value);
 
             keyList.set(arg1, arg0.toString());
-        } else {
+        }
+        else {
             data.put(oldKey, arg0.toString());
         }
 
@@ -80,6 +77,10 @@ public class StringToStringMapTableModel extends AbstractTableModel implements T
 
     public int getRowCount() {
         return data == null ? 0 : data.size();
+    }
+
+    public int getColumnCount() {
+        return 2;
     }
 
     public Object getValueAt(int arg0, int arg1) {
@@ -91,7 +92,8 @@ public class StringToStringMapTableModel extends AbstractTableModel implements T
         if (keyList.contains(key)) {
             data.put(key, value);
             fireTableCellUpdated(keyList.indexOf(key), 1);
-        } else {
+        }
+        else {
             data.put(key, value);
             keyList.add(key);
             fireTableRowsInserted(keyList.size() - 1, keyList.size() - 1);
@@ -107,7 +109,7 @@ public class StringToStringMapTableModel extends AbstractTableModel implements T
     }
 
     public StringToStringMap getData() {
-        return new StringToStringMap(this.data == null ? new StringToStringMap() : this.data);
+        return new StringToStringMap(data == null ? new StringToStringMap() : data);
     }
 
     public void setData(StringToStringMap data) {

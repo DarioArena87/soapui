@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wsdl;
@@ -52,11 +52,10 @@ import java.util.Map;
  */
 
 public class WsdlImporter {
-    private static List<BindingImporter> bindingImporters = new ArrayList<BindingImporter>();
+    private final static Logger log = LogManager.getLogger(WsdlImporter.class);
+    private static final List<BindingImporter> bindingImporters = new ArrayList<BindingImporter>();
     @SuppressWarnings("unused")
     private static WsdlImporter instance;
-
-    private final static Logger log = LogManager.getLogger(WsdlImporter.class);
 
     static {
         try {
@@ -64,7 +63,8 @@ public class WsdlImporter {
             bindingImporters.add(new Soap12HttpBindingImporter());
             bindingImporters.add(new SoapJMSBindingImporter());
             bindingImporters.add(new TibcoSoapJMSBindingImporter());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
     }
@@ -78,8 +78,9 @@ public class WsdlImporter {
     }
 
     @Nullable
-    public static WsdlInterface[] importWsdl(WsdlProject project, String wsdlUrl, QName bindingName,
-                                             WsdlLoader wsdlLoader) throws Exception {
+    public static WsdlInterface[] importWsdl(
+        WsdlProject project, String wsdlUrl, QName bindingName, WsdlLoader wsdlLoader
+    ) throws Exception {
         wsdlUrl = Tools.normalizeFileSeparators(wsdlUrl);
 
         WsdlContext wsdlContext = new WsdlContext(wsdlUrl);
@@ -91,8 +92,7 @@ public class WsdlImporter {
         Definition definition = wsdlContext.getDefinition();
         List<WsdlInterface> result = new ArrayList<WsdlInterface>();
         if (bindingName != null) {
-            WsdlInterface iface = importBinding(project, wsdlContext,
-                    (Binding) definition.getAllBindings().get(bindingName));
+            WsdlInterface iface = importBinding(project, wsdlContext, (Binding)definition.getAllBindings().get(bindingName));
             return iface == null ? new WsdlInterface[0] : new WsdlInterface[]{iface};
         }
 
@@ -101,14 +101,15 @@ public class WsdlImporter {
         Map<?, ?> serviceMap = definition.getAllServices();
         if (serviceMap.isEmpty()) {
             log.info("Missing services in [" + wsdlUrl + "], check for bindings");
-        } else {
+        }
+        else {
             Iterator<?> i = serviceMap.values().iterator();
             while (i.hasNext()) {
-                Service service = (Service) i.next();
+                Service service = (Service)i.next();
                 Map<?, ?> portMap = service.getPorts();
                 Iterator<?> i2 = portMap.values().iterator();
                 while (i2.hasNext()) {
-                    Port port = (Port) i2.next();
+                    Port port = (Port)i2.next();
 
                     Binding binding = port.getBinding();
                     if (importedBindings.containsKey(binding)) {
@@ -123,10 +124,9 @@ public class WsdlImporter {
                     }
 
                     String ifaceName = getInterfaceNameForBinding(binding);
-                    WsdlInterface ifc = (WsdlInterface) project.getInterfaceByName(ifaceName);
+                    WsdlInterface ifc = (WsdlInterface)project.getInterfaceByName(ifaceName);
                     if (ifc != null) {
-                        Boolean res = UISupport.confirmOrCancel("Interface [" + ifc.getName()
-                                + "] already exists in project, update instead?", "Import WSDL");
+                        Boolean res = UISupport.confirmOrCancel("Interface [" + ifc.getName() + "] already exists in project, update instead?", "Import WSDL");
                         if (res == null) {
                             return new WsdlInterface[0];
                         }
@@ -173,7 +173,7 @@ public class WsdlImporter {
         if (!bindingMap.isEmpty()) {
             Iterator<?> i = bindingMap.values().iterator();
             while (i.hasNext()) {
-                Binding binding = (Binding) i.next();
+                Binding binding = (Binding)i.next();
                 if (importedBindings.containsKey(binding)) {
                     continue;
                 }
@@ -181,12 +181,12 @@ public class WsdlImporter {
                 PortType portType = binding.getPortType();
                 if (portType == null) {
                     log.warn("Missing portType for binding [" + binding.getQName().toString() + "]");
-                } else {
+                }
+                else {
                     String ifaceName = getInterfaceNameForBinding(binding);
-                    WsdlInterface ifc = (WsdlInterface) project.getInterfaceByName(ifaceName);
-                    if (ifc != null && result.indexOf(ifc) == -1) {
-                        Boolean res = UISupport.confirmOrCancel("Interface [" + ifc.getName()
-                                + "] already exists in project, update instead?", "Import WSDL");
+                    WsdlInterface ifc = (WsdlInterface)project.getInterfaceByName(ifaceName);
+                    if (ifc != null && !result.contains(ifc)) {
+                        Boolean res = UISupport.confirmOrCancel("Interface [" + ifc.getName() + "] already exists in project, update instead?", "Import WSDL");
                         if (res == null) {
                             return new WsdlInterface[0];
                         }
@@ -225,13 +225,13 @@ public class WsdlImporter {
     public final static String getInterfaceNameForBinding(Binding binding) {
         if (SoapUI.getSettings().getBoolean(WsdlSettings.NAME_WITH_BINDING)) {
             return binding.getQName().getLocalPart();
-        } else {
+        }
+        else {
             return binding.getPortType().getQName().getLocalPart();
         }
     }
 
-    private static WsdlInterface importBinding(WsdlProject project, WsdlContext wsdlContext, Binding binding)
-            throws Exception {
+    private static WsdlInterface importBinding(WsdlProject project, WsdlContext wsdlContext, Binding binding) throws Exception {
         log.info("Finding importer for " + binding.getQName());
         for (int c = 0; c < bindingImporters.size(); c++) {
             BindingImporter importer = bindingImporters.get(c);

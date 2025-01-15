@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -21,16 +21,8 @@ import com.eviware.soapui.impl.wsdl.panels.teststeps.support.GroovyEditor;
 import com.eviware.soapui.impl.wsdl.panels.teststeps.support.GroovyEditorModel;
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.SwingConstants;
-import java.awt.BorderLayout;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -38,12 +30,12 @@ import java.beans.PropertyChangeListener;
 import static com.eviware.soapui.impl.wsdl.teststeps.Script.SCRIPT_PROPERTY;
 
 public class GroovyEditorComponent extends JPanel implements PropertyChangeListener {
-    private GroovyEditor editor;
+    private final GroovyEditorModel editorModel;
+    private final String helpUrl;
+    private final GroovyEditor editor;
     private JButton insertCodeButton;
     private Action runAction;
     private JXToolBar toolBar;
-    private final GroovyEditorModel editorModel;
-    private final String helpUrl;
 
     public GroovyEditorComponent(GroovyEditorModel editorModel, String helpUrl) {
         super(new BorderLayout());
@@ -51,8 +43,7 @@ public class GroovyEditorComponent extends JPanel implements PropertyChangeListe
         this.helpUrl = helpUrl;
 
         editor = new GroovyEditor(editorModel);
-        editor.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3),
-                editor.getBorder()));
+        editor.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3), editor.getBorder()));
         add(editor, BorderLayout.CENTER);
         buildToolbar(editorModel, helpUrl);
 
@@ -78,7 +69,8 @@ public class GroovyEditorComponent extends JPanel implements PropertyChangeListe
     protected void buildToolbar(GroovyEditorModel editorModel, String helpUrl) {
         if (toolBar == null) {
             toolBar = UISupport.createSmallToolbar();
-        } else {
+        }
+        else {
             remove(toolBar);
             toolBar.removeAll();
         }
@@ -113,7 +105,8 @@ public class GroovyEditorComponent extends JPanel implements PropertyChangeListe
             String scriptName = editorModel.getScriptName();
             if (scriptName == null) {
                 scriptName = "";
-            } else {
+            }
+            else {
                 scriptName = scriptName.trim() + " ";
             }
 
@@ -144,18 +137,6 @@ public class GroovyEditorComponent extends JPanel implements PropertyChangeListe
         repaint();
     }
 
-    public class InsertCodeAction extends AbstractAction {
-        public InsertCodeAction() {
-            super("Edit");
-            putValue(Action.SHORT_DESCRIPTION, "Inserts code at caret");
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            JPopupMenu popup = editor.getEditArea().getComponentPopupMenu();
-            popup.show(insertCodeButton, insertCodeButton.getWidth() / 2, insertCodeButton.getHeight() / 2);
-        }
-    }
-
     public void release() {
         editorModel.removePropertyChangeListener(this);
         getEditor().release();
@@ -164,6 +145,18 @@ public class GroovyEditorComponent extends JPanel implements PropertyChangeListe
     public void propertyChange(PropertyChangeEvent evt) {
         if (!evt.getPropertyName().equals(SCRIPT_PROPERTY)) {
             buildToolbar(editorModel, helpUrl);
+        }
+    }
+
+    public class InsertCodeAction extends AbstractAction {
+        public InsertCodeAction() {
+            super("Edit");
+            putValue(SHORT_DESCRIPTION, "Inserts code at caret");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JPopupMenu popup = editor.getEditArea().getComponentPopupMenu();
+            popup.show(insertCodeButton, insertCodeButton.getWidth() / 2, insertCodeButton.getHeight() / 2);
         }
     }
 }

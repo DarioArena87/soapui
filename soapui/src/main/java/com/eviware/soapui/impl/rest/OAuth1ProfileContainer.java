@@ -19,8 +19,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class OAuth1ProfileContainer {
     private final WsdlProject project;
     private final OAuth1ProfileContainerConfig configuration;
-    private List<OAuth1Profile> OAuth1ProfileList = new ArrayList<OAuth1Profile>();
-    private List<OAuth1ProfileListener> listeners = new CopyOnWriteArrayList<OAuth1ProfileListener>();
+    private final List<OAuth1Profile> OAuth1ProfileList = new ArrayList<OAuth1Profile>();
+    private final List<OAuth1ProfileListener> listeners = new CopyOnWriteArrayList<OAuth1ProfileListener>();
 
     public OAuth1ProfileContainer(WsdlProject project, OAuth1ProfileContainerConfig configuration) {
         this.project = project;
@@ -71,7 +71,7 @@ public class OAuth1ProfileContainer {
         return OAuth1Profile;
     }
 
-    public void removeProfile(final String profileName) {
+    public void removeProfile(String profileName) {
         for (int count = 0; count < configuration.sizeOfOAuth1ProfileArray(); count++) {
             if (configuration.getOAuth1ProfileArray(count).getName().equals(profileName)) {
                 configuration.removeOAuth1Profile(count);
@@ -111,7 +111,7 @@ public class OAuth1ProfileContainer {
         }
     }
 
-    private void updateProfileForAllRequests(final String profileOldName, final String newName) {
+    private void updateProfileForAllRequests(String profileOldName, String newName) {
         doForAllRestRequests(new RestRequestCallback() {
             @Override
             public void doit(RestRequest restRequest) {
@@ -125,7 +125,7 @@ public class OAuth1ProfileContainer {
     private void doForAllRestRequests(RestRequestCallback callback) {
         for (Interface iface : project.getInterfaceList()) {
             if (iface instanceof RestService) {
-                for (RestResource restResource : ((RestService) iface).getAllResources()) {
+                for (RestResource restResource : ((RestService)iface).getAllResources()) {
                     for (RestMethod restMethod : restResource.getRestMethodList()) {
                         for (RestRequest restRequest : restMethod.getRequestList()) {
                             callback.doit(restRequest);
@@ -172,6 +172,5 @@ public class OAuth1ProfileContainer {
     private interface RestRequestCallback {
 
         void doit(RestRequest restRequest);
-
     }
 }

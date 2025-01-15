@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.scripting.js;
@@ -31,12 +31,28 @@ import org.mozilla.javascript.ScriptableObject;
  */
 
 public class JsScriptEngine implements SoapUIScriptEngine {
-    private String scriptText;
-    private StringToObjectMap properties = new StringToObjectMap();
     private final ClassLoader parentClassLoader;
+    private String scriptText;
+    private final StringToObjectMap properties = new StringToObjectMap();
 
     public JsScriptEngine(ClassLoader parentClassLoader) {
         this.parentClassLoader = parentClassLoader;
+    }
+
+    public synchronized void setScript(String scriptText) {
+        if (scriptText != null && scriptText.equals(this.scriptText)) {
+            return;
+        }
+
+        this.scriptText = scriptText;
+    }
+
+    public void setVariable(String name, Object value) {
+        properties.put(name, value);
+    }
+
+    public void clearVariables() {
+        properties.clear();
     }
 
     public Object run() throws Exception {
@@ -57,7 +73,8 @@ public class JsScriptEngine implements SoapUIScriptEngine {
             Script script = context.compileString(scriptText, "Script", 0, null);
 
             return script.exec(context, scope);
-        } finally {
+        }
+        finally {
             for (String name : properties.keySet()) {
                 scope.delete(name);
             }
@@ -66,26 +83,10 @@ public class JsScriptEngine implements SoapUIScriptEngine {
         }
     }
 
-    public synchronized void setScript(String scriptText) {
-        if (scriptText != null && scriptText.equals(this.scriptText)) {
-            return;
-        }
-
-        this.scriptText = scriptText;
+    public void release() {
+        clearVariables();
     }
 
     public void compile() throws Exception {
-    }
-
-    public void setVariable(String name, Object value) {
-        properties.put(name, value);
-    }
-
-    public void clearVariables() {
-        properties.clear();
-    }
-
-    public void release() {
-        clearVariables();
     }
 }

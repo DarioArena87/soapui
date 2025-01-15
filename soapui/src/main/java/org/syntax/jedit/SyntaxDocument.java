@@ -12,9 +12,12 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit;
+
+import com.eviware.soapui.SoapUI;
+import org.syntax.jedit.tokenmarker.TokenMarker;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
@@ -22,10 +25,6 @@ import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
 import javax.swing.text.Segment;
 import javax.swing.undo.UndoableEdit;
-
-import org.syntax.jedit.tokenmarker.TokenMarker;
-
-import com.eviware.soapui.SoapUI;
 
 /**
  * A document implementation that can be tokenized by the syntax highlighting
@@ -35,6 +34,9 @@ import com.eviware.soapui.SoapUI;
  * @version $Id$
  */
 public class SyntaxDocument extends PlainDocument {
+    // protected members
+    protected TokenMarker tokenMarker;
+
     /**
      * Returns the token marker that is to be used to split lines of this
      * document up into tokens. May return null if this document is not to be
@@ -92,7 +94,8 @@ public class SyntaxDocument extends PlainDocument {
                 getText(lineStart, lineElement.getEndOffset() - lineStart - 1, lineSegment);
                 tokenMarker.markTokens(lineSegment, i);
             }
-        } catch (BadLocationException bl) {
+        }
+        catch (BadLocationException bl) {
             SoapUI.logError(bl);
         }
     }
@@ -122,9 +125,6 @@ public class SyntaxDocument extends PlainDocument {
      */
     public void addUndoableEdit(UndoableEdit edit) {
     }
-
-    // protected members
-    protected TokenMarker tokenMarker;
 
     /**
      * We overwrite this method to update the token marker state immediately so

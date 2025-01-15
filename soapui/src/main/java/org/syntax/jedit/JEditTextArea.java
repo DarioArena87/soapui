@@ -12,22 +12,29 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit;
 
-import java.awt.AWTEvent;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import com.eviware.soapui.SoapUI;
+import org.syntax.jedit.tokenmarker.Token;
+import org.syntax.jedit.tokenmarker.TokenMarker;
+
+import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.EventListenerList;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.Segment;
+import javax.swing.text.Utilities;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
@@ -48,31 +55,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.lang.ref.WeakReference;
-
-import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
-import javax.swing.JViewport;
-import javax.swing.Scrollable;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.EventListenerList;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Element;
-import javax.swing.text.Segment;
-import javax.swing.text.Utilities;
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoableEdit;
-
-import org.syntax.jedit.tokenmarker.Token;
-import org.syntax.jedit.tokenmarker.TokenMarker;
-
-import com.eviware.soapui.SoapUI;
 
 /**
  * jEdit's text area component. It is more suited for editing program source
@@ -111,6 +93,114 @@ public class JEditTextArea extends JComponent implements Scrollable {
      * the horizontal scroll bar. In jEdit, the status bar is added this way.
      */
     public final static String LEFT_OF_SCROLLBAR = "los";
+    // protected members
+    protected static final String CENTER = "center";
+    protected static final String RIGHT = "right";
+    protected static final String BOTTOM = "bottom";
+    protected static final Timer caretTimer;
+    protected static WeakReference<JEditTextArea> focusedComponentRef;
+
+    static {
+        caretTimer = new Timer(500, new CaretBlinker());
+        caretTimer.setInitialDelay(500);
+        caretTimer.start();
+    }
+
+    protected TextAreaPainter painter;
+    protected JPopupMenu popup;
+    protected EventListenerList listenerList;
+    protected MutableCaretEvent caretEvent;
+    protected boolean caretBlinks;
+    protected boolean caretVisible;
+
+    /**
+     * Returns the number of lines from the top and button of the text area that
+     * are always visible.
+     */
+    /*
+     * public final int getElectricScroll() { return electricScroll; }
+     */
+
+    /**
+     * Sets the number of lines from the top and bottom of the text area that are
+     * always visible
+     *
+     * @param electricScroll
+     *           The number of lines always visible from the top or bottom
+     */
+    /*
+     * public final void setElectricScroll(int electricScroll) {
+     * this.electricScroll = electricScroll; }
+     */
+    protected boolean blink;
+    protected boolean editable;
+    protected int firstLine;
+    protected int visibleLines;
+    // protected JScrollBar vertical;
+    // protected JScrollBar horizontal;
+    protected boolean scrollBarsInitialized;
+
+    /**
+     * Returns the horizontal offset of drawn lines.
+     */
+    /*
+     * public final int getHorizontalOffset() { return horizontalOffset; }
+     */
+
+    /**
+     * Sets the horizontal offset of drawn lines. This can be used to implement
+     * horizontal scrolling.
+     *
+     * @param horizontalOffset
+     *           offset The new horizontal offset
+     */
+    /*
+     * public void setHorizontalOffset(int horizontalOffset) {
+     * if(horizontalOffset == this.horizontalOffset) return;
+     * this.horizontalOffset = horizontalOffset; // if(horizontalOffset !=
+     * horizontal.getValue()) updateScrollBars(); painter.repaint(); }
+     */
+
+    /**
+     * A fast way of changing both the first line and horizontal offset.
+     *
+     * @param firstLine
+     *           The new first line
+     * @param horizontalOffset
+     *           The new horizontal offset
+     * @return True if any of the values were changed, false otherwise
+     */
+    /*
+     * public void setOrigin(int firstLine, int horizontalOffset) { boolean
+     * changed = false; int oldFirstLine = this.firstLine;
+     *
+     * if(horizontalOffset != this.horizontalOffset) { this.horizontalOffset =
+     * horizontalOffset; changed = true; }
+     *
+     * if(firstLine != this.firstLine) { this.firstLine = firstLine; changed =
+     * true; }
+     *
+     * if(changed) { scrollRectToVisible( new Rectangle( horizontalOffset,
+     * firstLine*painter.getFontMetrics().getHeight(), 1, 1));
+     *
+     * updateScrollBars(); painter.repaint(); //}
+     *
+     * // return changed; }
+     */
+    protected InputHandler inputHandler;
+    protected SyntaxDocument document;
+    protected DocumentHandler documentHandler;
+    protected Segment lineSegment;
+    protected int selectionStart;
+    protected int selectionStartLine;
+    protected int selectionEnd;
+    protected int selectionEndLine;
+    protected boolean biasLeft;
+    protected int bracketPosition;
+    protected int bracketLine;
+    protected int magicCaret;
+    protected boolean overwrite;
+    protected boolean rectSelect;
 
     /**
      * Creates a new JEditTextArea with the default settings.
@@ -174,24 +264,24 @@ public class JEditTextArea extends JComponent implements Scrollable {
         addMouseWheelListener(new MouseWheelListener() {
 
             public void mouseWheelMoved(MouseWheelEvent e) {
-                if ((e.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) == Toolkit
-                        .getDefaultToolkit().getMenuShortcutKeyMask()) {
+                if ((e.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) == Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) {
                     int caretLine = getCaretLine();
                     // int caretPosition = getCaretPosition();
 
                     int newLine = caretLine + e.getWheelRotation();
                     if (newLine < 0) {
                         newLine = 0;
-                    } else if (newLine > getLineCount() - 1) {
+                    }
+                    else if (newLine > getLineCount() - 1) {
                         newLine = getLineCount() - 1;
                     }
                     int newPos = getLineStartOffset(newLine);
 
                     setCaretPosition(newPos);
-                } else {
+                }
+                else {
                     Rectangle rect = getVisibleRect();
-                    rect.setLocation((int) rect.getX(),
-                            (int) rect.getY() + painter.getFontMetrics().getHeight() * 3 * e.getWheelRotation());
+                    rect.setLocation((int)rect.getX(), (int)rect.getY() + painter.getFontMetrics().getHeight() * 3 * e.getWheelRotation());
                     scrollRectToVisible(rect);
                 }
             }
@@ -215,6 +305,100 @@ public class JEditTextArea extends JComponent implements Scrollable {
      */
     public final boolean isManagingFocus() {
         return true;
+    }
+
+    public Dimension getPreferredSize() {
+        Dimension preferredSize = painter.getPreferredSize();
+
+        if (getParent() instanceof JViewport) {
+            JViewport viewport = (JViewport)getParent();
+            Dimension size = viewport.getSize();
+
+            preferredSize = new Dimension(
+                (int)(preferredSize.getWidth() < size.getWidth() ? size.getWidth() : preferredSize.getWidth()),
+                (int)(preferredSize.getHeight() < size.getHeight() ? size.getHeight() : preferredSize.getHeight())
+            );
+        }
+
+        return preferredSize;
+    }
+
+    public Dimension getMaximumSize() {
+        return painter.getMaximumSize();
+    }
+
+    public Dimension getMinimumSize() {
+        return painter.getMinimumSize();
+    }
+
+    /**
+     * Forwards key events directly to the input handler. This is slightly faster
+     * than using a KeyListener because some Swing overhead is avoided.
+     */
+    public void processKeyEvent(KeyEvent evt) {
+        if (inputHandler == null) {
+            return;
+        }
+        switch (evt.getID()) {
+            case KeyEvent.KEY_TYPED:
+                inputHandler.keyTyped(evt);
+                break;
+            case KeyEvent.KEY_PRESSED:
+                inputHandler.keyPressed(evt);
+                break;
+            case KeyEvent.KEY_RELEASED:
+                inputHandler.keyReleased(evt);
+                break;
+        }
+
+        if (!evt.isConsumed()) {
+            KeyListener[] keyListeners = getKeyListeners();
+            for (KeyListener listener : keyListeners) {
+                switch (evt.getID()) {
+                    case KeyEvent.KEY_TYPED:
+                        listener.keyTyped(evt);
+                        break;
+                    case KeyEvent.KEY_PRESSED:
+                        listener.keyPressed(evt);
+                        break;
+                    case KeyEvent.KEY_RELEASED:
+                        listener.keyReleased(evt);
+                        break;
+                }
+
+                if (evt.isConsumed()) {
+                    break;
+                }
+            }
+
+            if (!evt.isConsumed()) {
+                getParent().dispatchEvent(evt);
+            }
+        }
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+
+        if (document != null) {
+            document.addDocumentListener(documentHandler);
+        }
+    }
+
+    /**
+     * Called by the AWT when this component is removed from it's parent. This
+     * stops clears the currently focused component.
+     */
+    public void removeNotify() {
+        super.removeNotify();
+        if (focusedComponentRef != null && focusedComponentRef.get() == this) {
+            focusedComponentRef = null;
+        }
+
+        if (document != null) {
+            document.removeDocumentListener(documentHandler);
+        }
     }
 
     /**
@@ -287,30 +471,11 @@ public class JEditTextArea extends JComponent implements Scrollable {
         if (caretBlinks && caretVisible) {
             blink = !blink;
             painter.invalidateSelectedLines();
-        } else {
+        }
+        else {
             blink = true;
         }
     }
-
-    /**
-     * Returns the number of lines from the top and button of the text area that
-     * are always visible.
-     */
-    /*
-	 * public final int getElectricScroll() { return electricScroll; }
-	 */
-
-    /**
-     * Sets the number of lines from the top and bottom of the text area that are
-     * always visible
-     *
-     * @param electricScroll
-     *           The number of lines always visible from the top or bottom
-     */
-	/*
-	 * public final void setElectricScroll(int electricScroll) {
-	 * this.electricScroll = electricScroll; }
-	 */
 
     /**
      * Updates the state of the scroll bars. This should be called if the number
@@ -365,58 +530,10 @@ public class JEditTextArea extends JComponent implements Scrollable {
     }
 
     /**
-     * Returns the horizontal offset of drawn lines.
-     */
-	/*
-	 * public final int getHorizontalOffset() { return horizontalOffset; }
-	 */
-
-    /**
-     * Sets the horizontal offset of drawn lines. This can be used to implement
-     * horizontal scrolling.
-     *
-     * @param horizontalOffset
-     *           offset The new horizontal offset
-     */
-	/*
-	 * public void setHorizontalOffset(int horizontalOffset) {
-	 * if(horizontalOffset == this.horizontalOffset) return;
-	 * this.horizontalOffset = horizontalOffset; // if(horizontalOffset !=
-	 * horizontal.getValue()) updateScrollBars(); painter.repaint(); }
-	 */
-
-    /**
-     * A fast way of changing both the first line and horizontal offset.
-     *
-     * @param firstLine
-     *           The new first line
-     * @param horizontalOffset
-     *           The new horizontal offset
-     * @return True if any of the values were changed, false otherwise
-     */
-	/*
-	 * public void setOrigin(int firstLine, int horizontalOffset) { boolean
-	 * changed = false; int oldFirstLine = this.firstLine;
-	 * 
-	 * if(horizontalOffset != this.horizontalOffset) { this.horizontalOffset =
-	 * horizontalOffset; changed = true; }
-	 * 
-	 * if(firstLine != this.firstLine) { this.firstLine = firstLine; changed =
-	 * true; }
-	 * 
-	 * if(changed) { scrollRectToVisible( new Rectangle( horizontalOffset,
-	 * firstLine*painter.getFontMetrics().getHeight(), 1, 1));
-	 * 
-	 * updateScrollBars(); painter.repaint(); //}
-	 * 
-	 * // return changed; }
-	 */
-
-    /**
      * Ensures that the caret is visible by scrolling the text area if necessary.
      *
      * @return True if scrolling was actually performed, false if the caret was
-     *         already visible
+     * already visible
      */
     public void scrollToCaret() {
         int line = getCaretLine();
@@ -433,34 +550,34 @@ public class JEditTextArea extends JComponent implements Scrollable {
      * @param line   The line to scroll to
      * @param offset The offset in the line to scroll to
      * @return True if scrolling was actually performed, false if the line and
-     *         offset was already visible
+     * offset was already visible
      */
     public void scrollTo(int line, int offset) {
         // visibleLines == 0 before the component is realized
         // we can't do any proper scrolling then, so we have
         // this hack...
-		/*
-		 * if(visibleLines == 0) { setFirstLine(Math.max(0,line -
-		 * electricScroll)); return true; }
-		 * 
-		 * int newFirstLine = firstLine; int newHorizontalOffset =
-		 * horizontalOffset;
-		 * 
-		 * if(line < firstLine + electricScroll) { newFirstLine = Math.max(0,line
-		 * - electricScroll); } else if(line + electricScroll >= firstLine +
-		 * visibleLines) { newFirstLine = (line - visibleLines) + electricScroll +
-		 * 1; if(newFirstLine + visibleLines >= getLineCount()) newFirstLine =
-		 * getLineCount() - visibleLines; if(newFirstLine < 0) newFirstLine = 0; }
-		 */
+        /*
+         * if(visibleLines == 0) { setFirstLine(Math.max(0,line -
+         * electricScroll)); return true; }
+         *
+         * int newFirstLine = firstLine; int newHorizontalOffset =
+         * horizontalOffset;
+         *
+         * if(line < firstLine + electricScroll) { newFirstLine = Math.max(0,line
+         * - electricScroll); } else if(line + electricScroll >= firstLine +
+         * visibleLines) { newFirstLine = (line - visibleLines) + electricScroll +
+         * 1; if(newFirstLine + visibleLines >= getLineCount()) newFirstLine =
+         * getLineCount() - visibleLines; if(newFirstLine < 0) newFirstLine = 0; }
+         */
 
         int x = _offsetToX(line, offset);
         int width = painter.getFontMetrics().charWidth('w');
-		/*
-		 * if(x < 0) { newHorizontalOffset = Math.min(0,horizontalOffset - x +
-		 * width + 5); } else if(x + width >= getVisibleRect().getWidth() ) {
-		 * newHorizontalOffset = horizontalOffset +
-		 * (x-(int)getVisibleRect().getWidth()) + width + 5; }
-		 */
+        /*
+         * if(x < 0) { newHorizontalOffset = Math.min(0,horizontalOffset - x +
+         * width + 5); } else if(x + width >= getVisibleRect().getWidth() ) {
+         * newHorizontalOffset = horizontalOffset +
+         * (x-(int)getVisibleRect().getWidth()) + width + 5; }
+         */
         if (offset > 0) {
             x += (width + 5);
         }
@@ -532,7 +649,7 @@ public class JEditTextArea extends JComponent implements Scrollable {
     public int _offsetToX(int line, int offset) {
         TokenMarker tokenMarker = getTokenMarker();
 
-		/* Use painter's cached info for speed */
+        /* Use painter's cached info for speed */
         FontMetrics fm = painter.getFontMetrics();
 
         getLineText(line, lineSegment);
@@ -540,20 +657,21 @@ public class JEditTextArea extends JComponent implements Scrollable {
         int segmentOffset = lineSegment.offset;
         int x = 0; // -horizontalOffset;
 
-		/* If syntax coloring is disabled, do simple translation */
+        /* If syntax coloring is disabled, do simple translation */
         if (tokenMarker == null) {
             lineSegment.count = offset;
             return x + Utilities.getTabbedTextWidth(lineSegment, fm, x, painter, 0);
         }
-		/*
-		 * If syntax coloring is enabled, we have to do this because tokens can
-		 * vary in width
-		 */
+        /*
+         * If syntax coloring is enabled, we have to do this because tokens can
+         * vary in width
+         */
         else {
             Token tokens;
             if (painter.currentLineIndex == line && painter.currentLineTokens != null) {
                 tokens = painter.currentLineTokens;
-            } else {
+            }
+            else {
                 painter.currentLineIndex = line;
                 tokens = painter.currentLineTokens = tokenMarker.markTokens(lineSegment, line);
             }
@@ -570,7 +688,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
 
                 if (id == Token.NULL) {
                     fm = painter.getFontMetrics();
-                } else {
+                }
+                else {
                     fm = styles[id].getFontMetrics(defaultFont);
                 }
 
@@ -579,7 +698,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
                 if (offset + segmentOffset < lineSegment.offset + length) {
                     lineSegment.count = offset - (lineSegment.offset - segmentOffset);
                     return x + Utilities.getTabbedTextWidth(lineSegment, fm, x, painter, 0);
-                } else {
+                }
+                else {
                     lineSegment.count = length;
                     x += Utilities.getTabbedTextWidth(lineSegment, fm, x, painter, 0);
                     lineSegment.offset += length;
@@ -598,7 +718,7 @@ public class JEditTextArea extends JComponent implements Scrollable {
     public int xToOffset(int line, int x) {
         TokenMarker tokenMarker = getTokenMarker();
 
-		/* Use painter's cached info for speed */
+        /* Use painter's cached info for speed */
         FontMetrics fm = painter.getFontMetrics();
 
         getLineText(line, lineSegment);
@@ -614,8 +734,9 @@ public class JEditTextArea extends JComponent implements Scrollable {
                 char c = segmentArray[i + segmentOffset];
                 int charWidth;
                 if (c == '\t') {
-                    charWidth = (int) painter.nextTabStop(width, i) - width;
-                } else {
+                    charWidth = (int)painter.nextTabStop(width, i) - width;
+                }
+                else {
                     charWidth = fm.charWidth(c);
                 }
 
@@ -623,7 +744,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
                     if (x - charWidth <= width) {
                         return i;
                     }
-                } else {
+                }
+                else {
                     if (x - charWidth / 2 <= width) {
                         return i;
                     }
@@ -633,11 +755,13 @@ public class JEditTextArea extends JComponent implements Scrollable {
             }
 
             return segmentCount;
-        } else {
+        }
+        else {
             Token tokens;
             if (painter.currentLineIndex == line && painter.currentLineTokens != null) {
                 tokens = painter.currentLineTokens;
-            } else {
+            }
+            else {
                 painter.currentLineIndex = line;
                 tokens = painter.currentLineTokens = tokenMarker.markTokens(lineSegment, line);
             }
@@ -655,7 +779,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
 
                 if (id == Token.NULL) {
                     fm = painter.getFontMetrics();
-                } else {
+                }
+                else {
                     fm = styles[id].getFontMetrics(defaultFont);
                 }
 
@@ -665,8 +790,9 @@ public class JEditTextArea extends JComponent implements Scrollable {
                     char c = segmentArray[segmentOffset + offset + i];
                     int charWidth;
                     if (c == '\t') {
-                        charWidth = (int) painter.nextTabStop(width, offset + i) - width;
-                    } else {
+                        charWidth = (int)painter.nextTabStop(width, offset + i) - width;
+                    }
+                    else {
                         charWidth = fm.charWidth(c);
                     }
 
@@ -674,7 +800,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
                         if (x - charWidth <= width) {
                             return offset + i;
                         }
-                    } else {
+                    }
+                    else {
                         if (x - charWidth / 2 <= width) {
                             return offset + i;
                         }
@@ -702,7 +829,7 @@ public class JEditTextArea extends JComponent implements Scrollable {
     }
 
     public int pointToOffset(Point pt) {
-        return xyToOffset((int) pt.getX(), (int) pt.getY());
+        return xyToOffset((int)pt.getX(), (int)pt.getY());
     }
 
     /**
@@ -782,13 +909,14 @@ public class JEditTextArea extends JComponent implements Scrollable {
      *
      * @param line The line
      * @return The start offset of the specified line, or -1 if the line is
-     *         invalid
+     * invalid
      */
     public int getLineStartOffset(int line) {
         Element lineElement = document.getDefaultRootElement().getElement(line);
         if (lineElement == null) {
             return -1;
-        } else {
+        }
+        else {
             return lineElement.getStartOffset();
         }
     }
@@ -798,13 +926,14 @@ public class JEditTextArea extends JComponent implements Scrollable {
      *
      * @param line The line
      * @return The end offset of the specified line, or -1 if the line is
-     *         invalid.
+     * invalid.
      */
     public int getLineEndOffset(int line) {
         Element lineElement = document.getDefaultRootElement().getElement(line);
         if (lineElement == null) {
             return -1;
-        } else {
+        }
+        else {
             return lineElement.getEndOffset();
         }
     }
@@ -831,7 +960,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
             }
 
             return length;
-        } catch (BadLocationException e) {
+        }
+        catch (BadLocationException e) {
             e.printStackTrace();
             return length;
         }
@@ -857,7 +987,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
     public String getText() {
         try {
             return document.getText(0, document.getLength());
-        } catch (BadLocationException bl) {
+        }
+        catch (BadLocationException bl) {
             SoapUI.logError(bl);
             return null;
         }
@@ -873,9 +1004,11 @@ public class JEditTextArea extends JComponent implements Scrollable {
             document.insertString(0, text, null);
 
             revalidate();
-        } catch (BadLocationException bl) {
+        }
+        catch (BadLocationException bl) {
             SoapUI.logError(bl);
-        } finally {
+        }
+        finally {
             document.endCompoundEdit();
         }
     }
@@ -890,7 +1023,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
     public final String getText(int start, int len) {
         try {
             return document.getText(start, len);
-        } catch (BadLocationException bl) {
+        }
+        catch (BadLocationException bl) {
             SoapUI.logError(bl);
             return null;
         }
@@ -907,7 +1041,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
     public final void getText(int start, int len, Segment segment) {
         try {
             document.getText(start, len, segment);
-        } catch (BadLocationException bl) {
+        }
+        catch (BadLocationException bl) {
             SoapUI.logError(bl);
             segment.offset = segment.count = 0;
         }
@@ -943,12 +1078,24 @@ public class JEditTextArea extends JComponent implements Scrollable {
     }
 
     /**
+     * Sets the selection start. The new selection will be the new selection
+     * start and the old selection end.
+     *
+     * @param selectionStart The selection start
+     * @see #select(int, int)
+     */
+    public final void setSelectionStart(int selectionStart) {
+        select(selectionStart, selectionEnd);
+    }
+
+    /**
      * Returns the offset where the selection starts on the specified line.
      */
     public int getSelectionStart(int line) {
         if (line == selectionStartLine) {
             return selectionStart;
-        } else if (rectSelect) {
+        }
+        else if (rectSelect) {
             Element map = document.getDefaultRootElement();
             int start = selectionStart - map.getElement(selectionStartLine).getStartOffset();
 
@@ -956,7 +1103,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
             int lineStart = lineElement.getStartOffset();
             int lineEnd = lineElement.getEndOffset() - 1;
             return Math.min(lineEnd, lineStart + start);
-        } else {
+        }
+        else {
             return getLineStartOffset(line);
         }
     }
@@ -969,47 +1117,10 @@ public class JEditTextArea extends JComponent implements Scrollable {
     }
 
     /**
-     * Sets the selection start. The new selection will be the new selection
-     * start and the old selection end.
-     *
-     * @param selectionStart The selection start
-     * @see #select(int, int)
-     */
-    public final void setSelectionStart(int selectionStart) {
-        select(selectionStart, selectionEnd);
-    }
-
-    /**
      * Returns the selection end offset.
      */
     public final int getSelectionEnd() {
         return selectionEnd;
-    }
-
-    /**
-     * Returns the offset where the selection ends on the specified line.
-     */
-    public int getSelectionEnd(int line) {
-        if (line == selectionEndLine) {
-            return selectionEnd;
-        } else if (rectSelect) {
-            Element map = document.getDefaultRootElement();
-            int end = selectionEnd - map.getElement(selectionEndLine).getStartOffset();
-
-            Element lineElement = map.getElement(line);
-            int lineStart = lineElement.getStartOffset();
-            int lineEnd = lineElement.getEndOffset() - 1;
-            return Math.min(lineEnd, lineStart + end);
-        } else {
-            return getLineEndOffset(line) - 1;
-        }
-    }
-
-    /**
-     * Returns the selection end line.
-     */
-    public final int getSelectionEndLine() {
-        return selectionEndLine;
     }
 
     /**
@@ -1024,11 +1135,50 @@ public class JEditTextArea extends JComponent implements Scrollable {
     }
 
     /**
+     * Returns the offset where the selection ends on the specified line.
+     */
+    public int getSelectionEnd(int line) {
+        if (line == selectionEndLine) {
+            return selectionEnd;
+        }
+        else if (rectSelect) {
+            Element map = document.getDefaultRootElement();
+            int end = selectionEnd - map.getElement(selectionEndLine).getStartOffset();
+
+            Element lineElement = map.getElement(line);
+            int lineStart = lineElement.getStartOffset();
+            int lineEnd = lineElement.getEndOffset() - 1;
+            return Math.min(lineEnd, lineStart + end);
+        }
+        else {
+            return getLineEndOffset(line) - 1;
+        }
+    }
+
+    /**
+     * Returns the selection end line.
+     */
+    public final int getSelectionEndLine() {
+        return selectionEndLine;
+    }
+
+    /**
      * Returns the caret position. This will either be the selection start or the
      * selection end, depending on which direction the selection was made in.
      */
     public final int getCaretPosition() {
         return (biasLeft ? selectionStart : selectionEnd);
+    }
+
+    /**
+     * Sets the caret position. The new selection will consist of the caret
+     * position only (hence no text will be selected)
+     *
+     * @param caret The caret position
+     * @see #select(int, int)
+     */
+    public final void setCaretPosition(int caret) {
+        select(caret, caret);
     }
 
     /**
@@ -1053,17 +1203,6 @@ public class JEditTextArea extends JComponent implements Scrollable {
      */
     public final int getMarkLine() {
         return (biasLeft ? selectionEndLine : selectionStartLine);
-    }
-
-    /**
-     * Sets the caret position. The new selection will consist of the caret
-     * position only (hence no text will be selected)
-     *
-     * @param caret The caret position
-     * @see #select(int, int)
-     */
-    public final void setCaretPosition(int caret) {
-        select(caret, caret);
     }
 
     /**
@@ -1095,7 +1234,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
             newStart = start;
             newEnd = end;
             newBias = false;
-        } else {
+        }
+        else {
             newStart = end;
             newEnd = start;
             newBias = true;
@@ -1196,10 +1336,14 @@ public class JEditTextArea extends JComponent implements Scrollable {
             }
 
             return buf.toString();
-        } else {
+        }
+        else {
             return getText(selectionStart, selectionEnd - selectionStart);
         }
     }
+    // protected int electricScroll;
+
+    // protected int horizontalOffset;
 
     /**
      * Replaces the selection with the specified text.
@@ -1257,13 +1401,15 @@ public class JEditTextArea extends JComponent implements Scrollable {
                     document.insertString(offset, "\n", null);
                     document.insertString(offset + 1, selectedText.substring(currNewline + 1), null);
                 }
-            } else {
+            }
+            else {
                 document.remove(selectionStart, selectionEnd - selectionStart);
                 if (selectedText != null) {
                     document.insertString(selectionStart, selectedText, null);
                 }
             }
-        } catch (BadLocationException bl) {
+        }
+        catch (BadLocationException bl) {
             SoapUI.logError(bl);
             throw new InternalError("Cannot replace" + " selection");
         }
@@ -1355,9 +1501,11 @@ public class JEditTextArea extends JComponent implements Scrollable {
         try {
             document.remove(caret, str.length());
             document.insertString(caret, str, null);
-        } catch (BadLocationException bl) {
+        }
+        catch (BadLocationException bl) {
             SoapUI.logError(bl);
-        } finally {
+        }
+        finally {
             document.endCompoundEdit();
         }
     }
@@ -1469,8 +1617,7 @@ public class JEditTextArea extends JComponent implements Scrollable {
             try {
                 // The MacOS MRJ doesn't convert \r to \n,
                 // so do it here
-                String selection = ((String) clipboard.getContents(this).getTransferData(DataFlavor.stringFlavor))
-                        .replace('\r', '\n');
+                String selection = ((String)clipboard.getContents(this).getTransferData(DataFlavor.stringFlavor)).replace('\r', '\n');
 
                 // after previous in come cases we get double \n so just remove one
                 selection = selection.replace("\n\n", "\n");
@@ -1482,138 +1629,19 @@ public class JEditTextArea extends JComponent implements Scrollable {
                 }
                 selection = buf.toString();
                 setSelectedText(selection);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 getToolkit().beep();
                 System.err.println("Clipboard does not" + " contain a string");
             }
         }
     }
 
-    /**
-     * Called by the AWT when this component is removed from it's parent. This
-     * stops clears the currently focused component.
-     */
-    public void removeNotify() {
-        super.removeNotify();
-        if (focusedComponentRef != null && focusedComponentRef.get() == this) {
-            focusedComponentRef = null;
-        }
-
-        if (this.document != null) {
-            this.document.removeDocumentListener(documentHandler);
-        }
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-
-        if (this.document != null) {
-            this.document.addDocumentListener(documentHandler);
-        }
-    }
-
-    /**
-     * Forwards key events directly to the input handler. This is slightly faster
-     * than using a KeyListener because some Swing overhead is avoided.
-     */
-    public void processKeyEvent(KeyEvent evt) {
-        if (inputHandler == null) {
-            return;
-        }
-        switch (evt.getID()) {
-            case KeyEvent.KEY_TYPED:
-                inputHandler.keyTyped(evt);
-                break;
-            case KeyEvent.KEY_PRESSED:
-                inputHandler.keyPressed(evt);
-                break;
-            case KeyEvent.KEY_RELEASED:
-                inputHandler.keyReleased(evt);
-                break;
-        }
-
-        if (!evt.isConsumed()) {
-            KeyListener[] keyListeners = getKeyListeners();
-            for (KeyListener listener : keyListeners) {
-                switch (evt.getID()) {
-                    case KeyEvent.KEY_TYPED:
-                        listener.keyTyped(evt);
-                        break;
-                    case KeyEvent.KEY_PRESSED:
-                        listener.keyPressed(evt);
-                        break;
-                    case KeyEvent.KEY_RELEASED:
-                        listener.keyReleased(evt);
-                        break;
-                }
-
-                if (evt.isConsumed()) {
-                    break;
-                }
-            }
-
-            if (!evt.isConsumed()) {
-                getParent().dispatchEvent(evt);
-            }
-        }
-    }
-
-    // protected members
-    protected static final String CENTER = "center";
-    protected static final String RIGHT = "right";
-    protected static final String BOTTOM = "bottom";
-
-    protected static WeakReference<JEditTextArea> focusedComponentRef;
-    protected static final Timer caretTimer;
-
-    protected TextAreaPainter painter;
-
-    protected JPopupMenu popup;
-
-    protected EventListenerList listenerList;
-    protected MutableCaretEvent caretEvent;
-
-    protected boolean caretBlinks;
-    protected boolean caretVisible;
-    protected boolean blink;
-
-    protected boolean editable;
-
-    protected int firstLine;
-    protected int visibleLines;
-    // protected int electricScroll;
-
-    // protected int horizontalOffset;
-
-    // protected JScrollBar vertical;
-    // protected JScrollBar horizontal;
-    protected boolean scrollBarsInitialized;
-
-    protected InputHandler inputHandler;
-    protected SyntaxDocument document;
-    protected DocumentHandler documentHandler;
-
-    protected Segment lineSegment;
-
-    protected int selectionStart;
-    protected int selectionStartLine;
-    protected int selectionEnd;
-    protected int selectionEndLine;
-    protected boolean biasLeft;
-
-    protected int bracketPosition;
-    protected int bracketLine;
-
-    protected int magicCaret;
-    protected boolean overwrite;
-    protected boolean rectSelect;
-
     protected void fireCaretEvent() {
         Object[] listeners = listenerList.getListenerList();
         for (int i = listeners.length - 2; i >= 0; i--) {
             if (listeners[i] == CaretListener.class) {
-                ((CaretListener) listeners[i + 1]).caretUpdate(caretEvent);
+                ((CaretListener)listeners[i + 1]).caretUpdate(caretEvent);
             }
         }
     }
@@ -1631,7 +1659,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
                 bracketPosition = offset - getLineStartOffset(bracketLine);
                 return;
             }
-        } catch (BadLocationException bl) {
+        }
+        catch (BadLocationException bl) {
             SoapUI.logError(bl);
         }
 
@@ -1644,7 +1673,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
         int count;
         if (ch == null) {
             count = 0;
-        } else {
+        }
+        else {
             count = ch.getChildrenAdded().length - ch.getChildrenRemoved().length;
         }
 
@@ -1663,26 +1693,70 @@ public class JEditTextArea extends JComponent implements Scrollable {
         }
     }
 
+    public int getMaxLineLength() {
+        int max = 0;
+
+        for (int c = 0; c < getLineCount(); c++) {
+            int lineLength = getTabExpandedLineLength(c);
+            if (lineLength > max) {
+                max = lineLength;
+            }
+        }
+
+        return max;
+    }
+
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    public int getScrollableUnitIncrement(Rectangle arg0, int arg1, int arg2) {
+        return getFontMetrics(getFont()).getHeight();
+    }
+
+    public int getScrollableBlockIncrement(Rectangle arg0, int arg1, int arg2) {
+        return getFontMetrics(getFont()).getHeight() * 5;
+    }
+
+    public boolean getScrollableTracksViewportWidth() {
+        return false;
+    }
+
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
+    }
+
+    static class CaretBlinker implements ActionListener {
+        public void actionPerformed(ActionEvent evt) {
+            if (focusedComponentRef != null && focusedComponentRef.get() != null && focusedComponentRef.get().hasFocus()) {
+                focusedComponentRef.get().blinkCaret();
+            }
+        }
+    }
+
     class ScrollLayout implements LayoutManager {
+        // private members
+        private Component center;
+
         public void addLayoutComponent(String name, Component comp) {
             if (name.equals(CENTER)) {
                 center = comp;
             }
-			/*
-			 * else if(name.equals(RIGHT)) right = comp; else
-			 * if(name.equals(BOTTOM)) bottom = comp; else
-			 * if(name.equals(LEFT_OF_SCROLLBAR)) leftOfScrollBar.addElement(comp);
-			 */
+            /*
+             * else if(name.equals(RIGHT)) right = comp; else
+             * if(name.equals(BOTTOM)) bottom = comp; else
+             * if(name.equals(LEFT_OF_SCROLLBAR)) leftOfScrollBar.addElement(comp);
+             */
         }
 
         public void removeLayoutComponent(Component comp) {
             if (center == comp) {
                 center = null;
             }
-			/*
-			 * if(right == comp) right = null; if(bottom == comp) bottom = null;
-			 * else leftOfScrollBar.removeElement(comp);
-			 */
+            /*
+             * if(right == comp) right = null; if(bottom == comp) bottom = null;
+             * else leftOfScrollBar.removeElement(comp);
+             */
         }
 
         public Dimension preferredLayoutSize(Container parent) {
@@ -1694,11 +1768,11 @@ public class JEditTextArea extends JComponent implements Scrollable {
             Dimension centerPref = center.getPreferredSize();
             dim.width += centerPref.width;
             dim.height += centerPref.height;
-			/*
-			 * Dimension rightPref = right.getPreferredSize(); dim.width +=
-			 * rightPref.width; Dimension bottomPref = bottom.getPreferredSize();
-			 * dim.height += bottomPref.height;
-			 */
+            /*
+             * Dimension rightPref = right.getPreferredSize(); dim.width +=
+             * rightPref.width; Dimension bottomPref = bottom.getPreferredSize();
+             * dim.height += bottomPref.height;
+             */
             return dim;
         }
 
@@ -1711,11 +1785,11 @@ public class JEditTextArea extends JComponent implements Scrollable {
             Dimension centerPref = center.getMinimumSize();
             dim.width += centerPref.width;
             dim.height += centerPref.height;
-			/*
-			 * Dimension rightPref = right.getMinimumSize(); dim.width +=
-			 * rightPref.width; Dimension bottomPref = bottom.getMinimumSize();
-			 * dim.height += bottomPref.height;
-			 */
+            /*
+             * Dimension rightPref = right.getMinimumSize(); dim.width +=
+             * rightPref.width; Dimension bottomPref = bottom.getMinimumSize();
+             * dim.height += bottomPref.height;
+             */
             return dim;
         }
 
@@ -1734,34 +1808,23 @@ public class JEditTextArea extends JComponent implements Scrollable {
 
             center.setBounds(ileft, itop, centerWidth, centerHeight);
 
-			/*
-			 * right.setBounds( ileft + centerWidth, itop, rightWidth,
-			 * centerHeight);
-			 * 
-			 * // Lay out all status components, in order Enumeration status =
-			 * leftOfScrollBar.elements(); while(status.hasMoreElements()) {
-			 * Component comp = (Component)status.nextElement(); Dimension dim =
-			 * comp.getPreferredSize(); comp.setBounds(ileft, itop + centerHeight,
-			 * dim.width, bottomHeight); ileft += dim.width; }
-			 * 
-			 * bottom.setBounds( ileft, itop + centerHeight, size.width -
-			 * rightWidth - ileft - iright, bottomHeight);
-			 */
+            /*
+             * right.setBounds( ileft + centerWidth, itop, rightWidth,
+             * centerHeight);
+             *
+             * // Lay out all status components, in order Enumeration status =
+             * leftOfScrollBar.elements(); while(status.hasMoreElements()) {
+             * Component comp = (Component)status.nextElement(); Dimension dim =
+             * comp.getPreferredSize(); comp.setBounds(ileft, itop + centerHeight,
+             * dim.width, bottomHeight); ileft += dim.width; }
+             *
+             * bottom.setBounds( ileft, itop + centerHeight, size.width -
+             * rightWidth - ileft - iright, bottomHeight);
+             */
         }
-
-        // private members
-        private Component center;
         // private Component right;
         // private Component bottom;
         // private Vector<Component> leftOfScrollBar = new Vector<Component>();
-    }
-
-    static class CaretBlinker implements ActionListener {
-        public void actionPerformed(ActionEvent evt) {
-            if (focusedComponentRef != null && focusedComponentRef.get() != null && focusedComponentRef.get().hasFocus()) {
-                focusedComponentRef.get().blinkCaret();
-            }
-        }
     }
 
     class MutableCaretEvent extends CaretEvent {
@@ -1779,7 +1842,7 @@ public class JEditTextArea extends JComponent implements Scrollable {
     }
 
     class AdjustHandler implements AdjustmentListener {
-        public void adjustmentValueChanged(final AdjustmentEvent evt) {
+        public void adjustmentValueChanged(AdjustmentEvent evt) {
             if (!scrollBarsInitialized) {
                 return;
             }
@@ -1789,11 +1852,11 @@ public class JEditTextArea extends JComponent implements Scrollable {
             // the mouse is released
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-					/*
-					 * if(evt.getAdjustable() == vertical)
-					 * setFirstLine(vertical.getValue()); else
-					 * setHorizontalOffset(-horizontal.getValue());
-					 */
+                    /*
+                     * if(evt.getAdjustable() == vertical)
+                     * setFirstLine(vertical.getValue()); else
+                     * setHorizontalOffset(-horizontal.getValue());
+                     */
                 }
             });
         }
@@ -1818,13 +1881,15 @@ public class JEditTextArea extends JComponent implements Scrollable {
 
             if (selectionStart > offset || (selectionStart == selectionEnd && selectionStart == offset)) {
                 newStart = selectionStart + length;
-            } else {
+            }
+            else {
                 newStart = selectionStart;
             }
 
             if (selectionEnd >= offset) {
                 newEnd = selectionEnd + length;
-            } else {
+            }
+            else {
                 newEnd = selectionEnd;
             }
 
@@ -1843,20 +1908,24 @@ public class JEditTextArea extends JComponent implements Scrollable {
             if (selectionStart > offset) {
                 if (selectionStart > offset + length) {
                     newStart = selectionStart - length;
-                } else {
+                }
+                else {
                     newStart = offset;
                 }
-            } else {
+            }
+            else {
                 newStart = selectionStart;
             }
 
             if (selectionEnd > offset) {
                 if (selectionEnd > offset + length) {
                     newEnd = selectionEnd - length;
-                } else {
+                }
+                else {
                     newEnd = offset;
                 }
-            } else {
+            }
+            else {
                 newEnd = selectionEnd;
             }
 
@@ -1903,17 +1972,6 @@ public class JEditTextArea extends JComponent implements Scrollable {
             }
         }
 
-        private void doPopup(MouseEvent evt) {
-            popup.show(painter, evt.getX(), evt.getY());
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            if (popup != null && e.isPopupTrigger()) {
-                doPopup(e);
-            }
-        }
-
         public void mousePressed(MouseEvent evt) {
             requestFocus();
 
@@ -1946,7 +2004,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
                     // it can throw a BLE
                     try {
                         doDoubleClick(evt, line, offset, dot);
-                    } catch (BadLocationException bl) {
+                    }
+                    catch (BadLocationException bl) {
                         SoapUI.logError(bl);
                     }
                     break;
@@ -1956,11 +2015,23 @@ public class JEditTextArea extends JComponent implements Scrollable {
             }
         }
 
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (popup != null && e.isPopupTrigger()) {
+                doPopup(e);
+            }
+        }
+
+        private void doPopup(MouseEvent evt) {
+            popup.show(painter, evt.getX(), evt.getY());
+        }
+
         private void doSingleClick(MouseEvent evt, int line, int offset, int dot) {
             if ((evt.getModifiers() & InputEvent.SHIFT_MASK) != 0) {
                 rectSelect = (evt.getModifiers() & InputEvent.CTRL_MASK) != 0;
                 select(getMarkPosition(), dot);
-            } else {
+            }
+            else {
                 setCaretPosition(dot);
             }
         }
@@ -1983,7 +2054,8 @@ public class JEditTextArea extends JComponent implements Scrollable {
                     select(mark, bracket);
                     return;
                 }
-            } catch (BadLocationException bl) {
+            }
+            catch (BadLocationException bl) {
                 SoapUI.logError(bl);
             }
 
@@ -1991,7 +2063,7 @@ public class JEditTextArea extends JComponent implements Scrollable {
             String lineText = getLineText(line);
             char ch = lineText.charAt(Math.max(0, offset - 1));
 
-            String noWordSep = (String) document.getProperty("noWordSep");
+            String noWordSep = (String)document.getProperty("noWordSep");
             if (noWordSep == null) {
                 noWordSep = "";
             }
@@ -2022,15 +2094,15 @@ public class JEditTextArea extends JComponent implements Scrollable {
             int lineStart = getLineStartOffset(line);
             select(lineStart + wordStart, lineStart + wordEnd);
 
-			/*
-			 * String lineText = getLineText(line); String noWordSep =
-			 * (String)document.getProperty("noWordSep"); int wordStart =
-			 * TextUtilities.findWordStart(lineText,offset,noWordSep); int wordEnd
-			 * = TextUtilities.findWordEnd(lineText,offset,noWordSep);
-			 * 
-			 * int lineStart = getLineStartOffset(line); select(lineStart +
-			 * wordStart,lineStart + wordEnd);
-			 */
+            /*
+             * String lineText = getLineText(line); String noWordSep =
+             * (String)document.getProperty("noWordSep"); int wordStart =
+             * TextUtilities.findWordStart(lineText,offset,noWordSep); int wordEnd
+             * = TextUtilities.findWordEnd(lineText,offset,noWordSep);
+             *
+             * int lineStart = getLineStartOffset(line); select(lineStart +
+             * wordStart,lineStart + wordEnd);
+             */
         }
 
         private void doTripleClick(MouseEvent evt, int line, int offset, int dot) {
@@ -2047,14 +2119,6 @@ public class JEditTextArea extends JComponent implements Scrollable {
             this.end = end;
         }
 
-        public boolean isSignificant() {
-            return false;
-        }
-
-        public String getPresentationName() {
-            return "caret move";
-        }
-
         public void undo() throws CannotUndoException {
             super.undo();
 
@@ -2069,77 +2133,24 @@ public class JEditTextArea extends JComponent implements Scrollable {
 
         public boolean addEdit(UndoableEdit edit) {
             if (edit instanceof CaretUndo) {
-                CaretUndo cedit = (CaretUndo) edit;
+                CaretUndo cedit = (CaretUndo)edit;
                 start = cedit.start;
                 end = cedit.end;
                 cedit.die();
 
                 return true;
-            } else {
+            }
+            else {
                 return false;
             }
         }
-    }
 
-    static {
-        caretTimer = new Timer(500, new CaretBlinker());
-        caretTimer.setInitialDelay(500);
-        caretTimer.start();
-    }
-
-    public Dimension getPreferredSize() {
-        Dimension preferredSize = painter.getPreferredSize();
-
-        if (getParent() instanceof JViewport) {
-            JViewport viewport = (JViewport) getParent();
-            Dimension size = viewport.getSize();
-
-            preferredSize = new Dimension((int) (preferredSize.getWidth() < size.getWidth() ? size.getWidth()
-                    : preferredSize.getWidth()), (int) (preferredSize.getHeight() < size.getHeight() ? size.getHeight()
-                    : preferredSize.getHeight()));
+        public boolean isSignificant() {
+            return false;
         }
 
-        return preferredSize;
-    }
-
-    public Dimension getMaximumSize() {
-        return painter.getMaximumSize();
-    }
-
-    public Dimension getMinimumSize() {
-        return painter.getMinimumSize();
-    }
-
-    public int getMaxLineLength() {
-        int max = 0;
-
-        for (int c = 0; c < getLineCount(); c++) {
-            int lineLength = getTabExpandedLineLength(c);
-            if (lineLength > max) {
-                max = lineLength;
-            }
+        public String getPresentationName() {
+            return "caret move";
         }
-
-        return max;
-    }
-
-    public Dimension getPreferredScrollableViewportSize() {
-        return getPreferredSize();
-    }
-
-    public int getScrollableBlockIncrement(Rectangle arg0, int arg1, int arg2) {
-        return getFontMetrics(getFont()).getHeight() * 5;
-    }
-
-    public boolean getScrollableTracksViewportHeight() {
-        return false;
-    }
-
-    public boolean getScrollableTracksViewportWidth() {
-        return false;
-    }
-
-    public int getScrollableUnitIncrement(Rectangle arg0, int arg1, int arg2) {
-        return getFontMetrics(getFont()).getHeight();
     }
 }

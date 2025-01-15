@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http;
@@ -40,10 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class HTMLPageSourceDownloader {
-    WebClient client = new WebClient();
-    List<String> missingResourcesList = new ArrayList<String>();
     public static final String MISSING_RESOURCES_LIST = "MissingResourcesList";
-
     public static final HashMap<String, String> acceptTypes = new HashMap<String, String>() {
         {
             put("html", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
@@ -52,11 +49,11 @@ public class HTMLPageSourceDownloader {
             put("style", "text/css,*/*;q=0.1");
         }
     };
-
+    WebClient client = new WebClient();
+    List<String> missingResourcesList = new ArrayList<String>();
     List<Attachment> attachmentList = new ArrayList<Attachment>();
 
-    protected List<Attachment> downloadCssAndImages(String endpoint, HttpRequest request)
-            throws MalformedURLException, IOException {
+    protected List<Attachment> downloadCssAndImages(String endpoint, HttpRequest request) throws IOException {
         HtmlPage htmlPage = client.getPage(endpoint);
         String xPathExpression = "//*[name() = 'img' or name() = 'link' and @type = 'text/css']";
         List<?> resultList = htmlPage.getByXPath(xPathExpression);
@@ -65,23 +62,24 @@ public class HTMLPageSourceDownloader {
         Iterator<?> i = resultList.iterator();
         while (i.hasNext()) {
             try {
-                HtmlElement htmlElement = (HtmlElement) i.next();
-                String path = htmlElement.getAttribute("src").equals("") ? htmlElement.getAttribute("href")
-                        : htmlElement.getAttribute("src");
+                HtmlElement htmlElement = (HtmlElement)i.next();
+                String path = htmlElement.getAttribute("src").equals("") ? htmlElement.getAttribute("href") : htmlElement.getAttribute("src");
                 if (path == null || path.equals("")) {
                     continue;
                 }
                 URL url = htmlPage.getFullyQualifiedUrl(path);
                 try {
                     bytes = downloadResource(htmlPage, htmlElement, url);
-                } catch (FailingHttpStatusCodeException fhsce) {
+                }
+                catch (FailingHttpStatusCodeException fhsce) {
                     SoapUI.log.warn(fhsce.getMessage());
                     attachmentList.add(createMissingAttachment(request, url, fhsce));
                     continue;
                 }
 
                 attachmentList.add(createAttachment(bytes, url, request));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -89,17 +87,17 @@ public class HTMLPageSourceDownloader {
         return attachmentList;
     }
 
-    private RequestFileAttachment createMissingAttachment(HttpRequest request, URL url,
-                                                          FailingHttpStatusCodeException fhsce) throws IOException {
+    private RequestFileAttachment createMissingAttachment(
+        HttpRequest request, URL url, FailingHttpStatusCodeException fhsce
+    ) throws IOException {
         File temp = new File(fhsce.getStatusCode() + "_" + fhsce.getStatusMessage() + "_" + url.toString());
-        RequestFileAttachment missingFile = new RequestFileAttachment(temp, false, (AbstractHttpRequest<?>) request);
-        missingResourcesList.add(fhsce.getStatusCode() + " " + fhsce.getStatusMessage() + " " + url.toString());
+        RequestFileAttachment missingFile = new RequestFileAttachment(temp, false, request);
+        missingResourcesList.add(fhsce.getStatusCode() + " " + fhsce.getStatusMessage() + " " + url);
         return missingFile;
     }
 
     public Attachment createAttachment(byte[] bytes, URL url, Request request) throws IOException {
-        String fileName = url.getPath()
-                .substring(url.getPath().lastIndexOf("/") + 1, url.getPath().lastIndexOf("."));
+        String fileName = url.getPath().substring(url.getPath().lastIndexOf("/") + 1, url.getPath().lastIndexOf("."));
         String extension = url.getPath().substring(url.getPath().lastIndexOf("."));
 
         // handling -> java.lang.IllegalArgumentException: Prefix string too short
@@ -111,7 +109,7 @@ public class HTMLPageSourceDownloader {
         OutputStream out = new FileOutputStream(temp);
         out.write(bytes);
         out.close();
-        return new RequestFileAttachment(temp, false, (AbstractHttpRequest<?>) request);
+        return new RequestFileAttachment(temp, false, (AbstractHttpRequest<?>)request);
     }
 
     private byte[] downloadResource(HtmlPage page, HtmlElement htmlElement, URL url) throws IOException {
@@ -121,11 +119,9 @@ public class HTMLPageSourceDownloader {
         wrs.setAdditionalHeader("Referer", page.getWebResponse().getRequestSettings().getUrl().toString());
         client.addRequestHeader("Accept", acceptTypes.get(htmlElement.getTagName().toLowerCase()));
         return client.getPage(wrs).getWebResponse().getContentAsBytes();
-
     }
 
     public List<String> getMissingResourcesList() {
         return missingResourcesList;
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema.content;
@@ -76,25 +76,6 @@ public class SequenceContent implements Content {
     }
 
     @Override
-    public SequenceContentConfig save() {
-        SequenceContentConfig xml = SequenceContentConfig.Factory.newInstance();
-        xml.setCompleted(completed);
-        List<ParticleConfig> particleList = new ArrayList<ParticleConfig>();
-        for (Particle item : particles.values()) {
-            particleList.add(item.save());
-        }
-        xml.setParticleArray(particleList.toArray(new ParticleConfig[0]));
-        for (Map.Entry<QName, List<QName>> entry : comesBefore.entrySet()) {
-            ComesBefore comesBeforeEntry = xml.addNewComesBefore();
-            comesBeforeEntry.setQname(entry.getKey());
-            for (QName item : entry.getValue()) {
-                comesBeforeEntry.addOther(item);
-            }
-        }
-        return xml;
-    }
-
-    @Override
     public Content validate(Context context) throws XmlException {
         XmlCursor cursor = context.getCursor();
 
@@ -114,7 +95,8 @@ public class SequenceContent implements Content {
                         cursor.pop();
                         throw new XmlException("Same element occurs multiple times in sequence!");
                     }
-                } else {
+                }
+                else {
                     orderSet.add(qname);
                 }
                 orderList.add(qname);
@@ -131,7 +113,8 @@ public class SequenceContent implements Content {
                 cursor.pop();
                 cursor.toNextSibling();
             }
-        } else {
+        }
+        else {
             throw new XmlException("Sequence validation");
         }
         completed = true;
@@ -153,12 +136,30 @@ public class SequenceContent implements Content {
         return s.toString();
     }
 
+    @Override
+    public SequenceContentConfig save() {
+        SequenceContentConfig xml = SequenceContentConfig.Factory.newInstance();
+        xml.setCompleted(completed);
+        List<ParticleConfig> particleList = new ArrayList<ParticleConfig>();
+        for (Particle item : particles.values()) {
+            particleList.add(item.save());
+        }
+        xml.setParticleArray(particleList.toArray(new ParticleConfig[0]));
+        for (Map.Entry<QName, List<QName>> entry : comesBefore.entrySet()) {
+            ComesBefore comesBeforeEntry = xml.addNewComesBefore();
+            comesBeforeEntry.setQname(entry.getKey());
+            for (QName item : entry.getValue()) {
+                comesBeforeEntry.addOther(item);
+            }
+        }
+        return xml;
+    }
+
     private void fixOrder() {
         List<QName> order = new ArrayList<QName>();
         for (QName item : particles.keySet()) {
             int i;
             for (i = order.size(); !canAppend(order.subList(0, i), item); i--) {
-                ;
             }
             order.add(i, item);
         }
@@ -201,23 +202,30 @@ public class SequenceContent implements Content {
         for (Map.Entry<QName, Integer> entry : seen.entrySet()) {
             Particle particle = particles.get(entry.getKey());
             if (Integer.parseInt(particle.getAttribute("minOccurs")) > entry.getValue()) {
-                if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION, ConflictHandler.Type.ELEMENT,
-                        entry.getKey(), context.getPath(), "Element occurs less times than required.")) {
+                if (context.getHandler()
+                           .callback(ConflictHandler.Event.MODIFICATION,
+                                     ConflictHandler.Type.ELEMENT,
+                                     entry.getKey(),
+                                     context.getPath(),
+                                     "Element occurs less times than required."
+                           )) {
                     particle.setAttribute("minOccurs", entry.getValue().toString());
-                } else {
-                    throw new XmlException("Element '" + entry.getKey().getLocalPart()
-                            + "' required at least minOccurs times!");
+                }
+                else {
+                    throw new XmlException("Element '" + entry.getKey().getLocalPart() + "' required at least minOccurs times!");
                 }
             }
-            if (!particle.getAttribute("maxOccurs").equals("unbounded")
-                    && Integer.parseInt(particle.getAttribute("maxOccurs")) < entry.getValue()) {
-                if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION, ConflictHandler.Type.TYPE,
-                        new QName(schema.getNamespace(), context.getAttribute("typeName")), context.getPath(),
-                        "Element occurs more times than allowed.")) {
+            if (!particle.getAttribute("maxOccurs").equals("unbounded") && Integer.parseInt(particle.getAttribute("maxOccurs")) < entry.getValue()) {
+                if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION,
+                                                  ConflictHandler.Type.TYPE,
+                                                  new QName(schema.getNamespace(), context.getAttribute("typeName")),
+                                                  context.getPath(),
+                                                  "Element occurs more times than allowed."
+                )) {
                     particle.setAttribute("maxOccurs", entry.getValue().toString());
-                } else {
-                    throw new XmlException("Element '" + entry.getKey().getLocalPart()
-                            + "' must not occur more than maxOccurs times!");
+                }
+                else {
+                    throw new XmlException("Element '" + entry.getKey().getLocalPart() + "' must not occur more than maxOccurs times!");
                 }
             }
         }
@@ -227,18 +235,24 @@ public class SequenceContent implements Content {
     @SuppressWarnings("unchecked")
     private boolean validateOrder(Context context, List<QName> sequence) {
         List<QName> seen = new ArrayList<QName>();
-        HashMap<QName, List<QName>> comesBefore = (HashMap<QName, List<QName>>) this.comesBefore.clone();
+        HashMap<QName, List<QName>> comesBefore = (HashMap<QName, List<QName>>)this.comesBefore.clone();
         for (QName item : sequence) {
             if (!particles.containsKey(item)) {
-                if (context.getHandler().callback(ConflictHandler.Event.CREATION, ConflictHandler.Type.ELEMENT, item,
-                        context.getPath() + "/" + item.getLocalPart(), "Element has undeclared child element.")) {
+                if (context.getHandler()
+                           .callback(ConflictHandler.Event.CREATION,
+                                     ConflictHandler.Type.ELEMENT,
+                                     item,
+                                     context.getPath() + "/" + item.getLocalPart(),
+                                     "Element has undeclared child element."
+                           )) {
                     if (item.getNamespaceURI().equals(schema.getNamespace())) {
                         Particle element = Particle.Factory.newElementInstance(schema, item.getLocalPart());
                         if (completed) {
                             element.setAttribute("minOccurs", "0");
                         }
                         particles.put(item, element);
-                    } else {
+                    }
+                    else {
                         Schema otherSchema = context.getSchemaSystem().getSchemaForNamespace(item.getNamespaceURI());
                         schema.putPrefixForNamespace(item.getPrefix(), item.getNamespaceURI());
                         if (otherSchema == null) {
@@ -253,7 +267,8 @@ public class SequenceContent implements Content {
                         }
                         particles.put(item, Particle.Factory.newReferenceInstance(schema, ref));
                     }
-                } else {
+                }
+                else {
                     return false;
                 }
             }
@@ -263,7 +278,8 @@ public class SequenceContent implements Content {
                         return false;
                     }
                 }
-            } else {
+            }
+            else {
                 comesBefore.put(item, new ArrayList<QName>());
             }
             for (QName item2 : seen) {
@@ -279,8 +295,7 @@ public class SequenceContent implements Content {
 
     private boolean isChoice() {
         for (Particle e : particles.values()) {
-            if (!("0".equals(e.getAttribute("minOccurs")) && "1".equals(e.getAttribute("maxOccurs")) && comesBefore
-                    .get(e.getName()).size() == 0)) {
+            if (!("0".equals(e.getAttribute("minOccurs")) && "1".equals(e.getAttribute("maxOccurs")) && comesBefore.get(e.getName()).size() == 0)) {
                 return false;
             }
         }
@@ -295,5 +310,4 @@ public class SequenceContent implements Content {
         }
         return !verifyOrder();
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.registry;
@@ -36,7 +36,15 @@ import java.util.List;
 
 public class EditorViewFactoryRegistry implements SoapUIFactoryRegistryListener {
     private static EditorViewFactoryRegistry instance;
-    private List<EditorViewFactory> factories = new ArrayList<>();
+    private final List<EditorViewFactory> factories = new ArrayList<>();
+
+    public static final EditorViewFactoryRegistry getInstance() {
+        if (instance == null) {
+            instance = new EditorViewFactoryRegistry();
+        }
+
+        return instance;
+    }
 
     public EditorViewFactoryRegistry() {
         // this should obviously come from a configuration file..
@@ -66,14 +74,6 @@ public class EditorViewFactoryRegistry implements SoapUIFactoryRegistryListener 
         }
     }
 
-    public static final EditorViewFactoryRegistry getInstance() {
-        if (instance == null) {
-            instance = new EditorViewFactoryRegistry();
-        }
-
-        return instance;
-    }
-
     public EditorViewFactory[] getFactories() {
         return factories.toArray(new EditorViewFactory[factories.size()]);
     }
@@ -96,14 +96,14 @@ public class EditorViewFactoryRegistry implements SoapUIFactoryRegistryListener 
     @Override
     public void factoryAdded(Class<?> factoryType, Object factory) {
         if (factoryType.isAssignableFrom(EditorViewFactory.class)) {
-            addFactory((EditorViewFactory) factory);
+            addFactory((EditorViewFactory)factory);
         }
     }
 
     @Override
     public void factoryRemoved(Class<?> factoryType, Object factory) {
         if (factoryType.isAssignableFrom(EditorViewFactory.class)) {
-            removeFactory((EditorViewFactory) factory);
+            removeFactory((EditorViewFactory)factory);
         }
     }
 }

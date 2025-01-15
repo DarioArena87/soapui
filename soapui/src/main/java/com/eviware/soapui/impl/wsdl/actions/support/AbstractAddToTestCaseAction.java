@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.support;
@@ -35,10 +35,6 @@ import java.util.List;
  */
 
 public abstract class AbstractAddToTestCaseAction<T extends ModelItem> extends AbstractSoapUIAction<T> {
-    public AbstractAddToTestCaseAction(String name, String description) {
-        super(name, description);
-    }
-
     public static WsdlTestCase getTargetTestCase(WsdlProject project) {
         List<WsdlTestCase> testCases = new ArrayList<WsdlTestCase>();
         List<WsdlTestSuite> testSuites = new ArrayList<WsdlTestSuite>();
@@ -72,38 +68,35 @@ public abstract class AbstractAddToTestCaseAction<T extends ModelItem> extends A
                 testSuiteNames.add((testSuiteNames.size() + 1) + ": " + testSuite.getName());
             }
 
-            String selection = (String) UISupport.prompt("Select TestSuite to create TestCase in", "Select TestSuite",
-                    testSuiteNames.toArray());
+            String selection = (String)UISupport.prompt("Select TestSuite to create TestCase in", "Select TestSuite", testSuiteNames.toArray());
             if (selection == null) {
                 return null;
             }
 
             WsdlTestSuite testSuite = project.getTestSuiteAt(testSuiteNames.indexOf(selection));
 
-            String name = UISupport.prompt("Specify name of TestCase", "Create TestCase",
-                    "TestCase " + (testSuite.getTestCaseCount() + 1));
+            String name = UISupport.prompt("Specify name of TestCase", "Create TestCase", "TestCase " + (testSuite.getTestCaseCount() + 1));
             if (name == null) {
                 return null;
             }
 
             return testSuite.addNewTestCase(name);
-        } else {
+        }
+        else {
             testCases.add(null);
             testSuites.add(null);
             testCaseNames.add((testCaseNames.size() + 1) + ": -> Create new TestSuite");
 
-            String selection = (String) UISupport.prompt("Select TestCase", "Select TestCase", testCaseNames.toArray());
+            String selection = (String)UISupport.prompt("Select TestCase", "Select TestCase", testCaseNames.toArray());
             if (selection == null) {
                 return null;
             }
 
             testCase = testCases.get(testCaseNames.indexOf(selection));
-            while (testCase != null
-                    && (SoapUI.getTestMonitor().hasRunningLoadTest(testCase) || SoapUI.getTestMonitor()
-                    .hasRunningSecurityTest(testCase))) {
+            while (testCase != null && (SoapUI.getTestMonitor().hasRunningLoadTest(testCase) || SoapUI.getTestMonitor().hasRunningSecurityTest(testCase))) {
                 UISupport.showErrorMessage("Can not add to TestCase that is currently LoadTesting or SecurityTesting");
 
-                selection = (String) UISupport.prompt("Select TestCase", "Select TestCase", testCaseNames.toArray());
+                selection = (String)UISupport.prompt("Select TestCase", "Select TestCase", testCaseNames.toArray());
                 if (selection == null) {
                     return null;
                 }
@@ -118,9 +111,9 @@ public abstract class AbstractAddToTestCaseAction<T extends ModelItem> extends A
                 // selected create new testsuite?
                 if (testSuite == null) {
                     return addNewTestSuiteAndTestCase(project, "Specify name of TestSuite");
-                } else {
-                    String name = UISupport.prompt("Specify name of TestCase", "Create TestCase", "TestCase "
-                            + (testSuite.getTestCaseCount() + 1));
+                }
+                else {
+                    String name = UISupport.prompt("Specify name of TestCase", "Create TestCase", "TestCase " + (testSuite.getTestCaseCount() + 1));
                     if (name == null) {
                         return null;
                     }
@@ -133,9 +126,12 @@ public abstract class AbstractAddToTestCaseAction<T extends ModelItem> extends A
         return testCase;
     }
 
+    public AbstractAddToTestCaseAction(String name, String description) {
+        super(name, description);
+    }
+
     protected static WsdlTestCase addNewTestSuiteAndTestCase(WsdlProject project, String questionText) {
-        String testSuiteName = UISupport.prompt(questionText,
-                "Create TestSuite", "TestSuite " + (project.getTestSuiteCount() + 1));
+        String testSuiteName = UISupport.prompt(questionText, "Create TestSuite", "TestSuite " + (project.getTestSuiteCount() + 1));
         if (testSuiteName == null) {
             return null;
         }

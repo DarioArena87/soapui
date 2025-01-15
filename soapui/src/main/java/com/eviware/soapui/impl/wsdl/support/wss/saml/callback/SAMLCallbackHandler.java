@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss.saml.callback;
@@ -25,43 +25,42 @@ import java.util.List;
 
 /**
  * @author Erik R. Yverling
- *         <p/>
- *         A generic SAML callback handler.
+ * <p/>
+ * A generic SAML callback handler.
  */
 public interface SAMLCallbackHandler extends CallbackHandler {
 
-    public abstract void setAlias(String alias);
+    String getAlias();
 
-    public abstract String getAlias();
+    void setAlias(String alias);
 
-    public abstract void setCrypto(Crypto crypto);
+    Crypto getCrypto();
 
-    public abstract Crypto getCrypto();
+    void setCrypto(Crypto crypto);
 
-    public abstract void setCustomAttributeValues(List<?> customAttributeValues);
+    void setCustomAttributeValues(List<?> customAttributeValues);
 
-    public abstract void setResource(String resource);
+    void setResource(String resource);
 
-    public abstract void setSubjectLocality(String ipAddress, String dnsAddress);
+    void setSubjectLocality(String ipAddress, String dnsAddress);
 
-    public abstract void setSubjectNameIDFormat(String subjectNameIDFormat);
+    void setSubjectNameIDFormat(String subjectNameIDFormat);
 
-    public abstract void setIssuer(String issuer);
+    void setIssuer(String issuer);
 
-    public void setSubjectName(String subjectName);
+    void setSubjectName(String subjectName);
 
-    public void setSubjectQualifier(String subjectQualifier);
+    void setSubjectQualifier(String subjectQualifier);
 
-    public abstract byte[] getEphemeralKey();
+    byte[] getEphemeralKey();
 
-    public abstract void setCerts(X509Certificate[] certs);
+    void setCerts(X509Certificate[] certs);
 
-    public abstract void setCertIdentifier(CERT_IDENTIFIER certIdentifier);
+    void setCertIdentifier(CERT_IDENTIFIER certIdentifier);
 
-    public abstract void setStatement(String statement);
+    void setStatement(String statement);
 
-    public abstract void setConfirmationMethod(String confMethod);
+    void setConfirmationMethod(String confMethod);
 
-    public abstract void setCustomAttributeName(String customAttributeName);
-
+    void setCustomAttributeName(String customAttributeName);
 }

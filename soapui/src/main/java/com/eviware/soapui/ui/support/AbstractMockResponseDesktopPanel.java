@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.ui.support;
@@ -42,23 +42,8 @@ import com.eviware.soapui.support.editor.xml.XmlDocument;
 import com.eviware.soapui.support.swing.SoapUISplitPaneUI;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JToggleButton;
-import javax.swing.KeyStroke;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -72,25 +57,20 @@ import java.beans.PropertyChangeListener;
  * @author Ole.Matzura
  */
 
-public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends ModelItem, MockResponseType extends MockResponse> extends
-        ModelItemDesktopPanel<ModelItemType> implements HasHelpUrl {
+public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends ModelItem, MockResponseType extends MockResponse> extends ModelItemDesktopPanel<ModelItemType> implements HasHelpUrl {
+    public boolean responseHasFocus;
     private JEditorStatusBarWithProgress statusBar;
     private JButton splitButton;
     private MockRunner mockRunner;
     private JSplitPane requestSplitPane;
     private MoveFocusAction moveFocusAction;
-    private ClosePanelAction closePanelAction = new ClosePanelAction();
-
+    private final ClosePanelAction closePanelAction = new ClosePanelAction();
     private ModelItemXmlEditor<?, ?> requestEditor;
     private MockResponseMessageEditor responseEditor;
-
     private JTabbedPane requestTabs;
     private JPanel requestTabPanel;
     private JToggleButton tabsButton;
-
-    public boolean responseHasFocus;
-
-    private InternalPropertyChangeListener propertyChangeListener = new InternalPropertyChangeListener();
+    private final InternalPropertyChangeListener propertyChangeListener = new InternalPropertyChangeListener();
     private MockResponseType mockResponse;
 
     public AbstractMockResponseDesktopPanel(ModelItemType modelItem) {
@@ -114,7 +94,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
             public void focusGained(FocusEvent e) {
                 if (!hasRequestEditor() || requestTabs.getSelectedIndex() == 1 || responseHasFocus) {
                     responseEditor.requestFocus();
-                } else {
+                }
+                else {
                     requestEditor.requestFocus();
                 }
             }
@@ -125,7 +106,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
             if (mockResponse.getAttachmentCount() > 0) {
                 mockResponse.getMockOperation().getOperation().getInterface().getDefinitionContext().loadIfNecessary();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -165,7 +147,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
 
         if (hasRequestEditor()) {
             return buildEverythingPanel(responseEditorPanel);
-        } else {
+        }
+        else {
             return responseEditorPanel;
         }
     }
@@ -178,7 +161,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
             responseEditorSplit.add(addBottomEditorPanel(responseEditor));
             responseEditorSplit.setDividerLocation(200);
             return responseEditorSplit;
-        } else {
+        }
+        else {
             JComponent responseEditorPanel = new JPanel();
             responseEditorPanel.setLayout(new BoxLayout(responseEditorPanel, BoxLayout.Y_AXIS));
             responseEditorPanel.add(responseEditor);
@@ -212,7 +196,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
             component = requestTabPanel;
 
             requestTabs.setSelectedIndex(1);
-        } else {
+        }
+        else {
             requestSplitPane.setTopComponent(requestEditor); // means left
             requestSplitPane.setBottomComponent(responseEditorPanel); // means right
             requestSplitPane.setDividerLocation(0.5);
@@ -280,13 +265,48 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
         statusBar.setIndeterminate(!enabled);
     }
 
+    public void setContent(JComponent content) {
+        add(content, BorderLayout.CENTER);
+    }
+
+    public void removeContent(JComponent content) {
+        remove(content);
+    }
+
+    public boolean onClose(boolean canCancel) {
+        mockResponse.removePropertyChangeListener(propertyChangeListener);
+
+        if (hasRequestEditor()) {
+            requestEditor.release();
+            requestEditor.getParent().remove(requestEditor);
+            requestEditor = null;
+        }
+
+        responseEditor.release();
+        responseEditor.getParent().remove(responseEditor);
+        responseEditor = null;
+
+        return release();
+    }
+
+    public boolean dependsOn(ModelItem modelItem) {
+        return modelItem == getModelItem() ||
+               modelItem == mockResponse.getMockOperation() ||
+               modelItem == mockResponse.getMockOperation().getMockService() ||
+               modelItem == mockResponse.getMockOperation().getMockService().getProject();
+    }
+
     private final class InternalPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(WsdlMockResponse.MOCKRESULT_PROPERTY)) {
                 MockResult mockResult = mockResponse.getMockResult();
                 MockRequest mockRequest = mockResult == null ? null : mockResult.getMockRequest();
                 if (hasRequestEditor()) {
-                    requestEditor.getDocument().setDocumentContent(new DocumentContent(mockRequest == null ? "" : mockRequest.getHttpRequest().getContentType(), mockRequest == null ? "" : mockRequest.getRequestContent()));
+                    requestEditor.getDocument()
+                                 .setDocumentContent(new DocumentContent(
+                                     mockRequest == null ? "" : mockRequest.getHttpRequest().getContentType(),
+                                     mockRequest == null ? "" : mockRequest.getRequestContent()
+                                 ));
                 }
             }
         }
@@ -305,7 +325,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
 
             if (UISupport.isMac()) {
                 inputArea.getInputMap().put(KeyStroke.getKeyStroke("control meta TAB"), moveFocusAction);
-            } else {
+            }
+            else {
                 inputArea.getInputMap().put(KeyStroke.getKeyStroke("control alt TAB"), moveFocusAction);
             }
             inputArea.getInputMap().put(KeyStroke.getKeyStroke("ctrl F4"), closePanelAction);
@@ -340,7 +361,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
                 if (UISupport.isMac()) {
                     inputArea.getInputMap().put(KeyStroke.getKeyStroke("control meta TAB"), moveFocusAction);
                     inputArea.getInputMap().put(KeyStroke.getKeyStroke("ctrl F4"), closePanelAction);
-                } else {
+                }
+                else {
                     inputArea.getInputMap().put(KeyStroke.getKeyStroke("control alt TAB"), moveFocusAction);
                     inputArea.getInputMap().put(KeyStroke.getKeyStroke("ctrl F4"), closePanelAction);
                 }
@@ -358,7 +380,6 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
         public RSyntaxTextArea getInputArea() {
             return inputArea;
         }
-
     }
 
     protected final class InputAreaFocusListener implements FocusListener {
@@ -375,7 +396,7 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
             }
 
             // dont resize if split has been dragged
-            if (((SoapUISplitPaneUI) requestSplitPane.getUI()).hasBeenDragged()) {
+            if (((SoapUISplitPaneUI)requestSplitPane.getUI()).hasBeenDragged()) {
                 return;
             }
 
@@ -385,7 +406,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
             }
             if (requestSplitPane.getMaximumDividerLocation() > 700) {
                 requestSplitPane.setDividerLocation(600);
-            } else {
+            }
+            else {
                 requestSplitPane.setDividerLocation(0.8);
             }
         }
@@ -408,7 +430,7 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
             }
 
             // dont resize if split has been dragged or result is empty
-            if (((SoapUISplitPaneUI) requestSplitPane.getUI()).hasBeenDragged()) {
+            if (((SoapUISplitPaneUI)requestSplitPane.getUI()).hasBeenDragged()) {
                 return;
             }
 
@@ -420,7 +442,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
 
             if (maximumDividerLocation > 700) {
                 requestSplitPane.setDividerLocation(maximumDividerLocation - 600);
-            } else {
+            }
+            else {
                 requestSplitPane.setDividerLocation(0.2);
             }
         }
@@ -439,22 +462,17 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
         public void actionPerformed(ActionEvent e) {
             if (!hasRequestEditor() || requestEditor.hasFocus()) {
                 responseEditor.requestFocus();
-            } else {
+            }
+            else {
                 requestEditor.requestFocus();
             }
         }
     }
 
-    public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == getModelItem() || modelItem == mockResponse.getMockOperation()
-                || modelItem == mockResponse.getMockOperation().getMockService()
-                || modelItem == mockResponse.getMockOperation().getMockService().getProject();
-    }
-
     private final class ChangeToTabsAction extends AbstractAction {
         public ChangeToTabsAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/toggle_tabs.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Toggles to tab-based layout");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/toggle_tabs.gif"));
+            putValue(SHORT_DESCRIPTION, "Toggles to tab-based layout");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -464,7 +482,8 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
                 setContent(requestTabPanel);
                 requestTabs.addTab("Last Request", requestEditor);
                 requestTabs.addTab("Mock Response", responseEditor);
-            } else {
+            }
+            else {
                 int selectedIndex = requestTabs.getSelectedIndex();
 
                 splitButton.setEnabled(true);
@@ -476,36 +495,13 @@ public abstract class AbstractMockResponseDesktopPanel<ModelItemType extends Mod
 
                 if (selectedIndex == 0) {
                     requestEditor.requestFocus();
-                } else {
+                }
+                else {
                     responseEditor.requestFocus();
                 }
             }
 
             revalidate();
         }
-    }
-
-    public void setContent(JComponent content) {
-        add(content, BorderLayout.CENTER);
-    }
-
-    public void removeContent(JComponent content) {
-        remove(content);
-    }
-
-    public boolean onClose(boolean canCancel) {
-        mockResponse.removePropertyChangeListener(propertyChangeListener);
-
-        if (hasRequestEditor()) {
-            requestEditor.release();
-            requestEditor.getParent().remove(requestEditor);
-            requestEditor = null;
-        }
-
-        responseEditor.release();
-        responseEditor.getParent().remove(responseEditor);
-        responseEditor = null;
-
-        return release();
     }
 }

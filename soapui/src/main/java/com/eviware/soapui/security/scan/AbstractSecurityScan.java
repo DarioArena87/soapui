@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.scan;
@@ -53,7 +53,7 @@ import com.eviware.soapui.security.result.SecurityScanResult;
 import com.eviware.soapui.security.support.FailedSecurityMessageExchange;
 import com.eviware.soapui.security.support.SecurityTestRunListener;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -67,18 +67,20 @@ import java.util.Map;
  *
  * @author robert
  */
-public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<SecurityScanConfig> implements
-        ResponseAssertion, SecurityScan {
+public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<SecurityScanConfig> implements ResponseAssertion, SecurityScan {
+    protected AssertionsSupport assertionsSupport;
     private SecurityScanResult securityScanResult;
     private SecurityScanRequestResult securityScanRequestResult;
     private TestStep testStep;
-    protected AssertionsSupport assertionsSupport;
-
     private AssertionStatus currentStatus;
     private ExecutionStrategyHolder executionStrategy;
     private TestStep originalTestStepClone;
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean skipFurtherRunning;
+
+    public static boolean isSecurable(TestStep testStep) {
+        return testStep != null && testStep instanceof Securable;
+    }
 
     public AbstractSecurityScan(TestStep testStep, SecurityScanConfig config, ModelItem parent, String icon) {
         super(config, parent, icon);
@@ -93,15 +95,16 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
             config.addNewExecutionStrategy();
             config.getExecutionStrategy().setStrategy(StrategyTypeConfig.ONE_BY_ONE);
             config.getExecutionStrategy().setDelay(100);
-        } else if (config.getExecutionStrategy().getStrategy() == null) {
+        }
+        else if (config.getExecutionStrategy().getStrategy() == null) {
             config.getExecutionStrategy().setStrategy(StrategyTypeConfig.ONE_BY_ONE);
             config.getExecutionStrategy().setDelay(100);
         }
 
-		/*
+        /*
          * if security scan have no strategy, set its value to
-		 * StrategyTypeConfig.NO_STRATEGY.
-		 */
+         * StrategyTypeConfig.NO_STRATEGY.
+         */
         setExecutionStrategy(new ExecutionStrategyHolder(config.getExecutionStrategy()));
 
         if (config.getCheckedParameters() == null) {
@@ -114,22 +117,6 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         if (!config.isSetDisabled()) {
             setDisabled(false);
         }
-    }
-
-    @Override
-    public void copyConfig(SecurityScanConfig config) {
-        super.setConfig(config);
-        getConfig().setType(config.getType());
-        getConfig().setName(config.getName());
-        getConfig().setConfig(config.getConfig());
-        getConfig().setTestStep(config.getTestStep());
-
-        TestAssertionConfig[] assertions = config.getAssertionList().toArray(new TestAssertionConfig[0]);
-        getConfig().setAssertionArray(assertions);
-        initAssertions();
-
-        getConfig().setExecutionStrategy(config.getExecutionStrategy());
-        setExecutionStrategy(new ExecutionStrategyHolder(config.getExecutionStrategy()));
     }
 
     /*
@@ -149,28 +136,6 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         }
     }
 
-    protected void initAssertions() {
-        assertionsSupport = new AssertionsSupport(this, new AssertableConfig() {
-            public TestAssertionConfig addNewAssertion() {
-                return getConfig().addNewAssertion();
-            }
-
-            public List<TestAssertionConfig> getAssertionList() {
-                return getConfig().getAssertionList();
-            }
-
-            public void removeAssertion(int ix) {
-                getConfig().removeAssertion(ix);
-            }
-
-            public TestAssertionConfig insertAssertion(TestAssertionConfig source, int ix) {
-                TestAssertionConfig conf = getConfig().insertNewAssertion(ix);
-                conf.set(source);
-                return conf;
-            }
-        });
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -179,24 +144,24 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
      * com.eviware.soapui.security.SecurityTestRunContext,
      * com.eviware.soapui.security.SecurityTestRunner)
      */
-    public SecurityScanResult run(TestStep testStep, SecurityTestRunContext context,
-                                  SecurityTestRunner securityTestRunner) {
+    public SecurityScanResult run(
+        TestStep testStep, SecurityTestRunContext context, SecurityTestRunner securityTestRunner
+    ) {
         securityScanResult = new SecurityScanResult(this);
-        SecurityTestRunListener[] securityTestListeners = ((SecurityTest) getParent()).getSecurityTestRunListeners();
+        SecurityTestRunListener[] securityTestListeners = ((SecurityTest)getParent()).getSecurityTestRunListeners();
 
         PropertyChangeNotifier notifier = new PropertyChangeNotifier();
         boolean noMutations = true;
         while (hasNext(testStep, context)) {
             noMutations = false;
-            if (((SecurityTestRunnerImpl) securityTestRunner).isCanceled()) {
+            if (((SecurityTestRunnerImpl)securityTestRunner).isCanceled()) {
                 securityScanResult.setStatus(ResultStatus.CANCELED);
                 clear();
                 return securityScanResult;
             }
             securityScanRequestResult = new SecurityScanRequestResult(this);
             securityScanRequestResult.startTimer();
-            originalTestStepClone = ((SecurityTestRunnerImpl) securityTestRunner)
-                    .cloneForSecurityScan((WsdlTestStep) this.testStep);
+            originalTestStepClone = ((SecurityTestRunnerImpl)securityTestRunner).cloneForSecurityScan((WsdlTestStep)this.testStep);
             execute(securityTestRunner, originalTestStepClone, context);
             notifier.notifyChange();
             securityScanRequestResult.stopTimer();
@@ -204,16 +169,15 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
             // add to summary result
             securityScanResult.addSecurityRequestResult(getSecurityScanRequestResult());
             for (int i = 0; i < securityTestListeners.length; i++) {
-                if (Arrays.asList(((SecurityTest) getParent()).getSecurityTestRunListeners()).contains(
-                        securityTestListeners[i])) {
-                    securityTestListeners[i].afterSecurityScanRequest((SecurityTestRunnerImpl) securityTestRunner,
-                            context, securityScanRequestResult);
+                if (Arrays.asList(((SecurityTest)getParent()).getSecurityTestRunListeners()).contains(securityTestListeners[i])) {
+                    securityTestListeners[i].afterSecurityScanRequest((SecurityTestRunnerImpl)securityTestRunner, context, securityScanRequestResult);
                 }
             }
 
             try {
                 Thread.sleep(getExecutionStrategy().getDelay());
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e) {
                 SoapUI.logError(e, "Security Scan Request Delay Interrupted!");
             }
         }
@@ -223,31 +187,6 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         }
         return securityScanResult;
     }
-
-    protected void clear() {
-
-    }
-
-    /**
-     * should be implemented in every particular scan it executes one request,
-     * modified by securityScan if necessary and internally adds messages for
-     * logging to SecurityScanRequestResult
-     */
-    abstract protected void execute(SecurityTestRunner runner, TestStep testStep, SecurityTestRunContext context);
-
-    /**
-     * checks if specific SecurityScan still has modifications left
-     *
-     * @param testStep2
-     * @param context
-     */
-    abstract protected boolean hasNext(TestStep testStep2, SecurityTestRunContext context);
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.eviware.soapui.security.scan.SecurityScan#isConfigurable()
-	 */
 
     public boolean isConfigurable() {
         return true;
@@ -280,6 +219,12 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
     /*
      * (non-Javadoc)
      *
+     * @see com.eviware.soapui.security.scan.SecurityScan#isConfigurable()
+     */
+
+    /*
+     * (non-Javadoc)
+     *
      * @see com.eviware.soapui.security.scan.SecurityScan#setTestStep(com.eviware
      * .soapui.model.testsuite.TestStep)
      */
@@ -307,21 +252,13 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         pcs.firePropertyChange("disabled", oldValue, disabled);
     }
 
-    public static boolean isSecurable(TestStep testStep) {
-        if (testStep != null && testStep instanceof Securable) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     /*
      * (non-Javadoc)
      *
      * @see com.eviware.soapui.security.scan.SecurityScan#getExecutionStrategy()
      */
     public ExecutionStrategyHolder getExecutionStrategy() {
-        return this.executionStrategy;
+        return executionStrategy;
     }
 
     /*
@@ -337,6 +274,135 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         pcs.firePropertyChange("executionStrategy", oldValue, executionStrategy);
     }
 
+    // name used in configuration panel
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.security.scan.SecurityScan#getConfigName()
+     */
+    public abstract String getConfigName();
+
+    // description usd in configuration panel
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.security.scan.SecurityScan#getConfigDescription()
+     */
+    public abstract String getConfigDescription();
+
+    // help url used for configuration panel ( help for this scan )
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.security.scan.SecurityScan#getHelpURL()
+     */
+    public abstract String getHelpURL();
+
+    /**
+     * Overide if SecurityScan needs advanced settings
+     */
+    @Override
+    public JComponent getAdvancedSettingsPanel() {
+        return null;
+    }
+
+    @Override
+    public SecurityScanResult getSecurityScanResult() {
+        return securityScanResult;
+    }
+
+    @Override
+    public void copyConfig(SecurityScanConfig config) {
+        setConfig(config);
+        getConfig().setType(config.getType());
+        getConfig().setName(config.getName());
+        getConfig().setConfig(config.getConfig());
+        getConfig().setTestStep(config.getTestStep());
+
+        TestAssertionConfig[] assertions = config.getAssertionList().toArray(new TestAssertionConfig[0]);
+        getConfig().setAssertionArray(assertions);
+        initAssertions();
+
+        getConfig().setExecutionStrategy(config.getExecutionStrategy());
+        setExecutionStrategy(new ExecutionStrategyHolder(config.getExecutionStrategy()));
+    }
+
+    @Override
+    public void addWsdlAssertion(String assertionLabel) {
+        assertionsSupport.addWsdlAssertion(assertionLabel);
+    }
+
+    @Override
+    public boolean isApplyForFailedStep() {
+        return getConfig().getApplyForFailedStep();
+    }
+
+    @Override
+    public void setApplyForFailedTestStep(boolean apply) {
+        getConfig().setApplyForFailedStep(apply);
+    }
+
+    @Override
+    public boolean isRunOnlyOnce() {
+        return getConfig().getRunOnlyOnce();
+    }
+
+    @Override
+    public void setRunOnlyOnce(boolean runOnlyOnce) {
+        getConfig().setRunOnlyOnce(runOnlyOnce);
+    }
+
+    @Override
+    public boolean isSkipFurtherRunning() {
+        return skipFurtherRunning;
+    }
+
+    @Override
+    public void setSkipFurtherRunning(boolean skipFurtherRunning) {
+        this.skipFurtherRunning = skipFurtherRunning;
+    }
+
+    protected void initAssertions() {
+        assertionsSupport = new AssertionsSupport(this, new AssertableConfig() {
+            public List<TestAssertionConfig> getAssertionList() {
+                return getConfig().getAssertionList();
+            }
+
+            public void removeAssertion(int ix) {
+                getConfig().removeAssertion(ix);
+            }
+
+            public TestAssertionConfig addNewAssertion() {
+                return getConfig().addNewAssertion();
+            }
+
+            public TestAssertionConfig insertAssertion(TestAssertionConfig source, int ix) {
+                TestAssertionConfig conf = getConfig().insertNewAssertion(ix);
+                conf.set(source);
+                return conf;
+            }
+        });
+    }
+
+    protected void clear() {
+
+    }
+
+    /**
+     * should be implemented in every particular scan it executes one request,
+     * modified by securityScan if necessary and internally adds messages for
+     * logging to SecurityScanRequestResult
+     */
+    abstract protected void execute(SecurityTestRunner runner, TestStep testStep, SecurityTestRunContext context);
+
+    /**
+     * checks if specific SecurityScan still has modifications left
+     *
+     * @param testStep2
+     * @param context
+     */
+    abstract protected boolean hasNext(TestStep testStep2, SecurityTestRunContext context);
+
     protected TestRequest getOriginalResult(SecurityTestRunnerImpl securityRunner, TestStep testStep) {
         testStep.run(securityRunner, securityRunner.getRunContext());
 
@@ -345,27 +411,9 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
 
     protected TestRequest getRequest(TestStep testStep) {
         if (testStep instanceof SamplerTestStep) {
-            return ((SamplerTestStep) testStep).getTestRequest();
+            return ((SamplerTestStep)testStep).getTestRequest();
         }
         return null;
-    }
-
-    private class PropertyChangeNotifier {
-        private ResultStatus oldStatus;
-
-        public PropertyChangeNotifier() {
-            oldStatus = getSecurityStatus();
-        }
-
-        public void notifyChange() {
-            ResultStatus newStatus = getSecurityStatus();
-
-            if (oldStatus != newStatus) {
-                notifyPropertyChanged(STATUS_PROPERTY, oldStatus, newStatus);
-            }
-
-            oldStatus = newStatus;
-        }
     }
 
     @Override
@@ -384,9 +432,148 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
             }
 
             return assertion;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return null;
+        }
+    }
+
+    @Override
+    public void addAssertionsListener(AssertionsListener listener) {
+        assertionsSupport.addAssertionsListener(listener);
+    }
+
+    @Override
+    public int getAssertionCount() {
+        return assertionsSupport.getAssertionCount();
+    }
+
+    @Override
+    public WsdlMessageAssertion getAssertionAt(int c) {
+        return assertionsSupport.getAssertionAt(c);
+    }
+
+    @Override
+    public void removeAssertionsListener(AssertionsListener listener) {
+        assertionsSupport.removeAssertionsListener(listener);
+    }
+
+    @Override
+    public void removeAssertion(TestAssertion assertion) {
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+
+        try {
+            assertionsSupport.removeAssertion((WsdlMessageAssertion)assertion);
+        }
+        finally {
+            ((WsdlMessageAssertion)assertion).release();
+            notifier.notifyChange();
+        }
+    }
+
+    @Override
+    public AssertionStatus getAssertionStatus() {
+        int cnt = getAssertionCount();
+        if (cnt == 0) {
+            return currentStatus;
+        }
+
+        if (securityScanResult != null && securityScanResult.getStatus() == ResultStatus.OK) {
+            currentStatus = AssertionStatus.VALID;
+        }
+        else {
+            currentStatus = AssertionStatus.FAILED;
+        }
+
+        return currentStatus;
+    }
+
+    @Override
+    public String getAssertableContentAsXml() {
+        if (testStep instanceof Assertable) {
+            return ((Assertable)testStep).getAssertableContentAsXml();
+        }
+
+        return null;
+    }
+
+    @Override
+    public String getAssertableContent() {
+        if (testStep instanceof Assertable) {
+            return ((Assertable)testStep).getAssertableContent();
+        }
+
+        return null;
+    }
+
+    @Override
+    public String getDefaultAssertableContent() {
+        if (testStep instanceof Assertable) {
+            return ((Assertable)testStep).getDefaultAssertableContent();
+        }
+
+        return null;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.model.testsuite.Assertable#getAssertableType()
+     *
+     * Decided to go with assertions on request and response so we can implement
+     * "men in the middle" attacks using monitor.
+     */
+    @Override
+    public AssertableType getAssertableType() {
+        return AssertableType.BOTH;
+    }
+
+    @Override
+    public List<TestAssertion> getAssertionList() {
+        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
+    }
+
+    @Override
+    public TestAssertion getAssertionByName(String name) {
+        return assertionsSupport.getAssertionByName(name);
+    }
+
+    @Override
+    public ModelItem getModelItem() {
+        return this;
+    }
+
+    @Override
+    public Interface getInterface() {
+        if (testStep instanceof WsdlTestRequestStep) {
+            return ((WsdlTestRequestStep)testStep).getInterface();
+        }
+
+        return null;
+    }
+
+    @Override
+    public TestAssertion cloneAssertion(TestAssertion source, String name) {
+        return assertionsSupport.cloneAssertion(source, name);
+    }
+
+    @Override
+    public Map<String, TestAssertion> getAssertions() {
+        return assertionsSupport.getAssertions();
+    }
+
+    @Override
+    public TestAssertion moveAssertion(int ix, int offset) {
+        WsdlMessageAssertion assertion = getAssertionAt(ix);
+        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
+
+        try {
+            return assertionsSupport.moveAssertion(ix, offset);
+        }
+        finally {
+            assertion.release();
+            notifier.notifyChange();
         }
     }
 
@@ -420,116 +607,8 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         }
     }
 
-    @Override
-    public void removeAssertion(TestAssertion assertion) {
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
-
-        try {
-            assertionsSupport.removeAssertion((WsdlMessageAssertion) assertion);
-
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
-            notifier.notifyChange();
-        }
-    }
-
-    @Override
-    public TestAssertion moveAssertion(int ix, int offset) {
-        WsdlMessageAssertion assertion = getAssertionAt(ix);
-        PropertyChangeNotifier notifier = new PropertyChangeNotifier();
-
-        try {
-            return assertionsSupport.moveAssertion(ix, offset);
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
-            notifier.notifyChange();
-        }
-    }
-
-    @Override
-    public WsdlMessageAssertion getAssertionAt(int c) {
-        return assertionsSupport.getAssertionAt(c);
-    }
-
-    @Override
-    public void addAssertionsListener(AssertionsListener listener) {
-        assertionsSupport.addAssertionsListener(listener);
-    }
-
-    @Override
-    public void removeAssertionsListener(AssertionsListener listener) {
-        assertionsSupport.removeAssertionsListener(listener);
-    }
-
-    @Override
-    public int getAssertionCount() {
-        return assertionsSupport.getAssertionCount();
-    }
-
-    @Override
-    public AssertionStatus getAssertionStatus() {
-        int cnt = getAssertionCount();
-        if (cnt == 0) {
-            return currentStatus;
-        }
-
-        if (securityScanResult != null && securityScanResult.getStatus() == ResultStatus.OK) {
-            currentStatus = AssertionStatus.VALID;
-        } else {
-            currentStatus = AssertionStatus.FAILED;
-        }
-
-        return currentStatus;
-    }
-
     public ResultStatus getSecurityStatus() {
         return securityScanResult != null ? securityScanResult.getStatus() : ResultStatus.UNKNOWN;
-    }
-
-    @Override
-    public String getAssertableContentAsXml() {
-        if (testStep instanceof Assertable) {
-            return ((Assertable) testStep).getAssertableContentAsXml();
-        }
-
-        return null;
-    }
-
-    @Override
-    public String getAssertableContent() {
-        if (testStep instanceof Assertable) {
-            return ((Assertable) testStep).getAssertableContent();
-        }
-
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.eviware.soapui.model.testsuite.Assertable#getAssertableType()
-     *
-     * Decided to go with assertions on request and response so we can implement
-     * "men in the middle" attacks using monitor.
-     */
-    @Override
-    public AssertableType getAssertableType() {
-        return AssertableType.BOTH;
-    }
-
-    @Override
-    public TestAssertion getAssertionByName(String name) {
-        return assertionsSupport.getAssertionByName(name);
-    }
-
-    @Override
-    public List<TestAssertion> getAssertionList() {
-        return new ArrayList<TestAssertion>(assertionsSupport.getAssertionList());
-    }
-
-    @Override
-    public Map<String, TestAssertion> getAssertions() {
-        return assertionsSupport.getAssertions();
     }
 
     /*
@@ -539,34 +618,6 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
      */
     public AssertionsSupport getAssertionsSupport() {
         return assertionsSupport;
-    }
-
-    @Override
-    public TestAssertion cloneAssertion(TestAssertion source, String name) {
-        return assertionsSupport.cloneAssertion(source, name);
-    }
-
-    @Override
-    public String getDefaultAssertableContent() {
-        if (testStep instanceof Assertable) {
-            return ((Assertable) testStep).getDefaultAssertableContent();
-        }
-
-        return null;
-    }
-
-    @Override
-    public Interface getInterface() {
-        if (testStep instanceof WsdlTestRequestStep) {
-            return ((WsdlTestRequestStep) testStep).getInterface();
-        }
-
-        return null;
-    }
-
-    @Override
-    public ModelItem getModelItem() {
-        return this;
     }
 
     public AssertionStatus assertResponse(MessageExchange messageExchange, SubmitContext context) {
@@ -591,7 +642,8 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
 
                 notifier.notifyChange();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
         return finalResult;
@@ -605,10 +657,11 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
     private void setStatus(AssertionStatus result) {
         if (result == AssertionStatus.FAILED) {
             getSecurityScanRequestResult().setStatus(ResultStatus.FAILED);
-        } else if (result == AssertionStatus.VALID) {
+        }
+        else if (result == AssertionStatus.VALID) {
             getSecurityScanRequestResult().setStatus(ResultStatus.OK);
-
-        } else if (result == AssertionStatus.UNKNOWN) {
+        }
+        else if (result == AssertionStatus.UNKNOWN) {
             getSecurityScanRequestResult().setStatus(ResultStatus.UNKNOWN);
         }
     }
@@ -621,49 +674,12 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         }
     }
 
-    // name used in configuration panel
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.eviware.soapui.security.scan.SecurityScan#getConfigName()
-	 */
-    public abstract String getConfigName();
-
-    // description usd in configuration panel
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.eviware.soapui.security.scan.SecurityScan#getConfigDescription()
-	 */
-    public abstract String getConfigDescription();
-
-    // help url used for configuration panel ( help for this scan )
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.eviware.soapui.security.scan.SecurityScan#getHelpURL()
-	 */
-    public abstract String getHelpURL();
-
-    protected void setSecurityScanRequestResult(SecurityScanRequestResult securityScanRequestResult) {
-        this.securityScanRequestResult = securityScanRequestResult;
-    }
-
     protected SecurityScanRequestResult getSecurityScanRequestResult() {
         return securityScanRequestResult;
     }
 
-    /**
-     * Overide if SecurityScan needs advanced settings
-     */
-    @Override
-    public JComponent getAdvancedSettingsPanel() {
-        return null;
-    }
-
-    @Override
-    public SecurityScanResult getSecurityScanResult() {
-        return securityScanResult;
+    protected void setSecurityScanRequestResult(SecurityScanRequestResult securityScanRequestResult) {
+        this.securityScanRequestResult = securityScanRequestResult;
     }
 
     /**
@@ -673,31 +689,6 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         getSecurityScanRequestResult().setMessageExchange(new FailedSecurityMessageExchange());
         getSecurityScanRequestResult().setStatus(ResultStatus.FAILED);
         getSecurityScanRequestResult().addMessage(message);
-    }
-
-    @Override
-    public void addWsdlAssertion(String assertionLabel) {
-        assertionsSupport.addWsdlAssertion(assertionLabel);
-    }
-
-    @Override
-    public boolean isApplyForFailedStep() {
-        return getConfig().getApplyForFailedStep();
-    }
-
-    @Override
-    public void setApplyForFailedTestStep(boolean apply) {
-        getConfig().setApplyForFailedStep(apply);
-    }
-
-    @Override
-    public boolean isRunOnlyOnce() {
-        return getConfig().getRunOnlyOnce();
-    }
-
-    @Override
-    public void setRunOnlyOnce(boolean runOnlyOnce) {
-        getConfig().setRunOnlyOnce(runOnlyOnce);
     }
 
     public void release() {
@@ -712,7 +703,6 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         if (securityScanRequestResult != null) {
             securityScanRequestResult.release();
         }
-
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -723,14 +713,21 @@ public abstract class AbstractSecurityScan extends AbstractWsdlModelItem<Securit
         pcs.removePropertyChangeListener(listener);
     }
 
-    @Override
-    public boolean isSkipFurtherRunning() {
-        return skipFurtherRunning;
-    }
+    private class PropertyChangeNotifier {
+        private ResultStatus oldStatus;
 
-    @Override
-    public void setSkipFurtherRunning(boolean skipFurtherRunning) {
-        this.skipFurtherRunning = skipFurtherRunning;
-    }
+        public PropertyChangeNotifier() {
+            oldStatus = getSecurityStatus();
+        }
 
+        public void notifyChange() {
+            ResultStatus newStatus = getSecurityStatus();
+
+            if (oldStatus != newStatus) {
+                notifyPropertyChanged(STATUS_PROPERTY, oldStatus, newStatus);
+            }
+
+            oldStatus = newStatus;
+        }
+    }
 }

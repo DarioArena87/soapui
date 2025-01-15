@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl;
@@ -85,15 +85,15 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
     public static final String XML_ACTIONS = "xml";
 
     private final static Logger log = LogManager.getLogger(WsdlInterface.class);
-    private List<WsdlOperation> operations = new ArrayList<WsdlOperation>();
-    private WsdlProject project;
+    boolean policyFlag = false;
+    private final List<WsdlOperation> operations = new ArrayList<WsdlOperation>();
+    private final WsdlProject project;
     private SoapMessageBuilder soapMessageBuilder;
     private WsdlContext wsdlContext;
     private boolean updating = false;
-    private BeanPathPropertySupport definitionProperty;
+    private final BeanPathPropertySupport definitionProperty;
     private String interfaceAnonymous;
     private String interfaceWsaVersion;
-    boolean policyFlag = false;
 
     public WsdlInterface(WsdlProject project, WsdlInterfaceConfig interfaceConfig) {
         super(interfaceConfig, project, "/interface.png");
@@ -120,6 +120,22 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         return operations.size();
     }
 
+    public WsdlOperation getOperationByName(String name) {
+        return (WsdlOperation)getWsdlModelItemByName(operations, name);
+    }
+
+    public String getTechnicalId() {
+        return getBindingName().toString();
+    }
+
+    public List<Operation> getOperationList() {
+        return new ArrayList<Operation>(operations);
+    }
+
+    public String getInterfaceType() {
+        return WsdlInterfaceFactory.WSDL_TYPE;
+    }
+
     public WsdlOperation addNewOperation(BindingOperation operation) {
         WsdlOperation operationImpl = new WsdlOperation(this, getConfig().addNewOperation());
         operations.add(operationImpl);
@@ -133,8 +149,53 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         return project;
     }
 
+    @Override
+    public void release() {
+        super.release();
+
+        for (WsdlOperation operation : operations) {
+            operation.release();
+        }
+
+        if (wsdlContext != null) {
+            wsdlContext.release();
+        }
+    }
+
+    @Override
+    public WsdlContext getDefinitionContext() {
+        return getWsdlContext();
+    }
+
+    public String getDefinition() {
+        if (!getConfig().isSetDefinition()) {
+            return null;
+        }
+
+        String result = definitionProperty.get();
+
+        if (PathUtils.isFilePath(result) && !PathUtils.isRelativePath(result) && !result.startsWith("file:") && !result.startsWith("$")) {
+            try {
+                result = new File(result).toURI().toURL().toString();
+            }
+            catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
+    }
+
     public void setDefinition(String wsdlUrl) throws Exception {
         setDefinition(wsdlUrl, true);
+    }
+
+    public String getType() {
+        return WsdlInterfaceFactory.WSDL_TYPE;
+    }
+
+    public boolean isDefinitionShareble() {
+        return true;
     }
 
     public void setDefinition(String wsdlUrl, boolean updateCache) throws Exception {
@@ -158,39 +219,13 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         try {
             definitionCache = getConfig().addNewDefinitionCache();
             definitionCache.set(WsdlUtils.cacheWsdl(loader));
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             getConfig().unsetDefinitionCache();
             throw e;
         }
 
         return definitionCache;
-    }
-
-    public String getDefinition() {
-        if (!getConfig().isSetDefinition()) {
-            return null;
-        }
-
-        String result = definitionProperty.get();
-
-        if (PathUtils.isFilePath(result) && !PathUtils.isRelativePath(result) && !result.startsWith("file:")
-                && !result.startsWith("$")) {
-            try {
-                result = new File(result).toURI().toURL().toString();
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return result;
-    }
-
-    public String getType() {
-        return WsdlInterfaceFactory.WSDL_TYPE;
-    }
-
-    public boolean isDefinitionShareble() {
-        return true;
     }
 
     public synchronized WsdlContext getWsdlContext() {
@@ -220,7 +255,8 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         if (soapMessageBuilder == null) {
             try {
                 soapMessageBuilder = new SoapMessageBuilder(this);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -251,9 +287,11 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
     public void setSoapVersion(SoapVersion version) {
         if (version == SoapVersion.Soap11) {
             getConfig().setSoapVersion(SoapVersionTypesConfig.X_1_1);
-        } else if (version == SoapVersion.Soap12) {
+        }
+        else if (version == SoapVersion.Soap12) {
             getConfig().setSoapVersion(SoapVersionTypesConfig.X_1_2);
-        } else {
+        }
+        else {
             throw new RuntimeException("Unknown soapVersion [" + version + "], must be 1.1 or 1.2");
         }
     }
@@ -261,7 +299,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
     public boolean updateDefinition(String url, boolean createRequests) throws Exception {
         WsdlContext.uncache(url);
 
-        WsdlContext newContext = new WsdlContext(url, (WsdlInterface) null);
+        WsdlContext newContext = new WsdlContext(url, (WsdlInterface)null);
         if (!newContext.load()) {
             return false;
         }
@@ -302,14 +340,15 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         Map<?, ?> serviceMap = definition.getAllServices();
         if (serviceMap.isEmpty()) {
             log.info("Missing services in [" + url + "], check for bindings");
-        } else {
+        }
+        else {
             Iterator<?> i = serviceMap.values().iterator();
             while (i.hasNext()) {
-                Service service = (Service) i.next();
+                Service service = (Service)i.next();
                 Map<?, ?> portMap = service.getPorts();
                 Iterator<?> i2 = portMap.values().iterator();
                 while (i2.hasNext()) {
-                    Port port = (Port) i2.next();
+                    Port port = (Port)i2.next();
                     processPolicy(PolicyUtils.getAttachedPolicy(port, definition));
                 }
             }
@@ -346,8 +385,9 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         }
     }
 
-    public BindingOperation findBindingOperation(Definition definition, String bindingOperationName, String inputName,
-                                                 String outputName) {
+    public BindingOperation findBindingOperation(
+        Definition definition, String bindingOperationName, String inputName, String outputName
+    ) {
         Binding binding = definition.getBinding(getBindingName());
         return WsdlUtils.findBindingOperation(binding, bindingOperationName, inputName, outputName);
     }
@@ -355,7 +395,8 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
     public Binding getBinding() {
         try {
             return findBinding(getWsdlContext()).binding;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return null;
         }
@@ -371,12 +412,12 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         Map serviceMap = definition.getAllServices();
         Iterator<String> i = serviceMap.keySet().iterator();
         while (i.hasNext()) {
-            tuple.service = (Service) serviceMap.get(i.next());
+            tuple.service = (Service)serviceMap.get(i.next());
             Map portMap = tuple.service.getPorts();
 
             Iterator i2 = portMap.keySet().iterator();
             while (i2.hasNext()) {
-                tuple.port = (Port) portMap.get(i2.next());
+                tuple.port = (Port)portMap.get(i2.next());
                 if (tuple.port.getBinding().getQName().equals(getBindingName())) {
                     tuple.binding = tuple.port.getBinding();
                 }
@@ -397,14 +438,17 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         if (tuple.binding == null) {
             Map bindings = definition.getAllBindings();
 
-            Object retval = UISupport.prompt("Missing matching binding [" + getBindingName()
-                    + "] in definition, select new\nbinding to map to", "Map Binding", bindings.keySet().toArray());
+            Object retval = UISupport.prompt(
+                "Missing matching binding [" + getBindingName() + "] in definition, select new\nbinding to map to",
+                "Map Binding",
+                bindings.keySet().toArray()
+            );
 
             if (retval == null) {
                 return null;
             }
 
-            tuple.binding = (Binding) bindings.get(retval);
+            tuple.binding = (Binding)bindings.get(retval);
         }
 
         return tuple;
@@ -448,9 +492,11 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
                     list.add(newOperations.get(c).getName());
                 }
 
-                String retval = (String) UISupport.prompt("Binding operation [" + name
-                        + "] not found in new interface, select new\nbinding operation to map to", "Map Operation",
-                        list.toArray(), "none/cancel - delete operation");
+                String retval = (String)UISupport.prompt("Binding operation [" + name + "] not found in new interface, select new\nbinding operation to map to",
+                                                         "Map Operation",
+                                                         list.toArray(),
+                                                         "none/cancel - delete operation"
+                );
 
                 int ix = retval == null ? -1 : list.indexOf(retval) - 1;
 
@@ -468,7 +514,8 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
                 }
 
                 oldOperations.remove(name);
-            } else {
+            }
+            else {
                 deleteOperation(name);
                 oldOperations.remove(name);
             }
@@ -486,7 +533,8 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
                     WsdlRequest request = wsdlOperation.addNewRequest("Request 1");
                     try {
                         request.setRequestContent(wsdlOperation.createRequest(true));
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         SoapUI.logError(e);
                     }
                 }
@@ -506,8 +554,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
                 }
 
                 if (!list.contains(endpoint)) {
-                    if (UISupport.confirm("Update existing requests with new endpoint\n[" + endpoint + "]",
-                            "Update Definition")) {
+                    if (UISupport.confirm("Update existing requests with new endpoint\n[" + endpoint + "]", "Update Definition")) {
                         for (int c = 0; c < getOperationCount(); c++) {
                             Operation operation = getOperationAt(c);
 
@@ -538,7 +585,8 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
 
                 try {
                     fireOperationRemoved(wsdlOperation);
-                } finally {
+                }
+                finally {
                     wsdlOperation.release();
                     getConfig().removeOperation(c);
                 }
@@ -565,14 +613,11 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
 
         try {
             fireOperationRemoved(wsdlOperation);
-        } finally {
+        }
+        finally {
             wsdlOperation.release();
             getConfig().removeOperation(c);
         }
-    }
-
-    public WsdlOperation getOperationByName(String name) {
-        return (WsdlOperation) getWsdlModelItemByName(operations, name);
     }
 
     public Map<String, Operation> getOperations() {
@@ -590,11 +635,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         }
 
         DefinitionCacheConfig cacheConfig = getConfig().getDefinitionCache();
-        if (cacheConfig == null || cacheConfig.getRootPart() == null || cacheConfig.sizeOfPartArray() == 0) {
-            return false;
-        }
-
-        return true;
+        return cacheConfig != null && cacheConfig.getRootPart() != null && cacheConfig.sizeOfPartArray() != 0;
     }
 
     public String getStyle() {
@@ -610,37 +651,15 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
 
             if (WsdlUtils.isRpc(binding)) {
                 return STYLE_RPC;
-            } else {
+            }
+            else {
                 return STYLE_DOCUMENT;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return "<error>";
         }
-    }
-
-    @Override
-    public void release() {
-        super.release();
-
-        for (WsdlOperation operation : operations) {
-            operation.release();
-        }
-
-        if (wsdlContext != null) {
-            wsdlContext.release();
-        }
-    }
-
-    public List<Operation> getOperationList() {
-        return new ArrayList<Operation>(operations);
-    }
-
-    public static class BindingTuple {
-        public WsdlContext context = null;
-        public Service service = null;
-        public Port port = null;
-        public Binding binding = null;
     }
 
     public boolean isUpdating() {
@@ -673,21 +692,23 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
 
     private void getAllMessages(ModelItem modelItem, List<AbstractWsdlModelItem<?>> list) {
         if (modelItem instanceof AbstractHttpRequestInterface<?>) {
-            AbstractHttpRequest<?> wsdlRequest = (AbstractHttpRequest<?>) modelItem;
+            AbstractHttpRequest<?> wsdlRequest = (AbstractHttpRequest<?>)modelItem;
             if (wsdlRequest.getOperation().getInterface() == this) {
                 list.add(wsdlRequest);
             }
-        } else if (modelItem instanceof WsdlTestRequestStep) {
-            WsdlTestRequestStep testRequestStep = (WsdlTestRequestStep) modelItem;
+        }
+        else if (modelItem instanceof WsdlTestRequestStep) {
+            WsdlTestRequestStep testRequestStep = (WsdlTestRequestStep)modelItem;
             WsdlTestRequest testRequest = testRequestStep.getTestRequest();
-            if (testRequest != null && testRequest.getOperation() != null
-                    && testRequest.getOperation().getInterface() == this) {
+            if (testRequest != null && testRequest.getOperation() != null && testRequest.getOperation().getInterface() == this) {
                 list.add(testRequest);
             }
-        } else if (modelItem instanceof WsdlMockResponse) {
-            WsdlMockResponse mockResponse = (WsdlMockResponse) modelItem;
-            if (mockResponse.getMockOperation() != null && mockResponse.getMockOperation().getOperation() != null
-                    && mockResponse.getMockOperation().getOperation().getInterface() == this) {
+        }
+        else if (modelItem instanceof WsdlMockResponse) {
+            WsdlMockResponse mockResponse = (WsdlMockResponse)modelItem;
+            if (mockResponse.getMockOperation() != null &&
+                mockResponse.getMockOperation().getOperation() != null &&
+                mockResponse.getMockOperation().getOperation().getInterface() == this) {
                 list.add(mockResponse);
             }
         }
@@ -696,12 +717,6 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         for (ModelItem child : modelItem.getChildren()) {
             getAllMessages(child, list);
         }
-    }
-
-    @Override
-    public void addExternalDependencies(List<ExternalDependency> dependencies) {
-        super.addExternalDependencies(dependencies);
-        dependencies.add(new InterfaceExternalDependency(definitionProperty));
     }
 
     @SuppressWarnings("unchecked")
@@ -717,43 +732,49 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
                     if (context.hasThisModelItem(this, "Missing WSDL file", definition)) {
                         return;
                     }
-                    context.addPathToResolve(this, "Missing WSDL file", definition, new ResolveContext.FileResolver(
-                            "Select WSDL File", "wsdl", "WSDL Files (*.wsdl)", file.getParent()) {
+                    context.addPathToResolve(
+                        this,
+                        "Missing WSDL file",
+                        definition,
+                        new ResolveContext.FileResolver("Select WSDL File", "wsdl", "WSDL Files (*.wsdl)", file.getParent()) {
 
-                        @Override
-                        public boolean apply(File newFile) {
-                            try {
-                                setDefinition(newFile.toURI().toURL().toString());
-                                return true;
-                            } catch (Exception e) {
-                                log.error("Invalid URL for new Definition", e);
-                                return false;
+                            @Override
+                            public boolean apply(File newFile) {
+                                try {
+                                    setDefinition(newFile.toURI().toURL().toString());
+                                    return true;
+                                }
+                                catch (Exception e) {
+                                    log.error("Invalid URL for new Definition", e);
+                                    return false;
+                                }
                             }
                         }
-                    });
-                } else {
+                    );
+                }
+                else {
                     if (context.hasThisModelItem(this, "Missing WSDL file", definition)) {
                         context.getPath(this, "Missing WSDL file", definition).setSolved(true);
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public String getInterfaceType() {
-        return WsdlInterfaceFactory.WSDL_TYPE;
-    }
-
-    public String getTechnicalId() {
-        return getBindingName().toString();
+    @Override
+    public void addExternalDependencies(List<ExternalDependency> dependencies) {
+        super.addExternalDependencies(dependencies);
+        dependencies.add(new InterfaceExternalDependency(definitionProperty));
     }
 
     public String getWsaVersion() {
         if (getConfig().getWsaVersion().equals(WsaVersionTypeConfig.X_200408)) {
             return WsaVersionTypeConfig.X_200408.toString();
-        } else if (getConfig().getWsaVersion().equals(WsaVersionTypeConfig.X_200508)) {
+        }
+        else if (getConfig().getWsaVersion().equals(WsaVersionTypeConfig.X_200508)) {
             return WsaVersionTypeConfig.X_200508.toString();
         }
 
@@ -763,23 +784,13 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
     public void setWsaVersion(String wsAddressing) {
         if (wsAddressing.equals(WsaVersionTypeConfig.X_200508.toString())) {
             getConfig().setWsaVersion(WsaVersionTypeConfig.X_200508);
-        } else if (wsAddressing.equals(WsaVersionTypeConfig.X_200408.toString())) {
+        }
+        else if (wsAddressing.equals(WsaVersionTypeConfig.X_200408.toString())) {
             getConfig().setWsaVersion(WsaVersionTypeConfig.X_200408);
-        } else {
+        }
+        else {
             getConfig().setWsaVersion(WsaVersionTypeConfig.NONE);
         }
-
-    }
-
-    public void setAnonymous(String anonymous) {
-        if (anonymous.equals(AnonymousTypeConfig.REQUIRED.toString())) {
-            getConfig().setAnonymous(AnonymousTypeConfig.REQUIRED);
-        } else if (anonymous.equals(AnonymousTypeConfig.PROHIBITED.toString())) {
-            getConfig().setAnonymous(AnonymousTypeConfig.PROHIBITED);
-        } else {
-            getConfig().setAnonymous(AnonymousTypeConfig.OPTIONAL);
-        }
-
     }
 
     public String getAnonymous() {
@@ -787,7 +798,8 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         if (getConfig().isSetAnonymous()) {
             if (getConfig().getAnonymous().equals(AnonymousTypeConfig.PROHIBITED)) {
                 return AnonymousTypeConfig.PROHIBITED.toString();
-            } else if (getConfig().getAnonymous().equals(AnonymousTypeConfig.REQUIRED)) {
+            }
+            else if (getConfig().getAnonymous().equals(AnonymousTypeConfig.REQUIRED)) {
                 return AnonymousTypeConfig.REQUIRED.toString();
             }
         }
@@ -795,9 +807,16 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         return AnonymousTypeConfig.OPTIONAL.toString();
     }
 
-    @Override
-    public WsdlContext getDefinitionContext() {
-        return getWsdlContext();
+    public void setAnonymous(String anonymous) {
+        if (anonymous.equals(AnonymousTypeConfig.REQUIRED.toString())) {
+            getConfig().setAnonymous(AnonymousTypeConfig.REQUIRED);
+        }
+        else if (anonymous.equals(AnonymousTypeConfig.PROHIBITED.toString())) {
+            getConfig().setAnonymous(AnonymousTypeConfig.PROHIBITED);
+        }
+        else {
+            getConfig().setAnonymous(AnonymousTypeConfig.OPTIONAL);
+        }
     }
 
     // need to fix removing mock response and test cases.
@@ -820,18 +839,17 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
 
         try {
             fireOperationRemoved(wsdlOperation);
-        } finally {
+        }
+        finally {
             wsdlOperation.release();
             getConfig().removeOperation(c);
         }
 
-        OperationConfig newConfig = (OperationConfig) getConfig().addNewOperation().set(reloadedOperation)
-                .changeType(OperationConfig.type);
+        OperationConfig newConfig = (OperationConfig)getConfig().addNewOperation().set(reloadedOperation).changeType(OperationConfig.type);
         WsdlOperation newOperation = new WsdlOperation(this, newConfig);
         operations.add(index, newOperation);
         newOperation.afterLoad();
         fireOperationAdded(newOperation);
-
     }
 
     /**
@@ -862,8 +880,9 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
             for (Addressing addressing : addressingList) {
                 policyFlag = true;
                 String optional = addressing.getOptional().toString();
-                if (StringUtils.isNullOrEmpty(optional) || optional.equals("false")
-                        || (optional.equals("true") && SoapUI.getSettings().getBoolean(WsaSettings.ENABLE_FOR_OPTIONAL))) {
+                if (StringUtils.isNullOrEmpty(optional) ||
+                    optional.equals("false") ||
+                    (optional.equals("true") && SoapUI.getSettings().getBoolean(WsaSettings.ENABLE_FOR_OPTIONAL))) {
                     interfaceWsaVersion = WsaVersionTypeConfig.X_200508.toString();
                 }
                 Policy innerPolicy = addressing.getPolicy();
@@ -871,12 +890,12 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
                     List<AnonymousResponses> anonymousList = innerPolicy.getAnonymousResponsesList();
                     List<NonAnonymousResponses> nonAnonymousList = innerPolicy.getNonAnonymousResponsesList();
                     if (anonymousList.size() > 0 && nonAnonymousList.size() > 0) {
-                        throw new Exception(
-                                "Wrong addressing policy, anonymousResponses and nonAnonymousResponses can not be specified together");
+                        throw new Exception("Wrong addressing policy, anonymousResponses and nonAnonymousResponses can not be specified together");
                     }
                     if (anonymousList.size() > 0) {
                         interfaceAnonymous = AnonymousTypeConfig.REQUIRED.toString();
-                    } else {
+                    }
+                    else {
                         if (nonAnonymousList.size() > 0) {
                             interfaceAnonymous = AnonymousTypeConfig.PROHIBITED.toString();
                         }
@@ -885,9 +904,9 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
             }
             if (interfaceWsaVersion == WsaVersionTypeConfig.NONE.toString() && !usingAddressingList.isEmpty()) {
                 /*
-				 * UsingAddressing can also be specified insde Policy check
-				 * http://www.w3.org/TR/ws-addr-wsdl/#id2263339
-				 */
+                 * UsingAddressing can also be specified insde Policy check
+                 * http://www.w3.org/TR/ws-addr-wsdl/#id2263339
+                 */
                 interfaceWsaVersion = WsaVersionTypeConfig.X_200508.toString();
             }
         }
@@ -896,6 +915,12 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         if (getConfig().getWsaVersion().equals(WsaVersionTypeConfig.NONE)) {
             setWsaVersion(interfaceWsaVersion);
         }
+    }
 
+    public static class BindingTuple {
+        public WsdlContext context = null;
+        public Service service = null;
+        public Port port = null;
+        public Binding binding = null;
     }
 }

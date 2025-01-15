@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest;
@@ -66,95 +66,6 @@ public class OAuth2Profile implements PropertyExpansionContainer {
 
     public static final String RESOURCE_OWNER_LOGIN_PROPERTY = "resourceOwnerName";
     public static final String RESOURCE_OWNER_PASSWORD_PROPERTY = "resourceOwnerPassword";
-
-    public void waitForAccessTokenStatus(AccessTokenStatus accessTokenStatus, int timeout) {
-        int timeLeft = timeout;
-        while ((getAccessTokenStatus() != accessTokenStatus) && timeLeft > 0) {
-            long startTime = System.currentTimeMillis();
-            try {
-                synchronized (this) {
-                    wait(timeLeft);
-                }
-            } catch (InterruptedException ignore) {
-
-            }
-            timeLeft -= (System.currentTimeMillis() - startTime);
-        }
-    }
-
-    public enum AccessTokenStatus {
-        UNKNOWN("Unknown"),
-        ENTERED_MANUALLY("Entered Manually"),
-        WAITING_FOR_AUTHORIZATION("Waiting for Authorization"),
-        RECEIVED_AUTHORIZATION_CODE("Received authorization code"),
-        RETRIEVED_FROM_SERVER("Retrieved from server"),
-        RETRIEVAL_CANCELED("Retrieval canceled"),
-        EXPIRED("Expired");
-
-        private String description;
-
-        AccessTokenStatus(String description) {
-            this.description = description;
-        }
-
-        @Override
-        public String toString() {
-            return description;
-        }
-    }
-
-    public enum AccessTokenPosition {
-        QUERY("Query"),
-        HEADER("Header"),
-        BODY("Body");
-
-        private String description;
-
-        AccessTokenPosition(String description) {
-            this.description = description;
-        }
-
-        @Override
-        public String toString() {
-            return description;
-        }
-    }
-
-    public enum OAuth2Flow {
-        AUTHORIZATION_CODE_GRANT("Authorization Code Grant"),
-        IMPLICIT_GRANT("Implicit Grant"),
-        RESOURCE_OWNER_PASSWORD_CREDENTIALS("Resource Owner Password Credentials Grant"),
-        CLIENT_CREDENTIALS_GRANT("Client Credentials Grant");
-
-        private String description;
-
-        OAuth2Flow(String description) {
-            this.description = description;
-        }
-
-        @Override
-        public String toString() {
-            return description;
-        }
-
-    }
-
-    public enum RefreshAccessTokenMethods {
-        AUTOMATIC("Automatic"),
-        MANUAL("Manual");
-
-        private final String description;
-
-        RefreshAccessTokenMethods(String description) {
-            this.description = description;
-        }
-
-        @Override
-        public String toString() {
-            return description;
-        }
-    }
-
     private final OAuth2ProfileContainer oAuth2ProfileContainer;
     private final OAuth2ProfileConfig configuration;
     private final PropertyChangeSupport pcs;
@@ -167,6 +78,22 @@ public class OAuth2Profile implements PropertyExpansionContainer {
         setDefaultAccessTokenPosition();
         setDefaultRefreshMethod();
         setDefaultAccessTokenStatus();
+    }
+
+    public void waitForAccessTokenStatus(AccessTokenStatus accessTokenStatus, int timeout) {
+        int timeLeft = timeout;
+        while ((getAccessTokenStatus() != accessTokenStatus) && timeLeft > 0) {
+            long startTime = System.currentTimeMillis();
+            try {
+                synchronized (this) {
+                    wait(timeLeft);
+                }
+            }
+            catch (InterruptedException ignore) {
+
+            }
+            timeLeft -= (System.currentTimeMillis() - startTime);
+        }
     }
 
     public String getName() {
@@ -210,19 +137,19 @@ public class OAuth2Profile implements PropertyExpansionContainer {
         }
     }
 
+    public OAuth2Flow getOAuth2Flow() {
+        if (configuration.getOAuth2Flow() == null) {
+            configuration.setOAuth2Flow(OAuth2FlowConfig.AUTHORIZATION_CODE_GRANT);
+        }
+        return OAuth2Flow.valueOf(configuration.getOAuth2Flow().toString());
+    }
+
     public void setOAuth2Flow(OAuth2Flow oauth2Flow) {
         OAuth2Flow existingFlow = getOAuth2Flow();
         if (!oauth2Flow.equals(existingFlow)) {
             configuration.setOAuth2Flow(OAuth2FlowConfig.Enum.forString(oauth2Flow.name()));
             pcs.firePropertyChange(OAUTH2_FLOW_PROPERTY, existingFlow, oauth2Flow);
         }
-    }
-
-    public OAuth2Flow getOAuth2Flow() {
-        if (configuration.getOAuth2Flow() == null) {
-            configuration.setOAuth2Flow(OAuth2FlowConfig.AUTHORIZATION_CODE_GRANT);
-        }
-        return OAuth2Flow.valueOf(configuration.getOAuth2Flow().toString());
     }
 
     public String getRefreshToken() {
@@ -379,6 +306,11 @@ public class OAuth2Profile implements PropertyExpansionContainer {
         return getSavedAccessTokenStartingStatusEnum(configuration.getAccessTokenStartingStatus());
     }
 
+    private void setAccessTokenStartingStatus(@Nonnull AccessTokenStatus startingStatus) {
+        Preconditions.checkNotNull(startingStatus);
+        saveAccessTokenStartingStatusEnum(startingStatus, configuration);
+    }
+
     public void resetAccessTokenStatusToStartingStatus() {
         setAccessTokenStatus(getAccessTokenStartingStatus());
     }
@@ -479,8 +411,7 @@ public class OAuth2Profile implements PropertyExpansionContainer {
     }
 
     public boolean shouldReloadAccessTokenAutomatically() {
-        return getRefreshAccessTokenMethod().equals(AUTOMATIC) && (!StringUtils.isEmpty(getRefreshToken()) ||
-                hasAutomationJavaScripts());
+        return getRefreshAccessTokenMethod().equals(AUTOMATIC) && (!StringUtils.isEmpty(getRefreshToken()) || hasAutomationJavaScripts());
     }
 
     public OAuth2ProfileContainer getContainer() {
@@ -507,8 +438,7 @@ public class OAuth2Profile implements PropertyExpansionContainer {
 
     public List<String> getAutomationJavaScripts() {
         StringListConfig configurationEntry = configuration.getJavaScripts();
-        return configurationEntry == null ? Collections.<String>emptyList() : new ArrayList<String>(
-                configurationEntry.getEntryList());
+        return configurationEntry == null ? Collections.emptyList() : new ArrayList<String>(configurationEntry.getEntryList());
     }
 
     public void setAutomationJavaScripts(List<String> javaScripts) {
@@ -539,15 +469,8 @@ public class OAuth2Profile implements PropertyExpansionContainer {
         pcs.removePropertyChangeListener(propertyName, listener);
     }
 
-    private void setAccessTokenStartingStatus(@Nonnull AccessTokenStatus startingStatus) {
-        Preconditions.checkNotNull(startingStatus);
-        saveAccessTokenStartingStatusEnum(startingStatus, configuration);
-    }
-
     private boolean isAStartingStatus(AccessTokenStatus newStatus) {
-        return newStatus == AccessTokenStatus.ENTERED_MANUALLY
-                || newStatus == AccessTokenStatus.RETRIEVED_FROM_SERVER
-                || newStatus == AccessTokenStatus.EXPIRED;
+        return newStatus == AccessTokenStatus.ENTERED_MANUALLY || newStatus == AccessTokenStatus.RETRIEVED_FROM_SERVER || newStatus == AccessTokenStatus.EXPIRED;
     }
 
     private void setDefaultAccessTokenPosition() {
@@ -558,7 +481,7 @@ public class OAuth2Profile implements PropertyExpansionContainer {
 
     private void setDefaultRefreshMethod() {
         if (getRefreshAccessTokenMethod() == null) {
-            setRefreshAccessTokenMethod(RefreshAccessTokenMethods.AUTOMATIC);
+            setRefreshAccessTokenMethod(AUTOMATIC);
         }
     }
 
@@ -573,7 +496,8 @@ public class OAuth2Profile implements PropertyExpansionContainer {
     private AccessTokenStatus getSavedAccessTokenStatusEnum(AccessTokenStatusConfig.Enum persistedEnum) {
         if (persistedEnum == null) {
             return AccessTokenStatus.UNKNOWN;
-        } else {
+        }
+        else {
             return AccessTokenStatus.valueOf(persistedEnum.toString());
         }
     }
@@ -581,7 +505,8 @@ public class OAuth2Profile implements PropertyExpansionContainer {
     private AccessTokenPosition getSavedAccessTokenPositionEnum(AccessTokenPositionConfig.Enum persistedEnum) {
         if (persistedEnum == null) {
             return null;
-        } else {
+        }
+        else {
             return AccessTokenPosition.valueOf(persistedEnum.toString());
         }
     }
@@ -589,7 +514,8 @@ public class OAuth2Profile implements PropertyExpansionContainer {
     private RefreshAccessTokenMethods getSavedRefreshAccessTokenMethodsEnum(RefreshAccessTokenMethodConfig.Enum persistedEnum) {
         if (persistedEnum == null) {
             return null;
-        } else {
+        }
+        else {
             return RefreshAccessTokenMethods.valueOf(persistedEnum.toString());
         }
     }
@@ -610,4 +536,75 @@ public class OAuth2Profile implements PropertyExpansionContainer {
         configuration.setRefreshAccessTokenMethod(RefreshAccessTokenMethodConfig.Enum.forString(enumToBePersisted.name()));
     }
 
+    public enum AccessTokenStatus {
+        UNKNOWN("Unknown"),
+        ENTERED_MANUALLY("Entered Manually"),
+        WAITING_FOR_AUTHORIZATION("Waiting for Authorization"),
+        RECEIVED_AUTHORIZATION_CODE("Received authorization code"),
+        RETRIEVED_FROM_SERVER("Retrieved from server"),
+        RETRIEVAL_CANCELED("Retrieval canceled"),
+        EXPIRED("Expired");
+
+        private final String description;
+
+        AccessTokenStatus(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
+    }
+
+    public enum AccessTokenPosition {
+        QUERY("Query"),
+        HEADER("Header"),
+        BODY("Body");
+
+        private final String description;
+
+        AccessTokenPosition(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
+    }
+
+    public enum OAuth2Flow {
+        AUTHORIZATION_CODE_GRANT("Authorization Code Grant"),
+        IMPLICIT_GRANT("Implicit Grant"),
+        RESOURCE_OWNER_PASSWORD_CREDENTIALS("Resource Owner Password Credentials Grant"),
+        CLIENT_CREDENTIALS_GRANT("Client Credentials Grant");
+
+        private final String description;
+
+        OAuth2Flow(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
+    }
+
+    public enum RefreshAccessTokenMethods {
+        AUTOMATIC("Automatic"),
+        MANUAL("Manual");
+
+        private final String description;
+
+        RefreshAccessTokenMethods(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
+    }
 }

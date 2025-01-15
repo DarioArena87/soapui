@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.log;
@@ -30,23 +30,6 @@ import org.mortbay.log.Logger;
 public class JettyLogger implements Logger {
     org.apache.logging.log4j.Logger log = LogManager.getLogger("jetty");
 
-    public void debug(String arg0, Throwable arg1) {
-        log.debug(arg0, arg1);
-    }
-
-    public void debug(String arg0, Object arg1, Object arg2) {
-        log.debug(format(arg0, arg1, arg2));
-    }
-
-    public Logger getLogger(String arg0) {
-        System.out.println("Ignoring request for logger [" + arg0 + "]");
-        return this;
-    }
-
-    public void info(String arg0, Object arg1, Object arg2) {
-        log.info(format(arg0, arg1, arg2));
-    }
-
     public boolean isDebugEnabled() {
         return log.isDebugEnabled();
     }
@@ -55,13 +38,29 @@ public class JettyLogger implements Logger {
         Configurator.setLevel(log.getName(), Level.DEBUG);
     }
 
-    public void warn(String arg0, Throwable arg1) {
-        log.warn(arg0, arg1);
+    public void info(String arg0, Object arg1, Object arg2) {
+        log.info(format(arg0, arg1, arg2));
+    }
 
+    public void debug(String arg0, Throwable arg1) {
+        log.debug(arg0, arg1);
+    }
+
+    public void debug(String arg0, Object arg1, Object arg2) {
+        log.debug(format(arg0, arg1, arg2));
     }
 
     public void warn(String arg0, Object arg1, Object arg2) {
         log.warn(format(arg0, arg1, arg2));
+    }
+
+    public void warn(String arg0, Throwable arg1) {
+        log.warn(arg0, arg1);
+    }
+
+    public Logger getLogger(String arg0) {
+        System.out.println("Ignoring request for logger [" + arg0 + "]");
+        return this;
     }
 
     private String format(String msg, Object arg0, Object arg1) {

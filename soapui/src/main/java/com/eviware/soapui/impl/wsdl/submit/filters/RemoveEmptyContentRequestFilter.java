@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.filters;
@@ -41,40 +41,6 @@ public class RemoveEmptyContentRequestFilter extends AbstractRequestFilter {
     @SuppressWarnings("unused")
     private final static Logger log = LogManager.getLogger(RemoveEmptyContentRequestFilter.class);
 
-    public void filterAbstractHttpRequest(SubmitContext context, AbstractHttpRequest<?> wsdlRequest) {
-        if (wsdlRequest != null && !wsdlRequest.isRemoveEmptyContent()) {
-            return;
-        }
-
-        String content = (String) context.getProperty(BaseHttpRequestTransport.REQUEST_CONTENT);
-        if (!StringUtils.hasContent(content)) {
-            return;
-        }
-
-        String soapNamespace = null;
-        String newContent = null;
-
-        if (wsdlRequest instanceof WsdlRequest) {
-            soapNamespace = ((WsdlRequest) wsdlRequest).getOperation().getInterface().getSoapVersion()
-                    .getEnvelopeNamespace();
-        }
-
-        while (!content.equals(newContent)) {
-            if (newContent != null) {
-                content = newContent;
-            }
-
-            newContent = removeEmptyContent(content, soapNamespace, context.hasProperty("RemoveEmptyXsiNil"));
-            if (!context.hasProperty("RemoveEmptyRecursive")) {
-                break;
-            }
-        }
-
-        if (newContent != null) {
-            context.setProperty(BaseHttpRequestTransport.REQUEST_CONTENT, newContent);
-        }
-    }
-
     public static String removeEmptyContent(String content, String soapNamespace, boolean removeXsiNil) {
         XmlCursor cursor = null;
 
@@ -91,9 +57,8 @@ public class RemoveEmptyContentRequestFilter extends AbstractRequestFilter {
 
             while (!cursor.isEnddoc()) {
                 boolean flag = false;
-                if (cursor.isContainer()
-                        && (soapNamespace == null || !soapNamespace.equals(cursor.getName().getNamespaceURI()))) {
-                    Element elm = (Element) cursor.getDomNode();
+                if (cursor.isContainer() && (soapNamespace == null || !soapNamespace.equals(cursor.getName().getNamespaceURI()))) {
+                    Element elm = (Element)cursor.getDomNode();
                     NamedNodeMap attributes = elm.getAttributes();
                     if (attributes != null && attributes.getLength() > 0) {
                         for (int c = 0; c < attributes.getLength(); c++) {
@@ -106,17 +71,16 @@ public class RemoveEmptyContentRequestFilter extends AbstractRequestFilter {
                     }
 
                     if (removeXsiNil && attributes.getNamedItem("xsi:nil") != null) {
-                        if (attributes.getLength() == 1
-                                || (attributes.getLength() == 2 && attributes.getNamedItem("xmlns:xsi") != null)) {
+                        if (attributes.getLength() == 1 || (attributes.getLength() == 2 && attributes.getNamedItem("xmlns:xsi") != null)) {
                             attributes.removeNamedItem("xsi:nil");
                             attributes.removeNamedItem("xmlns:xsi");
                             removed = true;
                         }
                     }
 
-                    if (attributes.getLength() == 0
-                            && (cursor.getTextValue() == null || cursor.getTextValue().trim().length() == 0)
-                            && XmlUtils.getFirstChildElement(elm) == null) {
+                    if (attributes.getLength() == 0 &&
+                        (cursor.getTextValue() == null || cursor.getTextValue().trim().length() == 0) &&
+                        XmlUtils.getFirstChildElement(elm) == null) {
                         if (cursor.removeXml()) {
                             removed = true;
                             flag = true;
@@ -132,14 +96,49 @@ public class RemoveEmptyContentRequestFilter extends AbstractRequestFilter {
             if (removed) {
                 return xmlObject.xmlText();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
-        } finally {
+        }
+        finally {
             if (cursor != null) {
                 cursor.dispose();
             }
         }
 
         return content;
+    }
+
+    public void filterAbstractHttpRequest(SubmitContext context, AbstractHttpRequest<?> wsdlRequest) {
+        if (wsdlRequest != null && !wsdlRequest.isRemoveEmptyContent()) {
+            return;
+        }
+
+        String content = (String)context.getProperty(BaseHttpRequestTransport.REQUEST_CONTENT);
+        if (!StringUtils.hasContent(content)) {
+            return;
+        }
+
+        String soapNamespace = null;
+        String newContent = null;
+
+        if (wsdlRequest instanceof WsdlRequest) {
+            soapNamespace = ((WsdlRequest)wsdlRequest).getOperation().getInterface().getSoapVersion().getEnvelopeNamespace();
+        }
+
+        while (!content.equals(newContent)) {
+            if (newContent != null) {
+                content = newContent;
+            }
+
+            newContent = removeEmptyContent(content, soapNamespace, context.hasProperty("RemoveEmptyXsiNil"));
+            if (!context.hasProperty("RemoveEmptyRecursive")) {
+                break;
+            }
+        }
+
+        if (newContent != null) {
+            context.setProperty(BaseHttpRequestTransport.REQUEST_CONTENT, newContent);
+        }
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference;
@@ -39,15 +39,18 @@ public interface ConflictHandler {
      *                attribute/has the type that is beng changed).
      * @param message A short message describing the change.
      * @return True to accept the schema modification and continue validation,
-     *         false to trigger validation failure.
+     * false to trigger validation failure.
      */
-    public boolean callback(Event event, Type type, QName name, String path, String message);
+    boolean callback(Event event, Type type, QName name, String path, String message);
 
-    public enum Type {
-        ELEMENT, ATTRIBUTE, TYPE
+    enum Type {
+        ELEMENT,
+        ATTRIBUTE,
+        TYPE
     }
 
-    public enum Event {
-        CREATION, MODIFICATION
+    enum Event {
+        CREATION,
+        MODIFICATION
     }
 }

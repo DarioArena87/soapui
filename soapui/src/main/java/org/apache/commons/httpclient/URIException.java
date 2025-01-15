@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * $Header: /home/jerenkrantz/tmp/commons/commons-convert/cvs/home/cvs/jakarta-commons//httpclient/src/java/org/apache/commons/httpclient/URIException.java,v 1.12 2004/09/30 18:53:20 olegk Exp $
  * $Revision: 480424 $
  * $Date: 2006-11-29 06:56:49 +0100 (Wed, 29 Nov 2006) $
@@ -56,11 +56,41 @@ public class URIException extends HttpException {
     // ----------------------------------------------------------- constructors
 
     /**
+     * No specified reason code.
+     */
+    public static final int UNKNOWN = 0;
+    /**
+     * The URI parsing error.
+     */
+    public static final int PARSING = 1;
+    /**
+     * The unsupported character encoding.
+     */
+    public static final int UNSUPPORTED_ENCODING = 2;
+    /**
+     * The URI escape encoding and decoding error.
+     */
+    public static final int ESCAPING = 3;
+
+    // -------------------------------------------------------------- constants
+    /**
+     * The DNS punycode encoding or decoding error.
+     */
+    public static final int PUNYCODE = 4;
+    /**
+     * The reason code.
+     */
+    protected int reasonCode;
+    /**
+     * The reason message.
+     */
+    protected String reason;
+
+    /**
      * Default constructor.
      */
     public URIException() {
     }
-
 
     /**
      * The constructor with a reason code argument.
@@ -71,6 +101,7 @@ public class URIException extends HttpException {
         this.reasonCode = reasonCode;
     }
 
+    // ------------------------------------------------------------- properties
 
     /**
      * The constructor with a reason string and its code arguments.
@@ -84,7 +115,6 @@ public class URIException extends HttpException {
         this.reasonCode = reasonCode;
     }
 
-
     /**
      * The constructor with a reason string argument.
      *
@@ -93,52 +123,8 @@ public class URIException extends HttpException {
     public URIException(String reason) {
         super(reason); // for backward compatibility of Throwable
         this.reason = reason;
-        this.reasonCode = UNKNOWN;
+        reasonCode = UNKNOWN;
     }
-
-    // -------------------------------------------------------------- constants
-
-    /**
-     * No specified reason code.
-     */
-    public static final int UNKNOWN = 0;
-
-
-    /**
-     * The URI parsing error.
-     */
-    public static final int PARSING = 1;
-
-
-    /**
-     * The unsupported character encoding.
-     */
-    public static final int UNSUPPORTED_ENCODING = 2;
-
-
-    /**
-     * The URI escape encoding and decoding error.
-     */
-    public static final int ESCAPING = 3;
-
-
-    /**
-     * The DNS punycode encoding or decoding error.
-     */
-    public static final int PUNYCODE = 4;
-
-    // ------------------------------------------------------------- properties
-
-    /**
-     * The reason code.
-     */
-    protected int reasonCode;
-
-
-    /**
-     * The reason message.
-     */
-    protected String reason;
 
     // ---------------------------------------------------------------- methods
 
@@ -156,12 +142,11 @@ public class URIException extends HttpException {
      *
      * @param reasonCode the reason code
      * @deprecated Callers should set the reason code as a parameter to the
-     *             constructor.
+     * constructor.
      */
     public void setReasonCode(int reasonCode) {
         this.reasonCode = reasonCode;
     }
-
 
     /**
      * Get the reason message.
@@ -173,7 +158,6 @@ public class URIException extends HttpException {
         return reason;
     }
 
-
     /**
      * Set the reason message.
      *
@@ -183,7 +167,5 @@ public class URIException extends HttpException {
     public void setReason(String reason) {
         this.reason = reason;
     }
-
-
 }
 

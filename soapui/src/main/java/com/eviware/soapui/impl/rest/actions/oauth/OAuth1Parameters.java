@@ -15,12 +15,12 @@ public class OAuth1Parameters {
 
     public OAuth1Parameters(OAuth1Profile profile) {
         this.profile = profile;
-        this.temporaryTokenUri = expandProperty(profile, profile.getTemporaryTokenURI());
-        this.authorizationUri = expandProperty(profile, profile.getAuthorizationURI());
-        this.redirectUri = expandProperty(profile, profile.getRedirectURI());
-        this.accessTokenUri = expandProperty(profile, profile.getAccessTokenURI());
-        this.consumerKey = expandProperty(profile, profile.getConsumerKey());
-        this.consumerSecret = expandProperty(profile, profile.getConsumerSecret());
+        temporaryTokenUri = expandProperty(profile, profile.getTemporaryTokenURI());
+        authorizationUri = expandProperty(profile, profile.getAuthorizationURI());
+        redirectUri = expandProperty(profile, profile.getRedirectURI());
+        accessTokenUri = expandProperty(profile, profile.getAccessTokenURI());
+        consumerKey = expandProperty(profile, profile.getConsumerKey());
+        consumerSecret = expandProperty(profile, profile.getConsumerSecret());
     }
 
     void setAccessTokenInProfile(String accessToken) {

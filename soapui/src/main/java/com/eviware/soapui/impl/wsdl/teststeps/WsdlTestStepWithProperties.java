@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -41,12 +41,13 @@ abstract public class WsdlTestStepWithProperties extends WsdlTestStep {
     public static String RAW_RESPONSE = "RawResponse";
 
     private Map<String, TestProperty> properties;
-    private List<TestProperty> propertyList = new ArrayList<TestProperty>();
-    private Map<String, Set<String>> normalizedPropertyNames = new HashMap<String, Set<String>>();
-    private Set<TestPropertyListener> listeners = new HashSet<TestPropertyListener>();
+    private final List<TestProperty> propertyList = new ArrayList<TestProperty>();
+    private final Map<String, Set<String>> normalizedPropertyNames = new HashMap<String, Set<String>>();
+    private final Set<TestPropertyListener> listeners = new HashSet<TestPropertyListener>();
 
-    protected WsdlTestStepWithProperties(WsdlTestCase testCase, TestStepConfig config, boolean hasEditor,
-                                         boolean forLoadTest) {
+    protected WsdlTestStepWithProperties(
+        WsdlTestCase testCase, TestStepConfig config, boolean hasEditor, boolean forLoadTest
+    ) {
         super(testCase, config, hasEditor, forLoadTest);
     }
 
@@ -66,8 +67,15 @@ abstract public class WsdlTestStepWithProperties extends WsdlTestStep {
     }
 
     @Override
-    public TestProperty getProperty(String name) {
-        return properties == null || name == null ? null : properties.get(getPropertyKeyName(name));
+    public void setPropertyValue(String name, String value) {
+        if (properties == null) {
+            return;
+        }
+
+        TestProperty testStepProperty = properties.get(getPropertyKeyName(name));
+        if (testStepProperty != null) {
+            testStepProperty.setValue(value);
+        }
     }
 
     @Override
@@ -81,15 +89,51 @@ abstract public class WsdlTestStepWithProperties extends WsdlTestStep {
     }
 
     @Override
-    public void setPropertyValue(String name, String value) {
-        if (properties == null) {
-            return;
+    public TestProperty getProperty(String name) {
+        return properties == null || name == null ? null : properties.get(getPropertyKeyName(name));
+    }
+
+    @Override
+    public Map<String, TestProperty> getProperties() {
+        Map<String, TestProperty> result = new HashMap<String, TestProperty>();
+
+        if (properties != null) {
+            for (String name : properties.keySet()) {
+                result.put(properties.get(name).getName(), properties.get(name));
+            }
         }
 
-        TestProperty testStepProperty = properties.get(getPropertyKeyName(name));
-        if (testStepProperty != null) {
-            testStepProperty.setValue(value);
-        }
+        return result;
+    }
+
+    @Override
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeTestPropertyListener(TestPropertyListener listener) {
+        listeners.remove(listener);
+    }
+
+    @Override
+    public boolean hasProperty(String name) {
+        return properties != null && properties.containsKey(getPropertyKeyName(name));
+    }
+
+    @Override
+    public int getPropertyCount() {
+        return propertyList.size();
+    }
+
+    @Override
+    public List<TestProperty> getPropertyList() {
+        return Collections.unmodifiableList(propertyList);
+    }
+
+    @Override
+    public TestProperty getPropertyAt(int index) {
+        return propertyList.get(index);
     }
 
     protected void addProperty(TestProperty property) {
@@ -178,16 +222,6 @@ abstract public class WsdlTestStepWithProperties extends WsdlTestStep {
         firePropertyRenamed(oldName, newName);
     }
 
-    @Override
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removeTestPropertyListener(TestPropertyListener listener) {
-        listeners.remove(listener);
-    }
-
     protected void firePropertyAdded(String name) {
         TestPropertyListener[] array = listeners.toArray(new TestPropertyListener[listeners.size()]);
         for (TestPropertyListener listener : array) {
@@ -228,41 +262,8 @@ abstract public class WsdlTestStepWithProperties extends WsdlTestStep {
         }
     }
 
-    @Override
-    public Map<String, TestProperty> getProperties() {
-        Map<String, TestProperty> result = new HashMap<String, TestProperty>();
-
-        if (properties != null) {
-            for (String name : properties.keySet()) {
-                result.put(properties.get(name).getName(), properties.get(name));
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public boolean hasProperty(String name) {
-        return properties != null && properties.containsKey(getPropertyKeyName(name));
-    }
-
     public boolean hasProperties() {
         return true;
-    }
-
-    @Override
-    public TestProperty getPropertyAt(int index) {
-        return propertyList.get(index);
-    }
-
-    @Override
-    public int getPropertyCount() {
-        return propertyList.size();
-    }
-
-    @Override
-    public List<TestProperty> getPropertyList() {
-        return Collections.unmodifiableList(propertyList);
     }
 
     protected void firePropertyMoved(String name, int oldIndex, int newIndex) {
@@ -286,7 +287,8 @@ abstract public class WsdlTestStepWithProperties extends WsdlTestStep {
 
         if (targetIndex < properties.size()) {
             propertyList.add(targetIndex, propertyList.remove(ix));
-        } else {
+        }
+        else {
             propertyList.add(propertyList.remove(ix));
         }
 
@@ -295,7 +297,5 @@ abstract public class WsdlTestStepWithProperties extends WsdlTestStep {
         }
 
         firePropertyMoved(propertyName, ix, targetIndex);
-
     }
-
 }

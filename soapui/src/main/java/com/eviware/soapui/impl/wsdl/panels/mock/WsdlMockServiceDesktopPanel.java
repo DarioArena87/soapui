@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.mock;
@@ -62,26 +62,9 @@ import com.eviware.soapui.ui.support.JProgressBarWrapper;
 import com.eviware.soapui.ui.support.KeySensitiveModelItemDesktopPanel;
 import org.apache.commons.collections.list.TreeList;
 
-import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -96,20 +79,18 @@ import java.util.List;
  * @author ole.matzura
  */
 
-
 @SuppressWarnings("serial")
-public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
-        extends KeySensitiveModelItemDesktopPanel<MockServiceType> {
+public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService> extends KeySensitiveModelItemDesktopPanel<MockServiceType> {
     private JButton runButton;
     private WsdlMockRunner mockRunner;
     private JButton stopButton;
-    private JProgressBarWrapper progressBarWrapper = new JProgressBarWrapper();
+    private final JProgressBarWrapper progressBarWrapper = new JProgressBarWrapper();
     private LogListModel logListModel;
     private JList testLogList;
     private JCheckBox enableLogCheckBox;
     private JScrollPane logScrollPane;
     private JList operationList;
-    private InternalMockRunListener mockRunListener;
+    private final InternalMockRunListener mockRunListener;
     private PropertyHolderTable propertiesTable;
     private JUndoableTextArea descriptionArea;
     private JButton showWsdlButton;
@@ -148,7 +129,7 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         }
 
         getModelItem().removeMockRunListener(mockRunListener);
-        ((OperationListModel) operationList.getModel()).release();
+        ((OperationListModel)operationList.getModel()).release();
 
         logListModel.clear();
         propertiesTable.release();
@@ -172,8 +153,7 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
 
         contentInspector = JInspectorPanelFactory.build(buildContent());
         contentInspector.setDefaultDividerLocation(0.5F);
-        contentInspector.addInspector(new JComponentInspector<JComponent>(buildLog(), "Message Log",
-                "A log of processed requests and their responses", true));
+        contentInspector.addInspector(new JComponentInspector<JComponent>(buildLog(), "Message Log", "A log of processed requests and their responses", true));
 
         contentInspector.setCurrentInspector("Message Log");
 
@@ -193,8 +173,7 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         tabs.addTab(title, inspectorPanel.getComponent());
         addTabs(tabs, inspectorPanel);
 
-        if (StringUtils.hasContent(getModelItem().getDescription())
-                && getModelItem().getSettings().getBoolean(UISettings.SHOW_DESCRIPTIONS)) {
+        if (StringUtils.hasContent(getModelItem().getDescription()) && getModelItem().getSettings().getBoolean(UISettings.SHOW_DESCRIPTIONS)) {
             inspectorPanel.setCurrentInspector("Description");
         }
 
@@ -202,18 +181,15 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
     }
 
     protected void addTabs(JTabbedPane tabs, JInspectorPanel inspectorPanel) {
-        inspectorPanel.addInspector(new JFocusableComponentInspector<JPanel>(buildDescriptionPanel(), descriptionArea,
-                "Description", "A description for this MockService", true));
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildPropertiesPanel(), "Properties",
-                "Properties for this MockService", true));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildStartScriptPanel(), "Start Script",
-                "A Groovy script to run when starting the MockService"));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildStopScriptPanel(), "Stop Script",
-                "A Groovy script to run when stopping the MockService"));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildOnRequestScriptPanel(), "OnRequest Script",
-                "A Groovy script to run when receiving a request before it is dispatched"));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildAfterRequestScriptPanel(), "AfterRequest Script",
-                "A Groovy script to run after a request has been dispatched"));
+        inspectorPanel.addInspector(new JFocusableComponentInspector<JPanel>(buildDescriptionPanel(), descriptionArea, "Description", "A description for this MockService", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildPropertiesPanel(), "Properties", "Properties for this MockService", true));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildStartScriptPanel(), "Start Script", "A Groovy script to run when starting the MockService"));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildStopScriptPanel(), "Stop Script", "A Groovy script to run when stopping the MockService"));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildOnRequestScriptPanel(),
+                                                              "OnRequest Script",
+                                                              "A Groovy script to run when receiving a request before it is dispatched"
+        ));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildAfterRequestScriptPanel(), "AfterRequest Script", "A Groovy script to run after a request has been dispatched"));
     }
 
     protected JComponent buildOperationList() {
@@ -295,7 +271,7 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         descriptionArea = new JUndoableTextArea(getModelItem().getDescription());
         descriptionArea.getDocument().addDocumentListener(new DocumentListenerAdapter() {
             public void update(Document document) {
-                ((AbstractMockService) getModelItem()).setDescription(descriptionArea.getText());
+                ((AbstractMockService)getModelItem()).setDescription(descriptionArea.getText());
             }
         });
 
@@ -364,15 +340,13 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         stopButton = createActionButton(new StopMockServiceAction(), false);
         MockServiceType modelItem = getModelItem();
 
-        AbstractSoapUIAction<MockServiceType> action = (AbstractSoapUIAction<MockServiceType>) new MockServiceOptionsAction();
+        AbstractSoapUIAction<MockServiceType> action = (AbstractSoapUIAction<MockServiceType>)new MockServiceOptionsAction();
 
         if (modelItem instanceof RestMockService) {
-            action = (AbstractSoapUIAction<MockServiceType>) new RestMockServiceOptionsAction();
+            action = (AbstractSoapUIAction<MockServiceType>)new RestMockServiceOptionsAction();
         }
 
-        optionsButton = createActionButton(
-                SwingActionDelegate.createDelegate(action, modelItem, null, "/preferences.png"),
-                true);
+        optionsButton = createActionButton(SwingActionDelegate.createDelegate(action, modelItem, null, "/preferences.png"), true);
         showWsdlButton = createActionButton(new ShowWsdlAction(), false);
 
         toolbar.addFixed(runButton);
@@ -401,24 +375,107 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
     public void startMockService() {
         if ((mockRunner != null && mockRunner.isRunning()) || SoapUI.getMockEngine().hasRunningMock(getModelItem())) {
             UISupport.showErrorMessage("MockService is already running");
-        } else {
+        }
+        else {
             if (mockRunner != null) {
                 mockRunner.release();
             }
 
             try {
                 getModelItem().start();
-            } catch (Exception e) {
-                UISupport.showErrorMessage(e);
-                return;
             }
+            catch (Exception e) {
+                UISupport.showErrorMessage(e);
+            }
+        }
+    }
+
+    private long getDefaultMaxSize() {
+        return getModelItem().getSettings().getLong(LogListModel.class.getName() + "@maxSize", 100);
+    }
+
+    protected long getMaxLogSize() {
+        if (logListModel != null) {
+            return logListModel.getMaxSize();
+        }
+        else {
+            return getDefaultMaxSize();
+        }
+    }
+
+    protected void setMaxLogSize(long size) {
+        logListModel.setMaxSize(size);
+        if (mockRunner != null) {
+            mockRunner.setMaxResults(logListModel.getMaxSize());
+        }
+    }
+
+    @Override
+    protected void renameModelItem() {
+        SoapUI.getActionRegistry().performAction("RenameMockServiceAction", getModelItem(), null);
+    }
+
+    @Override
+    protected void cloneModelItem() {
+        SoapUI.getActionRegistry().performAction("CloneMockServiceAction", getModelItem(), null);
+    }
+
+    private final static class OperationListCellRenderer extends JLabel implements ListCellRenderer {
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
+            MockOperation testStep = (MockOperation)value;
+            setText(testStep.getName());
+            setIcon(testStep.getIcon());
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            setEnabled(list.isEnabled());
+            setFont(list.getFont());
+            setOpaque(true);
+            setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+
+            return this;
+        }
+    }
+
+    private static final class LogCellRenderer extends JLabel implements ListCellRenderer {
+        public LogCellRenderer() {
+            setOpaque(true);
+            setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
+        }
+
+        public Component getListCellRendererComponent(
+            JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
+        ) {
+            setText(String.valueOf(value));
+
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            setEnabled(list.isEnabled());
+
+            return this;
         }
     }
 
     private final class InternalMockRunListener extends MockRunListenerAdapter {
         @Override
         public void onMockRunnerStart(MockRunner runner) {
-            mockRunner = (WsdlMockRunner) runner;
+            mockRunner = (WsdlMockRunner)runner;
             mockRunner.setMaxResults(logListModel.getMaxSize());
             mockRunner.setLogEnabled(enableLogCheckBox.isSelected());
 
@@ -451,9 +508,8 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         }
     }
 
-    public class OperationListModel extends AbstractListModel implements ListModel, MockServiceListener,
-            PropertyChangeListener {
-        private List<MockOperation> operations = new ArrayList<MockOperation>();
+    public class OperationListModel extends AbstractListModel implements ListModel, MockServiceListener, PropertyChangeListener {
+        private final List<MockOperation> operations = new ArrayList<MockOperation>();
 
         public OperationListModel() {
             for (int c = 0; c < getModelItem().getMockOperationCount(); c++) {
@@ -466,12 +522,12 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
             getModelItem().addMockServiceListener(this);
         }
 
-        public Object getElementAt(int arg0) {
-            return operations.get(arg0);
-        }
-
         public int getSize() {
             return operations.size();
+        }
+
+        public Object getElementAt(int arg0) {
+            return operations.get(arg0);
         }
 
         public void mockOperationAdded(MockOperation operation) {
@@ -509,35 +565,11 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         }
     }
 
-    private final static class OperationListCellRenderer extends JLabel implements ListCellRenderer {
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
-            MockOperation testStep = (MockOperation) value;
-            setText(testStep.getName());
-            setIcon(testStep.getIcon());
-
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            setEnabled(list.isEnabled());
-            setFont(list.getFont());
-            setOpaque(true);
-            setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-
-            return this;
-        }
-    }
-
     public class RunMockServiceAction extends AbstractAction {
         public RunMockServiceAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/submit_request.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Starts this MockService on the specified port and endpoint");
-            putValue(Action.ACCELERATOR_KEY, UISupport.getKeyStroke("alt ENTER"));
+            putValue(SMALL_ICON, UISupport.createImageIcon("/submit_request.gif"));
+            putValue(SHORT_DESCRIPTION, "Starts this MockService on the specified port and endpoint");
+            putValue(ACCELERATOR_KEY, UISupport.getKeyStroke("alt ENTER"));
         }
 
         public void actionPerformed(ActionEvent arg0) {
@@ -547,26 +579,27 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
 
     public class ShowWsdlAction extends AbstractAction {
         public ShowWsdlAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/interface.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Opens the root WSDL page in a browser");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/interface.png"));
+            putValue(SHORT_DESCRIPTION, "Opens the root WSDL page in a browser");
         }
 
         public void actionPerformed(ActionEvent arg0) {
-            WsdlMockService mockService = (WsdlMockService) getModelItem();
+            WsdlMockService mockService = (WsdlMockService)getModelItem();
             Tools.openURL(mockService.getLocalEndpoint() + "?WSDL");
         }
     }
 
     public class StopMockServiceAction extends AbstractAction {
         public StopMockServiceAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/cancel_request.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Stops this MockService on the specified port and endpoint");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/cancel_request.png"));
+            putValue(SHORT_DESCRIPTION, "Stops this MockService on the specified port and endpoint");
         }
 
         public void actionPerformed(ActionEvent arg0) {
             if (mockRunner == null) {
                 UISupport.showErrorMessage("MockService is not running");
-            } else {
+            }
+            else {
                 mockRunner.stop();
                 mockRunner.release();
                 mockRunner = null;
@@ -574,52 +607,9 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         }
     }
 
-    private static final class LogCellRenderer extends JLabel implements ListCellRenderer {
-        public LogCellRenderer() {
-            setOpaque(true);
-            setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                                                      boolean cellHasFocus) {
-            setText(String.valueOf(value));
-
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            setEnabled(list.isEnabled());
-
-            return this;
-        }
-    }
-
-    private long getDefaultMaxSize() {
-        return getModelItem().getSettings().getLong(LogListModel.class.getName() + "@maxSize", 100);
-    }
-
-    protected long getMaxLogSize() {
-        if (logListModel != null) {
-            return logListModel.getMaxSize();
-        } else {
-            return getDefaultMaxSize();
-        }
-    }
-
-    protected void setMaxLogSize(long size) {
-        logListModel.setMaxSize(size);
-        if (mockRunner != null) {
-            mockRunner.setMaxResults(logListModel.getMaxSize());
-        }
-    }
-
     @SuppressWarnings("unchecked")
     private class LogListModel extends AbstractListModel {
-        private List<MockResult> elements = Collections.synchronizedList(new TreeList());
+        private final List<MockResult> elements = Collections.synchronizedList(new TreeList());
         private long maxSize;
 
         public LogListModel() {
@@ -634,18 +624,6 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
                 while (elements.size() > maxSize) {
                     removeElementAt(0);
                 }
-            }
-        }
-
-        public Object getElementAt(int index) {
-            try {
-                if (elements.size() <= index) {
-                    return null;
-                }
-
-                return elements.get(index);
-            } catch (Throwable t) {
-                return null;
             }
         }
 
@@ -668,12 +646,25 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
             return elements.size();
         }
 
+        public Object getElementAt(int index) {
+            try {
+                if (elements.size() <= index) {
+                    return null;
+                }
+
+                return elements.get(index);
+            }
+            catch (Throwable t) {
+                return null;
+            }
+        }
+
         public long getMaxSize() {
             return maxSize;
         }
 
         public synchronized void setMaxSize(long l) {
-            this.maxSize = l;
+            maxSize = l;
 
             while (elements.size() > 0 && elements.size() > maxSize) {
                 removeElementAt(0);
@@ -685,20 +676,20 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
 
     private class SetLogOptionsAction extends AbstractAction {
         public SetLogOptionsAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Sets MockService Log Options");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
+            putValue(SHORT_DESCRIPTION, "Sets MockService Log Options");
         }
 
         public void actionPerformed(ActionEvent e) {
-            String s = UISupport.prompt("Enter maximum number of rows for MockService Log", "Log Options",
-                    String.valueOf(logListModel.getMaxSize()));
+            String s = UISupport.prompt("Enter maximum number of rows for MockService Log", "Log Options", String.valueOf(logListModel.getMaxSize()));
             if (s != null) {
                 try {
                     long newMaxSize = Long.parseLong(s);
                     if (newMaxSize > 0) {
                         setMaxLogSize(newMaxSize);
                     }
-                } catch (NumberFormatException e1) {
+                }
+                catch (NumberFormatException e1) {
                 }
             }
         }
@@ -706,8 +697,8 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
 
     private class ClearLogAction extends AbstractAction {
         public ClearLogAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/clear.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Clears the MockService Log");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/clear.png"));
+            putValue(SHORT_DESCRIPTION, "Clears the MockService Log");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -728,15 +719,32 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
     private final class LogListMouseListener extends AbstractListMouseListener {
         @Override
         protected ActionList getActionsForRow(JList list, int row) {
-            MockResult result = (MockResult) logListModel.getElementAt(row);
+            MockResult result = (MockResult)logListModel.getElementAt(row);
             return result == null ? null : result.getActions();
         }
     }
 
     private class StartScriptGroovyEditorModel extends AbstractGroovyEditorModel {
         public StartScriptGroovyEditorModel() {
-            super(new String[]{"log", "context", "mockRunner"}, WsdlMockServiceDesktopPanel.this.getModelItem(),
-                    "Start");
+            super(new String[]{"log", "context", "mockRunner"}, WsdlMockServiceDesktopPanel.this.getModelItem(), "Start");
+        }
+
+        @Override
+        public Action createRunAction() {
+            return new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        WsdlMockRunContext context = mockRunner == null
+                                                     ? new WsdlMockRunContext(WsdlMockServiceDesktopPanel.this.getModelItem(), null)
+                                                     : mockRunner.getMockContext();
+                        WsdlMockServiceDesktopPanel.this.getModelItem().runStartScript(context, mockRunner);
+                    }
+                    catch (Exception e1) {
+                        UISupport.showErrorMessage(e1);
+                    }
+                }
+            };
         }
 
         public String getScript() {
@@ -746,6 +754,12 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         public void setScript(String text) {
             WsdlMockServiceDesktopPanel.this.getModelItem().setStartScript(text);
         }
+    }
+
+    private class StopScriptGroovyEditorModel extends AbstractGroovyEditorModel {
+        public StopScriptGroovyEditorModel() {
+            super(new String[]{"log", "context", "mockRunner"}, WsdlMockServiceDesktopPanel.this.getModelItem(), "Stop");
+        }
 
         @Override
         public Action createRunAction() {
@@ -753,21 +767,16 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        WsdlMockRunContext context = mockRunner == null ? new WsdlMockRunContext(
-                                WsdlMockServiceDesktopPanel.this.getModelItem(), null) : mockRunner.getMockContext();
-                        WsdlMockServiceDesktopPanel.this.getModelItem().runStartScript(context, mockRunner);
-                    } catch (Exception e1) {
+                        WsdlMockRunContext context = mockRunner == null
+                                                     ? new WsdlMockRunContext(WsdlMockServiceDesktopPanel.this.getModelItem(), null)
+                                                     : mockRunner.getMockContext();
+                        WsdlMockServiceDesktopPanel.this.getModelItem().runStopScript(context, mockRunner);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
             };
-        }
-    }
-
-    private class StopScriptGroovyEditorModel extends AbstractGroovyEditorModel {
-        public StopScriptGroovyEditorModel() {
-            super(new String[]{"log", "context", "mockRunner"}, WsdlMockServiceDesktopPanel.this.getModelItem(),
-                    "Stop");
         }
 
         public String getScript() {
@@ -777,6 +786,12 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         public void setScript(String text) {
             WsdlMockServiceDesktopPanel.this.getModelItem().setStopScript(text);
         }
+    }
+
+    private class OnRequestScriptGroovyEditorModel extends AbstractGroovyEditorModel {
+        public OnRequestScriptGroovyEditorModel() {
+            super(new String[]{"log", "context", "mockRequest", "mockRunner"}, WsdlMockServiceDesktopPanel.this.getModelItem(), "OnRequest");
+        }
 
         @Override
         public Action createRunAction() {
@@ -784,21 +799,16 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        WsdlMockRunContext context = mockRunner == null ? new WsdlMockRunContext(
-                                WsdlMockServiceDesktopPanel.this.getModelItem(), null) : mockRunner.getMockContext();
-                        WsdlMockServiceDesktopPanel.this.getModelItem().runStopScript(context, mockRunner);
-                    } catch (Exception e1) {
+                        WsdlMockRunContext context = mockRunner == null
+                                                     ? new WsdlMockRunContext(WsdlMockServiceDesktopPanel.this.getModelItem(), null)
+                                                     : mockRunner.getMockContext();
+                        WsdlMockServiceDesktopPanel.this.getModelItem().runOnRequestScript(context, null);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
             };
-        }
-    }
-
-    private class OnRequestScriptGroovyEditorModel extends AbstractGroovyEditorModel {
-        public OnRequestScriptGroovyEditorModel() {
-            super(new String[]{"log", "context", "mockRequest", "mockRunner"}, WsdlMockServiceDesktopPanel.this
-                    .getModelItem(), "OnRequest");
         }
 
         public String getScript() {
@@ -808,6 +818,12 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         public void setScript(String text) {
             WsdlMockServiceDesktopPanel.this.getModelItem().setOnRequestScript(text);
         }
+    }
+
+    private class AfterRequestScriptGroovyEditorModel extends AbstractGroovyEditorModel {
+        public AfterRequestScriptGroovyEditorModel() {
+            super(new String[]{"log", "context", "mockResult", "mockRunner"}, WsdlMockServiceDesktopPanel.this.getModelItem(), "AfterRequest");
+        }
 
         @Override
         public Action createRunAction() {
@@ -815,21 +831,16 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        WsdlMockRunContext context = mockRunner == null ? new WsdlMockRunContext(
-                                WsdlMockServiceDesktopPanel.this.getModelItem(), null) : mockRunner.getMockContext();
-                        WsdlMockServiceDesktopPanel.this.getModelItem().runOnRequestScript(context, null);
-                    } catch (Exception e1) {
+                        WsdlMockRunContext context = mockRunner == null
+                                                     ? new WsdlMockRunContext(WsdlMockServiceDesktopPanel.this.getModelItem(), null)
+                                                     : mockRunner.getMockContext();
+                        WsdlMockServiceDesktopPanel.this.getModelItem().runAfterRequestScript(context, null);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
             };
-        }
-    }
-
-    private class AfterRequestScriptGroovyEditorModel extends AbstractGroovyEditorModel {
-        public AfterRequestScriptGroovyEditorModel() {
-            super(new String[]{"log", "context", "mockResult", "mockRunner"}, WsdlMockServiceDesktopPanel.this
-                    .getModelItem(), "AfterRequest");
         }
 
         public String getScript() {
@@ -839,32 +850,5 @@ public class WsdlMockServiceDesktopPanel<MockServiceType extends MockService>
         public void setScript(String text) {
             WsdlMockServiceDesktopPanel.this.getModelItem().setAfterRequestScript(text);
         }
-
-        @Override
-        public Action createRunAction() {
-            return new AbstractAction() {
-
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        WsdlMockRunContext context = mockRunner == null ? new WsdlMockRunContext(
-                                WsdlMockServiceDesktopPanel.this.getModelItem(), null) : mockRunner.getMockContext();
-                        WsdlMockServiceDesktopPanel.this.getModelItem().runAfterRequestScript(context, null);
-                    } catch (Exception e1) {
-                        UISupport.showErrorMessage(e1);
-                    }
-                }
-            };
-        }
     }
-
-    @Override
-    protected void renameModelItem() {
-        SoapUI.getActionRegistry().performAction("RenameMockServiceAction", getModelItem(), null);
-    }
-
-    @Override
-    protected void cloneModelItem() {
-        SoapUI.getActionRegistry().performAction("CloneMockServiceAction", getModelItem(), null);
-    }
-
 }

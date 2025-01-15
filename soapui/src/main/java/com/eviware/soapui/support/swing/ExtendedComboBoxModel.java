@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.swing;
@@ -38,7 +38,7 @@ public class ExtendedComboBoxModel extends AbstractListModel implements MutableC
      *
      * @param items an array of Object objects
      */
-    public ExtendedComboBoxModel(final Object items[]) {
+    public ExtendedComboBoxModel(Object[] items) {
         objects = new Vector();
         objects.ensureCapacity(items.length);
 
@@ -67,37 +67,33 @@ public class ExtendedComboBoxModel extends AbstractListModel implements MutableC
 
     // implements javax.swing.ComboBoxModel
 
-    /**
+    // implements javax.swing.ListModel
+    public int getSize() {
+        return objects.size();
+    }    /**
      * Set the value of the selected item. The selected item may be null.
      * <p/>
      *
      * @param anObject The combo box value or null for no selection.
      */
     public void setSelectedItem(Object anObject) {
-        if ((selectedObject != null && !selectedObject.equals(anObject)) || selectedObject == null
-                && anObject != null) {
+        if ((selectedObject != null && !selectedObject.equals(anObject)) || selectedObject == null && anObject != null) {
             selectedObject = anObject;
             fireContentsChanged(this, -1, -1);
         }
-    }
-
-    // implements javax.swing.ComboBoxModel
-    public Object getSelectedItem() {
-        return selectedObject;
-    }
-
-    // implements javax.swing.ListModel
-    public int getSize() {
-        return objects.size();
     }
 
     // implements javax.swing.ListModel
     public Object getElementAt(int index) {
         if (index >= 0 && index < objects.size()) {
             return objects.elementAt(index);
-        } else {
+        }
+        else {
             return null;
         }
+    }    // implements javax.swing.ComboBoxModel
+    public Object getSelectedItem() {
+        return selectedObject;
     }
 
     /**
@@ -105,7 +101,7 @@ public class ExtendedComboBoxModel extends AbstractListModel implements MutableC
      *
      * @param anObject
      * @return an int representing the index position, where 0 is the first
-     *         position
+     * position
      */
     public int getIndexOf(Object anObject) {
         return objects.indexOf(anObject);
@@ -121,6 +117,14 @@ public class ExtendedComboBoxModel extends AbstractListModel implements MutableC
     }
 
     // implements javax.swing.MutableComboBoxModel
+    public void removeElement(Object anObject) {
+        int index = objects.indexOf(anObject);
+        if (index != -1) {
+            removeElementAt(index);
+        }
+    }
+
+    // implements javax.swing.MutableComboBoxModel
     public void insertElementAt(Object anObject, int index) {
         objects.insertElementAt(anObject, index);
         fireIntervalAdded(this, index, index);
@@ -131,7 +135,8 @@ public class ExtendedComboBoxModel extends AbstractListModel implements MutableC
         if (getElementAt(index) == selectedObject) {
             if (index == 0) {
                 setSelectedItem(getSize() == 1 ? null : getElementAt(index + 1));
-            } else {
+            }
+            else {
                 setSelectedItem(getElementAt(index - 1));
             }
         }
@@ -139,14 +144,6 @@ public class ExtendedComboBoxModel extends AbstractListModel implements MutableC
         objects.removeElementAt(index);
 
         fireIntervalRemoved(this, index, index);
-    }
-
-    // implements javax.swing.MutableComboBoxModel
-    public void removeElement(Object anObject) {
-        int index = objects.indexOf(anObject);
-        if (index != -1) {
-            removeElementAt(index);
-        }
     }
 
     /**
@@ -159,7 +156,8 @@ public class ExtendedComboBoxModel extends AbstractListModel implements MutableC
             objects.removeAllElements();
             selectedObject = null;
             fireIntervalRemoved(this, firstIndex, lastIndex);
-        } else {
+        }
+        else {
             selectedObject = null;
         }
     }
@@ -168,4 +166,8 @@ public class ExtendedComboBoxModel extends AbstractListModel implements MutableC
         objects.setElementAt(obj, index);
         fireContentsChanged(this, index, index);
     }
+
+
+
+
 }

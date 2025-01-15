@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.auth;
@@ -21,9 +21,7 @@ import com.eviware.soapui.impl.support.AbstractHttpRequest;
 import com.eviware.soapui.support.components.SimpleBindingForm;
 import com.jgoodies.binding.PresentationModel;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -76,7 +74,8 @@ public class BasicAuthenticationForm<T extends AbstractHttpRequest> extends Abst
     private void selectCorrectRadioButton() {
         if (request.getPreemptive()) {
             preemptiveButton.setSelected(true);
-        } else {
+        }
+        else {
             globalButton.setSelected(true);
         }
     }
@@ -91,8 +90,7 @@ public class BasicAuthenticationForm<T extends AbstractHttpRequest> extends Abst
         @Override
         public void actionPerformed(ActionEvent e) {
             if (preemptiveButton.isSelected()) {
-                request.setSelectedAuthProfileAndAuthType(AbstractHttpRequest.BASIC_AUTH_PROFILE,
-                        CredentialsConfig.AuthType.PREEMPTIVE);
+                request.setSelectedAuthProfileAndAuthType(AbstractHttpRequest.BASIC_AUTH_PROFILE, CredentialsConfig.AuthType.PREEMPTIVE);
                 request.setPreemptive(true);
             }
         }
@@ -108,11 +106,9 @@ public class BasicAuthenticationForm<T extends AbstractHttpRequest> extends Abst
         @Override
         public void actionPerformed(ActionEvent e) {
             if (globalButton.isSelected()) {
-                request.setSelectedAuthProfileAndAuthType(AbstractHttpRequest.BASIC_AUTH_PROFILE,
-                        CredentialsConfig.AuthType.GLOBAL_HTTP_SETTINGS);
+                request.setSelectedAuthProfileAndAuthType(AbstractHttpRequest.BASIC_AUTH_PROFILE, CredentialsConfig.AuthType.GLOBAL_HTTP_SETTINGS);
                 request.setPreemptive(false);
             }
         }
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.testsuite;
@@ -51,23 +51,9 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.types.StringToObjectMap;
 import com.eviware.soapui.ui.support.KeySensitiveModelItemDesktopPanel;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JToggleButton;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -80,14 +66,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("serial")
 public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel<WsdlTestSuite> {
-    private JProgressBar progressBar;
-    private JTestSuiteTestCaseList testCaseList;
-    private RunAction runAction = new RunAction();
-    private CancelAction cancelAction = new CancelAction();
-    private JToggleButton sequentialButton;
-    private JToggleButton parallellButton;
     private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
     private final InternalTestSuiteRunListener testSuiteRunListener = new InternalTestSuiteRunListener();
+    private JProgressBar progressBar;
+    private JTestSuiteTestCaseList testCaseList;
+    private final RunAction runAction = new RunAction();
+    private final CancelAction cancelAction = new CancelAction();
+    private JToggleButton sequentialButton;
+    private JToggleButton parallellButton;
     private JTextArea descriptionArea;
     private PropertyHolderTable propertiesTable;
     private JTestRunLog testRunLog;
@@ -114,11 +100,9 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
     private JComponent buildContent() {
         inspectorPanel = JInspectorPanelFactory.build(buildTabs());
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildRunLog(), "TestSuite Log",
-                "Log of executed TestCases and TestSteps", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildRunLog(), "TestSuite Log", "Log of executed TestCases and TestSteps", true));
 
-        if (StringUtils.hasContent(getModelItem().getDescription())
-                && getModelItem().getSettings().getBoolean(UISettings.SHOW_DESCRIPTIONS)) {
+        if (StringUtils.hasContent(getModelItem().getDescription()) && getModelItem().getSettings().getBoolean(UISettings.SHOW_DESCRIPTIONS)) {
             testCaseListInspectorPanel.setCurrentInspector("Description");
         }
 
@@ -204,14 +188,10 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
     }
 
     protected void addTabs(JTabbedPane tabs, JInspectorPanel inspectorPanel) {
-        inspectorPanel.addInspector(new JFocusableComponentInspector<JPanel>(buildDescriptionPanel(), descriptionArea,
-                "Description", "Description for this TestSuite", true));
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildPropertiesPanel(), "Properties",
-                "TestSuite level properties", true));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildSetupScriptPanel(), "Setup Script",
-                "Script to run before running the TestSuite"));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildTearDownScriptPanel(), "TearDown Script",
-                "Script to run after running the TestSuite"));
+        inspectorPanel.addInspector(new JFocusableComponentInspector<JPanel>(buildDescriptionPanel(), descriptionArea, "Description", "Description for this TestSuite", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildPropertiesPanel(), "Properties", "TestSuite level properties", true));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildSetupScriptPanel(), "Setup Script", "Script to run before running the TestSuite"));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildTearDownScriptPanel(), "TearDown Script", "Script to run after running the TestSuite"));
     }
 
     protected GroovyEditorComponent buildTearDownScriptPanel() {
@@ -264,8 +244,7 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
     private Component buildTestCaseListToolbar() {
         JXToolBar toolbar = UISupport.createToolbar();
-        SwingActionDelegate testCaseDelegate = SwingActionDelegate.createDelegate(
-                AddNewTestCaseAction.SOAPUI_ACTION_ID, getModelItem(), null, "/testcase.png");
+        SwingActionDelegate testCaseDelegate = SwingActionDelegate.createDelegate(AddNewTestCaseAction.SOAPUI_ACTION_ID, getModelItem(), null, "/testcase.png");
 //        testCaseDelegate.getMapping().setParam(SoapUIActions.CREATE_TEST_CASE_FROM_TEST_TEST_SUITE_PANEL);
         toolbar.add(UISupport.createToolbarButton(testCaseDelegate));
         toolbar.addGlue();
@@ -286,7 +265,7 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
         getModelItem().removeTestSuiteRunListener(testSuiteRunListener);
         getModelItem().removeTestSuiteListener(testSuiteListener);
 
-        return super.release();
+        return release();
     }
 
     public JComponent getComponent() {
@@ -317,6 +296,20 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
         progressBar.setForeground(testSuiteRunner.isFailed() ? Color.RED : Color.GREEN.darker());
     }
 
+    public WsdlTestSuiteRunner getTestSuiteRunner() {
+        return testSuiteRunner;
+    }
+
+    @Override
+    protected void renameModelItem() {
+        SoapUI.getActionRegistry().performAction("RenameTestSuiteAction", getModelItem(), null);
+    }
+
+    @Override
+    protected void cloneModelItem() {
+        SoapUI.getActionRegistry().performAction("CloneTestSuiteAction", getModelItem(), null);
+    }
+
     private final class InternalTestSuiteListener extends TestSuiteListenerAdapter {
         public void testCaseAdded(TestCase testCase) {
             runAction.setEnabled(getModelItem().getTestCaseCount() > 0);
@@ -329,8 +322,8 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
     private class RunAction extends AbstractAction {
         public RunAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Runs the selected TestCases");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
+            putValue(SHORT_DESCRIPTION, "Runs the selected TestCases");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -340,8 +333,8 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
     private class CancelAction extends AbstractAction {
         public CancelAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/stop.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Cancels ongoing TestCase runs");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/stop.png"));
+            putValue(SHORT_DESCRIPTION, "Cancels ongoing TestCase runs");
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -351,8 +344,7 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
     private class SetupScriptGroovyEditorModel extends AbstractGroovyEditorModel {
         public SetupScriptGroovyEditorModel() {
-            super(new String[]{"log", "runner", "context", "testSuite"},
-                    WsdlTestSuiteDesktopPanel.this.getModelItem(), "Setup");
+            super(new String[]{"log", "runner", "context", "testSuite"}, WsdlTestSuiteDesktopPanel.this.getModelItem(), "Setup");
         }
 
         public String getScript() {
@@ -369,11 +361,10 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        MockTestSuiteRunner mockRunner = new MockTestSuiteRunner(
-                                WsdlTestSuiteDesktopPanel.this.getModelItem());
-                        WsdlTestSuiteDesktopPanel.this.getModelItem().runSetupScript(
-                                (TestSuiteRunContext) mockRunner.getRunContext(), mockRunner);
-                    } catch (Exception e1) {
+                        MockTestSuiteRunner mockRunner = new MockTestSuiteRunner(WsdlTestSuiteDesktopPanel.this.getModelItem());
+                        WsdlTestSuiteDesktopPanel.this.getModelItem().runSetupScript((TestSuiteRunContext)mockRunner.getRunContext(), mockRunner);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
@@ -383,8 +374,7 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
     private class TearDownScriptGroovyEditorModel extends AbstractGroovyEditorModel {
         public TearDownScriptGroovyEditorModel() {
-            super(new String[]{"log", "runner", "context", "testSuite"},
-                    WsdlTestSuiteDesktopPanel.this.getModelItem(), "TearDown");
+            super(new String[]{"log", "runner", "context", "testSuite"}, WsdlTestSuiteDesktopPanel.this.getModelItem(), "TearDown");
         }
 
         public String getScript() {
@@ -401,11 +391,10 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
                 public void actionPerformed(ActionEvent e) {
                     try {
-                        MockTestSuiteRunner mockRunner = new MockTestSuiteRunner(
-                                WsdlTestSuiteDesktopPanel.this.getModelItem());
-                        WsdlTestSuiteDesktopPanel.this.getModelItem().runTearDownScript(
-                                (TestSuiteRunContext) mockRunner.getRunContext(), mockRunner);
-                    } catch (Exception e1) {
+                        MockTestSuiteRunner mockRunner = new MockTestSuiteRunner(WsdlTestSuiteDesktopPanel.this.getModelItem());
+                        WsdlTestSuiteDesktopPanel.this.getModelItem().runTearDownScript((TestSuiteRunContext)mockRunner.getRunContext(), mockRunner);
+                    }
+                    catch (Exception e1) {
                         UISupport.showErrorMessage(e1);
                     }
                 }
@@ -415,27 +404,7 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
 
     private class InternalTestSuiteRunListener implements TestSuiteRunListener {
         private TestRunLogTestRunListener runLogListener;
-        private AtomicInteger finishCount = new AtomicInteger();
-
-        public void afterRun(TestSuiteRunner testRunner, TestSuiteRunContext runContext) {
-            WsdlTestSuiteDesktopPanel.this.afterRun((WsdlTestSuiteRunner) testRunner);
-        }
-
-        public void afterTestCase(TestSuiteRunner testRunner, TestSuiteRunContext runContext,
-                                  TestCaseRunner testCaseRunner) {
-            finishCount.incrementAndGet();
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    progressBar.setValue(finishCount.get());
-                }
-            });
-
-
-            if (getModelItem().getRunType() == TestSuiteRunType.SEQUENTIAL) {
-                testCaseRunner.getTestCase().removeTestRunListener(runLogListener);
-            }
-        }
+        private final AtomicInteger finishCount = new AtomicInteger();
 
         public void beforeRun(TestSuiteRunner testRunner, TestSuiteRunContext runContext) {
             WsdlTestSuiteDesktopPanel.this.beforeRun();
@@ -458,28 +427,34 @@ public class WsdlTestSuiteDesktopPanel extends KeySensitiveModelItemDesktopPanel
             }
         }
 
+        public void afterRun(TestSuiteRunner testRunner, TestSuiteRunContext runContext) {
+            WsdlTestSuiteDesktopPanel.this.afterRun((WsdlTestSuiteRunner)testRunner);
+        }
+
         public void beforeTestCase(TestSuiteRunner testRunner, TestSuiteRunContext runContext, TestCase testCase) {
             if (getModelItem().getRunType() == TestSuiteRunType.SEQUENTIAL) {
                 progressBar.setString("Running " + testCase.getName());
                 testCase.addTestRunListener(runLogListener);
-            } else {
+            }
+            else {
                 progressBar.setString("Starting " + testCase.getName());
             }
         }
-    }
 
-    public WsdlTestSuiteRunner getTestSuiteRunner() {
-        return testSuiteRunner;
-    }
+        public void afterTestCase(
+            TestSuiteRunner testRunner, TestSuiteRunContext runContext, TestCaseRunner testCaseRunner
+        ) {
+            finishCount.incrementAndGet();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    progressBar.setValue(finishCount.get());
+                }
+            });
 
-    @Override
-    protected void renameModelItem() {
-        SoapUI.getActionRegistry().performAction("RenameTestSuiteAction", getModelItem(), null);
+            if (getModelItem().getRunType() == TestSuiteRunType.SEQUENTIAL) {
+                testCaseRunner.getTestCase().removeTestRunListener(runLogListener);
+            }
+        }
     }
-
-    @Override
-    protected void cloneModelItem() {
-        SoapUI.getActionRegistry().performAction("CloneTestSuiteAction", getModelItem(), null);
-    }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -35,8 +35,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 public class SwitchDesktopPanelAction extends AbstractAction {
-    private JDialog dialog;
     private final JDesktopPanelsList desktopPanelsList;
+    private JDialog dialog;
 
     public SwitchDesktopPanelAction(JDesktopPanelsList desktopPanelsList) {
         super("Switch Window");
@@ -51,8 +51,7 @@ public class SwitchDesktopPanelAction extends AbstractAction {
             desktopPanelsList.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
 
             dialog = new JDialog(UISupport.getMainFrame(), "Switch Window", false);
-            dialog.getContentPane().add(UISupport.buildDescription(null, "Select the window to switch to below", null),
-                    BorderLayout.NORTH);
+            dialog.getContentPane().add(UISupport.buildDescription(null, "Select the window to switch to below", null), BorderLayout.NORTH);
             dialog.getContentPane().add(desktopPanelsList, BorderLayout.CENTER);
 
             UISupport.initDialogActions(null, dialog);
@@ -60,6 +59,16 @@ public class SwitchDesktopPanelAction extends AbstractAction {
                 @Override
                 public void windowOpened(WindowEvent e) {
                     initOnOpen();
+                }
+
+                @Override
+                public void windowDeactivated(WindowEvent e) {
+                    dialog.setVisible(false);
+                }
+
+                @Override
+                public void windowLostFocus(WindowEvent e) {
+                    dialog.setVisible(false);
                 }
 
                 private void initOnOpen() {
@@ -73,17 +82,6 @@ public class SwitchDesktopPanelAction extends AbstractAction {
                         }
                     });
                 }
-
-                @Override
-                public void windowDeactivated(WindowEvent e) {
-                    dialog.setVisible(false);
-                }
-
-                @Override
-                public void windowLostFocus(WindowEvent e) {
-                    dialog.setVisible(false);
-                }
-
             });
             dialog.addMouseListener(new MouseAdapter() {
                 @Override
@@ -96,7 +94,7 @@ public class SwitchDesktopPanelAction extends AbstractAction {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     if (e.getKeyChar() == '\n') {
-                        DesktopPanel dp = (DesktopPanel) desktopPanelsList.getDesktopPanelsList().getSelectedValue();
+                        DesktopPanel dp = (DesktopPanel)desktopPanelsList.getDesktopPanelsList().getSelectedValue();
                         if (dp != null) {
                             UISupport.showDesktopPanel(dp);
                             dialog.setVisible(false);
@@ -110,7 +108,7 @@ public class SwitchDesktopPanelAction extends AbstractAction {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() > 1) {
-                        DesktopPanel dp = (DesktopPanel) desktopPanelsList.getDesktopPanelsList().getSelectedValue();
+                        DesktopPanel dp = (DesktopPanel)desktopPanelsList.getDesktopPanelsList().getSelectedValue();
                         if (dp != null) {
                             UISupport.showDesktopPanel(dp);
                             dialog.setVisible(false);

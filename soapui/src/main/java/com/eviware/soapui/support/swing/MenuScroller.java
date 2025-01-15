@@ -1,23 +1,23 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.swing;
 
 /**
- * @(#)MenuScroller.java	1.4.1 2010-09-29
+ * @(#)MenuScroller.java 1.4.1 2010-09-29
  */
 
 import javax.swing.Icon;
@@ -50,18 +50,18 @@ import java.awt.event.ActionListener;
  *
  * @author Darryl
  * @author Henrik Olsson
- *         <p/>
- *         2010-09-29, Henrik: Never show separators if rendered last in a
- *         scrolling list.
+ * <p/>
+ * 2010-09-29, Henrik: Never show separators if rendered last in a
+ * scrolling list.
  */
 public class MenuScroller {
 
+    private final MenuScrollListener menuListener = new MenuScrollListener();
     // private JMenu menu;
     private JPopupMenu menu;
     private Component[] menuItems;
     private MenuScrollItem upItem;
     private MenuScrollItem downItem;
-    private final MenuScrollListener menuListener = new MenuScrollListener();
     private int scrollCount;
     private int interval;
     private int topFixedCount;
@@ -159,8 +159,9 @@ public class MenuScroller {
      * @throws IllegalArgumentException if scrollCount or interval is 0 or negative or if topFixedCount
      *                                  or bottomFixedCount is negative
      */
-    public static MenuScroller setScrollerFor(JMenu menu, int scrollCount, int interval, int topFixedCount,
-                                              int bottomFixedCount) {
+    public static MenuScroller setScrollerFor(
+        JMenu menu, int scrollCount, int interval, int topFixedCount, int bottomFixedCount
+    ) {
         return new MenuScroller(menu, scrollCount, interval, topFixedCount, bottomFixedCount);
     }
 
@@ -179,8 +180,9 @@ public class MenuScroller {
      * @throws IllegalArgumentException if scrollCount or interval is 0 or negative or if topFixedCount
      *                                  or bottomFixedCount is negative
      */
-    public static MenuScroller setScrollerFor(JPopupMenu menu, int scrollCount, int interval, int topFixedCount,
-                                              int bottomFixedCount) {
+    public static MenuScroller setScrollerFor(
+        JPopupMenu menu, int scrollCount, int interval, int topFixedCount, int bottomFixedCount
+    ) {
         return new MenuScroller(menu, scrollCount, interval, topFixedCount, bottomFixedCount);
     }
 
@@ -375,7 +377,8 @@ public class MenuScroller {
     public void setTopFixedCount(int topFixedCount) {
         if (firstIndex <= topFixedCount) {
             firstIndex = topFixedCount;
-        } else {
+        }
+        else {
             firstIndex += (topFixedCount - this.topFixedCount);
         }
         this.topFixedCount = topFixedCount;
@@ -410,7 +413,8 @@ public class MenuScroller {
     public void keepVisible(JMenuItem item) {
         if (item == null) {
             keepVisibleIndex = -1;
-        } else {
+        }
+        else {
             int index = menu.getComponentIndex(item);
             keepVisibleIndex = index;
         }
@@ -447,7 +451,7 @@ public class MenuScroller {
      * @see MenuScroller#dispose()
      */
     @Override
-    public void finalize() throws Throwable {
+    protected void finalize() throws Throwable {
         dispose();
     }
 
@@ -484,93 +488,16 @@ public class MenuScroller {
                 menu.add(menuItems[i]);
             }
 
-            JComponent parent = (JComponent) upItem.getParent();
+            JComponent parent = (JComponent)upItem.getParent();
             parent.revalidate();
             parent.repaint();
         }
     }
 
-    private class MenuScrollListener implements PopupMenuListener {
+    private enum MenuIcon implements Icon {
 
-        @Override
-        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-            setMenuItems();
-        }
-
-        @Override
-        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            restoreMenuItems();
-        }
-
-        @Override
-        public void popupMenuCanceled(PopupMenuEvent e) {
-            restoreMenuItems();
-        }
-
-        private void setMenuItems() {
-            menuItems = menu.getComponents();
-
-            if (keepVisibleIndex >= topFixedCount && keepVisibleIndex <= menuItems.length - bottomFixedCount
-                    && (keepVisibleIndex > firstIndex + scrollCount || keepVisibleIndex < firstIndex)) {
-                firstIndex = Math.min(firstIndex, keepVisibleIndex);
-                firstIndex = Math.max(firstIndex, keepVisibleIndex - scrollCount + 1);
-            }
-            if (menuItems.length > topFixedCount + scrollCount + bottomFixedCount) {
-                refreshMenu();
-            }
-        }
-
-        private void restoreMenuItems() {
-            menu.removeAll();
-            for (Component component : menuItems) {
-                menu.add(component);
-            }
-        }
-    }
-
-    private class MenuScrollTimer extends Timer {
-
-        public MenuScrollTimer(final int increment, int interval) {
-            super(interval, new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    firstIndex += increment;
-                    refreshMenu();
-                }
-            });
-        }
-    }
-
-    private class MenuScrollItem extends JMenuItem implements ChangeListener {
-
-        private MenuScrollTimer timer;
-
-        public MenuScrollItem(MenuIcon icon, int increment) {
-            setIcon(icon);
-            setDisabledIcon(icon);
-            timer = new MenuScrollTimer(increment, interval);
-            addChangeListener(this);
-        }
-
-        public void setInterval(int interval) {
-            timer.setDelay(interval);
-        }
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            if (isArmed() && !timer.isRunning()) {
-                timer.start();
-            }
-            if (!isArmed() && timer.isRunning()) {
-                timer.stop();
-            }
-        }
-    }
-
-    private static enum MenuIcon implements Icon {
-
-        UP(9, 1, 9), DOWN(1, 9, 1);
+        UP(9, 1, 9),
+        DOWN(1, 9, 1);
         final int[] xPoints = {1, 5, 9};
         final int[] yPoints;
 
@@ -599,6 +526,85 @@ public class MenuScroller {
         @Override
         public int getIconHeight() {
             return 10;
+        }
+    }
+
+    private class MenuScrollListener implements PopupMenuListener {
+
+        @Override
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+            setMenuItems();
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            restoreMenuItems();
+        }
+
+        @Override
+        public void popupMenuCanceled(PopupMenuEvent e) {
+            restoreMenuItems();
+        }
+
+        private void setMenuItems() {
+            menuItems = menu.getComponents();
+
+            if (keepVisibleIndex >= topFixedCount &&
+                keepVisibleIndex <= menuItems.length - bottomFixedCount &&
+                (keepVisibleIndex > firstIndex + scrollCount || keepVisibleIndex < firstIndex)) {
+                firstIndex = Math.min(firstIndex, keepVisibleIndex);
+                firstIndex = Math.max(firstIndex, keepVisibleIndex - scrollCount + 1);
+            }
+            if (menuItems.length > topFixedCount + scrollCount + bottomFixedCount) {
+                refreshMenu();
+            }
+        }
+
+        private void restoreMenuItems() {
+            menu.removeAll();
+            for (Component component : menuItems) {
+                menu.add(component);
+            }
+        }
+    }
+
+    private class MenuScrollTimer extends Timer {
+
+        public MenuScrollTimer(int increment, int interval) {
+            super(interval, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    firstIndex += increment;
+                    refreshMenu();
+                }
+            });
+        }
+    }
+
+    private class MenuScrollItem extends JMenuItem implements ChangeListener {
+
+        private final MenuScrollTimer timer;
+
+        public MenuScrollItem(MenuIcon icon, int increment) {
+            setIcon(icon);
+            setDisabledIcon(icon);
+            timer = new MenuScrollTimer(increment, interval);
+            addChangeListener(this);
+        }
+
+        public void setInterval(int interval) {
+            timer.setDelay(interval);
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (isArmed() && !timer.isRunning()) {
+                timer.start();
+            }
+            if (!isArmed() && timer.isRunning()) {
+                timer.stop();
+            }
         }
     }
 }

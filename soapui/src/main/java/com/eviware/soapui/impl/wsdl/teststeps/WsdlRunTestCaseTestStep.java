@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -64,24 +64,25 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
 
     private RunTestCaseStepConfig stepConfig;
     private WsdlTestCaseRunner testCaseRunner;
-    private XmlBeansPropertiesTestPropertyHolder propertyHolderSupport;
+    private final XmlBeansPropertiesTestPropertyHolder propertyHolderSupport;
     private String currentLabel;
     private WsdlTestCase targetTestCase;
-    private InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
-    private InternalTestRunListener testRunListener = new InternalTestRunListener();
-    private InternalTestPropertyListener testPropertyListener = new InternalTestPropertyListener();
-    private Set<TestRunListener> testRunListeners = new HashSet<TestRunListener>();
+    private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
+    private final InternalTestRunListener testRunListener = new InternalTestRunListener();
+    private final InternalTestPropertyListener testPropertyListener = new InternalTestPropertyListener();
+    private final Set<TestRunListener> testRunListeners = new HashSet<TestRunListener>();
     private WsdlTestCase runningTestCase;
 
     public WsdlRunTestCaseTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
         super(testCase, config, true, forLoadTest);
 
         if (config.getConfig() == null) {
-            stepConfig = (RunTestCaseStepConfig) config.addNewConfig().changeType(RunTestCaseStepConfig.type);
+            stepConfig = (RunTestCaseStepConfig)config.addNewConfig().changeType(RunTestCaseStepConfig.type);
             stepConfig.addNewProperties();
             stepConfig.addNewReturnProperties();
-        } else {
-            stepConfig = (RunTestCaseStepConfig) config.getConfig().changeType(RunTestCaseStepConfig.type);
+        }
+        else {
+            stepConfig = (RunTestCaseStepConfig)config.getConfig().changeType(RunTestCaseStepConfig.type);
         }
 
         if (stepConfig.getRunMode() == null) {
@@ -91,26 +92,6 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
         setIcon(UISupport.createImageIcon("/run_test_case_step.png"));
 
         propertyHolderSupport = new XmlBeansPropertiesTestPropertyHolder(this, stepConfig.getProperties());
-    }
-
-    /**
-     * We need to check that we are not pointing at testcase in original
-     * testsuite
-     */
-
-    public void afterCopy(WsdlTestSuite oldTestSuite, WsdlTestCase oldTestCase) {
-        super.afterCopy(oldTestSuite, oldTestCase);
-
-        if (targetTestCase != null && oldTestSuite == targetTestCase.getTestSuite()) {
-            setTargetTestCase(getTestCase().getTestSuite().getTestCaseByName(targetTestCase.getName()));
-        }
-    }
-
-    @Override
-    public void afterLoad() {
-        setTargetTestCase(findTargetTestCase());
-
-        super.afterLoad();
     }
 
     private void syncProperties() {
@@ -149,7 +130,8 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
 
             if (runMode == RunTestCaseRunModeTypeConfig.PARALLELL) {
                 runningTestCase = createTestCase(targetTestCase);
-            } else {
+            }
+            else {
                 runningTestCase = targetTestCase;
 
                 TestCaseRunner targetTestRunner = SoapUI.getTestMonitor().getTestRunner(targetTestCase);
@@ -159,7 +141,8 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
                         result.addMessage("Target TestCase is already running");
                         result.stopTimer();
                         runningTestCase = null;
-                    } else {
+                    }
+                    else {
                         targetTestRunner.waitUntilFinished();
                     }
                 }
@@ -193,20 +176,15 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
                     StringToObjectMap properties = new StringToObjectMap();
 
                     if (isCopyLoadTestProperties() && properties.containsKey(TestRunContext.LOAD_TEST_CONTEXT)) {
-                        properties
-                                .put(TestRunContext.THREAD_INDEX, testRunContext.getProperty(TestRunContext.THREAD_INDEX));
-                        properties.put(TestRunContext.TOTAL_RUN_COUNT,
-                                testRunContext.getProperty(TestRunContext.TOTAL_RUN_COUNT));
-                        properties.put(TestRunContext.LOAD_TEST_CONTEXT,
-                                testRunContext.getProperty(TestRunContext.LOAD_TEST_CONTEXT));
-                        properties.put(TestRunContext.LOAD_TEST_RUNNER,
-                                testRunContext.getProperty(TestRunContext.LOAD_TEST_RUNNER));
+                        properties.put(TestRunContext.THREAD_INDEX, testRunContext.getProperty(TestRunContext.THREAD_INDEX));
+                        properties.put(TestRunContext.TOTAL_RUN_COUNT, testRunContext.getProperty(TestRunContext.TOTAL_RUN_COUNT));
+                        properties.put(TestRunContext.LOAD_TEST_CONTEXT, testRunContext.getProperty(TestRunContext.LOAD_TEST_CONTEXT));
+                        properties.put(TestRunContext.LOAD_TEST_RUNNER, testRunContext.getProperty(TestRunContext.LOAD_TEST_RUNNER));
                         properties.put(TestRunContext.RUN_COUNT, testRunContext.getProperty(TestRunContext.RUN_COUNT));
                     }
 
                     if (isCopyHttpSession() && testRunContext.hasProperty(TestRunContext.HTTP_STATE_PROPERTY)) {
-                        properties.put(TestRunContext.HTTP_STATE_PROPERTY,
-                                testRunContext.getProperty(TestRunContext.HTTP_STATE_PROPERTY));
+                        properties.put(TestRunContext.HTTP_STATE_PROPERTY, testRunContext.getProperty(TestRunContext.HTTP_STATE_PROPERTY));
                     }
 
                     properties.put(TestRunContext.INTERACTIVE, testRunContext.getProperty(TestRunContext.INTERACTIVE));
@@ -227,14 +205,13 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
 
                     // aggregate results
                     for (TestStepResult testStepResult : testCaseRunner.getResults()) {
-                        result.addMessage(testStepResult.getTestStep().getName() + " - " + testStepResult.getStatus()
-                                + " - " + testStepResult.getTimeTaken());
+                        result.addMessage(testStepResult.getTestStep().getName() + " - " + testStepResult.getStatus() + " - " + testStepResult.getTimeTaken());
                         for (String msg : testStepResult.getMessages()) {
                             result.addMessage("- " + msg);
                         }
 
                         if (testStepResult instanceof MessageExchangeTestStepResult) {
-                            result.addMessages(((MessageExchangeTestStepResult) testStepResult).getMessageExchanges());
+                            result.addMessages(((MessageExchangeTestStepResult)testStepResult).getMessageExchanges());
                         }
                     }
 
@@ -267,13 +244,23 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
                     testCaseRunner = null;
                 }
             }
-        } else {
+        }
+        else {
             result.setStatus(TestStepStatus.FAILED);
             result.addMessage("Missing testCase in project");
             result.stopTimer();
         }
 
         return result;
+    }
+
+    @Override
+    public boolean cancel() {
+        if (testCaseRunner != null) {
+            testCaseRunner.cancel("Canceled by calling TestCase");
+        }
+
+        return true;
     }
 
     @Override
@@ -286,55 +273,39 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
 
         if (isDisabled()) {
             return name + " (disabled)";
-        } else {
+        }
+        else {
             return name;
         }
     }
 
     @Override
-    public boolean cancel() {
-        if (testCaseRunner != null) {
-            testCaseRunner.cancel("Canceled by calling TestCase");
-        }
+    public void resetConfigOnMove(TestStepConfig config) {
+        super.resetConfigOnMove(config);
 
-        return true;
+        stepConfig = (RunTestCaseStepConfig)config.getConfig().changeType(RunTestCaseStepConfig.type);
+        propertyHolderSupport.resetPropertiesConfig(stepConfig.getProperties());
+    }
+
+    /**
+     * We need to check that we are not pointing at testcase in original
+     * testsuite
+     */
+
+    public void afterCopy(WsdlTestSuite oldTestSuite, WsdlTestCase oldTestCase) {
+        super.afterCopy(oldTestSuite, oldTestCase);
+
+        if (targetTestCase != null && oldTestSuite == targetTestCase.getTestSuite()) {
+            setTargetTestCase(getTestCase().getTestSuite().getTestCaseByName(targetTestCase.getName()));
+        }
     }
 
     private String getTestCaseId() {
         return stepConfig.getTargetTestCase();
     }
 
-    public void setTargetTestCase(WsdlTestCase testCase) {
-        if (targetTestCase != null) {
-            targetTestCase.getTestSuite().removeTestSuiteListener(testSuiteListener);
-            targetTestCase.removeTestPropertyListener(testPropertyListener);
-        }
-
-        WsdlTestCase oldTestCase = this.targetTestCase;
-        this.targetTestCase = testCase;
-
-        if (testCase != null) {
-            stepConfig.setTargetTestCase(testCase.getId());
-
-            targetTestCase.getTestSuite().addTestSuiteListener(testSuiteListener);
-            targetTestCase.addTestPropertyListener(testPropertyListener);
-
-            syncProperties();
-        }
-
-        notifyPropertyChanged(TARGET_TESTCASE, oldTestCase, testCase);
-    }
-
     public boolean isCopyHttpSession() {
         return stepConfig.getCopyHttpSession();
-    }
-
-    public boolean isCopyLoadTestProperties() {
-        return stepConfig.getCopyLoadTestProperties();
-    }
-
-    public boolean isIgnoreEmptyProperties() {
-        return stepConfig.getIgnoreEmptyProperties();
     }
 
     public void setCopyHttpSession(boolean arg0) {
@@ -346,6 +317,10 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
         notifyPropertyChanged("copyHttpSession", !arg0, arg0);
     }
 
+    public boolean isCopyLoadTestProperties() {
+        return stepConfig.getCopyLoadTestProperties();
+    }
+
     public void setCopyLoadTestProperties(boolean arg0) {
         if (arg0 == isCopyLoadTestProperties()) {
             return;
@@ -353,6 +328,10 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
 
         stepConfig.setCopyLoadTestProperties(arg0);
         notifyPropertyChanged("copyLoadTestProperties", !arg0, arg0);
+    }
+
+    public boolean isIgnoreEmptyProperties() {
+        return stepConfig.getIgnoreEmptyProperties();
     }
 
     public void setIgnoreEmptyProperties(boolean arg0) {
@@ -381,52 +360,146 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
             WsdlTestCase wsdlTestCase = testCase.getTestSuite().buildTestCase(config, true);
             wsdlTestCase.afterLoad();
             return wsdlTestCase;
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             SoapUI.logError(e);
         }
 
         return null;
     }
 
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        propertyHolderSupport.addTestPropertyListener(listener);
-    }
-
-    public Map<String, TestProperty> getProperties() {
-        return propertyHolderSupport.getProperties();
-    }
-
-    public PropertiesStepProperty getProperty(String name) {
-        return propertyHolderSupport.getProperty(name);
-    }
-
     public String[] getPropertyNames() {
         return propertyHolderSupport.getPropertyNames();
-    }
-
-    public List<TestProperty> getPropertyList() {
-        return propertyHolderSupport.getPropertyList();
-    }
-
-    public String getPropertyValue(String name) {
-        return propertyHolderSupport.getPropertyValue(name);
-    }
-
-    public boolean hasProperty(String name) {
-        return propertyHolderSupport.hasProperty(name);
-    }
-
-    public void removeTestPropertyListener(TestPropertyListener listener) {
-        propertyHolderSupport.removeTestPropertyListener(listener);
     }
 
     public void setPropertyValue(String name, String value) {
         propertyHolderSupport.setPropertyValue(name, value);
     }
 
+    public String getPropertyValue(String name) {
+        return propertyHolderSupport.getPropertyValue(name);
+    }
+
+    public PropertiesStepProperty getProperty(String name) {
+        return propertyHolderSupport.getProperty(name);
+    }
+
+    public Map<String, TestProperty> getProperties() {
+        return propertyHolderSupport.getProperties();
+    }
+
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        propertyHolderSupport.addTestPropertyListener(listener);
+    }
+
+    public void removeTestPropertyListener(TestPropertyListener listener) {
+        propertyHolderSupport.removeTestPropertyListener(listener);
+    }
+
+    public boolean hasProperty(String name) {
+        return propertyHolderSupport.hasProperty(name);
+    }
+
+    public int getPropertyCount() {
+        return propertyHolderSupport.getPropertyCount();
+    }
+
+    public List<TestProperty> getPropertyList() {
+        return propertyHolderSupport.getPropertyList();
+    }
+
+    public TestProperty getPropertyAt(int index) {
+        return propertyHolderSupport.getPropertyAt(index);
+    }
+
     private void updateLabelDuringRun() {
-        notifyPropertyChanged(WsdlTestStep.LABEL_PROPERTY, currentLabel, getLabel());
+        notifyPropertyChanged(LABEL_PROPERTY, currentLabel, getLabel());
         currentLabel = getLabel();
+    }
+
+    @Override
+    public void release() {
+        if (targetTestCase != null) {
+            targetTestCase.getTestSuite().removeTestSuiteListener(testSuiteListener);
+            targetTestCase.removeTestPropertyListener(testPropertyListener);
+        }
+
+        super.release();
+    }
+
+    @Override
+    public void resolve(ResolveContext<?> context) {
+        super.resolve(context);
+
+        if (targetTestCase == null) {
+            if (context.hasThisModelItem(this, "Missing Test Case", getTestStepTitle() + "/" + stepConfig.getTargetTestCase())) {
+                return;
+            }
+            context.addPathToResolve(this, "Missing Test Case", getTestStepTitle() + "/" + stepConfig.getTargetTestCase())
+                   .addResolvers(new RunTestCaseRemoveResolver(this), new ChooseAnotherTestCase(this), new CreateNewEmptyTestCase(this));
+        }
+        else {
+            targetTestCase.resolve(context);
+            if (context.hasThisModelItem(this, "Missing Test Case", getTestStepTitle() + "/" + stepConfig.getTargetTestCase())) {
+                context.getPath(this, "Missing Test Case", getTestStepTitle() + "/" + stepConfig.getTargetTestCase()).setSolved(true);
+            }
+        }
+    }
+
+    @Override
+    public void afterLoad() {
+        setTargetTestCase(findTargetTestCase());
+
+        super.afterLoad();
+    }
+
+    public WsdlTestCase getTargetTestCase() {
+        return targetTestCase;
+    }
+
+    public void setTargetTestCase(WsdlTestCase testCase) {
+        if (targetTestCase != null) {
+            targetTestCase.getTestSuite().removeTestSuiteListener(testSuiteListener);
+            targetTestCase.removeTestPropertyListener(testPropertyListener);
+        }
+
+        WsdlTestCase oldTestCase = targetTestCase;
+        targetTestCase = testCase;
+
+        if (testCase != null) {
+            stepConfig.setTargetTestCase(testCase.getId());
+
+            targetTestCase.getTestSuite().addTestSuiteListener(testSuiteListener);
+            targetTestCase.addTestPropertyListener(testPropertyListener);
+
+            syncProperties();
+        }
+
+        notifyPropertyChanged(TARGET_TESTCASE, oldTestCase, testCase);
+    }
+
+    public void addTestRunListener(TestRunListener listener) {
+        testRunListeners.add(listener);
+    }
+
+    public void removeTestRunListener(TestRunListener listener) {
+        testRunListeners.remove(listener);
+    }
+
+    public WsdlTestCase getRunningTestCase() {
+        return runningTestCase;
+    }
+
+    public WsdlTestCaseRunner getTestCaseRunner() {
+        return testCaseRunner;
+    }
+
+    public RunTestCaseRunModeTypeConfig.Enum getRunMode() {
+        return stepConfig.getRunMode();
+    }
+
+    public void setRunMode(RunTestCaseRunModeTypeConfig.Enum runMode) {
+        stepConfig.setRunMode(runMode);
     }
 
     private final class InternalTestPropertyListener extends TestPropertyListenerAdapter {
@@ -458,12 +531,12 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
         }
 
         @Override
-        public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
+        public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
             updateLabelDuringRun();
         }
 
         @Override
-        public void afterStep(TestCaseRunner testRunner, TestCaseRunContext runContext, TestStepResult result) {
+        public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
             updateLabelDuringRun();
         }
 
@@ -473,87 +546,10 @@ public class WsdlRunTestCaseTestStep extends WsdlTestStep {
         }
     }
 
-    @Override
-    public void resetConfigOnMove(TestStepConfig config) {
-        super.resetConfigOnMove(config);
-
-        stepConfig = (RunTestCaseStepConfig) config.getConfig().changeType(RunTestCaseStepConfig.type);
-        propertyHolderSupport.resetPropertiesConfig(stepConfig.getProperties());
-    }
-
-    @Override
-    public void release() {
-        if (targetTestCase != null) {
-            targetTestCase.getTestSuite().removeTestSuiteListener(testSuiteListener);
-            targetTestCase.removeTestPropertyListener(testPropertyListener);
-        }
-
-        super.release();
-    }
-
     private final class InternalTestSuiteListener extends TestSuiteListenerAdapter {
         @Override
         public void testCaseRemoved(TestCase testCase) {
             setTargetTestCase(findTargetTestCase());
-        }
-    }
-
-    public WsdlTestCase getTargetTestCase() {
-        return targetTestCase;
-    }
-
-    public void addTestRunListener(TestRunListener listener) {
-        testRunListeners.add(listener);
-    }
-
-    public void removeTestRunListener(TestRunListener listener) {
-        testRunListeners.remove(listener);
-    }
-
-    public WsdlTestCase getRunningTestCase() {
-        return runningTestCase;
-    }
-
-    public WsdlTestCaseRunner getTestCaseRunner() {
-        return testCaseRunner;
-    }
-
-    public RunTestCaseRunModeTypeConfig.Enum getRunMode() {
-        return stepConfig.getRunMode();
-    }
-
-    public void setRunMode(RunTestCaseRunModeTypeConfig.Enum runMode) {
-        stepConfig.setRunMode(runMode);
-    }
-
-    public TestProperty getPropertyAt(int index) {
-        return propertyHolderSupport.getPropertyAt(index);
-    }
-
-    public int getPropertyCount() {
-        return propertyHolderSupport.getPropertyCount();
-    }
-
-    @Override
-    public void resolve(ResolveContext<?> context) {
-        super.resolve(context);
-
-        if (targetTestCase == null) {
-            if (context.hasThisModelItem(this, "Missing Test Case",
-                    getTestStepTitle() + "/" + stepConfig.getTargetTestCase())) {
-                return;
-            }
-            context
-                    .addPathToResolve(this, "Missing Test Case", getTestStepTitle() + "/" + stepConfig.getTargetTestCase())
-                    .addResolvers(new RunTestCaseRemoveResolver(this), new ChooseAnotherTestCase(this),
-                            new CreateNewEmptyTestCase(this));
-        } else {
-            targetTestCase.resolve(context);
-            if (context.hasThisModelItem(this, "Missing Test Case",
-                    getTestStepTitle() + "/" + stepConfig.getTargetTestCase())) {
-                context.getPath(this, "Missing Test Case", getTestStepTitle() + "/" + stepConfig.getTargetTestCase())
-                        .setSolved(true);
-            }
         }
     }
 }

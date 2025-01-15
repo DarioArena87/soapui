@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.xml;
@@ -48,16 +48,15 @@ import java.util.Map;
 import java.util.Set;
 
 public class XmlObjectTreeModel implements TreeTableModel {
-    private XmlObject xmlObject;
-    private Set<TreeModelListener> listeners = new HashSet<TreeModelListener>();
-    private XmlCursor cursor;
-    private Map<XmlObject, XmlTreeNode> treeNodeMap = new HashMap<XmlObject, XmlTreeNode>();
-
     public final static Class<?> hierarchicalColumnClass = TreeTableModel.class;
-    private SchemaTypeSystem typeSystem;
-    private RootXmlTreeNode root;
     @SuppressWarnings("unused")
     private final static Logger log = LogManager.getLogger(XmlObjectTreeModel.class);
+    private XmlObject xmlObject;
+    private final Set<TreeModelListener> listeners = new HashSet<TreeModelListener>();
+    private XmlCursor cursor;
+    private final Map<XmlObject, XmlTreeNode> treeNodeMap = new HashMap<XmlObject, XmlTreeNode>();
+    private SchemaTypeSystem typeSystem;
+    private RootXmlTreeNode root;
 
     public XmlObjectTreeModel(XmlObject xmlObject) {
         this(XmlBeans.getBuiltinTypeSystem(), xmlObject);
@@ -116,7 +115,7 @@ public class XmlObjectTreeModel implements TreeTableModel {
         this.xmlObject = xmlObject;
         init();
 
-        XmlTreeNode xmlTreeNode = ((XmlTreeNode) getRoot());
+        XmlTreeNode xmlTreeNode = ((XmlTreeNode)getRoot());
         fireTreeStructureChanged(xmlTreeNode);
     }
 
@@ -143,11 +142,11 @@ public class XmlObjectTreeModel implements TreeTableModel {
     }
 
     public boolean isCellEditable(Object arg0, int arg1) {
-        return ((XmlTreeNode) arg0).isEditable(arg1);
+        return ((XmlTreeNode)arg0).isEditable(arg1);
     }
 
     public void setValueAt(Object arg0, Object arg1, int arg2) {
-        XmlTreeNode treeNode = (XmlTreeNode) arg1;
+        XmlTreeNode treeNode = (XmlTreeNode)arg1;
         if (treeNode.setValue(arg2, arg0)) {
             fireTreeNodeChanged(treeNode, arg2);
         }
@@ -159,85 +158,149 @@ public class XmlObjectTreeModel implements TreeTableModel {
         }
     }
 
-    public void addTreeModelListener(TreeModelListener l) {
-        listeners.add(l);
-    }
-
-    public Object getChild(Object parent, int index) {
-        return ((XmlTreeNode) parent).getChild(index);
-    }
-
-    public int getChildCount(Object parent) {
-        return ((XmlTreeNode) parent).getChildCount();
-    }
-
-    public int getIndexOfChild(Object parent, Object child) {
-        return ((XmlTreeNode) parent).getIndexOfChild((XmlTreeNode) child);
-    }
-
     public Object getRoot() {
         return getRootNode();
     }
 
-    public RootXmlTreeNode getRootNode() {
-        return root;
+    public Object getChild(Object parent, int index) {
+        return ((XmlTreeNode)parent).getChild(index);
+    }
+
+    public int getChildCount(Object parent) {
+        return ((XmlTreeNode)parent).getChildCount();
     }
 
     public boolean isLeaf(Object node) {
-        return ((XmlTreeNode) node).isLeaf();
+        return ((XmlTreeNode)node).isLeaf();
+    }
+
+    public void valueForPathChanged(TreePath path, Object newValue) {
+    }
+
+    public int getIndexOfChild(Object parent, Object child) {
+        return ((XmlTreeNode)parent).getIndexOfChild((XmlTreeNode)child);
+    }
+
+    public void addTreeModelListener(TreeModelListener l) {
+        listeners.add(l);
     }
 
     public void removeTreeModelListener(TreeModelListener l) {
         listeners.remove(l);
     }
 
-    public void valueForPathChanged(TreePath path, Object newValue) {
+    public RootXmlTreeNode getRootNode() {
+        return root;
+    }
+
+    public TreePath findXmlTreeNode(int line, int column) {
+        line++;
+
+        XmlTreeNode treeNode = findXmlTreeNode(root, line, column);
+        if (treeNode instanceof AttributeXmlTreeNode) {
+            return treeNode.getParent().getTreePath();
+        }
+        else if (treeNode != null) {
+            return treeNode.getTreePath();
+        }
+
+        return null;
+    }
+
+    private XmlTreeNode findXmlTreeNode(XmlTreeNode treeNode, int line, int column) {
+        for (int c = 0; c < treeNode.getChildCount(); c++) {
+            XmlTreeNode child = treeNode.getChild(c);
+            XmlLineNumber ln = child.getNodeLineNumber();
+            if (ln != null && (line < ln.getLine() || (line == ln.getLine() && column <= ln.getColumn()))) {
+                if (c == 0) {
+                    return treeNode;
+                }
+                else {
+                    return findXmlTreeNode(treeNode.getChild(c - 1), line, column);
+                }
+            }
+        }
+
+        if (treeNode.getChildCount() > 0) {
+            return findXmlTreeNode(treeNode.getChild(treeNode.getChildCount() - 1), line, column);
+        }
+
+        return treeNode;
+    }
+
+    public XmlTreeNode getXmlTreeNode(XmlObject object) {
+        return treeNodeMap.get(object);
+    }
+
+    public XmlTreeNode[] selectTreeNodes(String xpath) {
+        XmlObject[] nodes = xmlObject.selectPath(xpath);
+        List<XmlTreeNode> result = new ArrayList<XmlTreeNode>();
+
+        for (XmlObject xmlObject : nodes) {
+            XmlTreeNode tn = getXmlTreeNode(xmlObject);
+            if (tn != null) {
+                result.add(tn);
+            }
+        }
+
+        return result.toArray(new XmlTreeNode[result.size()]);
+    }
+
+    public void release() {
+        typeSystem = null;
+        treeNodeMap.clear();
+
+        listeners.clear();
+    }
+
+    public int getHierarchicalColumn() {
+        return 0;
+    }
+
+    public interface XmlTreeNode {
+        int getChildCount();
+
+        XmlTreeNode getChild(int ix);
+
+        int getIndexOfChild(XmlTreeNode childNode);
+
+        String getNodeName();
+
+        String getNodeText();
+
+        boolean isEditable(int column);
+
+        boolean isLeaf();
+
+        boolean setValue(int column, Object value);
+
+        XmlLineNumber getNodeLineNumber();
+
+        XmlLineNumber getValueLineNumber();
+
+        XmlObject getXmlObject();
+
+        Node getDomNode();
+
+        TreePath getTreePath();
+
+        XmlTreeNode getParent();
+
+        SchemaType getSchemaType();
+
+        String getDocumentation();
     }
 
     private class TreeBookmark extends XmlCursor.XmlBookmark {
     }
 
-    public interface XmlTreeNode {
-        public int getChildCount();
-
-        public XmlTreeNode getChild(int ix);
-
-        public int getIndexOfChild(XmlTreeNode childNode);
-
-        public String getNodeName();
-
-        public String getNodeText();
-
-        public boolean isEditable(int column);
-
-        public boolean isLeaf();
-
-        public boolean setValue(int column, Object value);
-
-        public XmlLineNumber getNodeLineNumber();
-
-        public XmlLineNumber getValueLineNumber();
-
-        public XmlObject getXmlObject();
-
-        public Node getDomNode();
-
-        public TreePath getTreePath();
-
-        public XmlTreeNode getParent();
-
-        public SchemaType getSchemaType();
-
-        public String getDocumentation();
-    }
-
     private abstract class AbstractXmlTreeNode implements XmlTreeNode {
+        private final XmlTreeNode parent;
         protected Node node;
         protected TreeBookmark bm;
-        private final XmlTreeNode parent;
-        private XmlLineNumber lineNumber;
         protected SchemaType schemaType;
         protected String documentation;
+        private XmlLineNumber lineNumber;
 
         @SuppressWarnings("unchecked")
         protected AbstractXmlTreeNode(XmlCursor cursor, XmlTreeNode parent) {
@@ -251,7 +314,7 @@ public class XmlObjectTreeModel implements TreeTableModel {
 
                 for (Object o : list) {
                     if (o instanceof XmlLineNumber) {
-                        lineNumber = (XmlLineNumber) o;
+                        lineNumber = (XmlLineNumber)o;
                     }
                 }
 
@@ -276,7 +339,7 @@ public class XmlObjectTreeModel implements TreeTableModel {
 
                 // check for xsi:type
                 if (domNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element elm = (Element) domNode;
+                    Element elm = (Element)domNode;
                     String xsiType = elm.getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "type");
                     if (xsiType != null && xsiType.length() > 0) {
                         resultType = findXsiType(xsiType);
@@ -320,7 +383,8 @@ public class XmlObjectTreeModel implements TreeTableModel {
                                     if (name != null && name.equals(nm)) {
                                         resultType = anonymousTypes[c];
                                         break;
-                                    } else if (anonymousTypes[c].getContainerField().getName().equals(nm)) {
+                                    }
+                                    else if (anonymousTypes[c].getContainerField().getName().equals(nm)) {
                                         resultType = anonymousTypes[c].getContainerField().getType();
                                         break;
                                     }
@@ -333,7 +397,8 @@ public class XmlObjectTreeModel implements TreeTableModel {
                         SchemaGlobalElement elm = typeSystem.findElement(nm);
                         if (elm != null) {
                             resultType = elm.getType();
-                        } else if (typeSystem.findDocumentType(nm) != null) {
+                        }
+                        else if (typeSystem.findDocumentType(nm) != null) {
                             resultType = typeSystem.findDocumentType(nm);
                         }
                     }
@@ -365,10 +430,6 @@ public class XmlObjectTreeModel implements TreeTableModel {
             return null;
         }
 
-        public String getDocumentation() {
-            return documentation;
-        }
-
         private SchemaType findXsiType(String xsiType) {
             SchemaType resultType;
             int ix = xsiType.indexOf(':');
@@ -377,7 +438,8 @@ public class XmlObjectTreeModel implements TreeTableModel {
             if (ix == -1) {
                 name = new QName(xsiType);
                 resultType = typeSystem.findType(name);
-            } else {
+            }
+            else {
                 StringToStringMap map = new StringToStringMap();
                 cursor.getAllNamespaces(map);
 
@@ -388,39 +450,20 @@ public class XmlObjectTreeModel implements TreeTableModel {
             return resultType;
         }
 
-        public XmlTreeNode getParent() {
-            return parent;
-        }
-
         protected void positionCursor(XmlCursor cursor) {
             cursor.toBookmark(bm);
-        }
-
-        public XmlTreeNode getChild(int ix) {
-            return null;
         }
 
         public int getChildCount() {
             return 0;
         }
 
-        public int getIndexOfChild(XmlTreeNode childNode) {
-            return -1;
-        }
-
-        @SuppressWarnings("unused")
-        public Object getValue(int column) {
-            if (column == 0) {
-                return getNodeName();
-            } else if (column == 1) {
-                return getNodeText();
-            }
-
+        public XmlTreeNode getChild(int ix) {
             return null;
         }
 
-        public Node getDomNode() {
-            return node;
+        public int getIndexOfChild(XmlTreeNode childNode) {
+            return -1;
         }
 
         public String getNodeName() {
@@ -448,21 +491,6 @@ public class XmlObjectTreeModel implements TreeTableModel {
             return false;
         }
 
-        public String toString() {
-            return getNodeName();
-        }
-
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            }
-            if (obj instanceof AbstractXmlTreeNode) {
-                return ((AbstractXmlTreeNode) obj).node == this.node;
-            } else {
-                return super.equals(obj);
-            }
-        }
-
         public XmlLineNumber getNodeLineNumber() {
             return lineNumber;
         }
@@ -477,12 +505,17 @@ public class XmlObjectTreeModel implements TreeTableModel {
 
                 if (object != null) {
                     return object;
-                } else if (parent != null) {
+                }
+                else if (parent != null) {
                     return parent.getXmlObject();
                 }
             }
 
             return null;
+        }
+
+        public Node getDomNode() {
+            return node;
         }
 
         public TreePath getTreePath() {
@@ -499,12 +532,48 @@ public class XmlObjectTreeModel implements TreeTableModel {
             return new TreePath(nodes.toArray());
         }
 
+        public XmlTreeNode getParent() {
+            return parent;
+        }
+
         public SchemaType getSchemaType() {
             if (schemaType == null) {
                 schemaType = findSchemaType();
             }
 
             return schemaType;
+        }
+
+        public String getDocumentation() {
+            return documentation;
+        }
+
+        @SuppressWarnings("unused")
+        public Object getValue(int column) {
+            if (column == 0) {
+                return getNodeName();
+            }
+            else if (column == 1) {
+                return getNodeText();
+            }
+
+            return null;
+        }
+
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof AbstractXmlTreeNode) {
+                return ((AbstractXmlTreeNode)obj).node == node;
+            }
+            else {
+                return super.equals(obj);
+            }
+        }
+
+        public String toString() {
+            return getNodeName();
         }
     }
 
@@ -534,9 +603,9 @@ public class XmlObjectTreeModel implements TreeTableModel {
     }
 
     public class ElementXmlTreeNode extends AbstractXmlTreeNode {
-        private LinkedList<XmlTreeNode> elements = new LinkedList<XmlTreeNode>();
+        private final LinkedList<XmlTreeNode> elements = new LinkedList<XmlTreeNode>();
         private TextXmlTreeNode textTreeNode;
-        private int attrCount;
+        private final int attrCount;
 
         protected ElementXmlTreeNode(XmlCursor cursor, XmlTreeNode parent) {
             super(cursor, parent);
@@ -577,11 +646,12 @@ public class XmlObjectTreeModel implements TreeTableModel {
             }
 
             if (elements.size() == attrCount + 1 && (elements.get(attrCount) instanceof TextXmlTreeNode)) {
-                textTreeNode = (TextXmlTreeNode) elements.remove(attrCount);
-            } else {
+                textTreeNode = (TextXmlTreeNode)elements.remove(attrCount);
+            }
+            else {
                 for (int c = attrCount; c < elements.size(); c++) {
                     if (elements.get(c) instanceof TextXmlTreeNode) {
-                        TextXmlTreeNode treeNode = (TextXmlTreeNode) elements.get(c);
+                        TextXmlTreeNode treeNode = (TextXmlTreeNode)elements.get(c);
                         String text = treeNode.getNodeText().trim();
                         if (text.length() == 0) {
                             elements.remove(c);
@@ -598,27 +668,6 @@ public class XmlObjectTreeModel implements TreeTableModel {
             return elements.get(ix);
         }
 
-        public boolean isEditable(int column) {
-            return column == 1 && elements.size() == attrCount;
-        }
-
-        public boolean setValue(int column, Object value) {
-            if (column == 1) {
-                if (textTreeNode != null) {
-                    textTreeNode.setValue(1, value);
-                } else {
-                    positionCursor(cursor);
-                    cursor.toEndToken();
-                    cursor.insertChars(value.toString());
-                    positionCursor(cursor);
-                    cursor.toFirstContentToken();
-
-                    textTreeNode = new TextXmlTreeNode(cursor, this);
-                }
-            }
-            return column == 1;
-        }
-
         public int getChildCount() {
             return elements.size();
         }
@@ -629,6 +678,28 @@ public class XmlObjectTreeModel implements TreeTableModel {
 
         public String getNodeText() {
             return textTreeNode == null ? "" : textTreeNode.getNodeText();
+        }
+
+        public boolean isEditable(int column) {
+            return column == 1 && elements.size() == attrCount;
+        }
+
+        public boolean setValue(int column, Object value) {
+            if (column == 1) {
+                if (textTreeNode != null) {
+                    textTreeNode.setValue(1, value);
+                }
+                else {
+                    positionCursor(cursor);
+                    cursor.toEndToken();
+                    cursor.insertChars(value.toString());
+                    positionCursor(cursor);
+                    cursor.toFirstContentToken();
+
+                    textTreeNode = new TextXmlTreeNode(cursor, this);
+                }
+            }
+            return column == 1;
         }
 
         public XmlLineNumber getValueLineNumber() {
@@ -647,10 +718,6 @@ public class XmlObjectTreeModel implements TreeTableModel {
             return "@" + super.getNodeName();
         }
 
-        public XmlLineNumber getNodeLineNumber() {
-            return getParent().getNodeLineNumber();
-        }
-
         public boolean isEditable(int column) {
             return column == 1;
         }
@@ -661,6 +728,10 @@ public class XmlObjectTreeModel implements TreeTableModel {
             }
 
             return column == 1;
+        }
+
+        public XmlLineNumber getNodeLineNumber() {
+            return getParent().getNodeLineNumber();
         }
 
         public SchemaType getSchemaType() {
@@ -716,39 +787,6 @@ public class XmlObjectTreeModel implements TreeTableModel {
         }
     }
 
-    public TreePath findXmlTreeNode(int line, int column) {
-        line++;
-
-        XmlTreeNode treeNode = findXmlTreeNode(root, line, column);
-        if (treeNode instanceof AttributeXmlTreeNode) {
-            return treeNode.getParent().getTreePath();
-        } else if (treeNode != null) {
-            return treeNode.getTreePath();
-        }
-
-        return null;
-    }
-
-    private XmlTreeNode findXmlTreeNode(XmlTreeNode treeNode, int line, int column) {
-        for (int c = 0; c < treeNode.getChildCount(); c++) {
-            XmlTreeNode child = treeNode.getChild(c);
-            XmlLineNumber ln = child.getNodeLineNumber();
-            if (ln != null && (line < ln.getLine() || (line == ln.getLine() && column <= ln.getColumn()))) {
-                if (c == 0) {
-                    return treeNode;
-                } else {
-                    return findXmlTreeNode(treeNode.getChild(c - 1), line, column);
-                }
-            }
-        }
-
-        if (treeNode.getChildCount() > 0) {
-            return findXmlTreeNode(treeNode.getChild(treeNode.getChildCount() - 1), line, column);
-        }
-
-        return treeNode;
-    }
-
     public class XmlTreeTableModelEvent extends TreeModelEvent {
         private final int column;
 
@@ -775,34 +813,5 @@ public class XmlObjectTreeModel implements TreeTableModel {
         public int getColumn() {
             return column;
         }
-    }
-
-    public XmlTreeNode getXmlTreeNode(XmlObject object) {
-        return treeNodeMap.get(object);
-    }
-
-    public XmlTreeNode[] selectTreeNodes(String xpath) {
-        XmlObject[] nodes = xmlObject.selectPath(xpath);
-        List<XmlTreeNode> result = new ArrayList<XmlTreeNode>();
-
-        for (XmlObject xmlObject : nodes) {
-            XmlTreeNode tn = getXmlTreeNode(xmlObject);
-            if (tn != null) {
-                result.add(tn);
-            }
-        }
-
-        return result.toArray(new XmlTreeNode[result.size()]);
-    }
-
-    public void release() {
-        typeSystem = null;
-        treeNodeMap.clear();
-
-        listeners.clear();
-    }
-
-    public int getHierarchicalColumn() {
-        return 0;
     }
 }

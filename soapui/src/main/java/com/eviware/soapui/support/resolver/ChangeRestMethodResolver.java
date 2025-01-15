@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.resolver;
@@ -28,27 +28,18 @@ import com.eviware.soapui.support.components.SimpleForm;
 import com.eviware.soapui.support.resolver.ResolveContext.Resolver;
 import com.eviware.soapui.support.swing.ModelItemListCellRenderer;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public abstract class ChangeRestMethodResolver implements Resolver {
     private boolean resolved = false;
-    private WsdlProject project;
+    private final WsdlProject project;
     private RestMethod selectedMethod;
 
     public ChangeRestMethodResolver(RestTestRequestStep testStep) {
-        this.project = testStep.getTestCase().getTestSuite().getProject();
-    }
-
-    public String getResolvedPath() {
-        return "";
-    }
-
-    public boolean isResolved() {
-        return resolved;
+        project = testStep.getTestCase().getTestSuite().getProject();
     }
 
     public boolean resolve() {
@@ -58,17 +49,29 @@ public abstract class ChangeRestMethodResolver implements Resolver {
         return resolved;
     }
 
-    public abstract boolean update();
+    public boolean isResolved() {
+        return resolved;
+    }
 
-    protected abstract Interface[] getInterfaces(WsdlProject project);
+    public String getResolvedPath() {
+        return "";
+    }
 
     public String getDescription() {
         return "Resolve: Select another REST Method";
     }
 
+    public abstract boolean update();
+
+    protected abstract Interface[] getInterfaces(WsdlProject project);
+
     @Override
     public String toString() {
         return getDescription();
+    }
+
+    public RestMethod getSelectedRestMethod() {
+        return selectedMethod;
     }
 
     @SuppressWarnings("serial")
@@ -95,24 +98,23 @@ public abstract class ChangeRestMethodResolver implements Resolver {
                 }
             }
 
-            resourceCombo = form.appendComboBox("REST Resources", ((RestService) serviceCombo.getSelectedItem())
-                    .getOperationList().toArray(), "Target Resource");
+            resourceCombo = form.appendComboBox("REST Resources", ((RestService)serviceCombo.getSelectedItem()).getOperationList().toArray(), "Target Resource");
             resourceCombo.setRenderer(new ModelItemListCellRenderer());
 
-            methodCombo = form.appendComboBox("REST Methods", ((RestResource) resourceCombo.getSelectedItem())
-                    .getRestMethodList().toArray(), "Target Method");
+            methodCombo = form.appendComboBox("REST Methods", ((RestResource)resourceCombo.getSelectedItem()).getRestMethodList().toArray(), "Target Method");
             methodCombo.setRenderer(new ModelItemListCellRenderer());
 
             serviceCombo.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    Interface iface = project.getInterfaceByName(((Interface) serviceCombo.getSelectedItem()).getName());
+                    Interface iface = project.getInterfaceByName(((Interface)serviceCombo.getSelectedItem()).getName());
                     resourceCombo.removeAllItems();
                     if (iface != null) {
                         resourceCombo.setEnabled(true);
                         for (Operation op : iface.getOperationList()) {
                             resourceCombo.addItem(op);
                         }
-                    } else {
+                    }
+                    else {
                         resourceCombo.setEnabled(false);
                     }
                 }
@@ -120,14 +122,15 @@ public abstract class ChangeRestMethodResolver implements Resolver {
 
             resourceCombo.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    RestResource resource = (RestResource) resourceCombo.getSelectedItem();
+                    RestResource resource = (RestResource)resourceCombo.getSelectedItem();
                     methodCombo.removeAllItems();
                     if (resource != null) {
                         methodCombo.setEnabled(true);
                         for (RestMethod method : resource.getRestMethodList()) {
                             methodCombo.addItem(method);
                         }
-                    } else {
+                    }
+                    else {
                         methodCombo.setEnabled(false);
                     }
                 }
@@ -138,13 +141,8 @@ public abstract class ChangeRestMethodResolver implements Resolver {
         }
 
         protected boolean handleOk() {
-            selectedMethod = (RestMethod) methodCombo.getSelectedItem();
+            selectedMethod = (RestMethod)methodCombo.getSelectedItem();
             return true;
         }
     }
-
-    public RestMethod getSelectedRestMethod() {
-        return selectedMethod;
-    }
-
 }

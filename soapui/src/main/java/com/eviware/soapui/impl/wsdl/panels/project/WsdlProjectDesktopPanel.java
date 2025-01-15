@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.project;
@@ -58,19 +58,11 @@ import com.eviware.soapui.support.components.MetricsPanel.MetricType;
 import com.eviware.soapui.support.components.MetricsPanel.MetricsSection;
 import com.eviware.soapui.ui.support.ModelItemDesktopPanel;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.text.Document;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.HashSet;
 import java.util.Set;
@@ -89,13 +81,12 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
     protected static final String TESTSTEPS_STATISTICS = "TestSteps";
     protected static final String TESTCASES_STATISTICS = "TestCases";
     protected static final String TESTSUITES_STATISTICS = "TestSuites";
-
+    protected MetricsPanel metrics;
     private PropertyHolderTable propertiesTable;
     private JUndoableTextArea descriptionArea;
     private InternalTreeModelListener treeModelListener;
     private Set<String> interfaceNameSet = new HashSet<String>();
     private WSSTabPanel wssTabPanel;
-    protected MetricsPanel metrics;
     private GroovyEditorComponent loadScriptGroovyEditor;
     private GroovyEditorComponent saveScriptGroovyEditor;
     private JInspectorPanel inspectorPanel;
@@ -118,8 +109,7 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
 
     protected void addTabs(JTabbedPane mainTabs) {
         mainTabs.addTab("Overview", null, buildOverviewTab(), "Shows General Project information and metrics");
-        mainTabs.addTab("TestSuites", null, testSuitesPanel = buildTestSuitesTab(),
-                "Shows and runs all TestSuites in project");
+        mainTabs.addTab("TestSuites", null, testSuitesPanel = buildTestSuitesTab(), "Shows and runs all TestSuites in project");
         mainTabs.addTab("WS-Security Configurations", null, buildWSSTab(), "Manages Security-related configurations");
         mainTabs.addTab("Security Scan Defaults", null, buildSecConfigTab(), "Manages Security related configurations");
     }
@@ -150,8 +140,7 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
 
         inspectorPanel.setCurrentInspector("Properties");
 
-        if (StringUtils.hasContent(getModelItem().getDescription())
-                && getModelItem().getSettings().getBoolean(UISettings.SHOW_DESCRIPTIONS)) {
+        if (StringUtils.hasContent(getModelItem().getDescription()) && getModelItem().getSettings().getBoolean(UISettings.SHOW_DESCRIPTIONS)) {
             inspectorPanel.setCurrentInspector("Description");
         }
 
@@ -164,14 +153,10 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
     }
 
     protected void addOverviewInspectors(JInspectorPanel inspectorPanel) {
-        inspectorPanel.addInspector(new JFocusableComponentInspector<JPanel>(buildDescriptionPanel(), descriptionArea,
-                "Description", "Project description", true));
-        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildPropertiesPanel(), "Properties",
-                "Project level properties", true));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildLoadScriptPanel(), "Load Script",
-                "Script to run after loading the project"));
-        inspectorPanel.addInspector(new GroovyEditorInspector(buildSaveScriptPanel(), "Save Script",
-                "Script to run before saving the project"));
+        inspectorPanel.addInspector(new JFocusableComponentInspector<JPanel>(buildDescriptionPanel(), descriptionArea, "Description", "Project description", true));
+        inspectorPanel.addInspector(new JComponentInspector<JComponent>(buildPropertiesPanel(), "Properties", "Project level properties", true));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildLoadScriptPanel(), "Load Script", "Script to run after loading the project"));
+        inspectorPanel.addInspector(new GroovyEditorInspector(buildSaveScriptPanel(), "Save Script", "Script to run before saving the project"));
     }
 
     private void updateStatistics() {
@@ -256,8 +241,7 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
     protected JXToolBar buildOverviewToolbar() {
         JXToolBar toolbar = UISupport.createSmallToolbar();
         toolbar.addGlue();
-        toolbar
-                .addFixed(UISupport.createToolbarButton(new ShowOnlineHelpAction(HelpUrls.PROJECT_OVERVIEW_HELP_URL)));
+        toolbar.addFixed(UISupport.createToolbarButton(new ShowOnlineHelpAction(HelpUrls.PROJECT_OVERVIEW_HELP_URL)));
         return toolbar;
     }
 
@@ -265,10 +249,11 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
         interfaceNameSet.clear();
         for (Interface ic : getModelItem().getInterfaceList()) {
             if (ic instanceof WsdlInterface) {
-                WsdlInterface iface = (WsdlInterface) ic;
+                WsdlInterface iface = (WsdlInterface)ic;
                 section.addMetric(iface.getIcon(), iface.getName(), MetricType.URL).set(iface.getDefinition());
-            } else if (ic instanceof RestService) {
-                RestService iface = (RestService) ic;
+            }
+            else if (ic instanceof RestService) {
+                RestService iface = (RestService)ic;
                 section.addMetric(iface.getIcon(), iface.getName(), MetricType.URL).set(iface.getWadlUrl());
             }
 
@@ -309,15 +294,10 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
         JPanel panel = new JPanel(new BorderLayout());
         propertiesTable = new PropertyHolderTable(getModelItem());
         if (getModelItem() instanceof WsdlProject) {
-            ((WsdlProject) getModelItem()).addProjectListener(propertiesTable.getProjectListener());
+            getModelItem().addProjectListener(propertiesTable.getProjectListener());
         }
         panel.add(propertiesTable, BorderLayout.CENTER);
         return panel;
-    }
-
-    @Override
-    public boolean dependsOn(ModelItem modelItem) {
-        return modelItem == getModelItem();
     }
 
     public boolean onClose(boolean canCancel) {
@@ -332,6 +312,11 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
         inspectorPanel.release();
         testSuitesPanel.release();
         return release();
+    }
+
+    @Override
+    public boolean dependsOn(ModelItem modelItem) {
+        return modelItem == getModelItem();
     }
 
     private final class InternalTreeModelListener implements TreeModelListener {
@@ -358,6 +343,11 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
         }
 
         @Override
+        public Action getRunAction() {
+            return new AfterLoadScriptRunAction();
+        }
+
+        @Override
         public String getScript() {
             return WsdlProjectDesktopPanel.this.getModelItem().getAfterLoadScript();
         }
@@ -367,21 +357,17 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
             WsdlProjectDesktopPanel.this.getModelItem().setAfterLoadScript(text);
         }
 
-        @Override
-        public Action getRunAction() {
-            return new AfterLoadScriptRunAction();
-        }
-
         private final class AfterLoadScriptRunAction extends AbstractAction {
             public AfterLoadScriptRunAction() {
-                putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
+                putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
                 putValue(SHORT_DESCRIPTION, "Runs this script");
             }
 
             public void actionPerformed(ActionEvent e) {
                 try {
                     WsdlProjectDesktopPanel.this.getModelItem().runAfterLoadScript();
-                } catch (Exception e1) {
+                }
+                catch (Exception e1) {
                     UISupport.showErrorMessage(e1);
                 }
             }
@@ -394,6 +380,11 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
         }
 
         @Override
+        public Action getRunAction() {
+            return new BeforeSaveScriptRunAction();
+        }
+
+        @Override
         public String getScript() {
             return WsdlProjectDesktopPanel.this.getModelItem().getBeforeSaveScript();
         }
@@ -403,25 +394,20 @@ public class WsdlProjectDesktopPanel extends ModelItemDesktopPanel<WsdlProject> 
             WsdlProjectDesktopPanel.this.getModelItem().setBeforeSaveScript(text);
         }
 
-        @Override
-        public Action getRunAction() {
-            return new BeforeSaveScriptRunAction();
-        }
-
         private final class BeforeSaveScriptRunAction extends AbstractAction {
             public BeforeSaveScriptRunAction() {
-                putValue(Action.SMALL_ICON, UISupport.createImageIcon("/run.png"));
+                putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
                 putValue(SHORT_DESCRIPTION, "Runs this script");
             }
 
             public void actionPerformed(ActionEvent e) {
                 try {
                     WsdlProjectDesktopPanel.this.getModelItem().runBeforeSaveScript();
-                } catch (Exception e1) {
+                }
+                catch (Exception e1) {
                     UISupport.showErrorMessage(e1);
                 }
             }
         }
     }
-
 }

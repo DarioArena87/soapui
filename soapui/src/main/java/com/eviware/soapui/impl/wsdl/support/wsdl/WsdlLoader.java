@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wsdl;
@@ -62,7 +62,8 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
                     int colonIndex = userInfo.indexOf(':');
                     username = userInfo.substring(0, colonIndex);
                     password = userInfo.substring(colonIndex + 1);
-                } else {
+                }
+                else {
                     //userInfo may be null if username and password have some special chars and are not url encoded
                     String authority = uri.getAuthority();
                     if (authority != null) {
@@ -75,7 +76,8 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
                         }
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -89,9 +91,33 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
         try {
             log.debug("Returning baseInputSource [" + url + "]");
             return new InputSource(load(url));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new RuntimeException(e.toString());
         }
+    }
+
+    public InputSource getImportInputSource(String parent, String imp) {
+        if (isAbsoluteUrl(imp)) {
+            last = imp;
+        }
+        else {
+            last = Tools.joinRelativeUrl(parent, imp);
+        }
+
+        try {
+            InputStream input = load(last);
+            return input == null ? null : new InputSource(input);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e.toString());
+        }
+    }
+
+    public String getLatestImportURI() {
+        String result = last == null ? url : last;
+        log.debug("Returning latest import URI [" + result + "]");
+        return result;
     }
 
     public abstract InputStream load(String url) throws Exception;
@@ -108,18 +134,26 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
 
             options.setLoadLineNumbers();
             return XmlUtils.createXmlObject(readCleanWsdlFrom(url), options);
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             XmlError error = e.getError();
             if (error != null) {
                 InvalidDefinitionException ex = new InvalidDefinitionException(e);
                 ex.setMessage("Error loading [" + url + "]");
                 throw ex;
-            } else {
+            }
+            else {
                 throw makeInvalidDefinitionException(url, e);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw makeInvalidDefinitionException(url, e);
         }
+    }
+
+    public String getBaseURI() {
+        // log.debug( "Returning baseURI [" + url + "]" );
+        return url;
     }
 
     private InvalidDefinitionException makeInvalidDefinitionException(String url, Exception e) throws InvalidDefinitionException {
@@ -136,11 +170,6 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
         return Tools.removePropertyExpansions(url, content);
     }
 
-    public String getBaseURI() {
-        // log.debug( "Returning baseURI [" + url + "]" );
-        return url;
-    }
-
     public void setNewBaseURI(String newUrl) {
         if (firstNewURI == null) {
             firstNewURI = newUrl;
@@ -152,30 +181,9 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
         return firstNewURI == null ? url : firstNewURI;
     }
 
-    public InputSource getImportInputSource(String parent, String imp) {
-        if (isAbsoluteUrl(imp)) {
-            last = imp;
-        } else {
-            last = Tools.joinRelativeUrl(parent, imp);
-        }
-
-        try {
-            InputStream input = load(last);
-            return input == null ? null : new InputSource(input);
-        } catch (Exception e) {
-            throw new RuntimeException(e.toString());
-        }
-    }
-
     protected boolean isAbsoluteUrl(String tempImp) {
         tempImp = tempImp.toUpperCase();
         return tempImp.startsWith("HTTP:") || tempImp.startsWith("HTTPS:") || tempImp.startsWith("FILE:");
-    }
-
-    public String getLatestImportURI() {
-        String result = last == null ? url : last;
-        log.debug("Returning latest import URI [" + result + "]");
-        return result;
     }
 
     public boolean hasCredentials() {
@@ -185,13 +193,10 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
     }
 
     public String getPassword() {
-        return StringUtils.isNullOrEmpty(password) ? System.getProperty("soapui.loader.password", password)
-                : password;
+        return StringUtils.isNullOrEmpty(password) ? System.getProperty("soapui.loader.password", password) : password;
     }
 
     public String getUsername() {
-        return StringUtils.isNullOrEmpty(username) ? System.getProperty("soapui.loader.username", username)
-                : username;
+        return StringUtils.isNullOrEmpty(username) ? System.getProperty("soapui.loader.username", username) : username;
     }
-
 }

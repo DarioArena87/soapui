@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.json;
@@ -32,23 +32,17 @@ import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import junit.framework.Assert;
 
-import javax.swing.JTextArea;
+import javax.swing.*;
 import java.util.List;
 
 public class JsonPathCountAssertion extends JsonPathAssertionBase implements RequestAssertion, ResponseAssertion {
 
     public static final String ID = "JsonPath Count";
     public static final String LABEL = "JsonPath Count";
-    public static final String DESCRIPTION = "Uses an JsonPath expression to count the occurrences of an element." +
-            " Applicable to any property containing JSON.";
+    public static final String DESCRIPTION = "Uses an JsonPath expression to count the occurrences of an element." + " Applicable to any property containing JSON.";
 
     public JsonPathCountAssertion(TestAssertionConfig assertionConfig, Assertable assertable) {
         super(assertionConfig, assertable);
-    }
-
-    @Override
-    public String getHelpURL() {
-        return HelpUrls.ASSERTION_JSON_COUNT;
     }
 
     @Override
@@ -59,6 +53,45 @@ public class JsonPathCountAssertion extends JsonPathAssertionBase implements Req
     @Override
     public String getConfigurationDialogTitle() {
         return "JSONPath Count Match Configuration";
+    }
+
+    private Integer getResultSize(Object result) {
+        Integer count = 0;
+        if (result instanceof List) {
+            count = ((List)result).size();
+        }
+        else if (result != null) {
+            count = 1;
+        }
+        return count;
+    }
+
+    @Override
+    public String assertContent(String assertableContent, SubmitContext context, String type) throws AssertionException {
+        String path = getPath();
+        try {
+            if (path == null) {
+                return "Missing path for JsonPath assertion";
+            }
+            if (getExpectedContent() == null) {
+                return "Missing content for JsonPath assertion";
+            }
+            String expandedPath = PropertyExpander.expandProperties(context, path);
+            Object result = new JsonPathFacade(assertableContent).readObjectValue(expandedPath);
+            String resultSize = getResultSize(result).toString();
+
+            String expandedContent = PropertyExpander.expandProperties(context, getExpectedContent());
+            Assert.assertEquals(expandedContent, resultSize);
+        }
+        catch (Throwable exception) {
+            throwAssertionException(path, exception);
+        }
+        return type + " matches content for [" + path + "]";
+    }
+
+    @Override
+    public String getHelpURL() {
+        return HelpUrls.ASSERTION_JSON_COUNT;
     }
 
     @Override
@@ -83,57 +116,26 @@ public class JsonPathCountAssertion extends JsonPathAssertionBase implements Req
             Object result = new JsonPathFacade(assertableContent).readObjectValue(expandedPath);
             if (result == null) {
                 UISupport.showErrorMessage("No match in current response");
-            } else {
+            }
+            else {
                 Integer count = getResultSize(result);
                 if (contentArea != null && contentArea.isVisible()) {
                     contentArea.setText(count.toString());
-                } else {
+                }
+                else {
                     setExpectedContent(count.toString(), false);
                 }
             }
-
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             UISupport.showErrorMessage("Invalid JsonPath expression.");
             SoapUI.logError(e);
         }
     }
 
-    private Integer getResultSize(Object result) {
-        Integer count = 0;
-        if (result instanceof List) {
-            count = ((List) result).size();
-        } else if (result != null) {
-            count = 1;
-        }
-        return count;
-    }
-
-    @Override
-    public String assertContent(String assertableContent, SubmitContext context, String type) throws AssertionException {
-        String path = getPath();
-        try {
-            if (path == null) {
-                return "Missing path for JsonPath assertion";
-            }
-            if (getExpectedContent() == null) {
-                return "Missing content for JsonPath assertion";
-            }
-            String expandedPath = PropertyExpander.expandProperties(context, path);
-            Object result = new JsonPathFacade(assertableContent).readObjectValue(expandedPath);
-            String resultSize = getResultSize(result).toString();
-
-            String expandedContent = PropertyExpander.expandProperties(context, getExpectedContent());
-            Assert.assertEquals(expandedContent, resultSize);
-        } catch (Throwable exception) {
-            throwAssertionException(path, exception);
-        }
-        return type + " matches content for [" + path + "]";
-    }
-
     public static class Factory extends JsonAssertionFactory {
         public Factory() {
-            super(JsonPathCountAssertion.ID, JsonPathCountAssertion.LABEL, JsonPathCountAssertion.DESCRIPTION,
-                    JsonPathCountAssertion.class);
+            super(ID, LABEL, DESCRIPTION, JsonPathCountAssertion.class);
         }
     }
 }

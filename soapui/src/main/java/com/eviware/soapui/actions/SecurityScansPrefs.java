@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -35,8 +35,8 @@ import java.awt.dnd.DropTarget;
 public class SecurityScansPrefs implements Prefs {
 
     public static final String GLOBAL_SENSITIVE_INFORMATION_TOKENS = "Global Sensitive Information Tokens";
-    private SimpleForm securityScansForm;
     private final String title;
+    private SimpleForm securityScansForm;
 
     public SecurityScansPrefs(String title) {
         this.title = title;
@@ -46,8 +46,7 @@ public class SecurityScansPrefs implements Prefs {
         if (securityScansForm == null) {
             securityScansForm = new SimpleForm();
 
-            PropertyHolderTable propertyHolderTable = new PropertyHolderTable(
-                    SecurityScanUtil.getGlobalSensitiveInformationExposureTokens()) {
+            PropertyHolderTable propertyHolderTable = new PropertyHolderTable(SecurityScanUtil.getGlobalSensitiveInformationExposureTokens()) {
                 protected JTable buildPropertiesTable() {
                     propertiesModel = new DefaultPropertyHolderTableModel(holder) {
                         @Override
@@ -61,7 +60,6 @@ public class SecurityScansPrefs implements Prefs {
 
                             return null;
                         }
-
                     };
                     propertiesTable = new PropertiesHolderJTable();
                     propertiesTable.setSurrendersFocusOnKeystroke(true);
@@ -79,8 +77,7 @@ public class SecurityScansPrefs implements Prefs {
                             }
 
                             if (movePropertyDownAction != null) {
-                                movePropertyDownAction.setEnabled(selectedRow >= 0
-                                        && selectedRow < propertiesTable.getRowCount() - 1);
+                                movePropertyDownAction.setEnabled(selectedRow >= 0 && selectedRow < propertiesTable.getRowCount() - 1);
                             }
                         }
                     });
@@ -89,8 +86,7 @@ public class SecurityScansPrefs implements Prefs {
                     propertiesTable.setTransferHandler(new TransferHandler("testProperty"));
 
                     if (getHolder().getModelItem() != null) {
-                        DropTarget dropTarget = new DropTarget(propertiesTable,
-                                new PropertyHolderTablePropertyExpansionDropTarget());
+                        DropTarget dropTarget = new DropTarget(propertiesTable, new PropertyHolderTablePropertyExpansionDropTarget());
                         dropTarget.setDefaultActions(DnDConstants.ACTION_COPY_OR_MOVE);
                     }
 
@@ -106,22 +102,22 @@ public class SecurityScansPrefs implements Prefs {
         return securityScansForm;
     }
 
+    public void setFormValues(Settings settings) {
+
+    }
+
     public void getFormValues(Settings settings) {
         SecurityScanUtil.saveGlobalSecuritySettings();
     }
 
-    public String getTitle() {
-        return GLOBAL_SENSITIVE_INFORMATION_TOKENS;
+    public void storeValues(StringToStringMap values, Settings settings) {
     }
 
     public StringToStringMap getValues(Settings settings) {
         return null;
     }
 
-    public void setFormValues(Settings settings) {
-
-    }
-
-    public void storeValues(StringToStringMap values, Settings settings) {
+    public String getTitle() {
+        return GLOBAL_SENSITIVE_INFORMATION_TOKENS;
     }
 }

@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//**
+ *//**
  * MySwing: Advanced Swing Utilites
  * Copyright (C) 2005  Santhosh Kumar T
  * <p/>
@@ -33,7 +33,12 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ActionMapUIResource;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 /**
  * Maintenance tip - There were some tricks to getting this code
@@ -61,6 +66,18 @@ import java.awt.event.*;
 
 public class TristateCheckBox extends JCheckBox {
     private final TristateDecorator model;
+
+    public static void main(String[] args) throws Exception {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        JFrame frame = new JFrame("TristateCheckBoxTest");     //NOI18N
+        frame.getContentPane().setLayout(new GridLayout(0, 1, 5, 5));
+        TristateCheckBox swingBox = new TristateCheckBox("Testing the tristate checkbox");  //NOI18N
+        swingBox.setMnemonic('T');
+        frame.getContentPane().add(swingBox);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+    }
 
     public TristateCheckBox(String text, Icon icon, Boolean initial) {
         super(text, icon);
@@ -106,19 +123,19 @@ public class TristateCheckBox extends JCheckBox {
     }
 
     /**
-     * Set the new state to either SELECTED, NOT_SELECTED or
-     * DONT_CARE.  If state == null, it is treated as DONT_CARE.
-     */
-    public void setState(Boolean state) {
-        model.setState(state);
-    }
-
-    /**
      * Return the current state, which is determined by the
      * selection status of the model.
      */
     public Boolean getState() {
         return model.getState();
+    }
+
+    /**
+     * Set the new state to either SELECTED, NOT_SELECTED or
+     * DONT_CARE.  If state == null, it is treated as DONT_CARE.
+     */
+    public void setState(Boolean state) {
+        model.setState(state);
     }
 
     /**
@@ -134,22 +151,6 @@ public class TristateCheckBox extends JCheckBox {
             this.other = other;
         }
 
-        private void setState(Boolean state) {
-            if (state == Boolean.FALSE) {
-                other.setArmed(false);
-                setPressed(false);
-                setSelected(false);
-            } else if (state == Boolean.TRUE) {
-                other.setArmed(false);
-                setPressed(false);
-                setSelected(true);
-            } else {
-                other.setArmed(true);
-                setPressed(true);
-                setSelected(true);
-            }
-        }
-
         /**
          * The current state is embedded in the selection / armed
          * state of the model.
@@ -163,15 +164,34 @@ public class TristateCheckBox extends JCheckBox {
             if (isSelected() && !isArmed()) {
                 // normal black tick
                 return Boolean.TRUE;
-            } else if (isSelected() && isArmed()) {
+            }
+            else if (isSelected() && isArmed()) {
                 // don't care grey tick
                 return null;
-            } else {
+            }
+            else {
                 // normal deselected
                 return Boolean.FALSE;
             }
         }
 
+        private void setState(Boolean state) {
+            if (state == Boolean.FALSE) {
+                other.setArmed(false);
+                setPressed(false);
+                setSelected(false);
+            }
+            else if (state == Boolean.TRUE) {
+                other.setArmed(false);
+                setPressed(false);
+                setSelected(true);
+            }
+            else {
+                other.setArmed(true);
+                setPressed(true);
+                setSelected(true);
+            }
+        }
 
         /**
          * We rotate between NOT_SELECTED, SELECTED and DONT_CARE.
@@ -180,13 +200,26 @@ public class TristateCheckBox extends JCheckBox {
             Boolean current = getState();
             if (current == Boolean.FALSE) {
                 setState(Boolean.TRUE);
-            } else if (current == Boolean.TRUE) {
+            }
+            else if (current == Boolean.TRUE) {
                 setState(null);
-            } else if (current == null) {
+            }
+            else if (current == null) {
                 setState(Boolean.FALSE);
             }
         }
 
+        public boolean isFocusTraversable() {
+            return isEnabled();
+        }
+
+        /**
+         * All these methods simply delegate to the "other" model
+         * that is being decorated.
+         */
+        public boolean isArmed() {
+            return other.isArmed();
+        }
 
         /**
          * Filter: No one may change the armed status except us.
@@ -194,8 +227,12 @@ public class TristateCheckBox extends JCheckBox {
         public void setArmed(boolean b) {
         }
 
-        public boolean isFocusTraversable() {
-            return isEnabled();
+        public boolean isSelected() {
+            return other.isSelected();
+        }
+
+        public boolean isEnabled() {
+            return other.isEnabled();
         }
 
         /**
@@ -207,23 +244,6 @@ public class TristateCheckBox extends JCheckBox {
             other.setEnabled(b);
         }
 
-
-        /**
-         * All these methods simply delegate to the "other" model
-         * that is being decorated.
-         */
-        public boolean isArmed() {
-            return other.isArmed();
-        }
-
-        public boolean isSelected() {
-            return other.isSelected();
-        }
-
-        public boolean isEnabled() {
-            return other.isEnabled();
-        }
-
         public boolean isPressed() {
             return other.isPressed();
         }
@@ -232,19 +252,21 @@ public class TristateCheckBox extends JCheckBox {
             return other.isRollover();
         }
 
-        public void setSelected(boolean b) {
-            other.setSelected(b);
+        public void setRollover(boolean b) {
+            other.setRollover(b);
         }
 
         public void setPressed(boolean b) {
             other.setPressed(b);
         }
 
-        public void setRollover(boolean b) {
-            other.setRollover(b);
+        public void setSelected(boolean b) {
+            other.setSelected(b);
         }
 
-        public void setMnemonic(int key) {
+        public Object[] getSelectedObjects() {
+            return other.getSelectedObjects();
+        }        public void setMnemonic(int key) {
             other.setMnemonic(key);
         }
 
@@ -288,23 +310,6 @@ public class TristateCheckBox extends JCheckBox {
             other.removeChangeListener(l);
         }
 
-        public Object[] getSelectedObjects() {
-            return other.getSelectedObjects();
-        }
-    }
 
-
-    public static void main(String args[]) throws Exception {
-        UIManager.setLookAndFeel(
-                UIManager.getSystemLookAndFeelClassName());
-        JFrame frame = new JFrame("TristateCheckBoxTest");     //NOI18N
-        frame.getContentPane().setLayout(new GridLayout(0, 1, 5, 5));
-        final TristateCheckBox swingBox = new TristateCheckBox(
-                "Testing the tristate checkbox");  //NOI18N
-        swingBox.setMnemonic('T');
-        frame.getContentPane().add(swingBox);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
     }
 }

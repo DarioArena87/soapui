@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
@@ -58,7 +58,8 @@ public class MakefileTokenMarker extends TokenMarker {
                         case '#':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 addToken(length - i, Token.COMMENT1);
                                 lastOffset = length;
@@ -68,14 +69,16 @@ public class MakefileTokenMarker extends TokenMarker {
                         case '$':
                             if (backslash) {
                                 backslash = false;
-                            } else if (lastOffset != offset) {
+                            }
+                            else if (lastOffset != offset) {
                                 addToken(i - lastOffset, token);
                                 lastOffset = i;
                                 if (length - i > 1) {
                                     char c1 = array[i1];
                                     if (c1 == '(' || c1 == '{') {
                                         token = Token.KEYWORD2;
-                                    } else {
+                                    }
+                                    else {
                                         addToken(2, Token.KEYWORD2);
                                         lastOffset += 2;
                                         i++;
@@ -86,7 +89,8 @@ public class MakefileTokenMarker extends TokenMarker {
                         case '"':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 token = Token.LITERAL1;
                                 lastOffset = i;
@@ -95,7 +99,8 @@ public class MakefileTokenMarker extends TokenMarker {
                         case '\'':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 token = Token.LITERAL2;
                                 lastOffset = i;
@@ -116,22 +121,26 @@ public class MakefileTokenMarker extends TokenMarker {
                 case Token.LITERAL1:
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '"') {
+                    }
+                    else if (c == '"') {
                         addToken(i1 - lastOffset, token);
                         token = Token.NULL;
                         lastOffset = i1;
-                    } else {
+                    }
+                    else {
                         backslash = false;
                     }
                     break;
                 case Token.LITERAL2:
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '\'') {
+                    }
+                    else if (c == '\'') {
                         addToken(i1 - lastOffset, Token.LITERAL1);
                         token = Token.NULL;
                         lastOffset = i1;
-                    } else {
+                    }
+                    else {
                         backslash = false;
                     }
                     break;

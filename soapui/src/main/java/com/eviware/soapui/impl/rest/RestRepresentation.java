@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest;
@@ -40,31 +40,9 @@ public class RestRepresentation implements PropertyChangeNotifier, PropertyChang
     // private final RestRequest restRequest;
     private final RestMethod restMethod;
     private RestResourceRepresentationConfig config;
-    private RestParamsPropertyHolder params;
-    private PropertyChangeSupport propertyChangeSupport;
+    private final RestParamsPropertyHolder params;
+    private final PropertyChangeSupport propertyChangeSupport;
     private SchemaType schemaType;
-
-    public enum Type {
-        REQUEST, RESPONSE, FAULT
-    }
-
-	/*
-     * //TODO: Remove this? public RestRepresentation( RestRequest restResource,
-	 * RestResourceRepresentationConfig config ) { this.restMethod = null;
-	 * this.restRequest = restResource; this.config = config;
-	 * 
-	 * if( config.getParams() == null ) config.addNewParams();
-	 * 
-	 * params = new XmlBeansRestParamsTestPropertyHolder( restResource,
-	 * config.getParams() ); propertyChangeSupport = new PropertyChangeSupport(
-	 * this );
-	 * 
-	 * if(this.restRequest.getResource() != null &&
-	 * this.restRequest.getResource().getService() != null)
-	 * InferredSchemaManager.
-	 * addPropertyChangeListener(this.restRequest.getResource().getService(),
-	 * this); }
-	 */
 
     public RestRepresentation(RestMethod restMethod, RestResourceRepresentationConfig config) {
         this.restMethod = restMethod;
@@ -80,6 +58,24 @@ public class RestRepresentation implements PropertyChangeNotifier, PropertyChang
         InferredSchemaManager.addPropertyChangeListener(this.restMethod.getResource().getService(), this);
     }
 
+    /*
+     * //TODO: Remove this? public RestRepresentation( RestRequest restResource,
+     * RestResourceRepresentationConfig config ) { this.restMethod = null;
+     * this.restRequest = restResource; this.config = config;
+     *
+     * if( config.getParams() == null ) config.addNewParams();
+     *
+     * params = new XmlBeansRestParamsTestPropertyHolder( restResource,
+     * config.getParams() ); propertyChangeSupport = new PropertyChangeSupport(
+     * this );
+     *
+     * if(this.restRequest.getResource() != null &&
+     * this.restRequest.getResource().getService() != null)
+     * InferredSchemaManager.
+     * addPropertyChangeListener(this.restRequest.getResource().getService(),
+     * this); }
+     */
+
     public RestMethod getRestMethod() {
         return restMethod;
     }
@@ -88,16 +84,22 @@ public class RestRepresentation implements PropertyChangeNotifier, PropertyChang
         return config;
     }
 
-    public RestParamsPropertyHolder getParams() {
-        return params;
-    }
-
     public void setConfig(RestResourceRepresentationConfig config) {
         this.config = config;
     }
 
+    public RestParamsPropertyHolder getParams() {
+        return params;
+    }
+
     public String getId() {
         return config.getId();
+    }
+
+    public void setId(String arg0) {
+        String old = getId();
+        config.setId(arg0);
+        propertyChangeSupport.firePropertyChange("id", old, arg0);
     }
 
     public Type getType() {
@@ -108,33 +110,20 @@ public class RestRepresentation implements PropertyChangeNotifier, PropertyChang
         return Type.valueOf(config.getType().toString());
     }
 
-    public String getMediaType() {
-        return config.getMediaType();
-    }
-
-    public void setId(String arg0) {
-        String old = getId();
-        config.setId(arg0);
-        propertyChangeSupport.firePropertyChange("id", old, arg0);
-    }
-
     public void setType(Type type) {
         Type old = getType();
         config.setType(RestResourceRepresentationTypeConfig.Enum.forString(type.toString()));
         propertyChangeSupport.firePropertyChange("type", old, type);
     }
 
+    public String getMediaType() {
+        return config.getMediaType();
+    }
+
     public void setMediaType(String arg0) {
         String old = getMediaType();
         config.setMediaType(arg0);
         propertyChangeSupport.firePropertyChange(Request.MEDIA_TYPE, old, arg0);
-    }
-
-    public void setElement(QName name) {
-        QName old = getElement();
-        config.setElement(name);
-        schemaType = null;
-        propertyChangeSupport.firePropertyChange("element", old, name);
     }
 
     public List<?> getStatus() {
@@ -162,7 +151,8 @@ public class RestRepresentation implements PropertyChangeNotifier, PropertyChang
                         }
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -174,26 +164,33 @@ public class RestRepresentation implements PropertyChangeNotifier, PropertyChang
         InferredSchemaManager.removePropertyChangeListener(getRestMethod().getResource().getService(), this);
     }
 
+    public String getDescription() {
+        return config.getDescription();
+    }
+
     public void setDescription(String description) {
         String old = getDescription();
         config.setDescription(description);
         propertyChangeSupport.firePropertyChange("description", old, description);
     }
 
-    public String getDescription() {
-        return config.getDescription();
-    }
-
     public QName getElement() {
         return config.getElement();
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertyChangeSupport.addPropertyChangeListener(listener);
+    public void setElement(QName name) {
+        QName old = getElement();
+        config.setElement(name);
+        schemaType = null;
+        propertyChangeSupport.firePropertyChange("element", old, name);
     }
 
     public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -211,12 +208,19 @@ public class RestRepresentation implements PropertyChangeNotifier, PropertyChang
             generator.setIgnoreOptional(false);
             return generator.createSample(getSchemaType());
             // return XmlUtils.serialize( document );
-        } else {
+        }
+        else {
             return "";
         }
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         schemaType = null;
+    }
+
+    public enum Type {
+        REQUEST,
+        RESPONSE,
+        FAULT
     }
 }

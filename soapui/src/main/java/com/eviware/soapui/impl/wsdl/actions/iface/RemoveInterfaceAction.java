@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface;
@@ -35,38 +35,6 @@ import com.eviware.soapui.support.action.support.AbstractSoapUIAction;
  */
 
 public class RemoveInterfaceAction extends AbstractSoapUIAction<WsdlInterface> {
-    public RemoveInterfaceAction() {
-        super("Remove", "Removes this interface from the project");
-    }
-
-    public void perform(WsdlInterface iface, Object param) {
-        if (hasRunningDependingTests(iface)) {
-            UISupport.showErrorMessage("Cannot remove Interface due to running depending tests");
-            return;
-        }
-
-        if (UISupport.confirm("Remove interface [" + iface.getName() + "] from project [" + iface.getProject().getName()
-                + "]?", "Remove Interface")) {
-            if (hasDependingTests(iface)) {
-                if (!UISupport.confirm("Interface has depending TestSteps which will also be removed. Remove anyway?",
-                        "Remove Interface")) {
-                    return;
-                }
-            }
-
-            if (hasDependingMockOperations(iface)) {
-                if (!UISupport.confirm(
-                        "Interface has depending MockOperations which will also be removed. Remove anyway?",
-                        "Remove Interface")) {
-                    return;
-                }
-            }
-
-            WsdlProject project = (WsdlProject) iface.getProject();
-            project.removeInterface(iface);
-        }
-    }
-
     public static boolean hasRunningDependingTests(AbstractInterface<?> iface) {
         if (SoapUI.getTestMonitor() == null) {
             return false;
@@ -81,7 +49,7 @@ public class RemoveInterfaceAction extends AbstractSoapUIAction<WsdlInterface> {
                 }
 
                 for (int j = 0; j < testCase.getTestStepCount(); j++) {
-                    WsdlTestStep testStep = (WsdlTestStep) testCase.getTestStepAt(j);
+                    WsdlTestStep testStep = (WsdlTestStep)testCase.getTestStepAt(j);
                     if (testStep.dependsOn(iface)) {
                         return true;
                     }
@@ -99,7 +67,7 @@ public class RemoveInterfaceAction extends AbstractSoapUIAction<WsdlInterface> {
                 TestCase testCase = testSuite.getTestCaseAt(i);
 
                 for (int j = 0; j < testCase.getTestStepCount(); j++) {
-                    WsdlTestStep testStep = (WsdlTestStep) testCase.getTestStepAt(j);
+                    WsdlTestStep testStep = (WsdlTestStep)testCase.getTestStepAt(j);
                     if (testStep.dependsOn(iface)) {
                         return true;
                     }
@@ -122,5 +90,33 @@ public class RemoveInterfaceAction extends AbstractSoapUIAction<WsdlInterface> {
         }
 
         return false;
+    }
+
+    public RemoveInterfaceAction() {
+        super("Remove", "Removes this interface from the project");
+    }
+
+    public void perform(WsdlInterface iface, Object param) {
+        if (hasRunningDependingTests(iface)) {
+            UISupport.showErrorMessage("Cannot remove Interface due to running depending tests");
+            return;
+        }
+
+        if (UISupport.confirm("Remove interface [" + iface.getName() + "] from project [" + iface.getProject().getName() + "]?", "Remove Interface")) {
+            if (hasDependingTests(iface)) {
+                if (!UISupport.confirm("Interface has depending TestSteps which will also be removed. Remove anyway?", "Remove Interface")) {
+                    return;
+                }
+            }
+
+            if (hasDependingMockOperations(iface)) {
+                if (!UISupport.confirm("Interface has depending MockOperations which will also be removed. Remove anyway?", "Remove Interface")) {
+                    return;
+                }
+            }
+
+            WsdlProject project = iface.getProject();
+            project.removeInterface(iface);
+        }
     }
 }

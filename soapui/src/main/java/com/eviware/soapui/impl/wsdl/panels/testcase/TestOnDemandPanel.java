@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.testcase;
@@ -36,15 +36,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 import javax.annotation.Nonnull;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -73,28 +66,20 @@ public class TestOnDemandPanel extends JPanel {
     private static final String SERVER_IP_ADDRESSES_PREFIX = "IP: ";
     private static final String SERVER_IP_ADDRESSES_DELIMETER = ", ";
     private static final String NO_SERVER_IP_ADDRESSES_MESSAGE = "<No IP addresses found>";
-
+    @Nonnull
+    private static List<Location> locationsCache = new ArrayList<Location>();
+    private final WsdlTestCase testCase;
+    protected DependencyValidator validator;
+    @Nonnull
+    JLabel serverIPAddressesLabel = new JLabel();
+    @Nonnull
+    TestOnDemandCaller caller;
     // FIXME This suggest using a Java 7 feature, Fix compiler level!
     @Nonnull
     private JComboBox locationsComboBox;
-
     private WebViewBasedBrowserComponent browser;
-
     @Nonnull
     private Action sendTestCaseAction;
-
-    @Nonnull
-    private static List<Location> locationsCache = new ArrayList<Location>();
-
-    @Nonnull
-    JLabel serverIPAddressesLabel = new JLabel();
-
-    @Nonnull
-    TestOnDemandCaller caller;
-
-    private final WsdlTestCase testCase;
-
-    protected DependencyValidator validator;
 
     public TestOnDemandPanel(WsdlTestCase testCase) {
         super(new BorderLayout());
@@ -160,7 +145,8 @@ public class TestOnDemandPanel extends JPanel {
     public void initializeLocationsCache() {
         if (locationsCache.isEmpty()) {
             new TestOnDemandCallerThread().start();
-        } else {
+        }
+        else {
             populateLocationsComboBox();
         }
     }
@@ -171,7 +157,8 @@ public class TestOnDemandPanel extends JPanel {
         if (locationsCache.isEmpty()) {
             locationsComboBox.addItem(NO_LOCATIONS_FOUND_MESSAGE);
             openInInternalBrowser(SoapUI.STARTER_PAGE_ERROR_URL);
-        } else {
+        }
+        else {
             for (Location location : locationsCache) {
                 locationsComboBox.addItem(location);
             }
@@ -211,33 +198,41 @@ public class TestOnDemandPanel extends JPanel {
 
             openInInternalBrowser(FIRST_PAGE_URL);
         }
+    }
 
+    private void openURLSafely(String url) {
+        if (SoapUI.isBrowserDisabled()) {
+            Tools.openURL(url);
+        }
+        else {
+            if (browser != null) {
+                browser.navigate(url);
+            }
+        }
     }
 
     private class SendTestCaseAction extends AbstractAction {
         public SendTestCaseAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/run.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Run Test On Demand report");
+            putValue(SHORT_DESCRIPTION, "Run Test On Demand report");
         }
 
         public void actionPerformed(ActionEvent arg0) {
 
-
             if (validator != null && !validator.isValid(testCase)) {
-                UISupport.showErrorMessage("Your project contains external dependencies that "
-                        + "are not supported by the Test-On-Demand functionality at this point.");
+                UISupport.showErrorMessage("Your project contains external dependencies that " + "are not supported by the Test-On-Demand functionality at this point.");
                 return;
             }
 
             if (locationsComboBox != null) {
-                Location selectedLocation = (Location) locationsComboBox.getSelectedItem();
+                Location selectedLocation = (Location)locationsComboBox.getSelectedItem();
 
-                XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog(UPLOAD_TEST_CASE_HEADING, 3,
-                        UPLOADING_TEST_CASE_MESSAGE, false);
+                XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog(UPLOAD_TEST_CASE_HEADING, 3, UPLOADING_TEST_CASE_MESSAGE, false);
                 SendTestCaseWorker sendTestCaseWorker = new SendTestCaseWorker(testCase, selectedLocation);
                 try {
                     progressDialog.run(sendTestCaseWorker);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
 
@@ -245,19 +240,6 @@ public class TestOnDemandPanel extends JPanel {
                 if (!Strings.isNullOrEmpty(redirectUrl)) {
                     openURLSafely(redirectUrl);
                 }
-
-            }
-        }
-    }
-
-    private void openURLSafely(String url)
-
-    {
-        if (SoapUI.isBrowserDisabled()) {
-            Tools.openURL(url);
-        } else {
-            if (browser != null) {
-                browser.navigate(url);
             }
         }
     }
@@ -272,19 +254,21 @@ public class TestOnDemandPanel extends JPanel {
                     openInExternalBrowser(getMoreLocationsURL());
                     sendTestCaseAction.setEnabled(false);
                     serverIPAddressesLabel.setText(null);
-                } else {
+                }
+                else {
                     if (locationsComboBox.isEnabled() && !sendTestCaseAction.isEnabled()) {
                         openInInternalBrowser(getFirstPageURL());
                         sendTestCaseAction.setEnabled(true);
                     }
 
                     if (selectedItem instanceof Location) {
-                        String[] serverIPAddresses = ((Location) selectedItem).getServerIPAddresses();
+                        String[] serverIPAddresses = ((Location)selectedItem).getServerIPAddresses();
 
                         if (serverIPAddresses != null && serverIPAddresses.length > 0) {
                             String severIpAddressList = Joiner.on(SERVER_IP_ADDRESSES_DELIMETER).join(serverIPAddresses);
                             serverIPAddressesLabel.setText(SERVER_IP_ADDRESSES_PREFIX + severIpAddressList);
-                        } else {
+                        }
+                        else {
                             serverIPAddressesLabel.setText(SERVER_IP_ADDRESSES_PREFIX + NO_SERVER_IP_ADDRESSES_MESSAGE);
                             // FIXME: Log errors aswell?
                         }
@@ -308,7 +292,8 @@ public class TestOnDemandPanel extends JPanel {
         public Object construct(XProgressMonitor monitor) {
             try {
                 result = caller.sendTestCase(testCase, selectedLocation);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
                 UISupport.showErrorMessage(COULD_NOT_UPLOAD_MESSAGE);
             }
@@ -326,9 +311,11 @@ public class TestOnDemandPanel extends JPanel {
         public void run() {
             try {
                 locationsCache = caller.getLocations();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e, COULD_NOT_GET_LOCATIONS_MESSAGE);
-            } finally {
+            }
+            finally {
                 populateLocationsComboBox();
             }
         }

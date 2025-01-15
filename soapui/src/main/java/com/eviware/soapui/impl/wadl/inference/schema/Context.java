@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema;
@@ -31,12 +31,12 @@ import java.util.Map;
  * @author Dain Nilsson
  */
 public class Context {
-    private ConflictHandler handler;
-    private XmlCursor cursor;
-    private SchemaSystem system;
+    private final ConflictHandler handler;
+    private final XmlCursor cursor;
+    private final SchemaSystem system;
     private List<String> path;
-    private List<List<String>> stack;
-    private Map<String, String> attributes;
+    private final List<List<String>> stack;
+    private final Map<String, String> attributes;
 
     /**
      * Creates a new Context object.
@@ -93,7 +93,7 @@ public class Context {
      *
      * @param key The key of the attribute to get.
      * @return Returns the value of the attribute, if it exists. An empty string
-     *         is returned if not.
+     * is returned if not.
      */
     public String getAttribute(String key) {
         if (attributes.containsKey(key)) {

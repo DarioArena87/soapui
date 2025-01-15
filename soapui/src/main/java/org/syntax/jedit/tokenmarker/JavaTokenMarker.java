@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
@@ -25,9 +25,8 @@ import org.syntax.jedit.KeywordMap;
  * @version $Id: JavaTokenMarker.java,v 1.5 1999/12/13 03:40:30 sp Exp $
  */
 public class JavaTokenMarker extends CTokenMarker {
-    public JavaTokenMarker() {
-        super(false, getKeywords());
-    }
+    // private members
+    private static KeywordMap javaKeywords;
 
     public static KeywordMap getKeywords() {
         if (javaKeywords == null) {
@@ -84,6 +83,7 @@ public class JavaTokenMarker extends CTokenMarker {
         return javaKeywords;
     }
 
-    // private members
-    private static KeywordMap javaKeywords;
+    public JavaTokenMarker() {
+        super(false, getKeywords());
+    }
 }

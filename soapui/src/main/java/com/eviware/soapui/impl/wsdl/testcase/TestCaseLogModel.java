@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.testcase;
@@ -19,7 +19,7 @@ package com.eviware.soapui.impl.wsdl.testcase;
 import com.eviware.soapui.model.testsuite.TestStepResult;
 import org.apache.commons.collections.list.TreeList;
 
-import javax.swing.AbstractListModel;
+import javax.swing.*;
 import java.lang.ref.SoftReference;
 import java.util.Collections;
 import java.util.List;
@@ -33,8 +33,8 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 public class TestCaseLogModel extends AbstractListModel {
     @SuppressWarnings("unchecked")
-    private List<Object> items = Collections.synchronizedList(new TreeList());
-    private List<SoftReference<TestStepResult>> results = Collections.synchronizedList(new TreeList());
+    private final List<Object> items = Collections.synchronizedList(new TreeList());
+    private final List<SoftReference<TestStepResult>> results = Collections.synchronizedList(new TreeList());
     private int stepCount;
     private int maxSize = 0;
 
@@ -58,8 +58,7 @@ public class TestCaseLogModel extends AbstractListModel {
         stepCount++;
 
         int size = items.size();
-        items.add("Step " + stepCount + " [" + result.getTestStep().getName() + "] " + result.getStatus() + ": took "
-                + result.getTimeTaken() + " ms");
+        items.add("Step " + stepCount + " [" + result.getTestStep().getName() + "] " + result.getStatus() + ": took " + result.getTimeTaken() + " ms");
         SoftReference<TestStepResult> ref = new SoftReference<TestStepResult>(result);
         results.add(ref);
         for (String msg : result.getMessages()) {
@@ -95,7 +94,8 @@ public class TestCaseLogModel extends AbstractListModel {
     public synchronized Object getElementAt(int arg0) {
         try {
             return items.get(arg0);
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             return null;
         }
     }

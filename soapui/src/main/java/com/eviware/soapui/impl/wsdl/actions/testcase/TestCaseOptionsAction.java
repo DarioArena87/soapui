@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.testcase;
@@ -38,13 +38,13 @@ import com.eviware.x.form.XFormFieldListener;
  */
 
 public class TestCaseOptionsAction extends AbstractSoapUIAction<WsdlTestCase> {
+    public static final String SOAPUI_ACTION_ID = "TestCaseOptionsAction";
     private static final String KEEP_SESSION = "Session";
     private static final String FAIL_ON_ERROR = "Abort on Error";
     private static final String FAIL_TESTCASE_ON_ERROR = "Fail TestCase on error";
     private static final String DISCARD_OK_RESULTS = "Discard OK Results";
     private static final String SOCKET_TIMEOUT = "Socket timeout";
     private static final String SEARCH_PROPERTIES = "Search Properties";
-    public static final String SOAPUI_ACTION_ID = "TestCaseOptionsAction";
     private static final String TESTCASE_TIMEOUT = "TestCase timeout";
     private static final String MAXRESULTS = "Max Results";
     private static final String WS_RM_ENABLED = "WS-RM Enabled";
@@ -82,26 +82,23 @@ public class TestCaseOptionsAction extends AbstractSoapUIAction<WsdlTestCase> {
             form.addCheckBox(DISCARD_OK_RESULTS, "Discards successful TestStep results to preserve memory");
             form.addTextField(SOCKET_TIMEOUT, "Socket timeout in milliseconds", FieldType.TEXT);
             form.addTextField(TESTCASE_TIMEOUT, "Timeout in milliseconds for entire TestCase", FieldType.TEXT);
-            form.addTextField(MAXRESULTS, "Maximum number of TestStep results to keep in memory during a run",
-                    FieldType.TEXT);
+            form.addTextField(MAXRESULTS, "Maximum number of TestStep results to keep in memory during a run", FieldType.TEXT);
 
             wsrmForm = builder.createForm("WS-RM");
             wsrmForm.addCheckBox(WS_RM_ENABLED, "Use WS-Reliable Messaging");
-            wsrmForm.addComboBox(WS_RM_VERSION, new String[]{WsrmVersionTypeConfig.X_1_0.toString(),
-                    WsrmVersionTypeConfig.X_1_1.toString(), WsrmVersionTypeConfig.X_1_2.toString()},
-                    "The  property for managing WS-RM version");
+            wsrmForm.addComboBox(WS_RM_VERSION, new String[]{
+                WsrmVersionTypeConfig.X_1_0.toString(), WsrmVersionTypeConfig.X_1_1.toString(), WsrmVersionTypeConfig.X_1_2.toString()
+            }, "The  property for managing WS-RM version");
             wsrmForm.addTextField(WS_RM_ACK_TO, "Acknowledgments To", FieldType.TEXT);
             wsrmForm.addTextField(WS_RM_EXPIRES, "Expires after", FieldType.TEXT);
 
             amfForm = builder.createForm("AMF");
-            amfForm.addCheckBox(AMF_AUTHORISATION_ENABLE, "Enable AMF Session").addFormFieldListener(
-                    new AMFXFormFieldListener());
+            amfForm.addCheckBox(AMF_AUTHORISATION_ENABLE, "Enable AMF Session").addFormFieldListener(new AMFXFormFieldListener());
             amfForm.addTextField(AMF_ENDPOINT, "AMF Authorization endpoint", FieldType.TEXT);
             amfForm.addTextField(AMF_LOGIN, "AMF Authorization usernmae", FieldType.TEXT);
             amfForm.addTextField(AMF_PASSWORD, "AMF Authorization password", FieldType.PASSWORD);
 
-            dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.TESTCASEOPTIONS_HELP_URL),
-                    "Specify general options for this TestCase", UISupport.OPTIONS_ICON);
+            dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.TESTCASEOPTIONS_HELP_URL), "Specify general options for this TestCase", UISupport.OPTIONS_ICON);
         }
 
         StringToStringMap values = new StringToStringMap();
@@ -129,8 +126,7 @@ public class TestCaseOptionsAction extends AbstractSoapUIAction<WsdlTestCase> {
         values.put(AMF_LOGIN, String.valueOf(testCase.getAmfLogin()));
         values.put(AMF_PASSWORD, String.valueOf(testCase.getAmfPassword()));
 
-        dialog.getFormField(FAIL_TESTCASE_ON_ERROR).setEnabled(
-                !Boolean.parseBoolean(String.valueOf(testCase.getFailOnError())));
+        dialog.getFormField(FAIL_TESTCASE_ON_ERROR).setEnabled(!Boolean.parseBoolean(String.valueOf(testCase.getFailOnError())));
 
         values = dialog.show(values);
 
@@ -153,7 +149,8 @@ public class TestCaseOptionsAction extends AbstractSoapUIAction<WsdlTestCase> {
                 String timeout = values.get(SOCKET_TIMEOUT);
                 if (timeout.trim().length() == 0) {
                     testCase.getSettings().clearSetting(HttpSettings.SOCKET_TIMEOUT);
-                } else {
+                }
+                else {
                     testCase.getSettings().setString(HttpSettings.SOCKET_TIMEOUT, timeout);
                 }
 
@@ -161,7 +158,8 @@ public class TestCaseOptionsAction extends AbstractSoapUIAction<WsdlTestCase> {
                 testCase.setAmfEndpoint(values.get(AMF_ENDPOINT));
                 testCase.setAmfLogin(values.get(AMF_LOGIN));
                 testCase.setAmfPassword(values.get(AMF_PASSWORD));
-            } catch (Exception e1) {
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1.getMessage());
             }
         }
@@ -174,6 +172,5 @@ public class TestCaseOptionsAction extends AbstractSoapUIAction<WsdlTestCase> {
             amfForm.getFormField(AMF_LOGIN).setEnabled(Boolean.parseBoolean(newValue));
             amfForm.getFormField(AMF_PASSWORD).setEnabled(Boolean.parseBoolean(newValue));
         }
-
     }
 }

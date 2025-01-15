@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.actions;
@@ -48,9 +48,8 @@ import java.io.File;
 
 public class NewWsdlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
     public static final String SOAPUI_ACTION_ID = "NewWsdlProjectAction";
-    private XFormDialog dialog;
-
     public static final MessageSupport messages = MessageSupport.getMessages(NewWsdlProjectAction.class);
+    private XFormDialog dialog;
 
     public NewWsdlProjectAction() {
         super(messages.get("Title"), messages.get("Description"));
@@ -64,14 +63,14 @@ public class NewWsdlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
                 public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
                     String value = newValue.toLowerCase().trim();
 
-                    dialog.getFormField(Form.CREATEREQUEST)
-                            .setEnabled(value.length() > 0 && !newValue.endsWith(".wadl"));
+                    dialog.getFormField(Form.CREATEREQUEST).setEnabled(value.length() > 0 && !newValue.endsWith(".wadl"));
                     dialog.getFormField(Form.GENERATETESTSUITE).setEnabled(newValue.trim().length() > 0);
 
                     initProjectName(newValue);
                 }
             });
-        } else {
+        }
+        else {
             dialog.setValue(Form.INITIALWSDL, "");
             dialog.setValue(Form.PROJECTNAME, "");
 
@@ -90,7 +89,8 @@ public class NewWsdlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
                 String projectName = dialog.getValue(Form.PROJECTNAME).trim();
                 if (projectName.length() == 0) {
                     UISupport.showErrorMessage(messages.get("MissingProjectNameError"));
-                } else {
+                }
+                else {
                     project = workspace.createProject(projectName, null);
 
                     if (project != null) {
@@ -105,9 +105,9 @@ public class NewWsdlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
                             }
 
                             if (project.save(folder) != SaveStatus.SUCCESS) {
-                                UISupport
-                                        .showErrorMessage("Project was not saved, paths will not be stored relatively until configured.");
-                            } else {
+                                UISupport.showErrorMessage("Project was not saved, paths will not be stored relatively until configured.");
+                            }
+                            else {
                                 project.setResourceRoot("${projectDir}");
                             }
                         }
@@ -123,9 +123,11 @@ public class NewWsdlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
                         break;
                     }
                 }
-            } catch (InvalidDefinitionException ex) {
+            }
+            catch (InvalidDefinitionException ex) {
                 ex.show();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 UISupport.showErrorMessage(ex);
                 if (project != null) {
                     workspace.removeProject(project);
@@ -153,8 +155,7 @@ public class NewWsdlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
     }
 
     private void importWsdl(WsdlProject project, String url) throws SoapUIException {
-        WsdlInterface[] results = WsdlInterfaceFactory.importWsdl(project, url, dialog.getValue(Form.CREATEREQUEST)
-                .equals("true"));
+        WsdlInterface[] results = WsdlInterfaceFactory.importWsdl(project, url, dialog.getValue(Form.CREATEREQUEST).equals("true"));
         for (WsdlInterface iface : results) {
             UISupport.select(iface);
 
@@ -162,26 +163,24 @@ public class NewWsdlProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
                 GenerateWsdlTestSuiteAction generateTestSuiteAction = new GenerateWsdlTestSuiteAction();
                 generateTestSuiteAction.generateTestSuite(iface, true);
             }
-
         }
     }
 
     @AForm(name = "Form.Title", description = "Form.Description", helpUrl = HelpUrls.NEWPROJECT_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
     public interface Form {
         @AField(description = "Form.ProjectName.Description", type = AFieldType.STRING)
-        public final static String PROJECTNAME = messages.get("Form.ProjectName.Label");
+        String PROJECTNAME = messages.get("Form.ProjectName.Label");
 
         @AField(description = "Form.InitialWsdl.Description", type = AFieldType.FILE)
-        public final static String INITIALWSDL = messages.get("Form.InitialWsdl.Label");
+        String INITIALWSDL = messages.get("Form.InitialWsdl.Label");
 
         @AField(description = "Form.CreateRequests.Description", type = AFieldType.BOOLEAN, enabled = false)
-        public final static String CREATEREQUEST = messages.get("Form.CreateRequests.Label");
+        String CREATEREQUEST = messages.get("Form.CreateRequests.Label");
 
         @AField(description = "Form.GenerateTestSuite.Description", type = AFieldType.BOOLEAN, enabled = false)
-        public final static String GENERATETESTSUITE = messages.get("Form.GenerateTestSuite.Label");
+        String GENERATETESTSUITE = messages.get("Form.GenerateTestSuite.Label");
 
         @AField(description = "Form.RelativePaths.Description", type = AFieldType.BOOLEAN, enabled = true)
-        public final static String RELATIVEPATHS = messages.get("Form.RelativePaths.Label");
-
+        String RELATIVEPATHS = messages.get("Form.RelativePaths.Label");
     }
 }

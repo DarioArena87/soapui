@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.registry;
@@ -36,8 +36,19 @@ import java.util.Map;
 
 public class SecurityScanRegistry {
     protected static SecurityScanRegistry instance;
-    private Map<String, SecurityScanFactory> availableSecurityChecks = new HashMap<String, SecurityScanFactory>();
-    private StringToStringMap securityCheckNames = new StringToStringMap();
+    private final Map<String, SecurityScanFactory> availableSecurityChecks = new HashMap<String, SecurityScanFactory>();
+    private final StringToStringMap securityCheckNames = new StringToStringMap();
+
+    /**
+     * @return The registry instance
+     */
+    public static synchronized SecurityScanRegistry getInstance() {
+        if (instance == null) {
+            instance = new SecurityScanRegistry();
+        }
+
+        return instance;
+    }
 
     public SecurityScanRegistry() {
         addFactory(new GroovySecurityScanFactory());
@@ -54,7 +65,6 @@ public class SecurityScanRegistry {
         for (SecurityScanFactory factory : SoapUI.getFactoryRegistry().getFactories(SecurityScanFactory.class)) {
             addFactory(factory);
         }
-
     }
 
     /**
@@ -69,7 +79,6 @@ public class SecurityScanRegistry {
             if (scf.getSecurityScanType().equals(type)) {
                 return scf;
             }
-
         }
         return null;
     }
@@ -115,17 +124,6 @@ public class SecurityScanRegistry {
                 break;
             }
         }
-    }
-
-    /**
-     * @return The registry instance
-     */
-    public static synchronized SecurityScanRegistry getInstance() {
-        if (instance == null) {
-            instance = new SecurityScanRegistry();
-        }
-
-        return instance;
     }
 
     /**
@@ -181,5 +179,4 @@ public class SecurityScanRegistry {
     public String getSecurityScanTypeForName(String name) {
         return securityCheckNames.get(name);
     }
-
 }

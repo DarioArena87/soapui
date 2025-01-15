@@ -76,12 +76,14 @@ public class ExtendedPurgeMethod extends HttpPurgeMethod implements ExtendedHttp
         return httpMethodSupport.getResponseContentType();
     }
 
-    @Override
-    public void setDumpFile(String dumpFile) {
-        httpMethodSupport.setDumpFile(dumpFile);
+    public String getDumpFile() {
+        return httpMethodSupport.getDumpFile();
     }
 
     @Override
+    public void setDumpFile(String dumpFile) {
+        httpMethodSupport.setDumpFile(dumpFile);
+    }    @Override
     public void setFailed(Throwable t) {
         httpMethodSupport.setFailed(t);
     }
@@ -136,7 +138,8 @@ public class ExtendedPurgeMethod extends HttpPurgeMethod implements ExtendedHttp
         byte[] rawdata = getResponseBody();
         if (rawdata != null) {
             return EncodingUtil.getString(rawdata, getResponseCharSet());
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -171,7 +174,5 @@ public class ExtendedPurgeMethod extends HttpPurgeMethod implements ExtendedHttp
         return getURI().toURL();
     }
 
-    public String getDumpFile() {
-        return httpMethodSupport.getDumpFile();
-    }
+
 }

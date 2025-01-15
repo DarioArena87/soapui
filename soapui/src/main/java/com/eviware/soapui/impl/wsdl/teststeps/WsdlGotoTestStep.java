@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -57,44 +57,17 @@ import java.util.List;
  * @author ole.matzura
  */
 
-public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPathReferenceContainer,
-        PropertyExpansionContainer {
-    private GotoStepConfig gotoStepConfig;
-    private List<GotoCondition> conditions = new ArrayList<GotoCondition>();
-    private boolean canceled;
-
+public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPathReferenceContainer, PropertyExpansionContainer {
     private final static Logger log = LogManager.getLogger(WsdlGotoTestStep.class);
+    private GotoStepConfig gotoStepConfig;
+    private final List<GotoCondition> conditions = new ArrayList<GotoCondition>();
+    private boolean canceled;
 
     public WsdlGotoTestStep(WsdlTestCase testCase, TestStepConfig config, boolean forLoadTest) {
         super(testCase, config, true, forLoadTest);
 
         if (!forLoadTest) {
             setIcon(UISupport.createImageIcon("/conditional_goto_step.png"));
-        }
-    }
-
-    @Override
-    public void afterLoad() {
-        TestStepConfig config = getConfig();
-
-        if (config.getConfig() == null) {
-            gotoStepConfig = (GotoStepConfig) config.addNewConfig().changeType(GotoStepConfig.type);
-        } else {
-            gotoStepConfig = (GotoStepConfig) config.getConfig().changeType(GotoStepConfig.type);
-            for (int c = 0; c < gotoStepConfig.sizeOfConditionArray(); c++) {
-                conditions.add(new GotoCondition(gotoStepConfig.getConditionArray(c)));
-            }
-        }
-
-        super.afterLoad();
-    }
-
-    public void resetConfigOnMove(TestStepConfig config) {
-        super.resetConfigOnMove(config);
-
-        gotoStepConfig = (GotoStepConfig) config.getConfig().changeType(GotoStepConfig.type);
-        for (int c = 0; c < gotoStepConfig.sizeOfConditionArray(); c++) {
-            conditions.get(c).setConfig(gotoStepConfig.getConditionArray(c));
         }
     }
 
@@ -116,7 +89,8 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
         GotoCondition target = runConditions(previousStep, context);
         if (target == null) {
             result.addMessage("Missing matching condition, moving on.");
-        } else {
+        }
+        else {
             String targetStepName = target.getTargetStep().trim();
             result.addMessage("Matched condition [" + targetStepName + "], transferring to [" + targetStepName + "]");
             runner.gotoStep(runner.getTestCase().getTestStepIndexByName(targetStepName));
@@ -137,7 +111,8 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
                 if (condition.evaluate(previousStep, context)) {
                     return condition;
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.error("Error making condition " + condition.getName() + "; " + e);
             }
         }
@@ -148,6 +123,15 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
     public boolean cancel() {
         canceled = true;
         return canceled;
+    }
+
+    public void resetConfigOnMove(TestStepConfig config) {
+        super.resetConfigOnMove(config);
+
+        gotoStepConfig = (GotoStepConfig)config.getConfig().changeType(GotoStepConfig.type);
+        for (int c = 0; c < gotoStepConfig.sizeOfConditionArray(); c++) {
+            conditions.get(c).setConfig(gotoStepConfig.getConditionArray(c));
+        }
     }
 
     public int getConditionCount() {
@@ -179,12 +163,60 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
         }
     }
 
+    @Override
+    public void afterLoad() {
+        TestStepConfig config = getConfig();
+
+        if (config.getConfig() == null) {
+            gotoStepConfig = (GotoStepConfig)config.addNewConfig().changeType(GotoStepConfig.type);
+        }
+        else {
+            gotoStepConfig = (GotoStepConfig)config.getConfig().changeType(GotoStepConfig.type);
+            for (int c = 0; c < gotoStepConfig.sizeOfConditionArray(); c++) {
+                conditions.add(new GotoCondition(gotoStepConfig.getConditionArray(c)));
+            }
+        }
+
+        super.afterLoad();
+    }
+
+    public boolean hasProperties() {
+        return false;
+    }
+
+    public PropertyExpansion[] getPropertyExpansions() {
+        List<PropertyExpansion> result = new ArrayList<PropertyExpansion>();
+
+        for (GotoCondition condition : conditions) {
+            result.addAll(PropertyExpansionUtils.extractPropertyExpansions(this, condition, "expression"));
+        }
+
+        return result.toArray(new PropertyExpansion[result.size()]);
+    }
+
+    public XPathReference[] getXPathReferences() {
+        List<XPathReference> result = new ArrayList<XPathReference>();
+
+        for (GotoCondition condition : conditions) {
+            if (StringUtils.hasContent(condition.getExpression())) {
+                result.add(new XPathReferenceImpl(
+                    "Condition for " + condition.getName() + " GotoCondition in " + getName(),
+                    condition.getSourceProperty(),
+                    condition,
+                    "expression"
+                ));
+            }
+        }
+
+        return result.toArray(new XPathReference[result.size()]);
+    }
+
     public class GotoCondition implements PropertyChangeListener {
         public final static String TARGET_STEP_PROPERTY = "target_step";
 
         private GotoConditionConfig conditionConfig;
         private TestStep currentStep;
-        private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+        private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
         public GotoCondition(GotoConditionConfig conditionConfig) {
             this.conditionConfig = conditionConfig;
@@ -214,7 +246,7 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
                 int index = getTestCase().getTestStepIndexByName(getTargetStep());
                 if (index != -1) {
                     currentStep = getTestCase().getTestStepAt(index);
-                    currentStep.addPropertyChangeListener(TestStep.NAME_PROPERTY, this);
+                    currentStep.addPropertyChangeListener(NAME_PROPERTY, this);
                 }
             }
         }
@@ -243,11 +275,10 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
                 String expression = PropertyExpander.expandProperties(context, getExpression());
                 XmlObject[] selectPath = xmlObject.selectPath(expression);
                 if (selectPath.length == 1 && selectPath[0] instanceof XmlBoolean) {
-                    if (((XmlBoolean) selectPath[0]).getBooleanValue()) {
-                        return true;
-                    }
+                    return ((XmlBoolean)selectPath[0]).getBooleanValue();
                 }
-            } else {
+            }
+            else {
                 log.error("Unkown condition type: " + getType());
             }
 
@@ -262,28 +293,28 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
             return conditionConfig.getType();
         }
 
-        public String getName() {
-            return conditionConfig.getName();
-        }
-
-        public String getExpression() {
-            return conditionConfig.getExpression();
-        }
-
-        public String getTargetStep() {
-            return conditionConfig.getTargetStep();
-        }
-
         public void setType(String type) {
             conditionConfig.setType(type);
+        }
+
+        public String getName() {
+            return conditionConfig.getName();
         }
 
         public void setName(String name) {
             conditionConfig.setName(name);
         }
 
+        public String getExpression() {
+            return conditionConfig.getExpression();
+        }
+
         public void setExpression(String expression) {
             conditionConfig.setExpression(expression);
+        }
+
+        public String getTargetStep() {
+            return conditionConfig.getTargetStep();
         }
 
         public void setTargetStep(String targetStep) {
@@ -299,36 +330,8 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
         }
 
         public TestProperty getSourceProperty() {
-            HttpRequestTestStep previousStep = (HttpRequestTestStep) getTestCase().findPreviousStepOfType(
-                    WsdlGotoTestStep.this, HttpRequestTestStep.class);
+            HttpRequestTestStep previousStep = getTestCase().findPreviousStepOfType(WsdlGotoTestStep.this, HttpRequestTestStep.class);
             return previousStep == null ? null : previousStep.getProperty("Response");
         }
-    }
-
-    public boolean hasProperties() {
-        return false;
-    }
-
-    public PropertyExpansion[] getPropertyExpansions() {
-        List<PropertyExpansion> result = new ArrayList<PropertyExpansion>();
-
-        for (GotoCondition condition : conditions) {
-            result.addAll(PropertyExpansionUtils.extractPropertyExpansions(this, condition, "expression"));
-        }
-
-        return result.toArray(new PropertyExpansion[result.size()]);
-    }
-
-    public XPathReference[] getXPathReferences() {
-        List<XPathReference> result = new ArrayList<XPathReference>();
-
-        for (GotoCondition condition : conditions) {
-            if (StringUtils.hasContent(condition.getExpression())) {
-                result.add(new XPathReferenceImpl("Condition for " + condition.getName() + " GotoCondition in "
-                        + getName(), condition.getSourceProperty(), condition, "expression"));
-            }
-        }
-
-        return result.toArray(new XPathReference[result.size()]);
     }
 }

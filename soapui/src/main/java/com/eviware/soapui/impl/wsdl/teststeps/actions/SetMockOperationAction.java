@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.actions;
@@ -77,16 +77,21 @@ public class SetMockOperationAction extends AbstractSoapUIAction<WsdlMockRespons
     }
 
     private void updateOperations(String interfaceName) {
-        WsdlInterface iface = (WsdlInterface) project.getInterfaceByName(interfaceName);
+        WsdlInterface iface = (WsdlInterface)project.getInterfaceByName(interfaceName);
         dialog.setOptions(CreateForm.OPERATION, new ModelItemNames<Operation>(iface.getOperationList()).getNames());
     }
 
-    @AForm(description = "Set the Operation to mock (required for dispatch and validations)", name = "Set MockOperation", helpUrl = HelpUrls.SETMOCKOPERATION_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
+    @AForm(
+        description = "Set the Operation to mock (required for dispatch and validations)",
+        name = "Set MockOperation",
+        helpUrl = HelpUrls.SETMOCKOPERATION_HELP_URL,
+        icon = UISupport.TOOL_ICON_PATH
+    )
     private interface CreateForm {
         @AField(description = "Specifies the operation to be mocked", name = "Operation", type = AFieldType.ENUMERATION)
-        public final static String OPERATION = "Operation";
+        String OPERATION = "Operation";
 
         @AField(description = "Specifies the interface containing the operation to be mocked", name = "Interface", type = AFieldType.ENUMERATION)
-        public final static String INTERFACE = "Interface";
+        String INTERFACE = "Interface";
     }
 }

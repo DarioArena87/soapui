@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -35,7 +35,7 @@ public class JsonPathFacade {
         if (!isValidJson(targetJson)) {
             throw new IllegalArgumentException("Invalid JSON: " + targetJson);
         }
-        this.currentJson = targetJson;
+        currentJson = targetJson;
         jsonObject = new JsonSlurper().parseText(targetJson);
     }
 
@@ -49,20 +49,20 @@ public class JsonPathFacade {
         Configuration configuration = Configuration.builder().jsonProvider(provider).build();
         DocumentContext documentContext = JsonPath.parse(currentJson);
         JsonPath path = JsonPath.compile(jsonPathExpression);
-        documentContext.set(path,value);
+        documentContext.set(path, value);
         currentJson = documentContext.jsonString();
         jsonObject = new JsonSlurper().parseText(currentJson);
     }
 
-
     private void removeMutableWrappersFrom(JSON jsonObject) {
         if (jsonObject.isArray()) {
-            JSONArray array = (JSONArray) jsonObject;
+            JSONArray array = (JSONArray)jsonObject;
             for (int i = 0; i < array.size(); i++) {
                 array.set(i, removeMutableWrapperFrom(array.get(i)));
             }
-        } else if (jsonObject instanceof JSONObject) {
-            JSONObject object = (JSONObject) jsonObject;
+        }
+        else if (jsonObject instanceof JSONObject) {
+            JSONObject object = (JSONObject)jsonObject;
             for (Object key : object.keySet()) {
                 object.put(key, removeMutableWrapperFrom(object.get(key)));
             }
@@ -72,7 +72,7 @@ public class JsonPathFacade {
     private Object removeMutableWrapperFrom(Object o) {
         Object value = MutableValue.extractValueFromMutable(o);
         if (value instanceof JSON) {
-            removeMutableWrappersFrom((JSON) value);
+            removeMutableWrappersFrom((JSON)value);
         }
         return value;
     }
@@ -91,5 +91,4 @@ public class JsonPathFacade {
         JsonPath jsonPath = JsonPath.compile(jsonPathExpression);
         return jsonPath.read(jsonObject, configuration);
     }
-
 }

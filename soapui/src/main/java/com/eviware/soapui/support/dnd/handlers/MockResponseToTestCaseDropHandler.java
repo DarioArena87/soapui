@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.dnd.handlers;
@@ -22,8 +22,7 @@ import com.eviware.soapui.impl.wsdl.mock.WsdlMockResponse;
 import com.eviware.soapui.impl.wsdl.testcase.WsdlTestCase;
 import com.eviware.soapui.support.action.SoapUIAction;
 
-public class MockResponseToTestCaseDropHandler extends
-        AbstractAfterModelItemDropHandler<WsdlMockResponse, WsdlTestCase> {
+public class MockResponseToTestCaseDropHandler extends AbstractAfterModelItemDropHandler<WsdlMockResponse, WsdlTestCase> {
     public MockResponseToTestCaseDropHandler() {
         super(WsdlMockResponse.class, WsdlTestCase.class);
     }
@@ -40,9 +39,8 @@ public class MockResponseToTestCaseDropHandler extends
 
     @Override
     boolean copyAfter(WsdlMockResponse source, WsdlTestCase target) {
-        SoapUIAction<WsdlMockResponse> action = SoapUI.getActionRegistry().getAction(
-                AddMockResponseToTestCaseAction.SOAPUI_ACTION_ID);
-        AddMockResponseToTestCaseAction a = (AddMockResponseToTestCaseAction) action;
+        SoapUIAction<WsdlMockResponse> action = SoapUI.getActionRegistry().getAction(AddMockResponseToTestCaseAction.SOAPUI_ACTION_ID);
+        AddMockResponseToTestCaseAction a = (AddMockResponseToTestCaseAction)action;
 
         a.addMockResponseToTestCase(source, target, -1);
         return true;

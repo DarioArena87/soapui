@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support;
@@ -37,9 +37,6 @@ import javax.annotation.Nonnull;
  * @author Prakash Jat
  */
 public class ModelItemNamer {
-    private ModelItemNamer() {
-    }
-
     public static String createName(String baseName, Iterable nameHolders) {
         int maxExistingIndex = 0;
         for (Object nameHolder : nameHolders) {
@@ -54,7 +51,8 @@ public class ModelItemNamer {
                     if (indexInProjectName > maxExistingIndex) {
                         maxExistingIndex = indexInProjectName;
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     //Do nothing, at worst it will create the modelItem with same name
                 }
             }
@@ -77,8 +75,11 @@ public class ModelItemNamer {
     }
 
     public static String getUniqueName(String def, ModelItem parent) {
-        final StringList childrenNames = getChildrenNames(parent);
+        StringList childrenNames = getChildrenNames(parent);
         return createName(def, childrenNames);
+    }
+
+    private ModelItemNamer() {
     }
 
     private static StringList getChildrenNames(ModelItem parent) {
@@ -90,6 +91,6 @@ public class ModelItemNamer {
     }
 
     private static String getName(@Nonnull Object nameHolder) {
-        return nameHolder instanceof ModelItem ? ((ModelItem) nameHolder).getName() : nameHolder.toString();
+        return nameHolder instanceof ModelItem ? ((ModelItem)nameHolder).getName() : nameHolder.toString();
     }
 }

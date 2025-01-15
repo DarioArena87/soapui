@@ -42,34 +42,34 @@ import java.util.concurrent.RecursiveTask;
 
 public class PluginManager {
 
+    private static Logger log = LogManager.getLogger(PluginManager.class);
+    private static ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
+                                                                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                                                                new Thread.UncaughtExceptionHandler() {
+                                                                    @Override
+                                                                    public void uncaughtException(Thread t, Throwable e) {
+                                                                        System.err.println("Problem running task in the forkJoinPool");
+                                                                        e.printStackTrace();
+                                                                    }
+                                                                },
+                                                                false
+    );
+    private final File pluginDeleteListFile;
     FileOperations fileOperations = new DefaultFileOperations();
     PluginLoader pluginLoader;
-
-    private static Logger log = LogManager.getLogger(PluginManager.class);
     private Map<File, InstalledPluginRecord> installedPlugins = new HashMap<File, InstalledPluginRecord>();
     private File pluginDirectory;
     private List<PluginListener> listeners = new ArrayList<PluginListener>();
-    private final File pluginDeleteListFile;
     private PluginDependencyResolver resolver;
     private List<String> ignorePluginNameList;
 
-    private static ForkJoinPool forkJoinPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(),
-            ForkJoinPool.defaultForkJoinWorkerThreadFactory, new Thread.UncaughtExceptionHandler() {
-        @Override
-        public void uncaughtException(Thread t, Throwable e) {
-            System.err.println("Problem running task in the forkJoinPool");
-            e.printStackTrace();
-        }
-    }, false);
-
-    private void initializeIgnorePluginNames() {
-        ignorePluginNameList = new ArrayList<>();
-        ignorePluginNameList.add("soapui-swagger-plugin");
-        ignorePluginNameList.add("readyapi-swaggerhub-plugin");
+    public static ForkJoinPool getForkJoinPool() {
+        return forkJoinPool;
     }
 
-    public PluginManager(SoapUIFactoryRegistry factoryRegistry,
-                         SoapUIActionRegistry actionRegistry, ListenerRegistry listenerRegistry) {
+    public PluginManager(
+        SoapUIFactoryRegistry factoryRegistry, SoapUIActionRegistry actionRegistry, ListenerRegistry listenerRegistry
+    ) {
         initializeIgnorePluginNames();
         pluginLoader = new PluginLoader(factoryRegistry, actionRegistry, listenerRegistry);
         File soapUiDirectory = new File(System.getProperty("user.home"), ".soapuios");
@@ -83,12 +83,14 @@ public class PluginManager {
         }
     }
 
-    public PluginLoader getPluginLoader() {
-        return pluginLoader;
+    private void initializeIgnorePluginNames() {
+        ignorePluginNameList = new ArrayList<>();
+        ignorePluginNameList.add("soapui-swagger-plugin");
+        ignorePluginNameList.add("readyapi-swaggerhub-plugin");
     }
 
-    public static ForkJoinPool getForkJoinPool() {
-        return forkJoinPool;
+    public PluginLoader getPluginLoader() {
+        return pluginLoader;
     }
 
     public void loadPlugins() {
@@ -122,7 +124,8 @@ public class PluginManager {
             try {
                 resolver = new PluginDependencyResolver(pluginLoader, pluginFileList);
                 pluginFileList = resolver.determineLoadOrder();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 log.error("Couldn't resolve plugin dependency order. This may impair plugin functionality.", e);
             }
             long startTime = System.currentTimeMillis();
@@ -164,7 +167,7 @@ public class PluginManager {
     }
 
     public Plugin installPlugin(File pluginFile) throws IOException {
-        PluginInfo pluginInfo = pluginLoader.loadPluginInfoFrom(pluginFile, Collections.<JarClassLoader>emptySet());
+        PluginInfo pluginInfo = pluginLoader.loadPluginInfoFrom(pluginFile, Collections.emptySet());
         if (findInstalledVersionOf(pluginInfo) != null && !overwriteConfirmed(pluginInfo)) {
             return null;
         }
@@ -176,7 +179,8 @@ public class PluginManager {
         resolver.addPlugin(pluginInfo, destinationFile);
         if (uninstallPlugin(pluginInfo, true)) {
             return doInstallPlugin(destinationFile, findDependentClassLoaders(destinationFile));
-        } else {
+        }
+        else {
             return null;
         }
     }
@@ -190,7 +194,8 @@ public class PluginManager {
                 int fileCountIndex = Integer.parseInt(originalFileName.substring(lastDashIndex + 1, originalFileName.length() - 4));
                 newFileName = originalFileName.substring(0, lastDashIndex + 1) + (fileCountIndex + 1) + ".jar";
             }
-        } else {
+        }
+        else {
             newFileName = originalFileName.substring(0, originalFileName.length() - 4) + "-2.jar";
         }
         return new File(pluginDirectory, newFileName);
@@ -198,9 +203,13 @@ public class PluginManager {
 
     private boolean overwriteConfirmed(PluginInfo pluginInfo) {
         PluginInfo installedPluginInfo = findInstalledVersionOf(pluginInfo).getInfo();
-        return UISupport.confirm("You currently have version " + installedPluginInfo.getVersion() + " of the plugin " +
-                pluginInfo.getId().getName() + " installed.\nDo you want to overwrite it with version " +
-                pluginInfo.getVersion() + " of the same plugin?", "Overwrite plugin");
+        return UISupport.confirm("You currently have version " +
+                                 installedPluginInfo.getVersion() +
+                                 " of the plugin " +
+                                 pluginInfo.getId().getName() +
+                                 " installed.\nDo you want to overwrite it with version " +
+                                 pluginInfo.getVersion() +
+                                 " of the same plugin?", "Overwrite plugin");
     }
 
     private Plugin findInstalledVersionOf(PluginInfo pluginInfo) {
@@ -227,17 +236,18 @@ public class PluginManager {
                 String uninstallMessage = "Plugin uninstalled - you should restart SoapUI to ensure that the changes to take effect";
                 if (installedPlugin instanceof UninstallablePlugin) {
                     try {
-                        boolean uninstalled = ((UninstallablePlugin) installedPlugin).uninstall();
+                        boolean uninstalled = ((UninstallablePlugin)installedPlugin).uninstall();
 
                         if (uninstalled) {
                             uninstallMessage = "Plugin uninstalled successfully";
                         }
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         if (silent) {
                             log.error("Error while uninstalling plugin", e);
-                        } else {
-                            UISupport.showErrorMessage("The plugin file has been deleted but could not be uninstalled - " +
-                                    "restart SoapUI for the changes to take effect");
+                        }
+                        else {
+                            UISupport.showErrorMessage("The plugin file has been deleted but could not be uninstalled - " + "restart SoapUI for the changes to take effect");
                         }
                         return false;
                     }
@@ -248,7 +258,8 @@ public class PluginManager {
                     for (PluginListener listener : listeners) {
                         listener.pluginUnloaded(installedPlugin);
                     }
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     uninstallMessage = "Plugin unloaded unsuccessfully - please restart";
                     log.error("Couldn't unload plugin", e);
                 }
@@ -292,20 +303,21 @@ public class PluginManager {
                     if (!oldPluginFile.delete()) {
                         log.warn("Couldn't delete old plugin file " + fileName + " on startup");
                     }
-                } else {
+                }
+                else {
                     log.info("Old plugin file not found: " + fileName);
                 }
             }
-        } catch (IOException e) {
-            log.error("Couldn't read list of old plugin files to delete from file " +
-                    pluginDeleteListFile.getAbsolutePath());
-        } finally {
+        }
+        catch (IOException e) {
+            log.error("Couldn't read list of old plugin files to delete from file " + pluginDeleteListFile.getAbsolutePath());
+        }
+        finally {
             if (!pluginDeleteListFile.delete()) {
                 log.warn("Couldn't remove file with list of old plugin files to delete");
             }
         }
     }
-
 
     private List<PluginInfo> findUnsatisfiedDependencies(PluginInfo pluginInfo) {
         List<PluginInfo> unsatisfiedDependencies = new ArrayList<PluginInfo>();
@@ -349,6 +361,13 @@ public class PluginManager {
         return dependentPlugins;
     }
 
+    interface FileOperations {
+
+        void copyFile(File sourceFile, File destinationFile) throws IOException;
+
+        boolean deleteFile(File fileToDelete) throws IOException;
+    }
+
     private class DefaultFileOperations implements FileOperations {
 
         @Override
@@ -361,26 +380,19 @@ public class PluginManager {
             if (!fileToDelete.delete()) {
                 try {
                     FileUtils.write(pluginDeleteListFile, fileToDelete.getName() + "\r\n", true);
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     log.error("Couldn't schedule plugin file " + fileToDelete.getName() + " for deletion", e);
                     return false;
                 }
             }
             return true;
         }
-
-    }
-
-    static interface FileOperations {
-
-        void copyFile(File sourceFile, File destinationFile) throws IOException;
-
-        boolean deleteFile(File fileToDelete) throws IOException;
     }
 
     private class LoadPluginsTask extends RecursiveTask<List<Plugin>> {
 
-        private List<File> files;
+        private final List<File> files;
 
         private LoadPluginsTask(Collection<File> files) {
             this.files = new ArrayList<File>(files);
@@ -391,7 +403,8 @@ public class PluginManager {
             int splitPoint = findSplitPoint(files.size() / 2);
             if (splitPoint == 0 || splitPoint == files.size() - 1) {
                 return computeSequentially();
-            } else {
+            }
+            else {
                 LoadPluginsTask leftTask = new LoadPluginsTask(files.subList(0, splitPoint));
                 leftTask.fork();
                 LoadPluginsTask rightTask = new LoadPluginsTask(files.subList(splitPoint, files.size()));
@@ -407,25 +420,28 @@ public class PluginManager {
         private int findSplitPoint(int tentativeSplitPoint) {
             if (tentativeSplitPoint <= 0) {
                 return 0;
-            } else if (tentativeSplitPoint >= files.size() - 1) {
+            }
+            else if (tentativeSplitPoint >= files.size() - 1) {
                 return files.size() - 1;
             }
             List<PluginInfo> pluginInfoList = resolver.getPluginInfoListFromFiles(files);
             if (pluginInfoList.get(tentativeSplitPoint + 1).getDependencies().isEmpty()) {
                 return tentativeSplitPoint;
-            } else {
+            }
+            else {
                 int leftSplitPoint = findSplitPoint(tentativeSplitPoint - 1);
                 int rightSplitPoint = findSplitPoint(tentativeSplitPoint + 1);
                 if (leftSplitPoint > 0 && (tentativeSplitPoint - leftSplitPoint <= rightSplitPoint - tentativeSplitPoint)) {
                     return leftSplitPoint;
-                } else if (rightSplitPoint < files.size() - 1) {
+                }
+                else if (rightSplitPoint < files.size() - 1) {
                     return rightSplitPoint;
-                } else {
+                }
+                else {
                     return 0;
                 }
             }
         }
-
 
         private List<Plugin> computeSequentially() {
             List<Plugin> result = new ArrayList<Plugin>();
@@ -435,12 +451,15 @@ public class PluginManager {
                     try {
                         Plugin plugin = doInstallPlugin(pluginFile, findDependentClassLoaders(pluginFile));
                         result.add(plugin);
-                    } catch (MissingPluginClassException e) {
+                    }
+                    catch (MissingPluginClassException e) {
                         log.error("No plugin found in [" + pluginFile + "]");
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         log.warn("Could not load plugin from file [" + pluginFile + "]", e);
                     }
-                } catch (Throwable e) {
+                }
+                catch (Throwable e) {
                     log.error("Failed to load module [" + pluginFile.getName() + "]", e);
                 }
             }

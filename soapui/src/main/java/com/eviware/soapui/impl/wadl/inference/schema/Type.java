@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema;
@@ -39,47 +39,47 @@ public interface Type {
      *
      * @return The name of the type.
      */
-    public String getName();
+    String getName();
 
     /**
      * Getter for the schema in which the element/attribute with this type lives.
      *
      * @return The Schema for the type.
      */
-    public Schema getSchema();
-
-    /**
-     * Validate an element/attribute with this type.
-     *
-     * @param context A Context object holding the current
-     * @return Returns a Type that is valid for the element/attribute, quite
-     *         possibly this Type instance itself.
-     * @throws XmlException
-     */
-    public Type validate(Context context) throws XmlException;
-
-    public String toString();
+    Schema getSchema();
 
     /**
      * Setter for the schema in which this type lives.
      *
      * @param schema
      */
-    public void setSchema(Schema schema);
+    void setSchema(Schema schema);
+
+    /**
+     * Validate an element/attribute with this type.
+     *
+     * @param context A Context object holding the current
+     * @return Returns a Type that is valid for the element/attribute, quite
+     * possibly this Type instance itself.
+     * @throws XmlException
+     */
+    Type validate(Context context) throws XmlException;
+
+    String toString();
 
     /**
      * Serialize instance to XmlObject.
      *
      * @return Returns an XmlObject storing the variables of this instance.
      */
-    public TypeConfig save();
+    TypeConfig save();
 
     /**
      * A static factory class for creating new instances.
      *
      * @author Dain Nilsson
      */
-    public class Factory {
+    class Factory {
 
         /**
          * Creates a new empty Type object.
@@ -100,16 +100,16 @@ public interface Type {
          */
         public static Type parse(TypeConfig xml, Schema schema) {
             if (xml instanceof TypeReferenceConfig) {
-                return new TypeReferenceType((TypeReferenceConfig) xml, schema);
+                return new TypeReferenceType((TypeReferenceConfig)xml, schema);
             }
             if (xml instanceof SimpleTypeConfig) {
-                return new SimpleType((SimpleTypeConfig) xml, schema);
+                return new SimpleType((SimpleTypeConfig)xml, schema);
             }
             if (xml instanceof EmptyTypeConfig) {
-                return new EmptyType((EmptyTypeConfig) xml, schema);
+                return new EmptyType((EmptyTypeConfig)xml, schema);
             }
             if (xml instanceof CustomTypeConfig) {
-                return new CustomType((CustomTypeConfig) xml, schema);
+                return new CustomType((CustomTypeConfig)xml, schema);
             }
             return null;
         }

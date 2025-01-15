@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.jbossws;
@@ -54,6 +54,7 @@ import java.io.IOException;
  */
 
 public class WSToolsRegenerateJava2WsdlAction extends AbstractToolsAction<WsdlInterface> {
+    public static final String SOAPUI_ACTION_ID = "WSToolsRegenerateJava2WsdlAction";
     private static final String CLASSPATH = "Classpath";
     private static final String OUTPUT = "Output Directory";
     private static final String ENDPOINT = "Endpoint";
@@ -65,7 +66,6 @@ public class WSToolsRegenerateJava2WsdlAction extends AbstractToolsAction<WsdlIn
     private static final String TYPES_NAMESPACE = "Types NS";
     private static final String EJB_LINK = "ejb-link";
     private static final String SERVLET_LINK = "servlet-link";
-    public static final String SOAPUI_ACTION_ID = "WSToolsRegenerateJava2WsdlAction";
 
     public WSToolsRegenerateJava2WsdlAction() {
         super("Regenerate with JBossWS", "Regenerates WSDL with the jbossws wstools utility");
@@ -78,10 +78,8 @@ public class WSToolsRegenerateJava2WsdlAction extends AbstractToolsAction<WsdlIn
 
         mainForm.addTextField(ENDPOINT, "Serice Endpoint Interface", XForm.FieldType.JAVA_CLASS);
         mainForm.addTextField(SERVICE_NAME, "The name of the generated Service", XForm.FieldType.TEXT);
-        mainForm
-                .addComboBox(STYLE, new String[]{Style.DOCUMENT.toString(), Style.RPC.toString()}, "The style to use");
-        mainForm.addComboBox(PARAMETER_STYLE,
-                new String[]{ParameterStyle.BARE.toString(), ParameterStyle.WRAPPED.toString()}, "The style to use");
+        mainForm.addComboBox(STYLE, new String[]{Style.DOCUMENT.toString(), Style.RPC.toString()}, "The style to use");
+        mainForm.addComboBox(PARAMETER_STYLE, new String[]{ParameterStyle.BARE.toString(), ParameterStyle.WRAPPED.toString()}, "The style to use");
         mainForm.addTextField(CLASSPATH, "Classpath to use", XForm.FieldType.PROJECT_FOLDER);
         mainForm.addTextField(OUTPUT, "The root directory for all emitted files.", XForm.FieldType.PROJECT_FOLDER);
         mainForm.addTextField(MAPPING, "mapping file to generate", XForm.FieldType.PROJECT_FILE);
@@ -100,8 +98,7 @@ public class WSToolsRegenerateJava2WsdlAction extends AbstractToolsAction<WsdlIn
             }
         });
 
-        return builder.buildDialog(actions, "Specify arguments for JBossWS wstools java2wsdl functionality",
-                UISupport.TOOL_ICON);
+        return builder.buildDialog(actions, "Specify arguments for JBossWS wstools java2wsdl functionality", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, WsdlInterface modelItem) throws Exception {
@@ -124,8 +121,7 @@ public class WSToolsRegenerateJava2WsdlAction extends AbstractToolsAction<WsdlIn
         builder.command(args.getArgs());
         builder.directory(new File(wstoolsDir));
 
-        toolHost.run(new ToolRunner(builder, new File(values.get(OUTPUT)), values.get(SERVICE_NAME), modelItem,
-                args));
+        toolHost.run(new ToolRunner(builder, new File(values.get(OUTPUT)), values.get(SERVICE_NAME), modelItem, args));
     }
 
     private ArgumentBuilder buildArgs(StringToStringMap values, boolean isWindows) throws IOException {
@@ -142,8 +138,7 @@ public class WSToolsRegenerateJava2WsdlAction extends AbstractToolsAction<WsdlIn
     }
 
     private String buildConfigFile(StringToStringMap values) throws IOException {
-        File file = File.createTempFile("wstools-config", ".xml",
-                new File(SoapUI.getSettings().getString(ToolsSettings.JBOSSWS_WSTOOLS_LOCATION, null)));
+        File file = File.createTempFile("wstools-config", ".xml", new File(SoapUI.getSettings().getString(ToolsSettings.JBOSSWS_WSTOOLS_LOCATION, null)));
         ConfigurationDocument configDocument = createConfigFile(values);
         configDocument.save(file);
         return file.getName();
@@ -182,8 +177,9 @@ public class WSToolsRegenerateJava2WsdlAction extends AbstractToolsAction<WsdlIn
         private final String serviceName;
         private final WsdlInterface modelItem;
 
-        public ToolRunner(ProcessBuilder builder, File outDir, String serviceName, WsdlInterface modelItem,
-                          ArgumentBuilder args) {
+        public ToolRunner(
+            ProcessBuilder builder, File outDir, String serviceName, WsdlInterface modelItem, ArgumentBuilder args
+        ) {
             super(builder, "JBossWS wstools", modelItem, args);
             this.outDir = outDir;
             this.serviceName = serviceName;
@@ -196,16 +192,17 @@ public class WSToolsRegenerateJava2WsdlAction extends AbstractToolsAction<WsdlIn
             }
 
             try {
-                boolean ifaces = modelItem.updateDefinition("file:" + outDir.getAbsolutePath() + File.separatorChar
-                        + "wsdl" + File.separatorChar + serviceName + ".wsdl", true);
+                boolean ifaces = modelItem.updateDefinition("file:" + outDir.getAbsolutePath() + File.separatorChar + "wsdl" + File.separatorChar + serviceName + ".wsdl", true);
 
                 if (ifaces) {
                     context.log("Updated Interface [" + modelItem.getName() + "]");
                     UISupport.select(modelItem);
-                } else {
+                }
+                else {
                     UISupport.showErrorMessage("Failed to update Interface from generated WSDL");
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }

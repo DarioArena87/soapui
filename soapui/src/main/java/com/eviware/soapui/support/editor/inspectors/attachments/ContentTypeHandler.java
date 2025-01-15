@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.attachments;
@@ -27,56 +27,9 @@ import java.util.HashMap;
  */
 
 public class ContentTypeHandler {
-    private static final HashMap<String, String> suffixToContentType;
     public static final String DEFAULT_CONTENTTYPE = "application/octet-stream";
-    private static StringToStringMap contentTypeToSuffix;
-
-    public static String getContentTypeFromFilename(String fileName) {
-        String suffix = getSuffixFromFilename(fileName);
-
-        if (suffixToContentType.containsKey(suffix)) {
-            return suffixToContentType.get(suffix);
-        }
-
-        return DEFAULT_CONTENTTYPE;
-    }
-
-    public static String getSuffixFromFilename(String fileName) {
-        if (fileName == null || fileName.length() == 0) {
-            return "";
-        }
-
-        int pos = fileName.lastIndexOf(".") + 1;
-        int len = fileName.length();
-
-        String suffix = "";
-        if (pos < len) {
-            suffix = fileName.substring(pos, len);
-        }
-
-        return suffix;
-
-    }
-
-    public static String getExtensionForContentType(String contentType) {
-        contentType = contentType.toLowerCase();
-        int ix = contentType.indexOf(';');
-        if (ix > 0) {
-            contentType = contentType.substring(0, ix);
-        }
-
-        if (contentTypeToSuffix.containsKey(contentType)) {
-            return contentTypeToSuffix.get(contentType);
-        }
-
-        for (String key : suffixToContentType.keySet()) {
-            if (key.length() == 3 && suffixToContentType.get(key).equals(contentType)) {
-                return key;
-            }
-        }
-
-        return "dat";
-    }
+    private static final HashMap<String, String> suffixToContentType;
+    private static final StringToStringMap contentTypeToSuffix;
 
     static {
         contentTypeToSuffix = new StringToStringMap();
@@ -307,4 +260,49 @@ public class ContentTypeHandler {
         suffixToContentType.put("dat", DEFAULT_CONTENTTYPE);
     }
 
+    public static String getContentTypeFromFilename(String fileName) {
+        String suffix = getSuffixFromFilename(fileName);
+
+        if (suffixToContentType.containsKey(suffix)) {
+            return suffixToContentType.get(suffix);
+        }
+
+        return DEFAULT_CONTENTTYPE;
+    }
+
+    public static String getSuffixFromFilename(String fileName) {
+        if (fileName == null || fileName.length() == 0) {
+            return "";
+        }
+
+        int pos = fileName.lastIndexOf(".") + 1;
+        int len = fileName.length();
+
+        String suffix = "";
+        if (pos < len) {
+            suffix = fileName.substring(pos, len);
+        }
+
+        return suffix;
+    }
+
+    public static String getExtensionForContentType(String contentType) {
+        contentType = contentType.toLowerCase();
+        int ix = contentType.indexOf(';');
+        if (ix > 0) {
+            contentType = contentType.substring(0, ix);
+        }
+
+        if (contentTypeToSuffix.containsKey(contentType)) {
+            return contentTypeToSuffix.get(contentType);
+        }
+
+        for (String key : suffixToContentType.keySet()) {
+            if (key.length() == 3 && suffixToContentType.get(key).equals(contentType)) {
+                return key;
+            }
+        }
+
+        return "dat";
+    }
 }

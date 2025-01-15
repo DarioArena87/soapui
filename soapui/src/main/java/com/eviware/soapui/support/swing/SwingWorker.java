@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.swing;
@@ -30,28 +30,35 @@ import com.eviware.soapui.support.UISupport;
  */
 public abstract class SwingWorker {
     private Object value; // see getValue(), setValue()
+    private final ThreadVar threadVar;
 
     /**
-     * Class to maintain reference to current worker thread under separate
-     * synchronization control.
+     * Start a thread that will call the <code>construct</code> method and then
+     * exit.
      */
-    private static class ThreadVar {
-        private Thread thread;
+    public SwingWorker() {
+        Runnable doFinished = new Runnable() {
+            public void run() {
+                finished();
+            }
+        };
 
-        ThreadVar(Thread t) {
-            thread = t;
-        }
+        Runnable doConstruct = new Runnable() {
+            public void run() {
+                try {
+                    setValue(construct());
+                }
+                finally {
+                    threadVar.clear();
+                }
 
-        synchronized Thread get() {
-            return thread;
-        }
+                UISupport.invokeLater(doFinished);
+            }
+        };
 
-        synchronized void clear() {
-            thread = null;
-        }
+        Thread t = new Thread(doConstruct, "SwingWorker");
+        threadVar = new ThreadVar(t);
     }
-
-    private ThreadVar threadVar;
 
     /**
      * Get the value produced by the worker thread, or null if it hasn't been
@@ -107,38 +114,12 @@ public abstract class SwingWorker {
             }
             try {
                 t.join();
-            } catch (InterruptedException e) {
+            }
+            catch (InterruptedException e) {
                 Thread.currentThread().interrupt(); // propagate
                 return null;
             }
         }
-    }
-
-    /**
-     * Start a thread that will call the <code>construct</code> method and then
-     * exit.
-     */
-    public SwingWorker() {
-        final Runnable doFinished = new Runnable() {
-            public void run() {
-                finished();
-            }
-        };
-
-        Runnable doConstruct = new Runnable() {
-            public void run() {
-                try {
-                    setValue(construct());
-                } finally {
-                    threadVar.clear();
-                }
-
-                UISupport.invokeLater(doFinished);
-            }
-        };
-
-        Thread t = new Thread(doConstruct, "SwingWorker");
-        threadVar = new ThreadVar(t);
     }
 
     /**
@@ -148,6 +129,26 @@ public abstract class SwingWorker {
         Thread t = threadVar.get();
         if (t != null) {
             t.start();
+        }
+    }
+
+    /**
+     * Class to maintain reference to current worker thread under separate
+     * synchronization control.
+     */
+    private static class ThreadVar {
+        private Thread thread;
+
+        ThreadVar(Thread t) {
+            thread = t;
+        }
+
+        synchronized Thread get() {
+            return thread;
+        }
+
+        synchronized void clear() {
+            thread = null;
         }
     }
 }

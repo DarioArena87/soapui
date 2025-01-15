@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//**
+ *//**
  * MySwing: Advanced Swing Utilites
  * Copyright (C) 2005  Santhosh Kumar T
  * <p/>
@@ -35,20 +35,24 @@ import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Stack;
 
 /**
  * @author Santhosh Kumar T
  * @email santhosh@in.fiorano.com
  */
 public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
-    private TreeModel model;
+    private final TreeModel model;
     private boolean dig = true;
 
     public CheckTreeSelectionModel(TreeModel model, boolean dig) {
         this.model = model;
         this.dig = dig;
-        setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        setSelectionMode(DISCONTIGUOUS_TREE_SELECTION);
     }
 
     public boolean isDigged() {
@@ -77,9 +81,9 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
     // one of its ancestor is selected.
     public boolean isPathSelected(TreePath path, boolean dig) {
         if (!dig) {
-            return super.isPathSelected(path);
+            return isPathSelected(path);
         }
-        while (path != null && !super.isPathSelected(path)) {
+        while (path != null && !isPathSelected(path)) {
             path = path.getParentPath();
         }
         return path != null;
@@ -87,8 +91,8 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
 
     // is path1 descendant of path2
     private boolean isDescendant(TreePath path1, TreePath path2) {
-        Object obj1[] = path1.getPath();
-        Object obj2[] = path2.getPath();
+        Object[] obj1 = path1.getPath();
+        Object[] obj2 = path2.getPath();
         for (int i = 0; i < obj2.length; i++) {
             if (obj1[i] != obj2[i]) {
                 return false;
@@ -100,7 +104,8 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
     public void setSelectionPaths(TreePath[] paths) {
         if (dig) {
             throw new UnsupportedOperationException("not implemented yet!!!");
-        } else {
+        }
+        else {
             super.setSelectionPaths(paths);
         }
     }
@@ -124,7 +129,7 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
                     toBeRemoved.add(selectionPaths[j]);
                 }
             }
-            super.removeSelectionPaths((TreePath[]) toBeRemoved.toArray(new TreePath[0]));
+            super.removeSelectionPaths((TreePath[])toBeRemoved.toArray(new TreePath[0]));
         }
 
         // if all siblings are selected then unselect them and select parent recursively
@@ -142,14 +147,33 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
             if (temp != null) {
                 if (temp.getParentPath() != null) {
                     addSelectionPath(temp.getParentPath());
-                } else {
+                }
+                else {
                     if (!isSelectionEmpty()) {
                         removeSelectionPaths(getSelectionPaths());
                     }
                     super.addSelectionPaths(new TreePath[]{temp});
                 }
-            } else {
+            }
+            else {
                 super.addSelectionPaths(new TreePath[]{path});
+            }
+        }
+    }
+
+    public void removeSelectionPaths(TreePath[] paths) {
+        if (!dig) {
+            super.removeSelectionPaths(paths);
+            return;
+        }
+
+        for (int i = 0; i < paths.length; i++) {
+            TreePath path = paths[i];
+            if (path.getPathCount() == 1) {
+                super.removeSelectionPaths(new TreePath[]{path});
+            }
+            else {
+                toggleRemoveSelection(path);
             }
         }
     }
@@ -176,22 +200,6 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
         return true;
     }
 
-    public void removeSelectionPaths(TreePath[] paths) {
-        if (!dig) {
-            super.removeSelectionPaths(paths);
-            return;
-        }
-
-        for (int i = 0; i < paths.length; i++) {
-            TreePath path = paths[i];
-            if (path.getPathCount() == 1) {
-                super.removeSelectionPaths(new TreePath[]{path});
-            } else {
-                toggleRemoveSelection(path);
-            }
-        }
-    }
-
     // if any ancestor node of given path is selected then unselect it
     //  and selection all its descendants except given path and descendants.
     // otherwise just unselect the given path
@@ -204,14 +212,15 @@ public class CheckTreeSelectionModel extends DefaultTreeSelectionModel {
         }
         if (parent != null) {
             stack.push(parent);
-        } else {
+        }
+        else {
             super.removeSelectionPaths(new TreePath[]{path});
             return;
         }
 
         while (!stack.isEmpty()) {
-            TreePath temp = (TreePath) stack.pop();
-            TreePath peekPath = stack.isEmpty() ? path : (TreePath) stack.peek();
+            TreePath temp = (TreePath)stack.pop();
+            TreePath peekPath = stack.isEmpty() ? path : (TreePath)stack.peek();
             Object node = temp.getLastPathComponent();
             Object peekNode = peekPath.getLastPathComponent();
             int childCount = model.getChildCount(node);

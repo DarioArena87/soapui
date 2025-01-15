@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * $Header: /home/jerenkrantz/tmp/commons/commons-convert/cvs/home/cvs/jakarta-commons//httpclient/src/java/org/apache/commons/httpclient/util/URIUtil.java,v 1.27 2004/05/05 20:34:01 olegk Exp $
  * $Revision: 507321 $
  * $Date: 2007-02-14 01:10:51 +0100 (Wed, 14 Feb 2007) $
@@ -44,17 +44,17 @@
 
 package org.apache.commons.httpclient.util;
 
-import java.util.BitSet;
-
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 
+import java.util.BitSet;
+
 /**
  * The URI escape and character encoding and decoding utility.
  * It's compatible with {@link org.apache.commons.httpclient.HttpURL} rather
- * than {@link org.apache.commons.httpclient.URI}.
+ * than {@link URI}.
  *
  * @author <a href="mailto:jericho@apache.org">Sung-Gu</a>
  * @version $Revision: 507321 $ $Date: 2002/03/14 15:14:01
@@ -77,12 +77,11 @@ public class URIUtil {
         if (uri == null || uri.length() == 0) {
             return uri;
         }
-        String path = URIUtil.getPath(uri);
+        String path = getPath(uri);
         int at = path.lastIndexOf("/");
         int to = path.length();
         return (at >= 0) ? path.substring(at + 1, to) : path;
     }
-
 
     /**
      * Get the query of an URI.
@@ -96,17 +95,15 @@ public class URIUtil {
         }
         // consider of net_path
         int at = uri.indexOf("//");
-        int from = uri.indexOf(
-                "/",
-                at >= 0 ? (uri.lastIndexOf("/", at - 1) >= 0 ? 0 : at + 2) : 0
-        );
+        int from = uri.indexOf("/", at >= 0 ? (uri.lastIndexOf("/", at - 1) >= 0 ? 0 : at + 2) : 0);
         // the authority part of URI ignored
         int to = uri.length();
         // reuse the at and from variables to consider the query
         at = uri.indexOf("?", from);
         if (at >= 0) {
             from = at + 1;
-        } else {
+        }
+        else {
             return null;
         }
         // check the fragment
@@ -116,7 +113,6 @@ public class URIUtil {
         // get the path and query.
         return (from < 0 || from == to) ? null : uri.substring(from, to);
     }
-
 
     /**
      * Get the path of an URI.
@@ -130,10 +126,7 @@ public class URIUtil {
         }
         // consider of net_path
         int at = uri.indexOf("//");
-        int from = uri.indexOf(
-                "/",
-                at >= 0 ? (uri.lastIndexOf("/", at - 1) >= 0 ? 0 : at + 2) : 0
-        );
+        int from = uri.indexOf("/", at >= 0 ? (uri.lastIndexOf("/", at - 1) >= 0 ? 0 : at + 2) : 0);
         // the authority part of URI ignored 
         int to = uri.length();
         // check the query
@@ -148,7 +141,6 @@ public class URIUtil {
         return (from < 0) ? (at >= 0 ? "/" : uri) : uri.substring(from, to);
     }
 
-
     /**
      * Get the path and query of an URI.
      *
@@ -161,10 +153,7 @@ public class URIUtil {
         }
         // consider of net_path
         int at = uri.indexOf("//");
-        int from = uri.indexOf(
-                "/",
-                at >= 0 ? (uri.lastIndexOf("/", at - 1) >= 0 ? 0 : at + 2) : 0
-        );
+        int from = uri.indexOf("/", at >= 0 ? (uri.lastIndexOf("/", at - 1) >= 0 ? 0 : at + 2) : 0);
         // the authority part of URI ignored
         int to = uri.length();
         // Ignore the '?' mark so to ignore the query.
@@ -175,7 +164,6 @@ public class URIUtil {
         // get the path and query.
         return (from < 0) ? (at >= 0 ? "/" : uri) : uri.substring(from, to);
     }
-
 
     /**
      * Get the path of an URI and its rest part.
@@ -189,10 +177,7 @@ public class URIUtil {
         }
         // consider of net_path
         int at = uri.indexOf("//");
-        int from = uri.indexOf(
-                "/",
-                at >= 0 ? (uri.lastIndexOf("/", at - 1) >= 0 ? 0 : at + 2) : 0
-        );
+        int from = uri.indexOf("/", at >= 0 ? (uri.lastIndexOf("/", at - 1) >= 0 ? 0 : at + 2) : 0);
         // get the path and its rest.
         return (from < 0) ? (at >= 0 ? "/" : uri) : uri.substring(from);
     }
@@ -214,7 +199,6 @@ public class URIUtil {
         return encodeAll(unescaped, URI.getDefaultProtocolCharset());
     }
 
-
     /**
      * Get the all escaped and encoded string with a given charset.
      * It's the same function to use <code>encode(String unescaped, Bitset
@@ -226,12 +210,10 @@ public class URIUtil {
      * @throws URIException if the charset is not supported
      * @see #encode
      */
-    public static String encodeAll(String unescaped, String charset)
-            throws URIException {
+    public static String encodeAll(String unescaped, String charset) throws URIException {
 
         return encode(unescaped, empty, charset);
     }
-
 
     /**
      * Escape and encode a string regarded as within the authority component of
@@ -245,12 +227,10 @@ public class URIUtil {
      * @see URI#getDefaultProtocolCharset
      * @see #encode
      */
-    public static String encodeWithinAuthority(String unescaped)
-            throws URIException {
+    public static String encodeWithinAuthority(String unescaped) throws URIException {
 
         return encodeWithinAuthority(unescaped, URI.getDefaultProtocolCharset());
     }
-
 
     /**
      * Escape and encode a string regarded as within the authority component of
@@ -264,12 +244,10 @@ public class URIUtil {
      * @throws URIException if the charset is not supported
      * @see #encode
      */
-    public static String encodeWithinAuthority(String unescaped, String charset)
-            throws URIException {
+    public static String encodeWithinAuthority(String unescaped, String charset) throws URIException {
 
         return encode(unescaped, URI.allowed_within_authority, charset);
     }
-
 
     /**
      * Escape and encode a string regarded as the path and query components of
@@ -285,7 +263,6 @@ public class URIUtil {
         return encodePathQuery(unescaped, URI.getDefaultProtocolCharset());
     }
 
-
     /**
      * Escape and encode a string regarded as the path and query components of
      * an URI with a given charset.
@@ -296,18 +273,15 @@ public class URIUtil {
      * @throws URIException if the charset is not supported
      * @see #encode
      */
-    public static String encodePathQuery(String unescaped, String charset)
-            throws URIException {
+    public static String encodePathQuery(String unescaped, String charset) throws URIException {
 
         int at = unescaped.indexOf('?');
         if (at < 0) {
             return encode(unescaped, URI.allowed_abs_path, charset);
         }
         // else
-        return encode(unescaped.substring(0, at), URI.allowed_abs_path, charset)
-                + '?' + encode(unescaped.substring(at + 1), URI.allowed_query, charset);
+        return encode(unescaped.substring(0, at), URI.allowed_abs_path, charset) + '?' + encode(unescaped.substring(at + 1), URI.allowed_query, charset);
     }
-
 
     /**
      * Escape and encode a string regarded as within the path component of an
@@ -322,12 +296,10 @@ public class URIUtil {
      * @see URI#getDefaultProtocolCharset
      * @see #encode
      */
-    public static String encodeWithinPath(String unescaped)
-            throws URIException {
+    public static String encodeWithinPath(String unescaped) throws URIException {
 
         return encodeWithinPath(unescaped, URI.getDefaultProtocolCharset());
     }
-
 
     /**
      * Escape and encode a string regarded as within the path component of an
@@ -342,12 +314,10 @@ public class URIUtil {
      * @throws URIException if the charset is not supported
      * @see #encode
      */
-    public static String encodeWithinPath(String unescaped, String charset)
-            throws URIException {
+    public static String encodeWithinPath(String unescaped, String charset) throws URIException {
 
         return encode(unescaped, URI.allowed_within_path, charset);
     }
-
 
     /**
      * Escape and encode a string regarded as the path component of an URI with
@@ -363,7 +333,6 @@ public class URIUtil {
         return encodePath(unescaped, URI.getDefaultProtocolCharset());
     }
 
-
     /**
      * Escape and encode a string regarded as the path component of an URI with
      * a given charset.
@@ -374,12 +343,10 @@ public class URIUtil {
      * @throws URIException if the charset is not supported
      * @see #encode
      */
-    public static String encodePath(String unescaped, String charset)
-            throws URIException {
+    public static String encodePath(String unescaped, String charset) throws URIException {
 
         return encode(unescaped, URI.allowed_abs_path, charset);
     }
-
 
     /**
      * Escape and encode a string regarded as within the query component of an
@@ -394,12 +361,10 @@ public class URIUtil {
      * @see URI#getDefaultProtocolCharset
      * @see #encode
      */
-    public static String encodeWithinQuery(String unescaped)
-            throws URIException {
+    public static String encodeWithinQuery(String unescaped) throws URIException {
 
         return encodeWithinQuery(unescaped, URI.getDefaultProtocolCharset());
     }
-
 
     /**
      * Escape and encode a string regarded as within the query component of an
@@ -414,12 +379,10 @@ public class URIUtil {
      * @throws URIException if the charset is not supported
      * @see #encode
      */
-    public static String encodeWithinQuery(String unescaped, String charset)
-            throws URIException {
+    public static String encodeWithinQuery(String unescaped, String charset) throws URIException {
 
         return encode(unescaped, URI.allowed_within_query, charset);
     }
-
 
     /**
      * Escape and encode a string regarded as the query component of an URI with
@@ -438,7 +401,6 @@ public class URIUtil {
         return encodeQuery(unescaped, URI.getDefaultProtocolCharset());
     }
 
-
     /**
      * Escape and encode a string regarded as the query component of an URI with
      * a given charset.
@@ -452,12 +414,10 @@ public class URIUtil {
      * @throws URIException if the charset is not supported
      * @see #encode
      */
-    public static String encodeQuery(String unescaped, String charset)
-            throws URIException {
+    public static String encodeQuery(String unescaped, String charset) throws URIException {
 
         return encode(unescaped, URI.allowed_query, charset);
     }
-
 
     /**
      * Escape and encode a given string with allowed characters not to be
@@ -469,12 +429,10 @@ public class URIUtil {
      * @throws URIException if the default protocol charset is not supported
      * @see URI#getDefaultProtocolCharset
      */
-    public static String encode(String unescaped, BitSet allowed)
-            throws URIException {
+    public static String encode(String unescaped, BitSet allowed) throws URIException {
 
         return encode(unescaped, allowed, URI.getDefaultProtocolCharset());
     }
-
 
     /**
      * Escape and encode a given string with allowed characters not to be
@@ -485,13 +443,12 @@ public class URIUtil {
      * @param charset   the charset
      * @return the escaped string
      */
-    public static String encode(String unescaped, BitSet allowed,
-                                String charset) throws URIException {
-        byte[] rawdata = URLCodec.encodeUrl(allowed,
-                EncodingUtil.getBytes(unescaped, charset));
+    public static String encode(
+        String unescaped, BitSet allowed, String charset
+    ) throws URIException {
+        byte[] rawdata = URLCodec.encodeUrl(allowed, EncodingUtil.getBytes(unescaped, charset));
         return EncodingUtil.getAsciiString(rawdata);
     }
-
 
     /**
      * Unescape and decode a given string regarded as an escaped string with the
@@ -506,7 +463,8 @@ public class URIUtil {
         try {
             byte[] rawdata = URLCodec.decodeUrl(EncodingUtil.getAsciiBytes(escaped));
             return EncodingUtil.getString(rawdata, URI.getDefaultProtocolCharset());
-        } catch (DecoderException e) {
+        }
+        catch (DecoderException e) {
             throw new URIException(e.getMessage());
         }
     }
@@ -520,8 +478,7 @@ public class URIUtil {
      * @throws URIException if the charset is not supported
      * @see Coder#decode
      */
-    public static String decode(String escaped, String charset)
-            throws URIException {
+    public static String decode(String escaped, String charset) throws URIException {
 
         return Coder.decode(escaped.toCharArray(), charset);
     }
@@ -547,12 +504,10 @@ public class URIUtil {
          * @throws URIException if the charset is not supported
          * @deprecated use org.apache.commons.codec.net.URLCodec
          */
-        public static char[] encode(String unescapedComponent, BitSet allowed, String charset)
-                throws URIException {
+        public static char[] encode(String unescapedComponent, BitSet allowed, String charset) throws URIException {
 
             return URI.encode(unescapedComponent, allowed, charset);
         }
-
 
         /**
          * Unescape and decode a given string.
@@ -563,12 +518,10 @@ public class URIUtil {
          * @throws URIException if the charset is not supported
          * @deprecated use org.apache.commons.codec.net.URLCodec
          */
-        public static String decode(char[] escapedComponent, String charset)
-                throws URIException {
+        public static String decode(char[] escapedComponent, String charset) throws URIException {
 
             return URI.decode(escapedComponent, charset);
         }
-
 
         /**
          * Verify whether a given string is escaped or not
@@ -581,16 +534,15 @@ public class URIUtil {
                 int c = original[i];
                 if (c > 128) {
                     return false;
-                } else if (c == '%') {
-                    if (Character.digit(original[++i], 16) == -1
-                            || Character.digit(original[++i], 16) == -1) {
+                }
+                else if (c == '%') {
+                    if (Character.digit(original[++i], 16) == -1 || Character.digit(original[++i], 16) == -1) {
                         return false;
                     }
                 }
             }
             return true;
         }
-
 
         /**
          * Replace from a given character to given character in an array order
@@ -608,7 +560,6 @@ public class URIUtil {
             return original;
         }
 
-
         /**
          * Replace from a given character to given character for a given string.
          *
@@ -623,16 +574,17 @@ public class URIUtil {
             do {
                 at = original.indexOf(from);
                 if (at >= 0) {
-                    result.append(original.substring(0, at));
+                    result.append(original, 0, at);
                     result.append(to);
-                } else {
+                }
+                else {
                     result.append(original.substring(saved));
                 }
                 saved = at;
-            } while (at >= 0);
+            }
+            while (at >= 0);
             return result.toString();
         }
     }
-
 }
 

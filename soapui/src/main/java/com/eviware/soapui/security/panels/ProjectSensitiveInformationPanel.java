@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.panels;
@@ -30,22 +30,18 @@ import com.eviware.soapui.support.xml.XmlObjectConfigurationReader;
 import org.apache.xmlbeans.XmlObject;
 import org.jdesktop.swingx.JXTable;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectSensitiveInformationPanel {
 
+    public static final String PROJECT_SPECIFIC_EXPOSURE_LIST = "ProjectSpecificExposureList";
     private JPanel mainpanel;
     private SensitiveInformationConfig config;
     private List<String> projectSpecificExposureList;
-    public static final String PROJECT_SPECIFIC_EXPOSURE_LIST = "ProjectSpecificExposureList";
     private SensitiveInformationTableModel sensitiveInformationTableModel;
     private JXTable tokenTable;
 
@@ -71,7 +67,8 @@ public class ProjectSensitiveInformationPanel {
             String[] tokens = str.split("###");
             if (tokens.length == 2) {
                 siph.setPropertyValue(tokens[0], tokens[1]);
-            } else {
+            }
+            else {
                 siph.setPropertyValue(tokens[0], "");
             }
         }
@@ -113,8 +110,7 @@ public class ProjectSensitiveInformationPanel {
 
     protected XmlObject createConfiguration() {
         XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
-        builder.add(PROJECT_SPECIFIC_EXPOSURE_LIST,
-                projectSpecificExposureList.toArray(new String[projectSpecificExposureList.size()]));
+        builder.add(PROJECT_SPECIFIC_EXPOSURE_LIST, projectSpecificExposureList.toArray(new String[projectSpecificExposureList.size()]));
         return builder.finish();
     }
 
@@ -122,11 +118,15 @@ public class ProjectSensitiveInformationPanel {
         config.set(configuration);
     }
 
+    public void release() {
+        //
+    }
+
     class AddTokenAction extends AbstractAction {
 
         public AddTokenAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/add.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Adds a token to assertion");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds a token to assertion");
         }
 
         @Override
@@ -139,14 +139,13 @@ public class ProjectSensitiveInformationPanel {
             sensitiveInformationTableModel.addToken(newToken, newValue);
             save();
         }
-
     }
 
     class RemoveTokenAction extends AbstractAction {
 
         public RemoveTokenAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Removes token from assertion");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
+            putValue(SHORT_DESCRIPTION, "Removes token from assertion");
         }
 
         @Override
@@ -154,9 +153,5 @@ public class ProjectSensitiveInformationPanel {
             sensitiveInformationTableModel.removeRows(tokenTable.getSelectedRows());
             save();
         }
-    }
-
-    public void release() {
-        //
     }
 }

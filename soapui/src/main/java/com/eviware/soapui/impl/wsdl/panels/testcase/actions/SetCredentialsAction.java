@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.testcase.actions;
@@ -23,14 +23,8 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.components.SimpleForm;
 import com.jgoodies.forms.factories.ButtonBarFactory;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
 /**
@@ -40,18 +34,17 @@ import java.awt.event.ActionEvent;
  */
 
 public class SetCredentialsAction extends AbstractAction {
+    private static final String DOMAIN = "Domain";
+    private static final String PASSWORD = "Password";
+    private static final String USERNAME = "Username";
     private final WsdlTestCase testCase;
     private JDialog dialog;
     private SimpleForm form;
 
-    private static final String DOMAIN = "Domain";
-    private static final String PASSWORD = "Password";
-    private static final String USERNAME = "Username";
-
     public SetCredentialsAction(WsdlTestCase testCase) {
         this.testCase = testCase;
-        putValue(Action.SMALL_ICON, UISupport.createImageIcon("/set_credentials.png"));
-        putValue(Action.SHORT_DESCRIPTION, "Sets the credentials for all requests in this testcase");
+        putValue(SMALL_ICON, UISupport.createImageIcon("/set_credentials.png"));
+        putValue(SHORT_DESCRIPTION, "Sets the credentials for all requests in this testcase");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -73,11 +66,10 @@ public class SetCredentialsAction extends AbstractAction {
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(form.getPanel(), BorderLayout.CENTER);
 
-        JPanel buttonBar = ButtonBarFactory.buildOKCancelBar(new JButton(new OkAction()), new JButton(
-                new CancelAction()));
+        JPanel buttonBar = ButtonBarFactory.buildOKCancelBar(new JButton(new OkAction()), new JButton(new CancelAction()));
         panel.add(buttonBar, BorderLayout.SOUTH);
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panel.setPreferredSize(new Dimension(270, (int) panel.getPreferredSize().getHeight()));
+        panel.setPreferredSize(new Dimension(270, (int)panel.getPreferredSize().getHeight()));
 
         dialog.getContentPane().add(panel);
         dialog.pack();
@@ -92,7 +84,7 @@ public class SetCredentialsAction extends AbstractAction {
             for (int c = 0; c < testCase.getTestStepCount(); c++) {
                 TestStep step = testCase.getTestStepAt(c);
                 if (step instanceof WsdlTestRequestStep) {
-                    WsdlTestRequestStep requestStep = (WsdlTestRequestStep) step;
+                    WsdlTestRequestStep requestStep = (WsdlTestRequestStep)step;
                     requestStep.getTestRequest().setUsername(form.getComponentValue(USERNAME));
                     requestStep.getTestRequest().setPassword(form.getComponentValue(PASSWORD));
                     requestStep.getTestRequest().setDomain(form.getComponentValue(DOMAIN));

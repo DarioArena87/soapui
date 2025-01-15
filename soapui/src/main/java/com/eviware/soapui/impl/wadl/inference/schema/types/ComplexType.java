@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema.types;
@@ -47,9 +47,9 @@ import java.util.Map;
  * @author Dain Nilsson
  */
 public class ComplexType implements Type {
-    private String name;
+    private final String name;
     private Schema schema;
-    private Map<QName, Particle> attributes;
+    private final Map<QName, Particle> attributes;
     private Content content;
     private boolean mixed = false;
     private boolean completed = false;
@@ -89,14 +89,70 @@ public class ComplexType implements Type {
         xml.setContent(content.save());
     }
 
-    public TypeReferenceConfig save() {
-        TypeReferenceConfig xml = TypeReferenceConfig.Factory.newInstance();
-        xml.setReference(new QName(schema.getNamespace(), name));
-        return xml;
-    }
-
     public void setContent(Content content) {
         this.content = content;
+    }
+
+    private void validateContent(Context context) throws XmlException {
+        context.getCursor().push();
+        context.putAttribute("typeName", name);
+        Content newContent = content.validate(context);
+        context.clearAttribute("typeName");
+        if (content != newContent) {
+            String problem = "Illegal content for complexType '" + name + "'.";
+            if (context.getHandler()
+                       .callback(ConflictHandler.Event.MODIFICATION,
+                                 ConflictHandler.Type.TYPE,
+                                 new QName(schema.getNamespace(), name),
+                                 context.getPath(),
+                                 "Illegal complex content."
+                       )) {
+                content = newContent;
+                context.getCursor().pop();
+                validateContent(context);
+                return;
+            }
+            else {
+                throw new XmlException(problem);
+            }
+        }
+        context.getCursor().pop();
+    }
+
+    private boolean isMixed(Context context) {
+        QName name = context.getCursor().getName();
+        SchemaTypeSystem sts;
+        try {
+            sts = XmlBeans.compileXsd(new XmlObject[]{
+                XmlObject.Factory.parse("<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"" +
+                                        name.getNamespaceURI() +
+                                        "\" targetNamespace=\"" +
+                                        name.getNamespaceURI() +
+                                        "\">" +
+                                        "<xs:element name=\"" +
+                                        name.getLocalPart() +
+                                        "\"><xs:complexType><xs:sequence>" +
+                                        "<xs:any processContents=\"skip\" minOccurs=\"0\" maxOccurs=\"unbounded\" /></xs:sequence>" +
+                                        "<xs:anyAttribute processContents=\"skip\"/></xs:complexType></xs:element></xs:schema>")
+            }, XmlBeans.getBuiltinTypeSystem(), null);
+            SchemaTypeLoader stl = XmlBeans.typeLoaderUnion(new SchemaTypeLoader[]{sts, XmlBeans.getBuiltinTypeSystem()});
+            if (!stl.parse(context.getCursor().xmlText(), null, null).validate()) {
+                return true;
+            }
+        }
+        catch (XmlException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Schema getSchema() {
+        return schema;
     }
 
     public Type validate(Context context) throws XmlException {
@@ -114,13 +170,20 @@ public class ComplexType implements Type {
                 QName qname = cursor.getName();
                 if (attributes.containsKey(qname)) {
                     attributes.get(qname).validate(context);
-                } else if (qname.getNamespaceURI().equals(Settings.xsins)) {
+                }
+                else if (qname.getNamespaceURI().equals(Settings.xsins)) {
                     // Ignore
-                } else if (context.getHandler().callback(ConflictHandler.Event.CREATION, ConflictHandler.Type.ATTRIBUTE,
-                        new QName(schema.getNamespace(), qname.getLocalPart()), context.getPath(), "Undeclared attribute.")) {
+                }
+                else if (context.getHandler().callback(ConflictHandler.Event.CREATION,
+                                                       ConflictHandler.Type.ATTRIBUTE,
+                                                       new QName(schema.getNamespace(), qname.getLocalPart()),
+                                                       context.getPath(),
+                                                       "Undeclared attribute."
+                )) {
                     if (qname.getNamespaceURI().equals(schema.getNamespace()) || qname.getNamespaceURI().equals("")) {
                         newAttribute(qname).validate(context);
-                    } else {
+                    }
+                    else {
                         Schema otherSchema = context.getSchemaSystem().getSchemaForNamespace(qname.getNamespaceURI());
                         schema.putPrefixForNamespace(qname.getPrefix(), qname.getNamespaceURI());
                         if (otherSchema == null) {
@@ -137,7 +200,8 @@ public class ComplexType implements Type {
                         attributes.put(qname, newAttribute);
                         newAttribute.validate(context);
                     }
-                } else {
+                }
+                else {
                     throw new XmlException("Illegal attribute!");
                 }
                 seen.add(qname);
@@ -147,10 +211,10 @@ public class ComplexType implements Type {
         // Make sure all attributes have been accounted for
         for (QName item : attributes.keySet()) {
             if (!seen.contains(item) && !attributes.get(item).getAttribute("use").equals("optional")) {
-                if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION, ConflictHandler.Type.ATTRIBUTE,
-                        item, context.getPath(), "Required attribute missing.")) {
+                if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION, ConflictHandler.Type.ATTRIBUTE, item, context.getPath(), "Required attribute missing.")) {
                     attributes.get(item).setAttribute("use", "optional");
-                } else {
+                }
+                else {
                     throw new XmlException("Required attribute missing!");
                 }
             }
@@ -166,59 +230,14 @@ public class ComplexType implements Type {
         return this;
     }
 
-    private void validateContent(Context context) throws XmlException {
-        context.getCursor().push();
-        context.putAttribute("typeName", name);
-        Content newContent = content.validate(context);
-        context.clearAttribute("typeName");
-        if (content != newContent) {
-            String problem = "Illegal content for complexType '" + name + "'.";
-            if (context.getHandler().callback(ConflictHandler.Event.MODIFICATION, ConflictHandler.Type.TYPE,
-                    new QName(schema.getNamespace(), name), context.getPath(), "Illegal complex content.")) {
-                content = newContent;
-                context.getCursor().pop();
-                validateContent(context);
-                return;
-            } else {
-                throw new XmlException(problem);
-            }
-        }
-        context.getCursor().pop();
-    }
-
-    private boolean isMixed(Context context) {
-        QName name = context.getCursor().getName();
-        SchemaTypeSystem sts;
-        try {
-            sts = XmlBeans.compileXsd(new XmlObject[]{XmlObject.Factory
-                    .parse("<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns=\"" + name.getNamespaceURI()
-                            + "\" targetNamespace=\"" + name.getNamespaceURI() + "\">" + "<xs:element name=\""
-                            + name.getLocalPart() + "\"><xs:complexType><xs:sequence>"
-                            + "<xs:any processContents=\"skip\" minOccurs=\"0\" maxOccurs=\"unbounded\" /></xs:sequence>"
-                            + "<xs:anyAttribute processContents=\"skip\"/></xs:complexType></xs:element></xs:schema>")},
-                    XmlBeans.getBuiltinTypeSystem(), null);
-            SchemaTypeLoader stl = XmlBeans
-                    .typeLoaderUnion(new SchemaTypeLoader[]{sts, XmlBeans.getBuiltinTypeSystem()});
-            if (!stl.parse(context.getCursor().xmlText(), null, null).validate()) {
-                return true;
-            }
-        } catch (XmlException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Schema getSchema() {
-        return schema;
-    }
-
     public void setSchema(Schema schema) {
         this.schema = schema;
+    }
+
+    public TypeReferenceConfig save() {
+        TypeReferenceConfig xml = TypeReferenceConfig.Factory.newInstance();
+        xml.setReference(new QName(schema.getNamespace(), name));
+        return xml;
     }
 
     @Override
@@ -246,5 +265,4 @@ public class ComplexType implements Type {
         }
         return p;
     }
-
 }

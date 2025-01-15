@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.util;
@@ -29,14 +29,13 @@ import com.eviware.soapui.support.types.StringToStringsMap;
  */
 public class BaseResponse implements Response {
 
-    private StringToStringMap properties = new StringToStringMap();
-    private Request request;
-    private String responseContent;
-    private String responseContentType;
+    private final StringToStringMap properties = new StringToStringMap();
+    private final Request request;
+    private final String responseContent;
+    private final String responseContentType;
     private String xmlContent;
 
-    public BaseResponse( Request request, String responseContent, String responseContentType )
-    {
+    public BaseResponse(Request request, String responseContent, String responseContentType) {
         this.request = request;
         this.responseContent = responseContent;
         this.responseContentType = responseContentType;
@@ -103,12 +102,12 @@ public class BaseResponse implements Response {
 
     @Override
     public String getProperty(String name) {
-        return properties.get( name );
+        return properties.get(name);
     }
 
     @Override
     public void setProperty(String name, String value) {
-        properties.put( name, value );
+        properties.put(name, value);
     }
 
     @Override

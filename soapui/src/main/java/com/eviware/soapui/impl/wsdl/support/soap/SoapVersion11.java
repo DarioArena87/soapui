@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.soap;
@@ -39,18 +39,16 @@ import java.io.IOException;
  */
 
 public class SoapVersion11 extends AbstractSoapVersion {
+    public final static SoapVersion11 instance = new SoapVersion11();
     private final static QName envelopeQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Envelope");
     private final static QName bodyQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Body");
     private final static QName faultQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Fault");
     private final static QName headerQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Header");
-
     SchemaTypeLoader soapSchema;
     SchemaType soapEnvelopeType;
     private XmlObject soapSchemaXml;
     private XmlObject soapEncodingXml;
     private SchemaType soapFaultType;
-
-    public final static SoapVersion11 instance = new SoapVersion11();
 
     private SoapVersion11() {
         SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
@@ -66,8 +64,7 @@ public class SoapVersion11 extends AbstractSoapVersion {
             // soapSchemaXml = XmlObject.Factory.parse(
             // SoapUI.class.getResource(
             // "/com/eviware/soapui/resources/xsds/soapEnvelope.xsd" ), options );
-            soapSchemaXml = XmlUtils.createXmlObject(
-                    SoapUI.class.getResource("/com/eviware/soapui/resources/xsds/soapEnvelope.xsd"), options);
+            soapSchemaXml = XmlUtils.createXmlObject(SoapUI.class.getResource("/com/eviware/soapui/resources/xsds/soapEnvelope.xsd"), options);
             soapSchema = XmlBeans.loadXsd(new XmlObject[]{soapSchemaXml});
 
             soapEnvelopeType = soapSchema.findDocumentType(envelopeQName);
@@ -76,21 +73,47 @@ public class SoapVersion11 extends AbstractSoapVersion {
             // soapEncodingXml = XmlObject.Factory.parse(
             // SoapUI.class.getResource(
             // "/com/eviware/soapui/resources/xsds/soapEncoding.xsd" ), options );
-            soapEncodingXml = XmlUtils.createXmlObject(
-                    SoapUI.class.getResource("/com/eviware/soapui/resources/xsds/soapEncoding.xsd"), options);
-        } catch (Exception e) {
+            soapEncodingXml = XmlUtils.createXmlObject(SoapUI.class.getResource("/com/eviware/soapui/resources/xsds/soapEncoding.xsd"), options);
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
-        } finally {
+        }
+        finally {
             state.restore();
         }
     }
 
-    public SchemaType getEnvelopeType() {
-        return EnvelopeDocument.type;
+    public String toString() {
+        return "SOAP 1.1";
+    }
+
+    public QName getEnvelopeQName() {
+        return envelopeQName;
+    }
+
+    public QName getBodyQName() {
+        return bodyQName;
+    }
+
+    public QName getHeaderQName() {
+        return headerQName;
+    }
+
+    public String getContentTypeHttpHeader(String encoding, String soapAction) {
+        if (encoding == null || encoding.trim().length() == 0) {
+            return getContentType();
+        }
+        else {
+            return getContentType() + ";charset=" + encoding;
+        }
     }
 
     public String getEnvelopeNamespace() {
         return Constants.SOAP11_ENVELOPE_NS;
+    }
+
+    public String getFaultDetailNamespace() {
+        return "";
     }
 
     public String getEncodingNamespace() {
@@ -105,42 +128,23 @@ public class SoapVersion11 extends AbstractSoapVersion {
         return soapSchemaXml;
     }
 
-    public String toString() {
-        return "SOAP 1.1";
+    public String getContentType() {
+        return "text/xml";
     }
 
-    public String getContentTypeHttpHeader(String encoding, String soapAction) {
-        if (encoding == null || encoding.trim().length() == 0) {
-            return getContentType();
-        } else {
-            return getContentType() + ";charset=" + encoding;
-        }
+    public String getName() {
+        return "SOAP 1.1";
     }
 
     public String getSoapActionHeader(String soapAction) {
         if (soapAction == null || soapAction.length() == 0) {
             soapAction = "\"\"";
-        } else {
+        }
+        else {
             soapAction = "\"" + soapAction + "\"";
         }
 
         return soapAction;
-    }
-
-    public String getContentType() {
-        return "text/xml";
-    }
-
-    public QName getBodyQName() {
-        return bodyQName;
-    }
-
-    public QName getEnvelopeQName() {
-        return envelopeQName;
-    }
-
-    public QName getHeaderQName() {
-        return headerQName;
     }
 
     protected SchemaTypeLoader getSoapEnvelopeSchemaLoader() {
@@ -151,11 +155,7 @@ public class SoapVersion11 extends AbstractSoapVersion {
         return soapFaultType;
     }
 
-    public String getName() {
-        return "SOAP 1.1";
-    }
-
-    public String getFaultDetailNamespace() {
-        return "";
+    public SchemaType getEnvelopeType() {
+        return EnvelopeDocument.type;
     }
 }

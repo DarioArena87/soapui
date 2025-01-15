@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.scan;
@@ -33,7 +33,7 @@ import com.eviware.soapui.support.types.StringToStringMap;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlString;
 
-import javax.swing.JComponent;
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -54,15 +54,16 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
 
     private int currentIndex = 0;
     private XmlBombSecurityScanConfig xmlBombConfig;
-    private Map<SecurityCheckedParameter, ArrayList<String>> parameterMutations = new HashMap<SecurityCheckedParameter, ArrayList<String>>();
+    private final Map<SecurityCheckedParameter, ArrayList<String>> parameterMutations = new HashMap<SecurityCheckedParameter, ArrayList<String>>();
     private boolean mutation;
 
     public XmlBombSecurityScan(TestStep testStep, SecurityScanConfig config, ModelItem parent, String icon) {
         super(testStep, config, parent, icon);
         if (config.getConfig() == null || !(config.getConfig() instanceof XmlBombSecurityScanConfig)) {
             initXmlBombConfig();
-        } else {
-            xmlBombConfig = (XmlBombSecurityScanConfig) config.getConfig();
+        }
+        else {
+            xmlBombConfig = (XmlBombSecurityScanConfig)config.getConfig();
         }
 
         getExecutionStrategy().setImmutable(true);
@@ -70,19 +71,17 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
 
     private void initXmlBombConfig() {
         getConfig().setConfig(XmlBombSecurityScanConfig.Factory.newInstance());
-        xmlBombConfig = (XmlBombSecurityScanConfig) getConfig().getConfig();
+        xmlBombConfig = (XmlBombSecurityScanConfig)getConfig().getConfig();
 
         xmlBombConfig.setAttachXmlBomb(false);
         xmlBombConfig.setXmlAttachmentPrefix(DEFAULT_PREFIX);
 
         initDefaultVectors();
-
     }
 
     private void initDefaultVectors() {
         try {
-            InputStream in = SoapUI.class
-                    .getResourceAsStream("/com/eviware/soapui/resources/security/xmlbomb/BillionLaughsAttack.xml.txt");
+            InputStream in = SoapUI.class.getResourceAsStream("/com/eviware/soapui/resources/security/xmlbomb/BillionLaughsAttack.xml.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String strLine;
             StringBuffer value = new StringBuffer();
@@ -92,13 +91,13 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
             in.close();
             XmlString bomb = xmlBombConfig.addNewXmlBombs();
             bomb.setStringValue(value.toString());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
         try {
-            InputStream in = SoapUI.class
-                    .getResourceAsStream("/com/eviware/soapui/resources/security/xmlbomb/QuadraticBlowup.xml.txt");
+            InputStream in = SoapUI.class.getResourceAsStream("/com/eviware/soapui/resources/security/xmlbomb/QuadraticBlowup.xml.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String strLine;
             StringBuffer value = new StringBuffer();
@@ -108,13 +107,13 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
             in.close();
             XmlString bomb = xmlBombConfig.addNewXmlBombs();
             bomb.setStringValue(value.toString());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
         try {
-            InputStream in = SoapUI.class
-                    .getResourceAsStream("/com/eviware/soapui/resources/security/xmlbomb/ExternalEntity.dtd.txt");
+            InputStream in = SoapUI.class.getResourceAsStream("/com/eviware/soapui/resources/security/xmlbomb/ExternalEntity.dtd.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String strLine;
             StringBuffer value = new StringBuffer();
@@ -124,40 +123,22 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
             in.close();
             XmlString bomb = xmlBombConfig.addNewXmlBombs();
             bomb.setStringValue(value.toString());
-        } catch (Exception e) {
-            SoapUI.logError(e);
         }
-
-    }
-
-    @Override
-    protected void execute(SecurityTestRunner securityTestRunner, TestStep testStep, SecurityTestRunContext context) {
-        try {
-            StringToStringMap updatedParams = update(testStep, context);
-            addAttachement(testStep);
-            WsdlTestRequestStepResult message = (WsdlTestRequestStepResult) testStep.run(
-                    (TestCaseRunner) securityTestRunner, context);
-            message.setRequestContent("", false);
-            createMessageExchange(updatedParams, message, context);
-        } catch (XmlException e) {
-            SoapUI.logError(e, "[XmlBombSecurityScan]XPath seems to be invalid!");
-            reportSecurityScanException("Property value is not XML or XPath is wrong!");
-        } catch (Exception e) {
-            SoapUI.logError(e, "[XmlBombSecurityScan]Property value is not valid xml!");
-            reportSecurityScanException("Property value is not XML or XPath is wrong!");
+        catch (Exception e) {
+            SoapUI.logError(e);
         }
     }
 
-    private StringToStringMap update(TestStep testStep, SecurityTestRunContext context) throws XmlException, Exception {
+    private StringToStringMap update(TestStep testStep, SecurityTestRunContext context) throws Exception {
         StringToStringMap params = new StringToStringMap();
 
         if (parameterMutations.size() == 0) {
             mutateParameters(testStep, context);
         }
 
-		/*
+        /*
          * Idea is to drain for each parameter mutations.
-		 */
+         */
         for (SecurityCheckedParameter param : getParameterHolder().getParameterList()) {
             ArrayList<String> mutations = parameterMutations.get(param);
             if (mutations != null && !mutations.isEmpty()) {
@@ -171,7 +152,7 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
         return params;
     }
 
-    private void mutateParameters(TestStep testStep, SecurityTestRunContext context) throws XmlException, Exception {
+    private void mutateParameters(TestStep testStep, SecurityTestRunContext context) throws Exception {
         mutation = true;
 
         // for each parameter
@@ -184,20 +165,8 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
                     }
                     parameterMutations.get(parameter).add(bomb);
                 }
-
             }
         }
-
-    }
-
-    @Override
-    public JComponent getAdvancedSettingsPanel() {
-        return new XmlBombSecurityScanConfigPanel(this);
-    }
-
-    @Override
-    public String getType() {
-        return TYPE;
     }
 
     public boolean isAttachXmlBomb() {
@@ -211,7 +180,7 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
     private Attachment addAttachement(TestStep testStep) {
         Attachment attach = null;
         if (isAttachXmlBomb()) {
-            WsdlRequest request = (WsdlRequest) getRequest(testStep);
+            WsdlRequest request = (WsdlRequest)getRequest(testStep);
 
             if (currentIndex < getXmlBombList().size()) {
                 String bomb = getXmlBombList().get(currentIndex);
@@ -224,7 +193,8 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
                     attach = request.attachFile(bombFile, false);
                     attach.setContentType("text/xml;");
                     currentIndex++;
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     SoapUI.logError(e);
                 }
             }
@@ -249,15 +219,38 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
     }
 
     @Override
+    protected void clear() {
+        parameterMutations.clear();
+        mutation = false;
+        currentIndex = 0;
+    }
+
+    @Override
+    protected void execute(SecurityTestRunner securityTestRunner, TestStep testStep, SecurityTestRunContext context) {
+        try {
+            StringToStringMap updatedParams = update(testStep, context);
+            addAttachement(testStep);
+            WsdlTestRequestStepResult message = (WsdlTestRequestStepResult)testStep.run((TestCaseRunner)securityTestRunner, context);
+            message.setRequestContent("", false);
+            createMessageExchange(updatedParams, message, context);
+        }
+        catch (XmlException e) {
+            SoapUI.logError(e, "[XmlBombSecurityScan]XPath seems to be invalid!");
+            reportSecurityScanException("Property value is not XML or XPath is wrong!");
+        }
+        catch (Exception e) {
+            SoapUI.logError(e, "[XmlBombSecurityScan]Property value is not valid xml!");
+            reportSecurityScanException("Property value is not XML or XPath is wrong!");
+        }
+    }
+
+    @Override
     protected boolean hasNext(TestStep testStep, SecurityTestRunContext context) {
         boolean hasNext = false;
         if ((parameterMutations == null || parameterMutations.size() == 0) && !mutation) {
-            if (getParameterHolder().getParameterList().size() > 0) {
-                hasNext = true;
-            } else {
-                hasNext = false;
-            }
-        } else {
+            hasNext = getParameterHolder().getParameterList().size() > 0;
+        }
+        else {
             for (SecurityCheckedParameter param : parameterMutations.keySet()) {
                 if (parameterMutations.get(param).size() > 0) {
                     hasNext = true;
@@ -279,15 +272,8 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
     }
 
     @Override
-    protected void clear() {
-        parameterMutations.clear();
-        mutation = false;
-        currentIndex = 0;
-    }
-
-    @Override
-    public String getConfigDescription() {
-        return "Configures Xml bomb security scan";
+    public String getType() {
+        return TYPE;
     }
 
     @Override
@@ -296,7 +282,17 @@ public class XmlBombSecurityScan extends AbstractSecurityScanWithProperties {
     }
 
     @Override
+    public String getConfigDescription() {
+        return "Configures Xml bomb security scan";
+    }
+
+    @Override
     public String getHelpURL() {
         return "http://soapui.org/Security/xml-bomb.html";
+    }
+
+    @Override
+    public JComponent getAdvancedSettingsPanel() {
+        return new XmlBombSecurityScanConfigPanel(this);
     }
 }

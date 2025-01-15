@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.boundary;
@@ -33,7 +33,7 @@ import java.util.List;
  * NOT USED ANY MORE
  */
 public class EnumerationValuesExtractor {
-    private WsdlRequest request;
+    private final WsdlRequest request;
     // private List<String> enumerationParameters = new ArrayList<String>();
     private List<String> selectedEnumerationParameters = new ArrayList<String>();
 
@@ -46,16 +46,19 @@ public class EnumerationValuesExtractor {
             // request.getOperation().getInterface().getDefinitionContext()
             // .getSchemaTypeSystem(), XmlObject.Factory.parse(
             // request.getRequestContent() ) );
-            model = new XmlObjectTreeModel(request.getOperation().getInterface().getDefinitionContext()
-                    .getSchemaTypeSystem(), XmlUtils.createXmlObject(request.getRequestContent()));
-        } catch (Exception e) {
+            model = new XmlObjectTreeModel(
+                request.getOperation().getInterface().getDefinitionContext().getSchemaTypeSystem(),
+                XmlUtils.createXmlObject(request.getRequestContent())
+            );
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
         // extractEnumerationParameters( model.getRootNode() );
     }
 
-    public String extract() throws XmlException, Exception {
+    public String extract() throws Exception {
 
         getNextChild(model.getRootNode());
 
@@ -66,15 +69,13 @@ public class EnumerationValuesExtractor {
         for (int i = 0; i < node.getChildCount(); i++) {
             XmlTreeNode mynode = node.getChild(i);
 
-            if (mynode.getSchemaType() != null && mynode.getSchemaType().getEnumerationValues() != null
-                    && mynode.getSchemaType().getEnumerationValues().length > 0) {
+            if (mynode.getSchemaType() != null && mynode.getSchemaType().getEnumerationValues() != null && mynode.getSchemaType().getEnumerationValues().length > 0) {
                 EnumerationValues nodeInfo = new EnumerationValues(mynode.getSchemaType().getBaseType().getShortJavaName());
                 for (XmlAnySimpleType s : mynode.getSchemaType().getEnumerationValues()) {
                     nodeInfo.addValue(s.getStringValue());
                 }
 
                 updateNodeValue(mynode, nodeInfo);
-
             }
             getNextChild(mynode);
         }
@@ -130,26 +131,8 @@ public class EnumerationValuesExtractor {
         return max;
     }
 
-    class EnumerationValues {
-        private String type;
-        private List<String> valuesList = new ArrayList<String>();
-
-        public EnumerationValues(String type) {
-            this.type = type;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void addValue(String value) {
-            valuesList.add(value);
-        }
-
-        public List<String> getValuesList() {
-            return valuesList;
-        }
-
+    public List<String> getSelectedEnumerationParameters() {
+        return selectedEnumerationParameters;
     }
 
     // public List<String> getEnumerationParameters()
@@ -166,7 +149,24 @@ public class EnumerationValuesExtractor {
         this.selectedEnumerationParameters = selectedEnumerationParameters;
     }
 
-    public List<String> getSelectedEnumerationParameters() {
-        return selectedEnumerationParameters;
+    class EnumerationValues {
+        private final String type;
+        private final List<String> valuesList = new ArrayList<String>();
+
+        public EnumerationValues(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void addValue(String value) {
+            valuesList.add(value);
+        }
+
+        public List<String> getValuesList() {
+            return valuesList;
+        }
     }
 }

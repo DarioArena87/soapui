@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.wsimport;
@@ -43,6 +43,7 @@ import java.util.List;
  */
 
 public class WSImportAction extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "WSImportAction";
     private static final String PACKAGE = "Package";
     private static final String OUTPUT = "Target Directory";
     private static final String SOURCE_OUTPUT = "Source Directory";
@@ -51,7 +52,6 @@ public class WSImportAction extends AbstractToolsAction<Interface> {
     private static final String HTTPPROXY = "HTTP Proxy";
     private static final String KEEP = "Keep";
     private static final String CATALOG = "Catalog";
-    public static final String SOAPUI_ACTION_ID = "WSImportAction";
 
     public WSImportAction() {
         super("JAX-WS Artifacts", "Generates JAX-WS artifacts using wsimport");
@@ -65,22 +65,17 @@ public class WSImportAction extends AbstractToolsAction<Interface> {
 
         mainForm.addTextField(OUTPUT, "target directory for generated files.", XForm.FieldType.PROJECT_FOLDER);
         mainForm.addTextField(PACKAGE, "target package nam", XForm.FieldType.JAVA_PACKAGE);
-        mainForm.addTextField(SOURCE_OUTPUT, "target directory for generated source files",
-                XForm.FieldType.PROJECT_FOLDER);
+        mainForm.addTextField(SOURCE_OUTPUT, "target directory for generated source files", XForm.FieldType.PROJECT_FOLDER);
         mainForm.addTextField(HTTPPROXY, "HTTP Proxy-server", XForm.FieldType.TEXT);
-        mainForm.addTextField(CATALOG, "catalog file to resolve external entity references",
-                XForm.FieldType.PROJECT_FILE);
-        mainForm.addTextField(BINDING_FILES, "comma-separated list of external JAX-WS or JAXB binding files",
-                XForm.FieldType.TEXT);
-        mainForm.addTextField(WSDLLOCATION, "@WebService.wsdlLocation and @WebServiceClient.wsdlLocation value",
-                XForm.FieldType.TEXT);
+        mainForm.addTextField(CATALOG, "catalog file to resolve external entity references", XForm.FieldType.PROJECT_FILE);
+        mainForm.addTextField(BINDING_FILES, "comma-separated list of external JAX-WS or JAXB binding files", XForm.FieldType.TEXT);
+        mainForm.addTextField(WSDLLOCATION, "@WebService.wsdlLocation and @WebServiceClient.wsdlLocation value", XForm.FieldType.TEXT);
 
         mainForm.addCheckBox(KEEP, "(keep generated files)");
 
         buildArgsForm(builder, false, "WSImport");
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.WSIMPORT_HELP_URL, modelItem),
-                "Specify arguments for JWSDP/JAX-WS wsimport", UISupport.TOOL_ICON);
+        return builder.buildDialog(buildDefaultActions(HelpUrls.WSIMPORT_HELP_URL, modelItem), "Specify arguments for JWSDP/JAX-WS wsimport", UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {
@@ -116,8 +111,7 @@ public class WSImportAction extends AbstractToolsAction<Interface> {
         toolHost.run(new ProcessToolRunner(builder, "JAX-WS wsimport", modelItem));
     }
 
-    private ArgumentBuilder buildArgs(StringToStringMap values, boolean isWindows, Interface modelItem)
-            throws IOException {
+    private ArgumentBuilder buildArgs(StringToStringMap values, boolean isWindows, Interface modelItem) throws IOException {
         values.put(OUTPUT, Tools.ensureDir(values.get(OUTPUT), ""));
         values.put(SOURCE_OUTPUT, Tools.ensureDir(values.get(SOURCE_OUTPUT), values.get(OUTPUT)));
 

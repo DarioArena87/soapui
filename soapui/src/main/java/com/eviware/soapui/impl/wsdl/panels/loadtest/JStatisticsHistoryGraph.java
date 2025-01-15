@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.loadtest;
@@ -23,19 +23,11 @@ import com.eviware.soapui.impl.wsdl.loadtest.data.LoadTestStatistics.Statistic;
 import com.eviware.soapui.impl.wsdl.loadtest.data.StatisticsHistory.StatisticsHistoryModel;
 import com.jgoodies.forms.builder.ButtonBarBuilder;
 
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.Scrollable;
+import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
@@ -57,14 +49,14 @@ public class JStatisticsHistoryGraph extends JComponent implements Scrollable {
     private final LoadTestStatistics statisticsModel;
     private StatisticsHistoryModel data;
     private JComponent legend;
-    private InternalTableModelListener tableModelListener = new InternalTableModelListener();
+    private final InternalTableModelListener tableModelListener = new InternalTableModelListener();
     private long[] maxValues;
     private float[] scales;
 
     public JStatisticsHistoryGraph(WsdlLoadTest loadTest) {
         this.loadTest = loadTest;
-        this.statisticsModel = loadTest.getStatisticsModel();
-        this.data = statisticsModel.getHistory().getStatisticsValueHistory(Statistic.AVERAGE);
+        statisticsModel = loadTest.getStatisticsModel();
+        data = statisticsModel.getHistory().getStatisticsValueHistory(Statistic.AVERAGE);
 
         setAutoscrolls(true);
         addMouseMotionListener(new InternalMouseMotionListener());
@@ -124,7 +116,7 @@ public class JStatisticsHistoryGraph extends JComponent implements Scrollable {
 
         for (int c = 0; c < data.getRowCount(); c++) {
             for (int i = 0; i < data.getColumnCount(); i++) {
-                long value = (Long) data.getValueAt(c, i);
+                long value = (Long)data.getValueAt(c, i);
                 if (value > maxValues[i]) {
                     maxValues[i] = value;
                 }
@@ -141,8 +133,7 @@ public class JStatisticsHistoryGraph extends JComponent implements Scrollable {
     }
 
     private boolean recalcScale(int index) {
-        float scale = (index == 0 || maxValues[index] == 0) ? 1 : (float) (getHeight())
-                / (float) (maxValues[index] + 10);
+        float scale = (index == 0 || maxValues[index] == 0) ? 1 : (float)(getHeight()) / (float)(maxValues[index] + 10);
         if (scale > 1) {
             scale = 1;
         }
@@ -159,28 +150,36 @@ public class JStatisticsHistoryGraph extends JComponent implements Scrollable {
         g.setColor(getBackground());
 
         Rectangle clip = g.getClipBounds();
-        g.fillRect((int) clip.getX(), (int) clip.getY(), (int) clip.getWidth(), (int) clip.getHeight());
+        g.fillRect((int)clip.getX(), (int)clip.getY(), (int)clip.getWidth(), (int)clip.getHeight());
 
         double right = clip.getX() + clip.getWidth();
         int height = getHeight();
 
-        for (int c = (int) clip.getX(); c < data.getRowCount() && c < right; c++) {
+        for (int c = (int)clip.getX(); c < data.getRowCount() && c < right; c++) {
             for (int i = 0; i < data.getColumnCount(); i++) {
                 if (i == 0) {
                     g.setColor(THREADCOUNT_COLOR);
-                } else if (i == data.getColumnCount() - 1) {
+                }
+                else if (i == data.getColumnCount() - 1) {
                     g.setColor(TOTAL_COLOR);
-                } else {
+                }
+                else {
                     g.setColor(ColorPalette.getColor(loadTest.getTestCase().getTestStepAt(i - 1)));
                 }
 
-                int yOffset = (int) ((float) ((Long) data.getValueAt(c, i)) * scales[i]);
+                int yOffset = (int)((float)((Long)data.getValueAt(c, i)) * scales[i]);
 
                 if (clip.contains(c, height - yOffset - 1)) {
                     g.drawLine(c, height - yOffset - 1, c, height - yOffset - 1);
                 }
             }
         }
+    }
+
+    public Dimension getPreferredSize() {
+        int height = getHeight();
+        int width = data.getRowCount() + SCROLL_AHEAD;
+        return new Dimension(width, height);
     }
 
     public JComponent getLegend() {
@@ -216,12 +215,6 @@ public class JStatisticsHistoryGraph extends JComponent implements Scrollable {
         return getPreferredSize();
     }
 
-    public Dimension getPreferredSize() {
-        int height = getHeight();
-        int width = data.getRowCount() + SCROLL_AHEAD;
-        return new Dimension(width, height);
-    }
-
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         return 1;
     }
@@ -249,7 +242,7 @@ public class JStatisticsHistoryGraph extends JComponent implements Scrollable {
 
                 for (int c = firstRow; c <= lastRow; c++) {
                     for (int i = 0; i < data.getColumnCount(); i++) {
-                        long value = (Long) data.getValueAt(c, i);
+                        long value = (Long)data.getValueAt(c, i);
 
                         if (value > maxValues[i]) {
                             maxValues[i] = value;
@@ -274,7 +267,8 @@ public class JStatisticsHistoryGraph extends JComponent implements Scrollable {
                 if (!repaint && size.getWidth() < data.getRowCount() + SCROLL_AHEAD) {
                     revalidate();
                 }
-            } else if (e.getType() == TableModelEvent.UPDATE) {
+            }
+            else if (e.getType() == TableModelEvent.UPDATE) {
                 initMaxValues();
                 initScales();
 

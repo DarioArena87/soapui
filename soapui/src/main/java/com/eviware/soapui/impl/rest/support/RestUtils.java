@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.support;
@@ -42,10 +42,6 @@ import static com.eviware.soapui.impl.support.HttpUtils.urlEncodeWithUtf8;
 
 public class RestUtils {
 
-    public static enum TemplateExtractionOption {
-        EXTRACT_TEMPLATE_PARAMETERS, IGNORE_TEMPLATE_PARAMETERS
-    }
-
     public static String[] extractTemplateParams(String path) {
         if (StringUtils.isNullOrEmpty(path)) {
             return new String[0];
@@ -68,7 +64,6 @@ public class RestUtils {
         }
 
         return result.toStringArray();
-
     }
 
     public static String extractParams(String pathOrEndpoint, RestParamsPropertyHolder params, boolean keepHost) {
@@ -88,7 +83,8 @@ public class RestUtils {
             url = new URL(pathOrEndpoint);
             path = url.getPath();
             queryString = url.getQuery();
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e) {
             int ix = path.indexOf('?');
             if (ix >= 0) {
                 queryString = path.substring(ix + 1);
@@ -129,7 +125,8 @@ public class RestUtils {
                             if (!params.hasProperty(name)) {
                                 params.addProperty(name).setStyle(ParameterStyle.MATRIX);
                             }
-                        } else {
+                        }
+                        else {
 
                             String name = URLDecoder.decode(matrixParam.substring(0, ix), "Utf-8");
                             RestParamProperty property = params.getProperty(name);
@@ -143,7 +140,8 @@ public class RestUtils {
                         }
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e, "Couldn't parse the template/matrix parameters from URI");
             }
 
@@ -161,7 +159,7 @@ public class RestUtils {
         }
 
         if (keepHost && url != null) {
-            return Tools.getEndpointFromUrl(url) + resultPath.toString();
+            return Tools.getEndpointFromUrl(url) + resultPath;
         }
 
         return resultPath.toString();
@@ -179,7 +177,8 @@ public class RestUtils {
                     if (!params.hasProperty(name)) {
                         params.addProperty(name).setStyle(ParameterStyle.QUERY);
                     }
-                } else {
+                }
+                else {
                     String name = URLDecoder.decode(item.substring(0, ix), "Utf-8");
                     RestParamProperty property = params.getProperty(name);
                     if (property == null) {
@@ -190,7 +189,8 @@ public class RestUtils {
                     property.setValue(URLDecoder.decode(item.substring(ix + 1), "Utf-8"));
                     property.setDefaultValue(URLDecoder.decode(item.substring(ix + 1), "Utf-8"));
                 }
-            } catch (UnsupportedEncodingException e) {
+            }
+            catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
         }
@@ -206,13 +206,13 @@ public class RestUtils {
                 continue;
             }
 
-
             if (value != null && !param.isDisableUrlEncoding()) {
                 try {
                     String encoding = System.getProperty("soapui.request.encoding", request.getEncoding());
                     encoding = StringUtils.hasContent(encoding) ? encoding : Charset.defaultCharset().toString();
                     value = URLEncoder.encode(value, encoding);
-                } catch (UnsupportedEncodingException e1) {
+                }
+                catch (UnsupportedEncodingException e1) {
                     SoapUI.logError(e1);
                     value = urlEncodeWithUtf8(value);
                 }
@@ -235,29 +235,6 @@ public class RestUtils {
     public static String makeSuffixParameterString(RestRequestInterface request) {
         return makeMatrixParameterString(request.getParams()) + getQueryParamsString(request);
     }
-
-    private static String makeMatrixParameterString(RestParamsPropertyHolder params) {
-        StringBuilder buffer = new StringBuilder();
-        for (int i = 0; i < params.getPropertyCount(); i++) {
-            RestParamProperty param = params.getPropertyAt(i);
-            String value = param.getValue();
-            if (param.getStyle() == ParameterStyle.MATRIX) {
-                if (param.getType().equals(XmlBoolean.type.getName())) {
-                    if (value.toUpperCase().equals("TRUE") || value.equals("1")) {
-                        buffer.append(";").append(param.getName());
-                    }
-                } else {
-                    buffer.append(";").append(param.getName());
-                    if (StringUtils.hasContent(value)) {
-                        buffer.append("=").append(value);
-                    }
-                }
-
-            }
-        }
-        return buffer.toString();
-    }
-
 
     public static String getQueryParamsString(RestRequestInterface request) {
         if (isRequestWithoutQueryString(request)) {
@@ -286,14 +263,8 @@ public class RestUtils {
             }
         }
 
-        return (query.length() > 0 ? "?" : "") + query.toString();
+        return (query.length() > 0 ? "?" : "") + query;
     }
-
-    private static boolean isRequestWithoutQueryString(RestRequestInterface request) {
-        return request.isPostQueryString() || "multipart/form-data".equals(request.getMediaType())
-                || "multipart/mixed".equals(request.getMediaType());
-    }
-
 
     public static List<String> splitMultipleParameters(String paramStr, String delimiter) {
         StringList result = new StringList();
@@ -301,13 +272,13 @@ public class RestUtils {
         if (StringUtils.hasContent(paramStr)) {
             if (!StringUtils.hasContent(delimiter)) {
                 result.add(paramStr);
-            } else {
+            }
+            else {
                 result.addAll(paramStr.split(delimiter));
             }
         }
 
         return result;
-
     }
 
     /**
@@ -323,7 +294,8 @@ public class RestUtils {
 
         if (!StringUtils.hasContent(delimiter)) {
             result.add(paramStr);
-        } else {
+        }
+        else {
             result.addAll(paramStr.split(delimiter));
         }
 
@@ -331,7 +303,7 @@ public class RestUtils {
     }
 
     public static List<RestResource> extractAncestorsParentFirst(RestResource childResource) {
-        final List<RestResource> resources = new ArrayList<RestResource>();
+        List<RestResource> resources = new ArrayList<RestResource>();
         for (RestResource r = childResource; r != null; r = r.getParentResource()) {
             resources.add(r);
         }
@@ -342,12 +314,43 @@ public class RestUtils {
     public static String getExpandedPath(String path, RestParamsPropertyHolder params, ModelItem context) {
         String expandedPath = path;
         expandedPath = PropertyExpander.expandProperties(context, expandedPath);
-        for (String pathParam : RestUtils.extractTemplateParams(expandedPath)) {
+        for (String pathParam : extractTemplateParams(expandedPath)) {
             String pathParamValue = params.getPropertyValue(pathParam);
             pathParamValue = PropertyExpander.expandProperties(context, pathParamValue);
             expandedPath = expandedPath.replaceAll("\\{" + pathParam + "\\}", pathParamValue == null ? "" : pathParamValue);
         }
 
         return expandedPath;
+    }
+
+    private static String makeMatrixParameterString(RestParamsPropertyHolder params) {
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0; i < params.getPropertyCount(); i++) {
+            RestParamProperty param = params.getPropertyAt(i);
+            String value = param.getValue();
+            if (param.getStyle() == ParameterStyle.MATRIX) {
+                if (param.getType().equals(XmlBoolean.type.getName())) {
+                    if (value.equalsIgnoreCase("TRUE") || value.equals("1")) {
+                        buffer.append(";").append(param.getName());
+                    }
+                }
+                else {
+                    buffer.append(";").append(param.getName());
+                    if (StringUtils.hasContent(value)) {
+                        buffer.append("=").append(value);
+                    }
+                }
+            }
+        }
+        return buffer.toString();
+    }
+
+    private static boolean isRequestWithoutQueryString(RestRequestInterface request) {
+        return request.isPostQueryString() || "multipart/form-data".equals(request.getMediaType()) || "multipart/mixed".equals(request.getMediaType());
+    }
+
+    public enum TemplateExtractionOption {
+        EXTRACT_TEMPLATE_PARAMETERS,
+        IGNORE_TEMPLATE_PARAMETERS
     }
 }

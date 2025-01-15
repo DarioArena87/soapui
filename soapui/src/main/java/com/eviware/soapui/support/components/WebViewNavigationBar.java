@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -26,16 +26,9 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebHistory;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.text.Document;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -54,13 +47,13 @@ class WebViewNavigationBar {
     private ForwardAction forwardAction;
     private BackAction backAction;
     private Color originalFontColor;
-    private String hintText = "Enter URL here";
+    private final String hintText = "Enter URL here";
 
     WebViewNavigationBar() {
-        this.toolbar = createNavigationBar();
+        toolbar = createNavigationBar();
     }
 
-    void initialize(final WebEngine webEngine, EnabledWebViewBasedBrowserComponent webViewBasedBrowserComponent) {
+    void initialize(WebEngine webEngine, EnabledWebViewBasedBrowserComponent webViewBasedBrowserComponent) {
         this.webEngine = webEngine;
         this.webViewBasedBrowserComponent = webViewBasedBrowserComponent;
 
@@ -76,11 +69,11 @@ class WebViewNavigationBar {
             }
         });
 
-
         webEngine.locationProperty().addListener(new ChangeListener<String>() {
             @Override
-            public void changed(ObservableValue<? extends String> observableValue, String oldLocation,
-                                final String newLocation) {
+            public void changed(
+                ObservableValue<? extends String> observableValue, String oldLocation, String newLocation
+            ) {
                 if (urlField != null) {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
@@ -139,7 +132,7 @@ class WebViewNavigationBar {
         String urlFieldText = urlField.getText();
 
         if (urlFieldText.contains(hintText)) {
-            final String textWithOutHint = urlFieldText.replaceFirst(hintText, "");
+            String textWithOutHint = urlFieldText.replaceFirst(hintText, "");
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     urlField.setText(textWithOutHint);
@@ -162,17 +155,18 @@ class WebViewNavigationBar {
     private class BackAction extends AbstractAction {
         public BackAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/arrow_left.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Go back");
+            putValue(SHORT_DESCRIPTION, "Go back");
         }
 
         public void actionPerformed(ActionEvent e) {
             if (webEngine == null) {
                 return;
             }
-            final WebHistory history = webEngine.getHistory();
+            WebHistory history = webEngine.getHistory();
             if (history.getCurrentIndex() == 0) {
                 Toolkit.getDefaultToolkit().beep();
-            } else {
+            }
+            else {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -186,17 +180,18 @@ class WebViewNavigationBar {
     private class ForwardAction extends AbstractAction {
         public ForwardAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/arrow_right.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Go forward");
+            putValue(SHORT_DESCRIPTION, "Go forward");
         }
 
         public void actionPerformed(ActionEvent e) {
             if (webEngine == null) {
                 return;
             }
-            final WebHistory history = webEngine.getHistory();
+            WebHistory history = webEngine.getHistory();
             if (history.getCurrentIndex() >= history.getEntries().size() - 1) {
                 Toolkit.getDefaultToolkit().beep();
-            } else {
+            }
+            else {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -210,7 +205,7 @@ class WebViewNavigationBar {
     private class ReloadAction extends AbstractAction {
         public ReloadAction() {
             putValue(SMALL_ICON, UISupport.createImageIcon("/reload_properties.gif"));
-            putValue(Action.SHORT_DESCRIPTION, "Reload page");
+            putValue(SHORT_DESCRIPTION, "Reload page");
         }
 
         public void actionPerformed(ActionEvent e) {

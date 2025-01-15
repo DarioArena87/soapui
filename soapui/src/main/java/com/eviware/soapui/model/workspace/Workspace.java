@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.workspace;
@@ -32,41 +32,41 @@ import java.util.List;
  */
 
 public interface Workspace extends ModelItem {
-    public Project getProjectAt(int index);
+    Project getProjectAt(int index);
 
-    public Project getProjectByName(String projectName);
+    Project getProjectByName(String projectName);
 
-    public int getProjectCount();
+    int getProjectCount();
 
-    public SaveStatus onClose();
+    SaveStatus onClose();
 
-    public SaveStatus save(boolean workspaceOnly);
+    SaveStatus save(boolean workspaceOnly);
 
-    public void addWorkspaceListener(WorkspaceListener listener);
+    void addWorkspaceListener(WorkspaceListener listener);
 
-    public void removeWorkspaceListener(WorkspaceListener listener);
+    void removeWorkspaceListener(WorkspaceListener listener);
 
-    public Project createProject(String name, File file) throws SoapUIException;
+    Project createProject(String name, File file) throws SoapUIException;
 
-    public void removeProject(Project project);
+    void removeProject(Project project);
 
-    public Project importProject(String filename) throws SoapUIException;
+    Project importProject(String filename) throws SoapUIException;
 
-    public Project importProject(InputStream inputStream);
+    Project importProject(InputStream inputStream);
 
-    public int getIndexOfProject(Project project);
+    int getIndexOfProject(Project project);
 
-    public String getPath();
+    String getPath();
 
-    public List<? extends Project> getProjectList();
+    List<? extends Project> getProjectList();
 
-    public void switchWorkspace(File newPath) throws SoapUIException;
+    void switchWorkspace(File newPath) throws SoapUIException;
 
-    public Project openProject(Project modelItem) throws SoapUIException;
+    Project openProject(Project modelItem) throws SoapUIException;
 
-    public void inspectProjects();
+    void inspectProjects();
 
-    public boolean isSupportInformationDialog();
+    boolean isSupportInformationDialog();
 
-    public void setSupportInformationDialog(boolean value);
+    void setSupportInformationDialog(boolean value);
 }

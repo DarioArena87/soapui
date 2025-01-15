@@ -42,7 +42,8 @@ public class HttpCredentialsProvider implements CredentialsProvider {
         Credentials credentials;
         if (StringUtils.hasContent(proxyHost) && isProxyAuthScope(authScope)) {
             credentials = getProxyCredentials();
-        } else {
+        }
+        else {
             credentials = getRequestCredentials(authScope);
         }
 
@@ -86,17 +87,15 @@ public class HttpCredentialsProvider implements CredentialsProvider {
             String username = PropertyExpander.expandProperties(settings.getString(ProxySettings.USERNAME, null));
             String password = PropertyExpander.expandProperties(settings.getString(ProxySettings.PASSWORD, null));
             setProxyCredentials(host, port, username, password);
-        } else {
+        }
+        else {
             setProxyCredentials(null, null, null, null);
         }
-
     }
 
     private boolean isProxyAuthScope(AuthScope authScope) {
         if (proxyHost.equalsIgnoreCase(authScope.getHost())) {
-            if (StringUtils.hasContent(proxyPort) && (Integer.parseInt(proxyPort) == authScope.getPort())) {
-                return true;
-            }
+            return StringUtils.hasContent(proxyPort) && (Integer.parseInt(proxyPort) == authScope.getPort());
         }
         return false;
     }
@@ -114,18 +113,19 @@ public class HttpCredentialsProvider implements CredentialsProvider {
             if (AuthPolicy.NTLM.equalsIgnoreCase(authScope.getScheme())) {
                 logger.debug("{}:{} requires Windows authentication", authScope.getHost(), authScope.getPort());
                 return getNTCredentials(requestUsername, requestPassword, requestDomain);
-            } else if (AuthPolicy.BASIC.equalsIgnoreCase(authScope.getScheme())
-                    || AuthPolicy.DIGEST.equalsIgnoreCase(authScope.getScheme())
-                    || AuthPolicy.SPNEGO.equalsIgnoreCase(authScope.getScheme())) {
-                logger.debug("{}:{} requires authentication with the realm '{}'",
-                        new Object[] {authScope.getHost(), authScope.getPort(), authScope.getRealm()});
+            }
+            else if (AuthPolicy.BASIC.equalsIgnoreCase(authScope.getScheme()) ||
+                     AuthPolicy.DIGEST.equalsIgnoreCase(authScope.getScheme()) ||
+                     AuthPolicy.SPNEGO.equalsIgnoreCase(authScope.getScheme())) {
+                logger.debug("{}:{} requires authentication with the realm '{}'", authScope.getHost(), authScope.getPort(), authScope.getRealm());
                 if (requestUsername == null && AuthPolicy.BASIC.equalsIgnoreCase(authScope.getScheme())) {
                     logger.warn("Username is empty");
                     return new UsernamePasswordCredentials("", requestPassword);
                 }
                 return new UsernamePasswordCredentials(requestUsername, requestPassword);
             }
-        } finally {
+        }
+        finally {
             checkedCredentials = true;
         }
         return null;
@@ -142,7 +142,8 @@ public class HttpCredentialsProvider implements CredentialsProvider {
         String workstation = "";
         try {
             workstation = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException ignore) {
+        }
+        catch (UnknownHostException ignore) {
         }
         return new NTCredentials(username, password, workstation, domain);
     }

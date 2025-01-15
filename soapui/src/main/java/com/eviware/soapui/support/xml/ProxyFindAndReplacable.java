@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.xml;
@@ -35,37 +35,12 @@ public class ProxyFindAndReplacable implements FindAndReplaceable {
     }
 
     public void setSBTarget() {
-        this.sbtartget = new StringBuilder();
-        this.sbtartget.append(proxytarget.getText());
+        sbtartget = new StringBuilder();
+        sbtartget.append(proxytarget.getText());
     }
 
     public FindAndReplaceable getProxytarget() {
         return proxytarget;
-    }
-
-    public int getCaretPosition() {
-        return proxytarget.getCaretPosition();
-    }
-
-    public String getSelectedText() {
-        return proxytarget.getSelectedText();
-    }
-
-    public int getSelectionEnd() {
-        return proxytarget.getSelectionEnd();
-    }
-
-    public int getSelectionStart() {
-        return proxytarget.getSelectionStart();
-    }
-
-    public String getText() {
-        if (isReplaceAll) {
-            return sbtartget.toString();
-        } else {
-            return proxytarget.getText();
-        }
-
     }
 
     public String getDialogText() {
@@ -74,25 +49,39 @@ public class ProxyFindAndReplacable implements FindAndReplaceable {
 
     public boolean isEditable() {
         return proxytarget.isEditable();
+    }    public String getSelectedText() {
+        return proxytarget.getSelectedText();
+    }
+
+    public int getCaretPosition() {
+        return proxytarget.getCaretPosition();
+    }
+
+    public String getText() {
+        if (isReplaceAll) {
+            return sbtartget.toString();
+        }
+        else {
+            return proxytarget.getText();
+        }
     }
 
     public void select(int start, int end) {
         if (isReplaceAll) {
             this.start = start;
             this.end = end;
-        } else {
+        }
+        else {
             proxytarget.select(start, end);
         }
-
     }
 
-    public void setSelectedText(String txt) {
-        if (isReplaceAll) {
-            sbtartget.replace(this.start, this.end, newValue);
-        } else {
-            proxytarget.setSelectedText(txt);
-        }
+    public int getSelectionStart() {
+        return proxytarget.getSelectionStart();
+    }
 
+    public int getSelectionEnd() {
+        return proxytarget.getSelectionEnd();
     }
 
     public boolean isReplaceAll() {
@@ -102,8 +91,16 @@ public class ProxyFindAndReplacable implements FindAndReplaceable {
     public void setReplaceAll(boolean isReplaceAll) {
         if (proxytarget instanceof RSyntaxTextArea) {
             this.isReplaceAll = isReplaceAll;
-        } else {
+        }
+        else {
             this.isReplaceAll = false;
+        }
+    }    public void setSelectedText(String txt) {
+        if (isReplaceAll) {
+            sbtartget.replace(start, end, newValue);
+        }
+        else {
+            proxytarget.setSelectedText(txt);
         }
     }
 
@@ -125,14 +122,13 @@ public class ProxyFindAndReplacable implements FindAndReplaceable {
 
     public void flushSBText() {
         if (proxytarget instanceof RSyntaxTextArea) {
-            ((RSyntaxTextArea) proxytarget).setText(sbtartget.toString());
+            ((RSyntaxTextArea)proxytarget).setText(sbtartget.toString());
         }
-
     }
 
     public void setCarretPosition(boolean forward) {
         if (proxytarget instanceof RSyntaxTextArea) {
-            ((RSyntaxTextArea) proxytarget).setCaretPosition(forward ? getEnd() : getStart());
+            ((RSyntaxTextArea)proxytarget).setCaretPosition(forward ? getEnd() : getStart());
         }
     }
 
@@ -143,6 +139,10 @@ public class ProxyFindAndReplacable implements FindAndReplaceable {
     public int getEnd() {
         return end;
     }
+
+
+
+
 
     public JComponent getEditComponent() {
         return proxytarget.getEditComponent();

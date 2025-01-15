@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*//*
+ *//*
  * ====================================================================
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -41,19 +41,6 @@
 
 package org.apache.http.localserver;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLServerSocketFactory;
-
 import org.apache.http.ConnectionReuseStrategy;
 import org.apache.http.HttpResponseFactory;
 import org.apache.http.HttpResponseInterceptor;
@@ -79,6 +66,18 @@ import org.apache.http.protocol.ResponseContent;
 import org.apache.http.protocol.ResponseDate;
 import org.apache.http.protocol.ResponseServer;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLServerSocketFactory;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Local HTTP server for tests that require one. Based on the
  * <code>ElementalHttpServer</code> example in HttpCore.
@@ -102,26 +101,22 @@ public class LocalTestServer {
      * Optional SSL context
      */
     private final SSLContext sslcontext;
-
-    /**
-     * The server socket, while being served.
-     */
-    private volatile ServerSocket servicedSocket;
-
-    /**
-     * The request listening thread, while listening.
-     */
-    private volatile ListenerThread listenerThread;
-
     /**
      * Set of active worker threads
      */
     private final Set<Worker> workers;
-
     /**
      * The number of connections this accepted.
      */
     private final AtomicInteger acceptedConnections = new AtomicInteger(0);
+    /**
+     * The server socket, while being served.
+     */
+    private volatile ServerSocket servicedSocket;
+    /**
+     * The request listening thread, while listening.
+     */
+    private volatile ListenerThread listenerThread;
 
     /**
      * Creates a new test server.
@@ -137,15 +132,23 @@ public class LocalTestServer {
      * @param sslcontext optional SSL context if the server is to leverage SSL/TLS
      *                   transport security
      */
-    public LocalTestServer(final BasicHttpProcessor proc, final ConnectionReuseStrategy reuseStrat,
-                           final HttpResponseFactory responseFactory, final HttpExpectationVerifier expectationVerifier,
-                           final HttpParams params, final SSLContext sslcontext) {
-        super();
-        this.handlerRegistry = new HttpRequestHandlerRegistry();
-        this.workers = Collections.synchronizedSet(new HashSet<Worker>());
-        this.httpservice = new HttpService(proc != null ? proc : newProcessor(), reuseStrat != null ? reuseStrat
-                : newConnectionReuseStrategy(), responseFactory != null ? responseFactory : newHttpResponseFactory(),
-                handlerRegistry, expectationVerifier, params != null ? params : newDefaultParams());
+    public LocalTestServer(
+        BasicHttpProcessor proc,
+        ConnectionReuseStrategy reuseStrat,
+        HttpResponseFactory responseFactory,
+        HttpExpectationVerifier expectationVerifier,
+        HttpParams params,
+        SSLContext sslcontext
+    ) {
+        handlerRegistry = new HttpRequestHandlerRegistry();
+        workers = Collections.synchronizedSet(new HashSet<Worker>());
+        httpservice = new HttpService(proc != null ? proc : newProcessor(),
+                                           reuseStrat != null ? reuseStrat : newConnectionReuseStrategy(),
+                                           responseFactory != null ? responseFactory : newHttpResponseFactory(),
+                                           handlerRegistry,
+                                           expectationVerifier,
+                                           params != null ? params : newDefaultParams()
+        );
         this.sslcontext = sslcontext;
     }
 
@@ -154,7 +157,7 @@ public class LocalTestServer {
      *
      * @param sslcontext SSL context
      */
-    public LocalTestServer(final SSLContext sslcontext) {
+    public LocalTestServer(SSLContext sslcontext) {
         this(null, null, null, null, null, sslcontext);
     }
 
@@ -177,8 +180,7 @@ public class LocalTestServer {
      * @return a protocol processor for server-side use
      */
     protected HttpProcessor newProcessor() {
-        return new ImmutableHttpProcessor(new HttpResponseInterceptor[]{new ResponseDate(), new ResponseServer(),
-                new ResponseContent(), new ResponseConnControl()});
+        return new ImmutableHttpProcessor(new ResponseDate(), new ResponseServer(), new ResponseContent(), new ResponseConnControl());
     }
 
     /**
@@ -189,10 +191,10 @@ public class LocalTestServer {
     protected HttpParams newDefaultParams() {
         HttpParams params = new SyncBasicHttpParams();
         params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 60000)
-                .setIntParameter(CoreConnectionPNames.SOCKET_BUFFER_SIZE, 8 * 1024)
-                .setBooleanParameter(CoreConnectionPNames.STALE_CONNECTION_CHECK, false)
-                .setBooleanParameter(CoreConnectionPNames.TCP_NODELAY, true)
-                .setParameter(CoreProtocolPNames.ORIGIN_SERVER, "LocalTestServer/1.1");
+              .setIntParameter(CoreConnectionPNames.SOCKET_BUFFER_SIZE, 8 * 1024)
+              .setBooleanParameter(CoreConnectionPNames.STALE_CONNECTION_CHECK, false)
+              .setBooleanParameter(CoreConnectionPNames.TCP_NODELAY, true)
+              .setParameter(CoreProtocolPNames.ORIGIN_SERVER, "LocalTestServer/1.1");
         return params;
     }
 
@@ -250,13 +252,14 @@ public class LocalTestServer {
      */
     public void start() throws Exception {
         if (servicedSocket != null) {
-            throw new IllegalStateException(this.toString() + " already running");
+            throw new IllegalStateException("LocalTestServer is already running");
         }
         ServerSocket ssock;
         if (sslcontext != null) {
             SSLServerSocketFactory sf = sslcontext.getServerSocketFactory();
             ssock = sf.createServerSocket();
-        } else {
+        }
+        else {
             ssock = new ServerSocket();
         }
 
@@ -301,7 +304,8 @@ public class LocalTestServer {
         sb.append("LocalTestServer/");
         if (ssock == null) {
             sb.append("stopped");
-        } else {
+        }
+        else {
             sb.append(ssock.getLocalSocketAddress());
         }
         return sb.toString();
@@ -317,7 +321,7 @@ public class LocalTestServer {
         if (ssock == null) {
             throw new IllegalStateException("not running");
         }
-        return (InetSocketAddress) ssock.getLocalSocketAddress();
+        return (InetSocketAddress)ssock.getLocalSocketAddress();
     }
 
     /**
@@ -329,7 +333,6 @@ public class LocalTestServer {
         private volatile Exception exception;
 
         ListenerThread() {
-            super();
         }
 
         @Override
@@ -346,12 +349,15 @@ public class LocalTestServer {
                     worker.setDaemon(true);
                     worker.start();
                 }
-            } catch (Exception ex) {
-                this.exception = ex;
-            } finally {
+            }
+            catch (Exception ex) {
+                exception = ex;
+            }
+            finally {
                 try {
                     servicedSocket.close();
-                } catch (IOException ignore) {
+                }
+                catch (IOException ignore) {
                 }
             }
         }
@@ -360,14 +366,14 @@ public class LocalTestServer {
             interrupt();
             try {
                 servicedSocket.close();
-            } catch (IOException ignore) {
+            }
+            catch (IOException ignore) {
             }
         }
 
         public Exception getException() {
-            return this.exception;
+            return exception;
         }
-
     }
 
     class Worker extends Thread {
@@ -376,7 +382,7 @@ public class LocalTestServer {
 
         private volatile Exception exception;
 
-        public Worker(final HttpServerConnection conn) {
+        public Worker(HttpServerConnection conn) {
             this.conn = conn;
         }
 
@@ -384,16 +390,19 @@ public class LocalTestServer {
         public void run() {
             HttpContext context = new BasicHttpContext();
             try {
-                while (this.conn.isOpen() && !Thread.interrupted()) {
-                    httpservice.handleRequest(this.conn, context);
+                while (conn.isOpen() && !interrupted()) {
+                    httpservice.handleRequest(conn, context);
                 }
-            } catch (Exception ex) {
-                this.exception = ex;
-            } finally {
+            }
+            catch (Exception ex) {
+                exception = ex;
+            }
+            finally {
                 workers.remove(this);
                 try {
-                    this.conn.shutdown();
-                } catch (IOException ignore) {
+                    conn.shutdown();
+                }
+                catch (IOException ignore) {
                 }
             }
         }
@@ -401,14 +410,14 @@ public class LocalTestServer {
         public void shutdown() {
             interrupt();
             try {
-                this.conn.shutdown();
-            } catch (IOException ignore) {
+                conn.shutdown();
+            }
+            catch (IOException ignore) {
             }
         }
 
         public Exception getException() {
-            return this.exception;
+            return exception;
         }
-
     }
 }

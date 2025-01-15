@@ -30,28 +30,27 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.smartbear.integrations.swaggerhub.component.ImportFromSwaggerHubDialog.*;
+import static com.smartbear.integrations.swaggerhub.component.ImportFromSwaggerHubDialog.log;
 
 public class PublishToSwaggerHubAction extends AbstractSoapUIAction<RestService> {
-    private static final Logger LOG = LoggerFactory.getLogger(PublishToSwaggerHubAction.class);
     public static final String SWAGGER_HUB_API_KEY = "SwaggerHubApiKey";
     public final static String SWAGGERHUB_URL = "https://swaggerhub.com";
     public final static String SWAGGERHUB_API = "https://api.swaggerhub.com/apis";
-
+    private static final Logger LOG = LoggerFactory.getLogger(PublishToSwaggerHubAction.class);
     private XFormDialog dialog;
 
     public PublishToSwaggerHubAction() {
         super("Publish to SwaggerHub", "Publishes this API to SwaggerHub");
     }
 
-    public void perform(final RestService restService, Object o) {
+    public void perform(RestService restService, Object o) {
 
         Settings settings = SoapUI.getWorkspace().getSettings();
         dialog = ADialogBuilder.buildDialog(Form.class);
         dialog.setValue(Form.APIKEY, settings.getString(SWAGGER_HUB_API_KEY, ""));
         dialog.setBooleanValue(Form.REMEMBER, true);
 
-        final boolean[] finished = {false};
+        boolean[] finished = {false};
         while (!finished[0] && dialog.show()) {
             XProgressDialog progressDialog = UISupport.getDialogs().createProgressDialog("Publish to SwaggerHub", 0, "Importing...", false);
             try {
@@ -60,13 +59,15 @@ public class PublishToSwaggerHubAction extends AbstractSoapUIAction<RestService>
                     public Object construct(XProgressMonitor xProgressMonitor) {
                         try {
                             finished[0] = publishApi(restService);
-                        } catch (IOException e) {
+                        }
+                        catch (IOException e) {
                             UISupport.showErrorMessage(e);
                         }
                         return null;
                     }
                 });
-            } catch (Throwable e) {
+            }
+            catch (Throwable e) {
                 UISupport.showErrorMessage(e);
             }
         }
@@ -86,8 +87,7 @@ public class PublishToSwaggerHubAction extends AbstractSoapUIAction<RestService>
             HttpGet get = new HttpGet(uri + "/" + versionId);
             HttpResponse response = client.execute(get);
             if (response.getStatusLine().getStatusCode() == 200) {
-                if (!UISupport.confirm("API Version [" + versionId + "] already exists at SwaggerHub - Overwrite?",
-                        "Publish to SwaggerHub")) {
+                if (!UISupport.confirm("API Version [" + versionId + "] already exists at SwaggerHub - Overwrite?", "Publish to SwaggerHub")) {
                     return false;
                 }
             }
@@ -95,8 +95,7 @@ public class PublishToSwaggerHubAction extends AbstractSoapUIAction<RestService>
             SwaggerExporter exporter = new Swagger2Exporter(restService.getProject());
             String tempDirectoryPath = Files.createTempDir().getAbsolutePath();
             String tempFilePath = tempDirectoryPath + File.separator + "api-docs.json";
-            String result = exporter.exportToFileSystem(tempFilePath, versionId,
-                    "json", new RestService[]{restService}, restService.getBasePath());
+            String result = exporter.exportToFileSystem(tempFilePath, versionId, "json", new RestService[]{restService}, restService.getBasePath());
             new File(tempDirectoryPath).deleteOnExit();
 
             LOG.info("Created temporary Swagger definition at " + result);
@@ -118,21 +117,26 @@ public class PublishToSwaggerHubAction extends AbstractSoapUIAction<RestService>
                 UISupport.showInfoMessage("API published successfully");
                 sendAnalytics("ExportToSwaggerHubAction");
                 return true;
-            } else {
+            }
+            else {
                 String reason = "";
                 if (statusCode == 400) {
                     reason = "The definition was invalid.";
-                } else if (statusCode == 403) {
+                }
+                else if (statusCode == 403) {
                     reason = "Maximum number of APIs reached.";
-                } else if (statusCode == 409) {
+                }
+                else if (statusCode == 409) {
                     reason = "Cannot overwrite a published API version.";
-                } else if (statusCode == 415) {
+                }
+                else if (statusCode == 415) {
                     reason = "Invalid content type.";
                 }
                 UISupport.showErrorMessage("Failed to publish API; " + response.getStatusLine().toString() + "; " + reason);
                 return false;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         return true;
@@ -150,21 +154,21 @@ public class PublishToSwaggerHubAction extends AbstractSoapUIAction<RestService>
     public interface Form {
 
         @AField(name = "API Key", description = "Your SwaggerHub password", type = AField.AFieldType.PASSWORD)
-        public final static String APIKEY = "API Key";
+        String APIKEY = "API Key";
 
         @AField(name = "Owner", description = "An API owner", type = AField.AFieldType.STRING)
-        public final static String GROUP_ID = "Owner";
+        String GROUP_ID = "Owner";
 
         @AField(name = "Unique API name", description = "The API identifier at SwaggerHub (letters, digits or spaces, 3 chars min)", type = AField.AFieldType.STRING)
-        public final static String API_ID = "Unique API name";
+        String API_ID = "Unique API name";
 
         @AField(name = "Version", description = "The version of this API", type = AField.AFieldType.STRING)
-        public final static String VERSION = "Version";
+        String VERSION = "Version";
 
         @AField(name = "Remember credentials", description = "Save credentials for future actions", type = AField.AFieldType.BOOLEAN)
-        public final static String REMEMBER = "Remember credentials";
+        String REMEMBER = "Remember credentials";
 
         @AField(name = "Private", description = "Make this API private", type = AField.AFieldType.BOOLEAN)
-        public final static String PRIVATE = "Private";
+        String PRIVATE = "Private";
     }
 }

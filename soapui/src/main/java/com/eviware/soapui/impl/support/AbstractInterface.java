@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.support;
@@ -34,9 +34,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public abstract class AbstractInterface<T extends InterfaceConfig> extends AbstractWsdlModelItem<T> implements
-        Interface {
-    private Set<InterfaceListener> interfaceListeners = new HashSet<InterfaceListener>();
+public abstract class AbstractInterface<T extends InterfaceConfig> extends AbstractWsdlModelItem<T> implements Interface {
+    private final Set<InterfaceListener> interfaceListeners = new HashSet<InterfaceListener>();
 
     protected AbstractInterface(T config, ModelItem parent, String icon) {
         super(config, parent, icon);
@@ -54,16 +53,23 @@ public abstract class AbstractInterface<T extends InterfaceConfig> extends Abstr
         }
     }
 
-    public WsdlProject getProject() {
-        return (WsdlProject) getParent();
-    }
-
     public T getConfig() {
         return super.getConfig();
     }
 
+    @Override
+    public void release() {
+        super.release();
+
+        interfaceListeners.clear();
+    }
+
     public List<? extends ModelItem> getChildren() {
         return getOperationList();
+    }
+
+    public WsdlProject getProject() {
+        return (WsdlProject)getParent();
     }
 
     public String[] getEndpoints() {
@@ -71,6 +77,14 @@ public abstract class AbstractInterface<T extends InterfaceConfig> extends Abstr
         List<String> endpointArray = endpoints.getEndpointList();
         Collections.sort(endpointArray);
         return endpointArray.toArray(new String[endpointArray.size()]);
+    }
+
+    public void addInterfaceListener(InterfaceListener listener) {
+        interfaceListeners.add(listener);
+    }
+
+    public void removeInterfaceListener(InterfaceListener listener) {
+        interfaceListeners.remove(listener);
     }
 
     public void addEndpoint(String endpoint) {
@@ -89,6 +103,18 @@ public abstract class AbstractInterface<T extends InterfaceConfig> extends Abstr
         getConfig().getEndpoints().addNewEndpoint().setStringValue(endpoint);
 
         notifyPropertyChanged(ENDPOINT_PROPERTY, null, endpoint);
+    }
+
+    public void removeEndpoint(String endpoint) {
+        EndpointsConfig endpoints = getConfig().getEndpoints();
+
+        for (int c = 0; c < endpoints.sizeOfEndpointArray(); c++) {
+            if (endpoints.getEndpointArray(c).equals(endpoint)) {
+                endpoints.removeEndpoint(c);
+                notifyPropertyChanged(ENDPOINT_PROPERTY, endpoint, null);
+                break;
+            }
+        }
     }
 
     public void changeEndpoint(String oldEndpoint, String newEndpoint) {
@@ -110,16 +136,11 @@ public abstract class AbstractInterface<T extends InterfaceConfig> extends Abstr
         }
     }
 
-    public void removeEndpoint(String endpoint) {
-        EndpointsConfig endpoints = getConfig().getEndpoints();
+    @SuppressWarnings("unchecked")
+    public abstract AbstractDefinitionContext getDefinitionContext();
 
-        for (int c = 0; c < endpoints.sizeOfEndpointArray(); c++) {
-            if (endpoints.getEndpointArray(c).equals(endpoint)) {
-                endpoints.removeEndpoint(c);
-                notifyPropertyChanged(ENDPOINT_PROPERTY, endpoint, null);
-                break;
-            }
-        }
+    public Operation[] getAllOperations() {
+        return getOperationList().toArray(new Operation[getOperationCount()]);
     }
 
     public void fireOperationAdded(Operation operation) {
@@ -162,24 +183,6 @@ public abstract class AbstractInterface<T extends InterfaceConfig> extends Abstr
         }
     }
 
-    public void addInterfaceListener(InterfaceListener listener) {
-        interfaceListeners.add(listener);
-    }
-
-    public void removeInterfaceListener(InterfaceListener listener) {
-        interfaceListeners.remove(listener);
-    }
-
-    @Override
-    public void release() {
-        super.release();
-
-        interfaceListeners.clear();
-    }
-
-    @SuppressWarnings("unchecked")
-    public abstract AbstractDefinitionContext getDefinitionContext();
-
     /**
      * Return the URL for the current definition (ie a WSDL or WADL url)
      */
@@ -189,8 +192,4 @@ public abstract class AbstractInterface<T extends InterfaceConfig> extends Abstr
     public abstract String getType();
 
     public abstract boolean isDefinitionShareble();
-
-    public Operation[] getAllOperations() {
-        return getOperationList().toArray(new Operation[getOperationCount()]);
-    }
 }

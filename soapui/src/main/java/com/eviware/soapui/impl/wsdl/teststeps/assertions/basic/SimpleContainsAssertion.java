@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.basic;
@@ -48,7 +48,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 import org.apache.xmlbeans.XmlObject;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -62,17 +62,17 @@ import java.util.regex.Pattern;
  */
 
 public class SimpleContainsAssertion extends WsdlMessageAssertion implements RequestAssertion, ResponseAssertion {
+    public static final String ID = "Simple Contains";
+    public static final String LABEL = "Contains";
+    public static final String DESCRIPTION = "Searches for the existence of a string token in the property value, supports regular expressions. Applicable to any property. ";
+    private static final String CONTENT = "Content";
+    private static final String IGNORE_CASE = "Ignore Case";
+    private static final String USE_REGEX = "Regular Expression";
+    private static final CellConstraints cc = new CellConstraints();
     private String token;
     private XFormDialog dialog;
     private boolean ignoreCase;
     private boolean useRegEx;
-    public static final String ID = "Simple Contains";
-    private static final String CONTENT = "Content";
-    private static final String IGNORE_CASE = "Ignore Case";
-    private static final String USE_REGEX = "Regular Expression";
-    public static final String LABEL = "Contains";
-    public static final String DESCRIPTION = "Searches for the existence of a string token in the property value, supports regular expressions. Applicable to any property. ";
-    private static CellConstraints cc = new CellConstraints();
 
     public SimpleContainsAssertion(TestAssertionConfig assertionConfig, Assertable assertable) {
         super(assertionConfig, assertable, true, true, true, true);
@@ -83,16 +83,50 @@ public class SimpleContainsAssertion extends WsdlMessageAssertion implements Req
         useRegEx = reader.readBoolean("useRegEx", false);
     }
 
-    public String internalAssertResponse(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
+    public String internalAssertResponse(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
         return assertContent(context, messageExchange.getResponseContent(), "Response");
     }
 
     @Override
-    protected String internalAssertProperty(TestPropertyHolder source, String propertyName,
-                                            MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+        return assertContent(context, messageExchange.getRequestContent(), "Request");
+    }
+
+    @Override
+    protected String internalAssertProperty(
+        TestPropertyHolder source, String propertyName, MessageExchange messageExchange, SubmitContext context
+    ) throws AssertionException {
         assertContent(context, source.getPropertyValue(propertyName), propertyName);
         return "OK";
+    }
+
+    public boolean configure() {
+        if (dialog == null) {
+            buildDialog();
+        }
+
+        StringToStringMap values = new StringToStringMap();
+        values.put(CONTENT, token);
+        values.put(IGNORE_CASE, ignoreCase);
+        values.put(USE_REGEX, useRegEx);
+
+        values = dialog.show(values);
+        if (dialog.getReturnValue() == XFormDialog.OK_OPTION) {
+            token = values.get(CONTENT);
+            ignoreCase = values.getBoolean(IGNORE_CASE);
+            useRegEx = values.getBoolean(USE_REGEX);
+        }
+
+        setConfiguration(createConfiguration());
+        return true;
+    }
+
+    public PropertyExpansion[] getPropertyExpansions() {
+        List<PropertyExpansion> result = new ArrayList<PropertyExpansion>();
+
+        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(getAssertable().getModelItem(), this, "token"));
+
+        return result.toArray(new PropertyExpansion[result.size()]);
     }
 
     private String assertContent(SubmitContext context, String content, String type) throws AssertionException {
@@ -121,7 +155,8 @@ public class SimpleContainsAssertion extends WsdlMessageAssertion implements Req
                 if (m.find()) {
                     ix = 0;
                 }
-            } else {
+            }
+            else {
                 ix = ignoreCase ? content.toUpperCase().indexOf(replToken.toUpperCase()) : content.indexOf(replToken);
             }
 
@@ -139,27 +174,6 @@ public class SimpleContainsAssertion extends WsdlMessageAssertion implements Req
             string = string.replaceAll("\r\n", "\n");
         }
         return string;
-    }
-
-    public boolean configure() {
-        if (dialog == null) {
-            buildDialog();
-        }
-
-        StringToStringMap values = new StringToStringMap();
-        values.put(CONTENT, token);
-        values.put(IGNORE_CASE, ignoreCase);
-        values.put(USE_REGEX, useRegEx);
-
-        values = dialog.show(values);
-        if (dialog.getReturnValue() == XFormDialog.OK_OPTION) {
-            token = values.get(CONTENT);
-            ignoreCase = values.getBoolean(IGNORE_CASE);
-            useRegEx = values.getBoolean(USE_REGEX);
-        }
-
-        setConfiguration(createConfiguration());
-        return true;
     }
 
     public boolean isUseRegEx() {
@@ -200,8 +214,8 @@ public class SimpleContainsAssertion extends WsdlMessageAssertion implements Req
     private void buildDialog() {
         XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Contains Assertion");
         XForm mainForm = builder.createForm("Basic", new FormLayout("5px,left:pref,5px,fill:default:grow(1.0),5px"));
-        JPanel mainFormPanel = ((SwingXFormImpl) mainForm).getPanel();
-        FormLayout mainFormLayout = (FormLayout) mainFormPanel.getLayout();
+        JPanel mainFormPanel = ((SwingXFormImpl)mainForm).getPanel();
+        FormLayout mainFormLayout = (FormLayout)mainFormPanel.getLayout();
 
         mainForm.addTextField(CONTENT, "Content to check for", XForm.FieldType.TEXTAREA).setWidth(40);
 
@@ -211,32 +225,12 @@ public class SimpleContainsAssertion extends WsdlMessageAssertion implements Req
         mainForm.addCheckBox(IGNORE_CASE, "Ignore case in comparison");
         mainForm.addCheckBox(USE_REGEX, "Use token as Regular Expression");
 
-        dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.SIMPLE_CONTAINS_HELP_URL),
-                "Specify options", UISupport.OPTIONS_ICON);
-    }
-
-    @Override
-    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
-        return assertContent(context, messageExchange.getRequestContent(), "Request");
-    }
-
-    public PropertyExpansion[] getPropertyExpansions() {
-        List<PropertyExpansion> result = new ArrayList<PropertyExpansion>();
-
-        result.addAll(PropertyExpansionUtils.extractPropertyExpansions(getAssertable().getModelItem(), this, "token"));
-
-        return result.toArray(new PropertyExpansion[result.size()]);
+        dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.SIMPLE_CONTAINS_HELP_URL), "Specify options", UISupport.OPTIONS_ICON);
     }
 
     public static class Factory extends AbstractTestAssertionFactory {
         public Factory() {
-            super(SimpleContainsAssertion.ID, SimpleContainsAssertion.LABEL, SimpleContainsAssertion.class);
-        }
-
-        @Override
-        public String getCategory() {
-            return AssertionCategoryMapping.VALIDATE_RESPONSE_CONTENT_CATEGORY;
+            super(ID, LABEL, SimpleContainsAssertion.class);
         }
 
         @Override
@@ -246,8 +240,12 @@ public class SimpleContainsAssertion extends WsdlMessageAssertion implements Req
 
         @Override
         public AssertionListEntry getAssertionListEntry() {
-            return new AssertionListEntry(SimpleContainsAssertion.ID, SimpleContainsAssertion.LABEL,
-                    SimpleContainsAssertion.DESCRIPTION);
+            return new AssertionListEntry(ID, LABEL, DESCRIPTION);
+        }
+
+        @Override
+        public String getCategory() {
+            return AssertionCategoryMapping.VALIDATE_RESPONSE_CONTENT_CATEGORY;
         }
 
         @Override
@@ -257,5 +255,4 @@ public class SimpleContainsAssertion extends WsdlMessageAssertion implements Req
             return true;
         }
     }
-
 }

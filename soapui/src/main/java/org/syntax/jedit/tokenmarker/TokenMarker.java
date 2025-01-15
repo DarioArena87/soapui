@@ -12,7 +12,7 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
@@ -34,6 +34,46 @@ import javax.swing.text.Segment;
  */
 public abstract class TokenMarker {
     /**
+     * The first token in the list. This should be used as the return value from
+     * <code>markTokens()</code>.
+     */
+    protected Token firstToken;
+    /**
+     * The last token in the list. New tokens are added here. This should be set
+     * to null before a new line is to be tokenized.
+     */
+    protected Token lastToken;
+    /**
+     * An array for storing information about lines. It is enlarged and shrunk
+     * automatically by the <code>insertLines()</code> and
+     * <code>deleteLines()</code> methods.
+     */
+    protected LineInfo[] lineInfo;
+    /**
+     * The number of lines in the model being tokenized. This can be less than
+     * the length of the <code>lineInfo</code> array.
+     */
+    protected int length;
+    /**
+     * The last tokenized line.
+     */
+    protected int lastLine;
+    /**
+     * True if the next line should be painted.
+     */
+    protected boolean nextLineRequested;
+
+    /**
+     * Creates a new <code>TokenMarker</code>. This DOES NOT create a lineInfo
+     * array; an initial call to <code>insertLines()</code> does that.
+     */
+    protected TokenMarker() {
+        lastLine = -1;
+    }
+
+    // protected members
+
+    /**
      * A wrapper for the lower-level <code>markTokensImpl</code> method that is
      * called to split a line up into tokens.
      *
@@ -51,7 +91,8 @@ public abstract class TokenMarker {
         LineInfo prev;
         if (lineIndex == 0) {
             prev = null;
-        } else {
+        }
+        else {
             prev = lineInfo[lineIndex - 1];
         }
 
@@ -60,38 +101,38 @@ public abstract class TokenMarker {
 
         info.token = token;
 
-		/*
+        /*
          * This is a foul hack. It stops nextLineRequested from being cleared if
-		 * the same line is marked twice.
-		 * 
-		 * Why is this necessary? It's all JEditTextArea's fault. When something
-		 * is inserted into the text, firing a document event, the insertUpdate()
-		 * method shifts the caret (if necessary) by the amount inserted.
-		 * 
-		 * All caret movement is handled by the select() method, which eventually
-		 * pipes the new position to scrollTo() and calls repaint().
-		 * 
-		 * Note that at this point in time, the new line hasn't yet been painted;
-		 * the caret is moved first.
-		 * 
-		 * scrollTo() calls offsetToX(), which tokenizes the line unless it is
-		 * being called on the last line painted (in which case it uses the text
-		 * area's painter cached token list). What scrollTo() does next is
-		 * irrelevant.
-		 * 
-		 * After scrollTo() has done it's job, repaint() is called, and eventually
-		 * we end up in paintLine(), whose job is to paint the changed line. It,
-		 * too, calls markTokens().
-		 * 
-		 * The problem was that if the line started a multiline token, the first
-		 * markTokens() (done in offsetToX()) would set nextLineRequested (because
-		 * the line end token had changed) but the second would clear it (because
-		 * the line was the same that time) and therefore paintLine() would never
-		 * know that it needed to repaint subsequent lines.
-		 * 
-		 * This bug took me ages to track down, that's why I wrote all the
-		 * relevant info down so that others wouldn't duplicate it.
-		 */
+         * the same line is marked twice.
+         *
+         * Why is this necessary? It's all JEditTextArea's fault. When something
+         * is inserted into the text, firing a document event, the insertUpdate()
+         * method shifts the caret (if necessary) by the amount inserted.
+         *
+         * All caret movement is handled by the select() method, which eventually
+         * pipes the new position to scrollTo() and calls repaint().
+         *
+         * Note that at this point in time, the new line hasn't yet been painted;
+         * the caret is moved first.
+         *
+         * scrollTo() calls offsetToX(), which tokenizes the line unless it is
+         * being called on the last line painted (in which case it uses the text
+         * area's painter cached token list). What scrollTo() does next is
+         * irrelevant.
+         *
+         * After scrollTo() has done it's job, repaint() is called, and eventually
+         * we end up in paintLine(), whose job is to paint the changed line. It,
+         * too, calls markTokens().
+         *
+         * The problem was that if the line started a multiline token, the first
+         * markTokens() (done in offsetToX()) would set nextLineRequested (because
+         * the line end token had changed) but the second would clear it (because
+         * the line was the same that time) and therefore paintLine() would never
+         * know that it needed to repaint subsequent lines.
+         *
+         * This bug took me ages to track down, that's why I wrote all the
+         * relevant info down so that others wouldn't duplicate it.
+         */
         if (!(lastLine == lineIndex && nextLineRequested)) {
             nextLineRequested = (oldToken != token);
         }
@@ -186,51 +227,6 @@ public abstract class TokenMarker {
         return nextLineRequested;
     }
 
-    // protected members
-
-    /**
-     * The first token in the list. This should be used as the return value from
-     * <code>markTokens()</code>.
-     */
-    protected Token firstToken;
-
-    /**
-     * The last token in the list. New tokens are added here. This should be set
-     * to null before a new line is to be tokenized.
-     */
-    protected Token lastToken;
-
-    /**
-     * An array for storing information about lines. It is enlarged and shrunk
-     * automatically by the <code>insertLines()</code> and
-     * <code>deleteLines()</code> methods.
-     */
-    protected LineInfo[] lineInfo;
-
-    /**
-     * The number of lines in the model being tokenized. This can be less than
-     * the length of the <code>lineInfo</code> array.
-     */
-    protected int length;
-
-    /**
-     * The last tokenized line.
-     */
-    protected int lastLine;
-
-    /**
-     * True if the next line should be painted.
-     */
-    protected boolean nextLineRequested;
-
-    /**
-     * Creates a new <code>TokenMarker</code>. This DOES NOT create a lineInfo
-     * array; an initial call to <code>insertLines()</code> does that.
-     */
-    protected TokenMarker() {
-        lastLine = -1;
-    }
-
     /**
      * Ensures that the <code>lineInfo</code> array can contain the specified
      * index. This enlarges it if necessary. No action is taken if the array is
@@ -246,7 +242,8 @@ public abstract class TokenMarker {
     protected void ensureCapacity(int index) {
         if (lineInfo == null) {
             lineInfo = new LineInfo[index + 1];
-        } else if (lineInfo.length <= index) {
+        }
+        else if (lineInfo.length <= index) {
             LineInfo[] lineInfoN = new LineInfo[(index + 1) * 2];
             System.arraycopy(lineInfo, 0, lineInfoN, 0, lineInfo.length);
             lineInfo = lineInfoN;
@@ -271,14 +268,17 @@ public abstract class TokenMarker {
         if (firstToken == null) {
             firstToken = new Token(length, id);
             lastToken = firstToken;
-        } else if (lastToken == null) {
+        }
+        else if (lastToken == null) {
             lastToken = firstToken;
             firstToken.length = length;
             firstToken.id = id;
-        } else if (lastToken.next == null) {
+        }
+        else if (lastToken.next == null) {
             lastToken.next = new Token(length, id);
             lastToken = lastToken.next;
-        } else {
+        }
+        else {
             lastToken = lastToken.next;
             lastToken.length = length;
             lastToken.id = id;
@@ -289,6 +289,17 @@ public abstract class TokenMarker {
      * Inner class for storing information about tokenized lines.
      */
     public class LineInfo {
+        /**
+         * The id of the last token of the line.
+         */
+        public byte token;
+        /**
+         * This is for use by the token marker implementations themselves. It can
+         * be used to store anything that is an object and that needs to exist on
+         * a per-line basis.
+         */
+        public Object obj;
+
         /**
          * Creates a new LineInfo object with token = Token.NULL and obj = null.
          */
@@ -302,17 +313,5 @@ public abstract class TokenMarker {
             this.token = token;
             this.obj = obj;
         }
-
-        /**
-         * The id of the last token of the line.
-         */
-        public byte token;
-
-        /**
-         * This is for use by the token marker implementations themselves. It can
-         * be used to store anything that is an object and that needs to exist on
-         * a per-line basis.
-         */
-        public Object obj;
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.monitor.jettyproxy;
@@ -47,8 +47,8 @@ public class CapturedExchange {
     }
 
     public void startCapture() {
-        this.startCapture = true;
-        this.stopCapture = false;
+        startCapture = true;
+        stopCapture = false;
         setOperationStarted(System.currentTimeMillis());
     }
 
@@ -57,8 +57,8 @@ public class CapturedExchange {
     }
 
     public void stopCapture() {
-        this.startCapture = false;
-        this.stopCapture = true;
+        startCapture = false;
+        stopCapture = true;
         setTimeTaken(System.currentTimeMillis());
     }
 
@@ -107,7 +107,7 @@ public class CapturedExchange {
     }
 
     private void setTimeTaken(long endTime) {
-        this.timeTaken = -this.operationStarted + endTime;
+        timeTaken = -operationStarted + endTime;
     }
 
     public int getRequestSize() {
@@ -115,7 +115,7 @@ public class CapturedExchange {
     }
 
     private void setRequestSize(int requestSizeInCharacters) {
-        this.requestSize = requestSizeInCharacters;
+        requestSize = requestSizeInCharacters;
     }
 
     public int getResponseSize() {
@@ -123,8 +123,8 @@ public class CapturedExchange {
     }
 
     private void setResponseSize() {
-        int length = this.response.length;
-        this.responseSize = length;
+        int length = response.length;
+        responseSize = length;
     }
 
     public byte[] getRequest() {
@@ -135,17 +135,15 @@ public class CapturedExchange {
         // this.request = request;
         if (this.request == null) {
             this.request = request;
-        } else {
+        }
+        else {
             byte[] newRequest = new byte[this.request.length + request.length];
-            for (int i = 0; i < this.request.length; i++) {
-                newRequest[i] = this.request[i];
-            }
-            for (int i = this.request.length; i < newRequest.length; i++) {
-                newRequest[i] = request[i - this.response.length];
-            }
+            System.arraycopy(this.request, 0, newRequest, 0, this.request.length);
+            if (newRequest.length - this.request.length >= 0)
+                System.arraycopy(request, this.request.length - response.length, newRequest, this.request.length, newRequest.length - this.request.length);
             this.request = newRequest;
         }
-        this.setRequestSize(this.request.length);
+        setRequestSize(this.request.length);
     }
 
     public byte[] getResponse() {
@@ -155,35 +153,31 @@ public class CapturedExchange {
     public void setResponse(byte[] response) {
         if (this.response == null) {
             this.response = response;
-        } else {
-            byte[] newResponse = new byte[this.response.length + response.length];
-            for (int i = 0; i < this.response.length; i++) {
-                newResponse[i] = this.response[i];
-            }
-            for (int i = this.response.length; i < newResponse.length; i++) {
-                newResponse[i] = response[i - this.response.length];
-            }
-            this.response = newResponse;
-
         }
-        this.setResponseSize();
+        else {
+            byte[] newResponse = new byte[this.response.length + response.length];
+            System.arraycopy(this.response, 0, newResponse, 0, this.response.length);
+            if (newResponse.length - this.response.length >= 0)
+                System.arraycopy(response, this.response.length - this.response.length, newResponse, this.response.length, newResponse.length - this.response.length);
+            this.response = newResponse;
+        }
+        setResponseSize();
     }
 
     @Override
     public String toString() {
 
-        String toString = "Request host: " + this.requestHost + "\n";
-        toString += "Request header : \n" + this.requestHeader + "\n";
-        toString += "Request: " + new String(this.request) + "\n";
-        toString += "Request size: " + this.requestSize + "\n";
-        toString += "Response host:" + this.targetHost + "\n";
-        toString += "Response header: \n" + this.responseHeader + "\n";
-        toString += "Response: " + new String(this.response) + "\n";
-        toString += "Response size:" + this.responseSize + "\n";
-        toString += "Started: " + new Date(this.operationStarted) + "\n";
-        toString += "Time Taken: " + this.timeTaken + "ms\n";
+        String toString = "Request host: " + requestHost + "\n";
+        toString += "Request header : \n" + requestHeader + "\n";
+        toString += "Request: " + new String(request) + "\n";
+        toString += "Request size: " + requestSize + "\n";
+        toString += "Response host:" + targetHost + "\n";
+        toString += "Response header: \n" + responseHeader + "\n";
+        toString += "Response: " + new String(response) + "\n";
+        toString += "Response size:" + responseSize + "\n";
+        toString += "Started: " + new Date(operationStarted) + "\n";
+        toString += "Time Taken: " + timeTaken + "ms\n";
         return toString;
-
     }
 
     @SuppressWarnings("unchecked")
@@ -213,5 +207,4 @@ public class CapturedExchange {
     public void addResponseHeader(String responseHeader) {
         this.responseHeader = this.responseHeader == null ? responseHeader : this.responseHeader + "\n" + responseHeader;
     }
-
 }

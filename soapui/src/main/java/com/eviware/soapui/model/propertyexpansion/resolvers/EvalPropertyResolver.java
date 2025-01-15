@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.propertyexpansion.resolvers;
@@ -47,8 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EvalPropertyResolver implements PropertyResolver {
-    private Logger log = LogManager.getLogger(EvalPropertyResolver.class);
-    private Map<String, ScriptEnginePool> scriptEnginePools = new HashMap<String, ScriptEnginePool>();
+    private final Logger log = LogManager.getLogger(EvalPropertyResolver.class);
+    private final Map<String, ScriptEnginePool> scriptEnginePools = new HashMap<String, ScriptEnginePool>();
 
     public String resolveProperty(PropertyExpansionContext context, String name, boolean globalOverride) {
         if (name.length() == 0 || name.charAt(0) != '=') {
@@ -62,78 +62,87 @@ public class EvalPropertyResolver implements PropertyResolver {
         objects.put("log", SoapUI.ensureGroovyLog());
 
         if (context instanceof TestCaseRunContext) {
-            TestCaseRunContext testCaseRunContext = (TestCaseRunContext) context;
+            TestCaseRunContext testCaseRunContext = (TestCaseRunContext)context;
             objects.put("testRunner", testCaseRunContext.getTestRunner());
 
             objects.put("testStep", testCaseRunContext.getCurrentStep());
 
             if (testCaseRunContext.getCurrentStep() instanceof SamplerTestStep) {
-                objects.put("request", ((SamplerTestStep) testCaseRunContext.getCurrentStep()).getTestRequest());
+                objects.put("request", ((SamplerTestStep)testCaseRunContext.getCurrentStep()).getTestRequest());
             }
         }
 
         if (context instanceof LoadTestRunContext) {
-            objects.put("loadTestRunner", ((LoadTestRunContext) context).getLoadTestRunner());
+            objects.put("loadTestRunner", ((LoadTestRunContext)context).getLoadTestRunner());
         }
 
         if (context instanceof MockRunContext) {
-            objects.put("mockRunner", ((MockRunContext) context).getMockRunner());
+            objects.put("mockRunner", ((MockRunContext)context).getMockRunner());
         }
 
         ModelItem modelItem = context.getModelItem();
         if (modelItem instanceof TestCase) {
             objects.put("testCase", modelItem);
 
-            objects.put("testSuite", ((TestCase) modelItem).getTestSuite());
-            objects.put("project", ((TestCase) modelItem).getTestSuite().getProject());
-        } else if (modelItem instanceof TestStep) {
+            objects.put("testSuite", ((TestCase)modelItem).getTestSuite());
+            objects.put("project", ((TestCase)modelItem).getTestSuite().getProject());
+        }
+        else if (modelItem instanceof TestStep) {
             objects.put("testStep", modelItem);
 
             if (modelItem instanceof SamplerTestStep) {
-                objects.put("request", ((SamplerTestStep) modelItem).getTestRequest());
+                objects.put("request", ((SamplerTestStep)modelItem).getTestRequest());
             }
 
-            objects.put("testCase", ((TestStep) modelItem).getTestCase());
-            objects.put("testSuite", ((TestStep) modelItem).getTestCase().getTestSuite());
-            objects.put("project", ((TestStep) modelItem).getTestCase().getTestSuite().getProject());
-        } else if (modelItem instanceof TestSuite) {
+            objects.put("testCase", ((TestStep)modelItem).getTestCase());
+            objects.put("testSuite", ((TestStep)modelItem).getTestCase().getTestSuite());
+            objects.put("project", ((TestStep)modelItem).getTestCase().getTestSuite().getProject());
+        }
+        else if (modelItem instanceof TestSuite) {
             objects.put("testSuite", modelItem);
-            objects.put("project", ((TestSuite) modelItem).getProject());
+            objects.put("project", modelItem.getProject());
         }
         if (modelItem instanceof LoadTest) {
             objects.put("loadTest", modelItem);
-            objects.put("testCase", ((LoadTest) modelItem).getTestCase());
-            objects.put("testSuite", ((LoadTest) modelItem).getTestCase().getTestSuite());
-            objects.put("project", ((LoadTest) modelItem).getTestCase().getTestSuite().getProject());
-        } else if (modelItem instanceof Project) {
+            objects.put("testCase", ((LoadTest)modelItem).getTestCase());
+            objects.put("testSuite", ((LoadTest)modelItem).getTestCase().getTestSuite());
+            objects.put("project", ((LoadTest)modelItem).getTestCase().getTestSuite().getProject());
+        }
+        else if (modelItem instanceof Project) {
             objects.put("project", modelItem);
-        } else if (modelItem instanceof MockService) {
+        }
+        else if (modelItem instanceof MockService) {
             objects.put("mockService", modelItem);
-            objects.put("project", ((MockService) modelItem).getProject());
-        } else if (modelItem instanceof MockOperation) {
+            objects.put("project", ((MockService)modelItem).getProject());
+        }
+        else if (modelItem instanceof MockOperation) {
             objects.put("mockOperation", modelItem);
-            objects.put("mockService", ((MockOperation) modelItem).getMockService());
-            objects.put("project", ((MockOperation) modelItem).getMockService().getProject());
-        } else if (modelItem instanceof MockResponse) {
+            objects.put("mockService", ((MockOperation)modelItem).getMockService());
+            objects.put("project", ((MockOperation)modelItem).getMockService().getProject());
+        }
+        else if (modelItem instanceof MockResponse) {
             objects.put("mockResponse", modelItem);
-            objects.put("mockOperation", ((MockResponse) modelItem).getMockOperation());
-            objects.put("mockService", ((MockResponse) modelItem).getMockOperation().getMockService());
-            objects.put("project", ((MockResponse) modelItem).getMockOperation().getMockService().getProject());
-        } else if (modelItem instanceof Request) {
+            objects.put("mockOperation", ((MockResponse)modelItem).getMockOperation());
+            objects.put("mockService", ((MockResponse)modelItem).getMockOperation().getMockService());
+            objects.put("project", ((MockResponse)modelItem).getMockOperation().getMockService().getProject());
+        }
+        else if (modelItem instanceof Request) {
             objects.put("request", modelItem);
 
             if (modelItem instanceof TestRequest) {
-                objects.put("testStep", ((TestRequest) modelItem).getTestStep());
-                objects.put("testCase", ((TestRequest) modelItem).getTestStep().getTestCase());
-                objects.put("testSuite", ((TestRequest) modelItem).getTestStep().getTestCase().getTestSuite());
-                objects.put("project", ((TestRequest) modelItem).getTestStep().getTestCase().getTestSuite()
-                        .getProject());
+                objects.put("testStep", ((TestRequest)modelItem).getTestStep());
+                objects.put("testCase", ((TestRequest)modelItem).getTestStep().getTestCase());
+                objects.put("testSuite", ((TestRequest)modelItem).getTestStep().getTestCase().getTestSuite());
+                objects.put("project", ((TestRequest)modelItem).getTestStep().getTestCase().getTestSuite().getProject());
             }
-        } else if (modelItem instanceof Operation) {
+        }
+        else if (modelItem instanceof Operation) {
             objects.put("operation", modelItem);
-        } else if (modelItem instanceof Interface) {
+        }
+        else if (modelItem instanceof Interface) {
             objects.put("interface", modelItem);
-        } else if (modelItem instanceof SecurityTest) {
+        }
+        else if (modelItem instanceof SecurityTest) {
             objects.put("securityTest", modelItem);
         }
 
@@ -163,10 +172,12 @@ public class EvalPropertyResolver implements PropertyResolver {
 
             Object result = scriptEngine.run();
             return result == null ? null : result.toString();
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             log.error("Error evaluating script", e);
             return e.getMessage();
-        } finally {
+        }
+        finally {
             scriptEngine.clearVariables();
             scriptEnginePool.returnScriptEngine(scriptEngine);
         }

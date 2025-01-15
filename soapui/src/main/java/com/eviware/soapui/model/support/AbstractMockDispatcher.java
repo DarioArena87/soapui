@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.support;
@@ -34,91 +34,104 @@ public abstract class AbstractMockDispatcher implements MockDispatcher {
     private int removed = 0;
     private boolean logEnabled = true;
 
-
-    public MockResult dispatchGetRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchGetRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: GET");
     }
 
-    public MockResult dispatchPostRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchPostRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: POST");
     }
 
-    public MockResult dispatchHeadRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchHeadRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: HEAD");
     }
 
-    public MockResult dispatchPutRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchPutRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: PUT");
     }
 
-    public MockResult dispatchDeleteRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchDeleteRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: DELETE");
     }
 
-    public MockResult dispatchPatchRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchPatchRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: PATCH");
     }
 
-    public MockResult dispatchPropfindRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchPropfindRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: PROPFIND");
     }
 
-    public MockResult dispatchLockRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchLockRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: LOCK");
     }
 
-    public MockResult dispatchUnlockRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchUnlockRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: UNLOCK");
     }
 
-    public MockResult dispatchCopyRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchCopyRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: COPY");
     }
 
-    public MockResult dispatchPurgeRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchPurgeRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         throw new DispatchException("Unsupported HTTP Method: PURGE");
     }
 
-    public MockResult dispatchRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
+    public MockResult dispatchRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
         String method = request.getMethod();
 
         if (method.equals("POST")) {
             return dispatchPostRequest(request, response);
-        } else if (method.equals("GET")) {
+        }
+        else if (method.equals("GET")) {
             return dispatchGetRequest(request, response);
-        } else if (method.equals("HEAD")) {
+        }
+        else if (method.equals("HEAD")) {
             return dispatchHeadRequest(request, response);
-        } else if (method.equals("PUT")) {
+        }
+        else if (method.equals("PUT")) {
             return dispatchPutRequest(request, response);
-        } else if (method.equals("DELETE")) {
+        }
+        else if (method.equals("DELETE")) {
             return dispatchDeleteRequest(request, response);
-        } else if (method.equals("PATCH")) {
+        }
+        else if (method.equals("PATCH")) {
             return dispatchPatchRequest(request, response);
-        } else if (method.equals("PROPFIND")) {
+        }
+        else if (method.equals("PROPFIND")) {
             return dispatchPropfindRequest(request, response);
-        } else if (method.equals("LOCK")) {
+        }
+        else if (method.equals("LOCK")) {
             return dispatchLockRequest(request, response);
-        } else if (method.equals("UNLOCK")) {
+        }
+        else if (method.equals("UNLOCK")) {
             return dispatchUnlockRequest(request, response);
-        } else if (method.equals("COPY")) {
+        }
+        else if (method.equals("COPY")) {
             return dispatchCopyRequest(request, response);
-        } else if (method.equals("PURGE")) {
+        }
+        else if (method.equals("PURGE")) {
             return dispatchPurgeRequest(request, response);
         }
 
         throw new DispatchException("Unsupported HTTP Method: " + method);
+    }
+
+    public int getMockResultCount() {
+        return mockResults.size() + removed;
+    }
+
+    public MockResult getMockResultAt(int index) {
+        return index <= removed ? null : mockResults.get(index - removed);
+    }
+
+    public void setLogEnabled(boolean logEnabled) {
+        this.logEnabled = logEnabled;
+    }
+
+    public synchronized void clearResults() {
+        mockResults.clear();
     }
 
     public synchronized void addMockResult(WsdlMockResult mockResult) {
@@ -132,34 +145,16 @@ public abstract class AbstractMockDispatcher implements MockDispatcher {
         }
     }
 
-    public MockResult getMockResultAt(int index) {
-        return index <= removed ? null : mockResults.get(index - removed);
-    }
-
-    public int getMockResultCount() {
-        return mockResults.size() + removed;
-    }
-
-    public synchronized void clearResults() {
-        mockResults.clear();
-    }
-
     public long getMaxResults() {
         return maxResults;
     }
 
     public synchronized void setMaxResults(long maxNumberOfResults) {
-        this.maxResults = maxNumberOfResults;
+        maxResults = maxNumberOfResults;
 
         while (mockResults.size() > maxNumberOfResults) {
             mockResults.remove(0);
             removed++;
         }
     }
-
-    public void setLogEnabled(boolean logEnabled) {
-        this.logEnabled = logEnabled;
-    }
-
-
 }

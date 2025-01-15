@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.action.support;
@@ -61,6 +61,22 @@ public class StandaloneActionMapping<T extends ModelItem> implements SoapUIActio
         return action.getClass().getSimpleName();
     }
 
+    public String getName() {
+        return name == null ? action.getName() : name;
+    }
+
+    public String getDescription() {
+        return description == null ? action.getDescription() : description;
+    }
+
+    public boolean isDefault() {
+        return false;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     public String getIconPath() {
         return iconPath;
     }
@@ -73,16 +89,9 @@ public class StandaloneActionMapping<T extends ModelItem> implements SoapUIActio
         return param;
     }
 
-    public boolean isDefault() {
-        return false;
-    }
-
-    public String getDescription() {
-        return description == null ? action.getDescription() : description;
-    }
-
-    public String getName() {
-        return name == null ? action.getName() : name;
+    public SoapUIActionMapping<T> setName(String name) {
+        this.name = name;
+        return this;
     }
 
     public SoapUIActionMapping<T> setDescription(String description) {
@@ -90,22 +99,9 @@ public class StandaloneActionMapping<T extends ModelItem> implements SoapUIActio
         return this;
     }
 
-    public SoapUIActionMapping<T> setName(String name) {
-        this.name = name;
-        return this;
-    }
-
     public SoapUIActionMapping<T> setParam(Object param) {
         this.param = param;
         return this;
-    }
-
-    public String getId() {
-        return null;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
     }
 
     public SoapUIActionMapping<T> setEnabled(boolean enabled) {
@@ -116,5 +112,9 @@ public class StandaloneActionMapping<T extends ModelItem> implements SoapUIActio
     @Override
     public int getToolbarIndex() {
         return 0;
+    }
+
+    public String getId() {
+        return null;
     }
 }

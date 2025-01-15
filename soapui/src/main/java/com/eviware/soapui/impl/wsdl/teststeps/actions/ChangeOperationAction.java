@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.actions;
@@ -50,7 +50,7 @@ public class ChangeOperationAction extends AbstractSoapUIAction<WsdlTestRequestS
     }
 
     public void perform(WsdlTestRequestStep target, Object param) {
-        this.testStep = target;
+        testStep = target;
 
         if (dialog == null) {
             dialog = ADialogBuilder.buildDialog(Form.class);
@@ -58,8 +58,7 @@ public class ChangeOperationAction extends AbstractSoapUIAction<WsdlTestRequestS
 
                 public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
                     WsdlProject project = testStep.getTestCase().getTestSuite().getProject();
-                    dialog.setOptions(Form.OPERATION,
-                            ModelSupport.getNames(project.getInterfaceByName(newValue).getOperationList()));
+                    dialog.setOptions(Form.OPERATION, ModelSupport.getNames(project.getInterfaceByName(newValue).getOperationList()));
                     dialog.setValue(Form.OPERATION, testStep.getOperationName());
                 }
             });
@@ -79,12 +78,10 @@ public class ChangeOperationAction extends AbstractSoapUIAction<WsdlTestRequestS
         }
 
         WsdlProject project = target.getTestCase().getTestSuite().getProject();
-        dialog.setOptions(Form.INTERFACE, ModelSupport.getNames(project.getInterfaceList(),
-                new ModelSupport.InterfaceTypeFilter(WsdlInterfaceFactory.WSDL_TYPE)));
+        dialog.setOptions(Form.INTERFACE, ModelSupport.getNames(project.getInterfaceList(), new ModelSupport.InterfaceTypeFilter(WsdlInterfaceFactory.WSDL_TYPE)));
         dialog.setValue(Form.INTERFACE, target.getInterfaceName());
 
-        dialog.setOptions(Form.OPERATION,
-                ModelSupport.getNames(project.getInterfaceByName(target.getInterfaceName()).getOperationList()));
+        dialog.setOptions(Form.OPERATION, ModelSupport.getNames(project.getInterfaceByName(target.getInterfaceName()).getOperationList()));
         dialog.setValue(Form.OPERATION, target.getOperationName());
         dialog.setValue(Form.NAME, target.getName());
 
@@ -92,7 +89,7 @@ public class ChangeOperationAction extends AbstractSoapUIAction<WsdlTestRequestS
             String ifaceName = dialog.getValue(Form.INTERFACE);
             String operationName = dialog.getValue(Form.OPERATION);
 
-            WsdlInterface iface = (WsdlInterface) project.getInterfaceByName(ifaceName);
+            WsdlInterface iface = (WsdlInterface)project.getInterfaceByName(ifaceName);
             WsdlOperation operation = iface.getOperationByName(operationName);
             target.setOperation(operation);
 
@@ -121,21 +118,21 @@ public class ChangeOperationAction extends AbstractSoapUIAction<WsdlTestRequestS
     @AForm(description = "Specify Interface/Operation for TestRequest", name = "Change Operation", helpUrl = HelpUrls.CHANGEOPERATION_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
     protected interface Form {
         @AField(name = "Name", description = "The Name of the TestRequests", type = AFieldType.STRING)
-        public final static String NAME = "Name";
+        String NAME = "Name";
 
         @AField(name = "Interface", description = "The TestRequests' Interface", type = AFieldType.ENUMERATION)
-        public final static String INTERFACE = "Interface";
+        String INTERFACE = "Interface";
 
         @AField(name = "Operation", description = "The TestRequests' Operation", type = AFieldType.ENUMERATION)
-        public final static String OPERATION = "Operation";
+        String OPERATION = "Operation";
 
         @AField(name = "Recreate Request", description = "Recreates the request content from the new Operations Definition", type = AFieldType.BOOLEAN)
-        public final static String RECREATE_REQUEST = "Recreate Request";
+        String RECREATE_REQUEST = "Recreate Request";
 
         @AField(name = "Create Optional", description = "Creates optional content when recreating the request", type = AFieldType.BOOLEAN)
-        public final static String CREATE_OPTIONAL = "Create Optional";
+        String CREATE_OPTIONAL = "Create Optional";
 
         @AField(name = "Keep Existing", description = "Tries to keep existing values when recreating the request", type = AFieldType.BOOLEAN)
-        public final static String KEEP_EXISTING = "Keep Existing";
+        String KEEP_EXISTING = "Keep Existing";
     }
 }

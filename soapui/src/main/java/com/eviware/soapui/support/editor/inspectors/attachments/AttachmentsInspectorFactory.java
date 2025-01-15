@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.editor.inspectors.attachments;
@@ -44,12 +44,13 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
 
     public EditorInspector<?> createRequestInspector(Editor<?> editor, ModelItem modelItem) {
         if (modelItem instanceof AbstractHttpRequestInterface<?>) {
-            return new AttachmentsInspector((AttachmentContainer) modelItem);
-        } else if (modelItem instanceof WsdlMockResponse) {
-            return new AttachmentsInspector(new MockRequestAttachmentsContainer((WsdlMockResponse) modelItem));
-        } else if (modelItem instanceof MessageExchangeModelItem) {
-            return new AttachmentsInspector(new WsdlMessageExchangeRequestAttachmentsContainer(
-                    (MessageExchangeModelItem) modelItem));
+            return new AttachmentsInspector((AttachmentContainer)modelItem);
+        }
+        else if (modelItem instanceof WsdlMockResponse) {
+            return new AttachmentsInspector(new MockRequestAttachmentsContainer((WsdlMockResponse)modelItem));
+        }
+        else if (modelItem instanceof MessageExchangeModelItem) {
+            return new AttachmentsInspector(new WsdlMessageExchangeRequestAttachmentsContainer((MessageExchangeModelItem)modelItem));
         }
 
         return null;
@@ -57,12 +58,13 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
 
     public EditorInspector<?> createResponseInspector(Editor<?> editor, ModelItem modelItem) {
         if (modelItem instanceof AbstractHttpRequestInterface<?>) {
-            return new AttachmentsInspector(new ResponseAttachmentsContainer((AbstractHttpRequest<?>) modelItem));
-        } else if (modelItem instanceof WsdlMockResponse) {
-            return new AttachmentsInspector((WsdlMockResponse) modelItem);
-        } else if (modelItem instanceof MessageExchangeModelItem) {
-            return new AttachmentsInspector(new WsdlMessageExchangeResponseAttachmentsContainer(
-                    (MessageExchangeModelItem) modelItem));
+            return new AttachmentsInspector(new ResponseAttachmentsContainer((AbstractHttpRequest<?>)modelItem));
+        }
+        else if (modelItem instanceof WsdlMockResponse) {
+            return new AttachmentsInspector((WsdlMockResponse)modelItem);
+        }
+        else if (modelItem instanceof MessageExchangeModelItem) {
+            return new AttachmentsInspector(new WsdlMessageExchangeResponseAttachmentsContainer((MessageExchangeModelItem)modelItem));
         }
 
         return null;
@@ -75,36 +77,22 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
             this.request = request;
         }
 
-        public void addAttachmentsChangeListener(PropertyChangeListener listener) {
-            request.addPropertyChangeListener(listener);
+        public int getAttachmentCount() {
+            return request.getMessageExchange() == null
+                   ? 0
+                   : (request.getMessageExchange().getRequestAttachments() == null ? 0 : request.getMessageExchange().getRequestAttachments().length);
         }
 
         public Attachment getAttachmentAt(int index) {
-            return request.getMessageExchange() == null ? null
-                    : request.getMessageExchange().getRequestAttachments()[index];
+            return request.getMessageExchange() == null ? null : request.getMessageExchange().getRequestAttachments()[index];
         }
 
-        public int getAttachmentCount() {
-            return request.getMessageExchange() == null ? 0
-                    : (request.getMessageExchange().getRequestAttachments() == null ? 0 : request.getMessageExchange()
-                    .getRequestAttachments().length);
-        }
-
-        public HttpAttachmentPart getAttachmentPart(String partName) {
-            return null;
-        }
-
-        public ModelItem getModelItem() {
-            return request.getParent();
+        public Attachment[] getAttachmentsForPart(String partName) {
+            return request.getMessageExchange() == null ? null : request.getMessageExchange().getRequestAttachmentsForPart(partName);
         }
 
         public Attachment[] getAttachments() {
             return request.getMessageExchange() == null ? null : request.getMessageExchange().getRequestAttachments();
-        }
-
-        public Attachment[] getAttachmentsForPart(String partName) {
-            return request.getMessageExchange() == null ? null : request.getMessageExchange()
-                    .getRequestAttachmentsForPart(partName);
         }
 
         public HttpAttachmentPart[] getDefinedAttachmentParts() {
@@ -118,19 +106,31 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
 
             for (MessagePart part : responseParts) {
                 if (part instanceof HttpAttachmentPart) {
-                    result.add((HttpAttachmentPart) part);
+                    result.add((HttpAttachmentPart)part);
                 }
             }
 
             return result.toArray(new HttpAttachmentPart[result.size()]);
         }
 
-        public boolean isMultipartEnabled() {
-            return false;
+        public HttpAttachmentPart getAttachmentPart(String partName) {
+            return null;
+        }
+
+        public void addAttachmentsChangeListener(PropertyChangeListener listener) {
+            request.addPropertyChangeListener(listener);
         }
 
         public void removeAttachmentsChangeListener(PropertyChangeListener listener) {
             request.removePropertyChangeListener(listener);
+        }
+
+        public boolean isMultipartEnabled() {
+            return false;
+        }
+
+        public ModelItem getModelItem() {
+            return request.getParent();
         }
     }
 
@@ -141,35 +141,24 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
             this.response = response;
         }
 
-        public void addAttachmentsChangeListener(PropertyChangeListener listener) {
-            response.addPropertyChangeListener(listener);
+        public int getAttachmentCount() {
+            return response.getMessageExchange() == null || response.getMessageExchange().getResponseAttachments() == null
+                   ? 0
+                   : response.getMessageExchange().getResponseAttachments().length;
         }
 
         public Attachment getAttachmentAt(int index) {
-            return response.getMessageExchange() == null || response.getMessageExchange().getResponseAttachments() == null ? null
-                    : response.getMessageExchange().getResponseAttachments()[index];
+            return response.getMessageExchange() == null || response.getMessageExchange().getResponseAttachments() == null
+                   ? null
+                   : response.getMessageExchange().getResponseAttachments()[index];
         }
 
-        public int getAttachmentCount() {
-            return response.getMessageExchange() == null || response.getMessageExchange().getResponseAttachments() == null ? 0
-                    : response.getMessageExchange().getResponseAttachments().length;
-        }
-
-        public HttpAttachmentPart getAttachmentPart(String partName) {
-            return null;
-        }
-
-        public ModelItem getModelItem() {
-            return response.getParent();
+        public Attachment[] getAttachmentsForPart(String partName) {
+            return response.getMessageExchange() == null ? null : response.getMessageExchange().getResponseAttachmentsForPart(partName);
         }
 
         public Attachment[] getAttachments() {
             return response.getMessageExchange() == null ? null : response.getMessageExchange().getResponseAttachments();
-        }
-
-        public Attachment[] getAttachmentsForPart(String partName) {
-            return response.getMessageExchange() == null ? null : response.getMessageExchange()
-                    .getResponseAttachmentsForPart(partName);
         }
 
         public HttpAttachmentPart[] getDefinedAttachmentParts() {
@@ -183,19 +172,31 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
 
             for (MessagePart part : responseParts) {
                 if (part instanceof HttpAttachmentPart) {
-                    result.add((HttpAttachmentPart) part);
+                    result.add((HttpAttachmentPart)part);
                 }
             }
 
             return result.toArray(new HttpAttachmentPart[result.size()]);
         }
 
-        public boolean isMultipartEnabled() {
-            return false;
+        public HttpAttachmentPart getAttachmentPart(String partName) {
+            return null;
+        }
+
+        public void addAttachmentsChangeListener(PropertyChangeListener listener) {
+            response.addPropertyChangeListener(listener);
         }
 
         public void removeAttachmentsChangeListener(PropertyChangeListener listener) {
             response.removePropertyChangeListener(listener);
+        }
+
+        public boolean isMultipartEnabled() {
+            return false;
+        }
+
+        public ModelItem getModelItem() {
+            return response.getParent();
         }
     }
 
@@ -203,35 +204,23 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
         private final AbstractHttpRequest<?> request;
 
         public ResponseAttachmentsContainer(AbstractHttpRequest<?> abstractHttpRequest) {
-            this.request = abstractHttpRequest;
-        }
-
-        public void addAttachmentsChangeListener(PropertyChangeListener listener) {
-            request.addPropertyChangeListener(WsdlRequest.RESPONSE_PROPERTY, listener);
-        }
-
-        public Attachment getAttachmentAt(int index) {
-            return request.getResponse() == null ? null : request.getResponse().getAttachments()[index];
+            request = abstractHttpRequest;
         }
 
         public int getAttachmentCount() {
             return request.getResponse() == null ? 0 : request.getResponse().getAttachments().length;
         }
 
-        public HttpAttachmentPart getAttachmentPart(String partName) {
-            return null;
-        }
-
-        public ModelItem getModelItem() {
-            return request;
-        }
-
-        public Attachment[] getAttachments() {
-            return request.getResponse() == null ? null : request.getResponse().getAttachments();
+        public Attachment getAttachmentAt(int index) {
+            return request.getResponse() == null ? null : request.getResponse().getAttachments()[index];
         }
 
         public Attachment[] getAttachmentsForPart(String partName) {
             return request.getResponse() == null ? null : request.getResponse().getAttachmentsForPart(partName);
+        }
+
+        public Attachment[] getAttachments() {
+            return request.getResponse() == null ? null : request.getResponse().getAttachments();
         }
 
         public HttpAttachmentPart[] getDefinedAttachmentParts() {
@@ -241,19 +230,31 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
 
             for (MessagePart part : responseParts) {
                 if (part instanceof HttpAttachmentPart) {
-                    result.add((HttpAttachmentPart) part);
+                    result.add((HttpAttachmentPart)part);
                 }
             }
 
             return result.toArray(new HttpAttachmentPart[result.size()]);
         }
 
-        public boolean isMultipartEnabled() {
-            return request.isMultipartEnabled();
+        public HttpAttachmentPart getAttachmentPart(String partName) {
+            return null;
+        }
+
+        public void addAttachmentsChangeListener(PropertyChangeListener listener) {
+            request.addPropertyChangeListener(WsdlRequest.RESPONSE_PROPERTY, listener);
         }
 
         public void removeAttachmentsChangeListener(PropertyChangeListener listener) {
             request.removePropertyChangeListener(WsdlRequest.RESPONSE_PROPERTY, listener);
+        }
+
+        public boolean isMultipartEnabled() {
+            return request.isMultipartEnabled();
+        }
+
+        public ModelItem getModelItem() {
+            return request;
         }
     }
 
@@ -264,35 +265,20 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
             this.mockResponse = mockResponse;
         }
 
-        public void addAttachmentsChangeListener(PropertyChangeListener listener) {
-            mockResponse.addPropertyChangeListener(WsdlMockResponse.MOCKRESULT_PROPERTY, listener);
+        public int getAttachmentCount() {
+            return mockResponse.getMockResult() == null ? 0 : mockResponse.getMockResult().getMockRequest().getRequestAttachments().length;
         }
 
         public Attachment getAttachmentAt(int index) {
-            return mockResponse.getMockResult() == null ? null : mockResponse.getMockResult().getMockRequest()
-                    .getRequestAttachments()[index];
-        }
-
-        public int getAttachmentCount() {
-            return mockResponse.getMockResult() == null ? 0 : mockResponse.getMockResult().getMockRequest()
-                    .getRequestAttachments().length;
-        }
-
-        public HttpAttachmentPart getAttachmentPart(String partName) {
-            return null;
-        }
-
-        public Attachment[] getAttachments() {
-            return mockResponse.getMockResult() == null ? null : mockResponse.getMockResult().getMockRequest()
-                    .getRequestAttachments();
+            return mockResponse.getMockResult() == null ? null : mockResponse.getMockResult().getMockRequest().getRequestAttachments()[index];
         }
 
         public Attachment[] getAttachmentsForPart(String partName) {
             return null;
         }
 
-        public ModelItem getModelItem() {
-            return mockResponse;
+        public Attachment[] getAttachments() {
+            return mockResponse.getMockResult() == null ? null : mockResponse.getMockResult().getMockRequest().getRequestAttachments();
         }
 
         public HttpAttachmentPart[] getDefinedAttachmentParts() {
@@ -302,19 +288,31 @@ public class AttachmentsInspectorFactory implements RequestInspectorFactory, Res
 
             for (MessagePart part : responseParts) {
                 if (part instanceof HttpAttachmentPart) {
-                    result.add((HttpAttachmentPart) part);
+                    result.add((HttpAttachmentPart)part);
                 }
             }
 
             return result.toArray(new HttpAttachmentPart[result.size()]);
         }
 
-        public boolean isMultipartEnabled() {
-            return mockResponse.isMultipartEnabled();
+        public HttpAttachmentPart getAttachmentPart(String partName) {
+            return null;
+        }
+
+        public void addAttachmentsChangeListener(PropertyChangeListener listener) {
+            mockResponse.addPropertyChangeListener(WsdlMockResponse.MOCKRESULT_PROPERTY, listener);
         }
 
         public void removeAttachmentsChangeListener(PropertyChangeListener listener) {
             mockResponse.removePropertyChangeListener(WsdlMockResponse.MOCKRESULT_PROPERTY, listener);
+        }
+
+        public boolean isMultipartEnabled() {
+            return mockResponse.isMultipartEnabled();
+        }
+
+        public ModelItem getModelItem() {
+            return mockResponse;
         }
     }
 }

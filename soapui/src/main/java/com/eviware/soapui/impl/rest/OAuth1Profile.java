@@ -76,7 +76,8 @@ public class OAuth1Profile implements PropertyExpansionContainer {
                 synchronized (this) {
                     wait(timeLeft);
                 }
-            } catch (InterruptedException ignore) {
+            }
+            catch (InterruptedException ignore) {
 
             }
             timeLeft -= (System.currentTimeMillis() - startTime);
@@ -196,14 +197,14 @@ public class OAuth1Profile implements PropertyExpansionContainer {
             if (configuration.isSetTokenSecretStatus()) {
                 configuration.unsetTokenSecretStatus();
             }
-        } else {
+        }
+        else {
             configuration.setTokenSecretStatus(newStatus);
         }
 
-        boolean isStartingStatus =
-                newStatus == AccessTokenStatusConfig.ENTERED_MANUALLY
-                        || newStatus == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER
-                        || newStatus == AccessTokenStatusConfig.EXPIRED;
+        boolean isStartingStatus = newStatus == AccessTokenStatusConfig.ENTERED_MANUALLY ||
+                                   newStatus == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER ||
+                                   newStatus == AccessTokenStatusConfig.EXPIRED;
 
         if (isStartingStatus) {
             setTokenSecretStartingStatus(newStatus);
@@ -409,9 +410,7 @@ public class OAuth1Profile implements PropertyExpansionContainer {
     }
 
     private boolean isAStartingStatus(AccessTokenStatusConfig.Enum newStatus) {
-        return newStatus == AccessTokenStatusConfig.ENTERED_MANUALLY
-                || newStatus == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER
-                || newStatus == AccessTokenStatusConfig.EXPIRED;
+        return newStatus == AccessTokenStatusConfig.ENTERED_MANUALLY || newStatus == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER || newStatus == AccessTokenStatusConfig.EXPIRED;
     }
 
     private void setDefaultAccessTokenPosition() {
@@ -431,23 +430,21 @@ public class OAuth1Profile implements PropertyExpansionContainer {
     private AccessTokenStatusConfig.Enum getSavedAccessTokenStatusEnum(AccessTokenStatusConfig.Enum persistedEnum) {
         if (persistedEnum == null) {
             return AccessTokenStatusConfig.UNKNOWN;
-        } else {
+        }
+        else {
             return persistedEnum;
         }
     }
 
     private AccessTokenPositionConfig.Enum getSavedAccessTokenPositionEnum(AccessTokenPositionConfig.Enum persistedEnum) {
-        if (persistedEnum == null) {
-            return null;
-        } else {
-            return persistedEnum;
-        }
+        return persistedEnum;
     }
 
     private RefreshAccessTokenMethods getSavedRefreshAccessTokenMethodsEnum(RefreshAccessTokenMethodConfig.Enum persistedEnum) {
         if (persistedEnum == null) {
             return null;
-        } else {
+        }
+        else {
             return RefreshAccessTokenMethods.valueOf(persistedEnum.toString());
         }
     }
@@ -489,7 +486,7 @@ public class OAuth1Profile implements PropertyExpansionContainer {
         RETRIEVAL_CANCELED("Retrieval canceled"),
         EXPIRED("Expired");
 
-        private String description;
+        private final String description;
 
         AccessTokenStatus(String description) {
             this.description = description;
@@ -506,7 +503,7 @@ public class OAuth1Profile implements PropertyExpansionContainer {
         HEADER("Header"),
         BODY("Body");
 
-        private String description;
+        private final String description;
 
         AccessTokenPosition(String description) {
             this.description = description;
@@ -533,5 +530,4 @@ public class OAuth1Profile implements PropertyExpansionContainer {
             return description;
         }
     }
-
 }

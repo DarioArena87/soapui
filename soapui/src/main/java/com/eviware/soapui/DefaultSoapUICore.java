@@ -47,9 +47,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
+import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -59,6 +57,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.TimerTask;
 import java.util.jar.JarEntry;
@@ -72,39 +71,33 @@ import java.util.jar.JarFile;
 
 public class DefaultSoapUICore implements SoapUICore {
     public static Logger log;
-
+    public boolean isSavingSettings;
+    protected SoapuiSettingsDocumentConfig settingsDocument;
+    protected boolean initialImport;
+    protected SecurityScanRegistry securityScanRegistry;
     private boolean logIsInitialized;
     private String root;
-    protected SoapuiSettingsDocumentConfig settingsDocument;
     private volatile MockEngine mockEngine;
     private XmlBeansSettingsImpl settings;
     private SoapUIListenerRegistry listenerRegistry;
     private SoapUIActionRegistry actionRegistry;
     private SoapUIFactoryRegistry factoryRegistry;
     private long lastSettingsLoad = 0;
-
     private String settingsFile;
     private String password;
-    protected boolean initialImport;
     private TimerTask settingsWatcher;
     private SoapUIExtensionClassLoader extClassLoader;
-
     private PluginManager pluginManager;
-
-    public boolean isSavingSettings;
-
-    protected SecurityScanRegistry securityScanRegistry;
-
-    public boolean getInitialImport() {
-        return initialImport;
-    }
-
-    public void setInitialImport(boolean initialImport) {
-        this.initialImport = initialImport;
-    }
 
     public static DefaultSoapUICore createDefault() {
         return new DefaultSoapUICore(null, DEFAULT_SETTINGS_FILE);
+    }
+
+    public static boolean settingsFileExists() {
+        DefaultSoapUICore soapUICore = new DefaultSoapUICore();
+        return new File(DEFAULT_SETTINGS_FILE).exists() ||
+               new File(new File(soapUICore.getRoot()), DEFAULT_SETTINGS_FILE).exists() ||
+               new File(System.getProperty("user.home", ".") + File.separator + DEFAULT_SETTINGS_FILE).exists();
     }
 
     public DefaultSoapUICore() {
@@ -116,7 +109,7 @@ public class DefaultSoapUICore implements SoapUICore {
      * the constructor with only one string parameter already existed
      */
     public DefaultSoapUICore(boolean settingPassword, String soapUISettingsPassword) {
-        this.password = soapUISettingsPassword;
+        password = soapUISettingsPassword;
     }
 
     public DefaultSoapUICore(String root) {
@@ -134,6 +127,14 @@ public class DefaultSoapUICore implements SoapUICore {
         init(settingsFile);
     }
 
+    public boolean getInitialImport() {
+        return initialImport;
+    }
+
+    public void setInitialImport(boolean initialImport) {
+        this.initialImport = initialImport;
+    }
+
     public void init(String settingsFile) {
         initLog();
 
@@ -148,7 +149,6 @@ public class DefaultSoapUICore implements SoapUICore {
 
         // this is to provoke initialization
         SoapVersion.Soap11.equals(SoapVersion.Soap12);
-
     }
 
     protected void loadPlugins() {
@@ -159,7 +159,8 @@ public class DefaultSoapUICore implements SoapUICore {
                 log.info("Adding plugin from [" + pluginFile.getAbsolutePath() + "]");
                 try {
                     loadOldStylePluginFrom(pluginFile);
-                } catch (Throwable e) {
+                }
+                catch (Throwable e) {
                     log.warn("Could not load plugin from file [" + pluginFile + "]");
                 }
             }
@@ -168,24 +169,26 @@ public class DefaultSoapUICore implements SoapUICore {
         pluginManager = new PluginManager(getFactoryRegistry(), getActionRegistry(), getListenerRegistry());
         pluginManager.loadPlugins();
         log.info("All plugins loaded");
-
     }
 
     protected void initExtensions(ClassLoader extensionClassLoader) {
         /* We break the general rule that you shouldn't catch Throwable, because we don't want extensions to crash SoapUI. */
         try {
             String extDir = System.getProperty("soapui.ext.listeners");
-            addExternalListeners(FilenameUtils.normalize(extDir != null ? extDir : root == null ? "listeners" :
-                    root + File.separatorChar + "listeners"), extensionClassLoader);
-        } catch (Throwable e) {
+            addExternalListeners(FilenameUtils.normalize(extDir != null ? extDir : root == null ? "listeners" : root + File.separatorChar + "listeners"), extensionClassLoader);
+        }
+        catch (Throwable e) {
             SoapUI.logError(e, "Couldn't load external listeners");
         }
 
         try {
             String factoriesDir = System.getProperty("soapui.ext.factories");
-            addExternalFactories(FilenameUtils.normalize(factoriesDir != null ? factoriesDir : root == null ? "factories" :
-                    root + File.separatorChar + "factories"), extensionClassLoader);
-        } catch (Throwable e) {
+            addExternalFactories(
+                FilenameUtils.normalize(factoriesDir != null ? factoriesDir : root == null ? "factories" : root + File.separatorChar + "factories"),
+                extensionClassLoader
+            );
+        }
+        catch (Throwable e) {
             SoapUI.logError(e, "Couldn't load external factories");
         }
     }
@@ -219,7 +222,6 @@ public class DefaultSoapUICore implements SoapUICore {
 
         // add jar to resource classloader so embedded images can be found with UISupport.loadImageIcon(..)
         UISupport.addResourceClassLoader(new URLClassLoader(new URL[]{pluginFile.toURI().toURL()}));
-
     }
 
     public String getRoot() {
@@ -242,7 +244,8 @@ public class DefaultSoapUICore implements SoapUICore {
                     settingsFile = new File(new File(System.getProperty("user.home", ".")), DEFAULT_SETTINGS_FILE);
                     lastSettingsLoad = 0;
                 }
-            } else {
+            }
+            else {
                 settingsFile = new File(fileName);
                 if (!settingsFile.getAbsolutePath().equals(this.settingsFile)) {
                     lastSettingsLoad = 0;
@@ -257,7 +260,8 @@ public class DefaultSoapUICore implements SoapUICore {
                 }
 
                 lastSettingsLoad = System.currentTimeMillis();
-            } else if (settingsFile.lastModified() > lastSettingsLoad) {
+            }
+            else if (settingsFile.lastModified() > lastSettingsLoad) {
                 settingsDocument = SoapuiSettingsDocumentConfig.Factory.parse(settingsFile);
 
                 byte[] encryptedContent = settingsDocument.getSoapuiSettings().getEncryptedContent();
@@ -267,22 +271,27 @@ public class DefaultSoapUICore implements SoapUICore {
                         // swing element -!! uh!
                         JPasswordField passwordField = new JPasswordField();
                         JLabel qLabel = new JLabel("Password");
-                        JOptionPane.showConfirmDialog(null, new Object[]{qLabel, passwordField}, "Global Settings",
-                                JOptionPane.OK_CANCEL_OPTION);
+                        JOptionPane.showConfirmDialog(null, new Object[]{qLabel, passwordField}, "Global Settings", JOptionPane.OK_CANCEL_OPTION);
                         password = passwordField.getPassword();
-                    } else {
+                    }
+                    else {
                         password = this.password.toCharArray();
                     }
 
                     String encryptionAlgorithm = settingsDocument.getSoapuiSettings().getEncryptedContentAlgorithm();
                     byte[] data = OpenSSL.decrypt(StringUtils.isNullOrEmpty(encryptionAlgorithm) ? "des3" : encryptionAlgorithm, password, encryptedContent);
                     try {
-                        settingsDocument = SoapuiSettingsDocumentConfig.Factory.parse(new String(data, "UTF-8"));
-                    } catch (Exception e) {
+                        settingsDocument = SoapuiSettingsDocumentConfig.Factory.parse(new String(data, StandardCharsets.UTF_8));
+                    }
+                    catch (Exception e) {
                         log.warn("Wrong password.");
-                        JOptionPane.showMessageDialog(null, "Wrong password, creating backup settings file [ "
-                                        + settingsFile.getAbsolutePath() + ".bak.xml. ]\nSwitch to default settings.",
-                                "Error - Wrong Password", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null,
+                                                      "Wrong password, creating backup settings file [ " +
+                                                      settingsFile.getAbsolutePath() +
+                                                      ".bak.xml. ]\nSwitch to default settings.",
+                                                      "Error - Wrong Password",
+                                                      JOptionPane.ERROR_MESSAGE
+                        );
                         settingsDocument.save(new File(settingsFile.getAbsolutePath() + ".bak.xml"));
                         throw e;
                     }
@@ -296,7 +305,8 @@ public class DefaultSoapUICore implements SoapUICore {
                     SoapUI.getSoapUITimer().scheduleAtFixedRate(settingsWatcher, 10000, 10000);
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.warn("Failed to load settings from [" + e.getMessage() + "], creating new");
             settingsDocument = SoapuiSettingsDocumentConfig.Factory.newInstance();
             lastSettingsLoad = 0;
@@ -307,7 +317,8 @@ public class DefaultSoapUICore implements SoapUICore {
             settings = new XmlBeansSettingsImpl(null, null, settingsDocument.getSoapuiSettings());
 
             initDefaultSettings(settings);
-        } else {
+        }
+        else {
             settings = new XmlBeansSettingsImpl(null, null, settingsDocument.getSoapuiSettings());
         }
 
@@ -319,8 +330,7 @@ public class DefaultSoapUICore implements SoapUICore {
             settings.setString(WsdlSettings.EXCLUDED_TYPES, list.toXml());
         }
 
-        if (settings.getString(HttpSettings.HTTP_VERSION, HttpSettings.HTTP_VERSION_1_1).equals(
-                HttpSettings.HTTP_VERSION_0_9)) {
+        if (settings.getString(HttpSettings.HTTP_VERSION, HttpSettings.HTTP_VERSION_1_1).equals(HttpSettings.HTTP_VERSION_0_9)) {
             settings.setString(HttpSettings.HTTP_VERSION, HttpSettings.HTTP_VERSION_1_1);
         }
 
@@ -363,7 +373,8 @@ public class DefaultSoapUICore implements SoapUICore {
         String wsiLocationString = settings.getString(WSISettings.WSI_LOCATION, null);
         if (StringUtils.isNullOrEmpty(wsiLocationString)) {
             setWsiDir = true;
-        } else {
+        }
+        else {
             File wsiFile = new File(wsiLocationString);
             if (!wsiFile.exists()) {
                 setWsiDir = true;
@@ -399,19 +410,6 @@ public class DefaultSoapUICore implements SoapUICore {
     /*
      * (non-Javadoc)
      *
-     * @see com.eviware.soapui.SoapUICore#importSettings(java.io.File)
-     */
-    public Settings importSettings(File file) throws Exception {
-        if (file != null) {
-            log.info("Importing preferences from [" + file.getAbsolutePath() + "]");
-            return initSettings(file.getAbsolutePath());
-        }
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see com.eviware.soapui.SoapUICore#getSettings()
      */
     public Settings getSettings() {
@@ -422,8 +420,56 @@ public class DefaultSoapUICore implements SoapUICore {
         return settings;
     }
 
-    protected void initDefaultSettings(Settings settings2) {
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.SoapUICore#getMockEngine()
+     */
+    public MockEngine getMockEngine() {
+        if (mockEngine == null) {
+            synchronized (DefaultSoapUICore.class) {
+                if (mockEngine == null) {
+                    mockEngine = buildMockEngine();
+                }
+            }
+        }
 
+        return mockEngine;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.SoapUICore#getListenerRegistry()
+     */
+    public SoapUIListenerRegistry getListenerRegistry() {
+        if (listenerRegistry == null) {
+            initListenerRegistry();
+        }
+
+        return listenerRegistry;
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.SoapUICore#getActionRegistry()
+     */
+    public SoapUIActionRegistry getActionRegistry() {
+        if (actionRegistry == null) {
+            actionRegistry = initActionRegistry();
+        }
+
+        return actionRegistry;
+    }
+
+    @Override
+    public SoapUIFactoryRegistry getFactoryRegistry() {
+        if (factoryRegistry == null) {
+            initFactoryRegistry();
+        }
+
+        return factoryRegistry;
     }
 
     /*
@@ -446,7 +492,7 @@ public class DefaultSoapUICore implements SoapUICore {
                 file = new File(new File(System.getProperty("user.home", ".")), DEFAULT_SETTINGS_FILE);
             }
 
-            SoapuiSettingsDocumentConfig settingsDocument = (SoapuiSettingsDocumentConfig) this.settingsDocument.copy();
+            SoapuiSettingsDocumentConfig settingsDocument = (SoapuiSettingsDocumentConfig)this.settingsDocument.copy();
             String password = settings.getString(SecuritySettings.SHADOW_PASSWORD, null);
 
             if (password != null && password.length() > 0) {
@@ -457,11 +503,14 @@ public class DefaultSoapUICore implements SoapUICore {
                     settingsDocument.setSoapuiSettings(null);
                     settingsDocument.getSoapuiSettings().setEncryptedContent(encryptedData);
                     settingsDocument.getSoapuiSettings().setEncryptedContentAlgorithm(encryptionAlgorithm);
-                } catch (UnsupportedEncodingException e) {
+                }
+                catch (UnsupportedEncodingException e) {
                     log.error("Encryption error", e);
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     log.error("Encryption error", e);
-                } catch (GeneralSecurityException e) {
+                }
+                catch (GeneralSecurityException e) {
                     log.error("Encryption error", e);
                 }
             }
@@ -473,9 +522,43 @@ public class DefaultSoapUICore implements SoapUICore {
             log.info("Settings saved to [" + file.getAbsolutePath() + "]");
             lastSettingsLoad = file.lastModified();
             return file.getAbsolutePath();
-        } finally {
+        }
+        finally {
             isSavingSettings = false;
         }
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see com.eviware.soapui.SoapUICore#importSettings(java.io.File)
+     */
+    public Settings importSettings(File file) throws Exception {
+        if (file != null) {
+            log.info("Importing preferences from [" + file.getAbsolutePath() + "]");
+            return initSettings(file.getAbsolutePath());
+        }
+        return null;
+    }
+
+    public SoapUIExtensionClassLoader getExtensionClassLoader() {
+        if (extClassLoader == null) {
+            loadExternalLibraries();
+        }
+
+        return extClassLoader;
+    }
+
+    @Override
+    public SecurityScanRegistry getSecurityScanRegistry() {
+        if (securityScanRegistry == null) {
+            initSecurityScanRegistry();
+        }
+        return securityScanRegistry;
+    }
+
+    protected void initDefaultSettings(Settings settings2) {
+
     }
 
     public String getSettingsFile() {
@@ -492,16 +575,19 @@ public class DefaultSoapUICore implements SoapUICore {
             File log4jconfig = root == null ? new File(logFileName) : new File(new File(getRoot()), logFileName);
             if (log4jconfig.exists()) {
                 System.out.println("Configuring log4j from [" + log4jconfig.getAbsolutePath() + "]");
-                ((LoggerContext) LogManager.getContext(false)).setConfigLocation(log4jconfig.toURI());
-            } else {
+                ((LoggerContext)LogManager.getContext(false)).setConfigLocation(log4jconfig.toURI());
+            }
+            else {
                 URL url = SoapUI.class.getResource("/com/eviware/soapui/resources/conf/soapui-log4j.xml");
                 if (url != null) {
                     try {
-                        ((LoggerContext) LogManager.getContext(false)).setConfigLocation(url.toURI());
-                    } catch (URISyntaxException e) {
+                        ((LoggerContext)LogManager.getContext(false)).setConfigLocation(url.toURI());
+                    }
+                    catch (URISyntaxException e) {
                         System.err.println("Unable to locate soapui-log4j.xml configuration");
                     }
-                } else {
+                }
+                else {
                     System.err.println("Missing soapui-log4j.xml configuration");
                 }
             }
@@ -516,7 +602,8 @@ public class DefaultSoapUICore implements SoapUICore {
         if (extClassLoader == null) {
             try {
                 extClassLoader = SoapUIExtensionClassLoader.create(getRoot(), getExtensionClassLoaderParent());
-            } catch (MalformedURLException e) {
+            }
+            catch (MalformedURLException e) {
                 SoapUI.logError(e);
             }
         }
@@ -526,68 +613,16 @@ public class DefaultSoapUICore implements SoapUICore {
         return SoapUI.class.getClassLoader();
     }
 
-    public SoapUIExtensionClassLoader getExtensionClassLoader() {
-        if (extClassLoader == null) {
-            loadExternalLibraries();
-        }
-
-        return extClassLoader;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.eviware.soapui.SoapUICore#getMockEngine()
-     */
-    public MockEngine getMockEngine() {
-        if (mockEngine == null) {
-            synchronized (DefaultSoapUICore.class) {
-                if (mockEngine == null) {
-                    mockEngine = buildMockEngine();
-                }
-            }
-        }
-
-        return mockEngine;
-    }
-
     protected MockEngine buildMockEngine() {
         return new JettyMockEngine();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.eviware.soapui.SoapUICore#getListenerRegistry()
-     */
-    public SoapUIListenerRegistry getListenerRegistry() {
-        if (listenerRegistry == null) {
-            initListenerRegistry();
-        }
-
-        return listenerRegistry;
     }
 
     protected void initListenerRegistry() {
         listenerRegistry = new SoapUIListenerRegistry(null);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.eviware.soapui.SoapUICore#getActionRegistry()
-     */
-    public SoapUIActionRegistry getActionRegistry() {
-        if (actionRegistry == null) {
-            actionRegistry = initActionRegistry();
-        }
-
-        return actionRegistry;
-    }
-
     protected SoapUIActionRegistry initActionRegistry() {
-        return new SoapUIActionRegistry(
-                DefaultSoapUICore.class.getResourceAsStream("/com/eviware/soapui/resources/conf/soapui-actions.xml"));
+        return new SoapUIActionRegistry(DefaultSoapUICore.class.getResourceAsStream("/com/eviware/soapui/resources/conf/soapui-actions.xml"));
     }
 
     protected void addExternalListeners(String folder, ClassLoader classLoader) {
@@ -607,7 +642,8 @@ public class DefaultSoapUICore implements SoapUICore {
                     log.info("Adding listeners from [" + actionFile.getAbsolutePath() + "]");
                     SoapUI.getListenerRegistry().addConfig(new FileInputStream(actionFile), classLoader);
                     // We break the general rule that you shouldn't catch Throwable, because we don't want extensions to crash SoapUI
-                } catch (Throwable e) {
+                }
+                catch (Throwable e) {
                     SoapUI.logError(e, "Couldn't load listeners in " + actionFile.getAbsolutePath());
                 }
             }
@@ -632,18 +668,20 @@ public class DefaultSoapUICore implements SoapUICore {
 
                     getFactoryRegistry().addConfig(new FileInputStream(factoryFile), classLoader);
                     // We break the general rule that you shouldn't catch Throwable, because we don't want extensions to crash SoapUI
-                } catch (Throwable e) {
+                }
+                catch (Throwable e) {
                     SoapUI.logError(e, "Couldn't load factories in " + factoryFile.getAbsolutePath());
                 }
             }
         }
     }
 
-    public static boolean settingsFileExists() {
-        DefaultSoapUICore soapUICore = new DefaultSoapUICore();
-        return new File(DEFAULT_SETTINGS_FILE).exists() ||
-                new File(new File(soapUICore.getRoot()), DEFAULT_SETTINGS_FILE).exists() ||
-                new File(System.getProperty("user.home", ".") + File.separator + DEFAULT_SETTINGS_FILE).exists();
+    protected void initFactoryRegistry() {
+        factoryRegistry = new SoapUIFactoryRegistry(null);
+    }
+
+    protected void initSecurityScanRegistry() {
+        securityScanRegistry = SecurityScanRegistry.getInstance();
     }
 
     private class SettingsWatcher extends TimerTask {
@@ -659,30 +697,4 @@ public class DefaultSoapUICore implements SoapUICore {
             }
         }
     }
-
-    @Override
-    public SoapUIFactoryRegistry getFactoryRegistry() {
-        if (factoryRegistry == null) {
-            initFactoryRegistry();
-        }
-
-        return factoryRegistry;
-    }
-
-    protected void initFactoryRegistry() {
-        factoryRegistry = new SoapUIFactoryRegistry(null);
-    }
-
-    protected void initSecurityScanRegistry() {
-        securityScanRegistry = SecurityScanRegistry.getInstance();
-    }
-
-    @Override
-    public SecurityScanRegistry getSecurityScanRegistry() {
-        if (securityScanRegistry == null) {
-            initSecurityScanRegistry();
-        }
-        return securityScanRegistry;
-    }
-
 }

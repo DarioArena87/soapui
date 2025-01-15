@@ -6,27 +6,17 @@ import com.eviware.soapui.impl.wsdl.teststeps.GraphQLRequestTestStep;
 import com.eviware.soapui.impl.wsdl.teststeps.GraphQLTestRequestInterface;
 import com.eviware.soapui.support.components.JPropertiesTable;
 import com.eviware.soapui.ui.desktop.DesktopPanel;
-import java.awt.Component;
+
+import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GraphQLRequestTestStepPanelBuilder extends EmptyPanelBuilder<GraphQLRequestTestStep> {
     @Override
-    public DesktopPanel buildDesktopPanel(GraphQLRequestTestStep graphQLTestRequestTestStep) {
-       return new GraphQLRequestTestStepDesktopPanel(graphQLTestRequestTestStep);
-    }
-
-    @Override
-    public boolean hasDesktopPanel() {
-        return true;
-    }
-
-    @Override
     public Component buildOverviewPanel(GraphQLRequestTestStep testStep) {
         GraphQLTestRequestInterface request = testStep.getTestRequest();
-        JPropertiesTable<GraphQLTestRequestInterface> table = new JPropertiesTable<>(
-                "GraphQL Request Properties");
+        JPropertiesTable<GraphQLTestRequestInterface> table = new JPropertiesTable<>("GraphQL Request Properties");
 
         // basic properties
         table.addProperty("Name", "name", true);
@@ -56,5 +46,15 @@ public class GraphQLRequestTestStepPanelBuilder extends EmptyPanelBuilder<GraphQ
     @Override
     public boolean hasOverviewPanel() {
         return true;
+    }
+
+    @Override
+    public boolean hasDesktopPanel() {
+        return true;
+    }
+
+    @Override
+    public DesktopPanel buildDesktopPanel(GraphQLRequestTestStep graphQLTestRequestTestStep) {
+        return new GraphQLRequestTestStepDesktopPanel(graphQLTestRequestTestStep);
     }
 }

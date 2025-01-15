@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.actions.service;
@@ -70,7 +70,8 @@ public class GenerateRestMockServiceAction extends AbstractSoapUIAction<RestServ
     private void maybeStart(MockService mockService) {
         try {
             mockService.startIfConfigured();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             UISupport.showErrorMessage(e.getMessage());
         }
@@ -95,7 +96,8 @@ public class GenerateRestMockServiceAction extends AbstractSoapUIAction<RestServ
 
         if (project.getRestMockServiceByName(mockServiceName) == null) {
             return project.addNewRestMockService(mockServiceName);
-        } else {
+        }
+        else {
             UISupport.showInfoMessage("The mock service name need to be unique. '" + mockServiceName + "' already exists.");
             return null;
         }
@@ -123,6 +125,6 @@ public class GenerateRestMockServiceAction extends AbstractSoapUIAction<RestServ
     @AForm(name = "Generate REST Mock Service", description = "Set name for the new REST Mock Service", helpUrl = HelpUrls.GENERATE_REST_MOCKSERVICE)
     protected interface Form {
         @AField(name = "MockService Name", description = "The Mock Service name", type = AField.AFieldType.STRING)
-        public final static String MOCKSERVICE_NAME = "MockService Name";
+        String MOCKSERVICE_NAME = "MockService Name";
     }
 }

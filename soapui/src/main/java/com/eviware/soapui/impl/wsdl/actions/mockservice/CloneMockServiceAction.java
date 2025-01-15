@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.mockservice;
@@ -62,12 +62,7 @@ public class CloneMockServiceAction extends AbstractSoapUIAction<WsdlMockService
         dialog.getFormField(Form.CLONE_DESCRIPTION).addFormFieldListener(new XFormFieldListener() {
 
             public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
-                if (dialog.getBooleanValue(Form.CLONE_DESCRIPTION)) {
-                    dialog.getFormField(Form.DESCRIPTION).setEnabled(false);
-                } else {
-                    dialog.getFormField(Form.DESCRIPTION).setEnabled(true);
-                }
-
+                dialog.getFormField(Form.DESCRIPTION).setEnabled(!dialog.getBooleanValue(Form.CLONE_DESCRIPTION));
             }
         });
         dialog.setValue(Form.NAME, "Copy of " + mockService.getName());
@@ -75,8 +70,7 @@ public class CloneMockServiceAction extends AbstractSoapUIAction<WsdlMockService
         dialog.getFormField(Form.DESCRIPTION).setEnabled(false);
         dialog.setValue(Form.DESCRIPTION, mockService.getDescription());
         WorkspaceImpl workspace = mockService.getProject().getWorkspace();
-        dialog.setOptions(Form.PROJECT,
-                ModelSupport.getNames(workspace.getOpenProjectList(), new String[]{"<Create New>"}));
+        dialog.setOptions(Form.PROJECT, ModelSupport.getNames(workspace.getOpenProjectList(), new String[]{"<Create New>"}));
 
         dialog.setValue(Form.PROJECT, mockService.getProject().getName());
 
@@ -95,7 +89,8 @@ public class CloneMockServiceAction extends AbstractSoapUIAction<WsdlMockService
             }
             if (targetProjectName.equals(mockService.getProject().getName())) {
                 clonedService = cloneMockServiceWithinProject(mockService, name, project, description);
-            } else {
+            }
+            else {
                 clonedService = cloneToAnotherProject(mockService, targetProjectName, name, description);
             }
 
@@ -109,10 +104,11 @@ public class CloneMockServiceAction extends AbstractSoapUIAction<WsdlMockService
         }
     }
 
-    public WsdlMockService cloneToAnotherProject(WsdlMockService mockService, String targetProjectName, String name,
-                                                 String description) {
+    public WsdlMockService cloneToAnotherProject(
+        WsdlMockService mockService, String targetProjectName, String name, String description
+    ) {
         WorkspaceImpl workspace = mockService.getProject().getWorkspace();
-        WsdlProject targetProject = (WsdlProject) workspace.getProjectByName(targetProjectName);
+        WsdlProject targetProject = (WsdlProject)workspace.getProjectByName(targetProjectName);
         if (targetProject == null) {
             targetProjectName = UISupport.prompt("Enter name for new Project", "Clone MockService", "");
             if (targetProjectName == null) {
@@ -121,7 +117,8 @@ public class CloneMockServiceAction extends AbstractSoapUIAction<WsdlMockService
 
             try {
                 targetProject = workspace.createProject(targetProjectName, null);
-            } catch (SoapUIException e) {
+            }
+            catch (SoapUIException e) {
                 UISupport.showErrorMessage(e);
             }
 
@@ -153,8 +150,9 @@ public class CloneMockServiceAction extends AbstractSoapUIAction<WsdlMockService
         return mockService;
     }
 
-    public WsdlMockService cloneMockServiceWithinProject(WsdlMockService mockService, String name, WsdlProject project,
-                                                         String description) {
+    public WsdlMockService cloneMockServiceWithinProject(
+        WsdlMockService mockService, String name, WsdlProject project, String description
+    ) {
         WsdlMockService newMockService = project.importMockService(mockService, name, true, description);
         UISupport.select(newMockService);
         return newMockService;
@@ -186,21 +184,26 @@ public class CloneMockServiceAction extends AbstractSoapUIAction<WsdlMockService
         return requiredInterfaces;
     }
 
-    @AForm(description = "Specify target Project and name of cloned MockService", name = "Clone MockService", helpUrl = HelpUrls.CLONEMOCKSERVICE_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
+    @AForm(
+        description = "Specify target Project and name of cloned MockService",
+        name = "Clone MockService",
+        helpUrl = HelpUrls.CLONEMOCKSERVICE_HELP_URL,
+        icon = UISupport.TOOL_ICON_PATH
+    )
     public interface Form {
         @AField(name = "MockService Name", description = "The name of the cloned MockService", type = AFieldType.STRING)
-        public final static String NAME = "MockService Name";
+        String NAME = "MockService Name";
 
         @AField(name = "Target Project", description = "The target Project for the cloned MockService", type = AFieldType.ENUMERATION)
-        public final static String PROJECT = "Target Project";
+        String PROJECT = "Target Project";
 
         @AField(name = "Move instead", description = "Moves the selected MockService instead of copying", type = AFieldType.BOOLEAN)
-        public final static String MOVE = "Move instead";
+        String MOVE = "Move instead";
 
         @AField(name = "Clone description", description = "Clones the description of selected TestCase", type = AFieldType.BOOLEAN)
-        public final static String CLONE_DESCRIPTION = "Clone description";
+        String CLONE_DESCRIPTION = "Clone description";
 
         @AField(name = "Description", description = "Descroption of new TestCase", type = AFieldType.STRINGAREA)
-        public final static String DESCRIPTION = "Description";
+        String DESCRIPTION = "Description";
     }
 }

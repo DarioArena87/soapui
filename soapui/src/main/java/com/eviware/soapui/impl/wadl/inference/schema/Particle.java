@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.schema;
@@ -40,14 +40,14 @@ public interface Particle {
      *
      * @return The QName describing the particles name and namespace.
      */
-    public QName getName();
+    QName getName();
 
     /**
      * Get the ParticleType of the Particle, that is, attribute or element.
      *
      * @return Returns the type of particle this is.
      */
-    public ParticleType getPType();
+    ParticleType getPType();
 
     /**
      * Get the Type of the element or attribute that is described by this
@@ -55,7 +55,7 @@ public interface Particle {
      *
      * @return Returns the Type that corresponds to the particle.
      */
-    public Type getType();
+    Type getType();
 
     /**
      * Set the Type of the element or attribute that is described by this
@@ -63,7 +63,7 @@ public interface Particle {
      *
      * @param type The Type to set.
      */
-    public void setType(Type type);
+    void setType(Type type);
 
     /**
      * Get the attribute value that corresponds to the given name.
@@ -71,7 +71,7 @@ public interface Particle {
      * @param key The name of the attribute to get the value for.
      * @return Returns the value for the attribute.
      */
-    public String getAttribute(String key);
+    String getAttribute(String key);
 
     /**
      * Set an attribute.
@@ -79,7 +79,7 @@ public interface Particle {
      * @param key   The name of the attribute to set.
      * @param value The value to set.
      */
-    public void setAttribute(String key, String value);
+    void setAttribute(String key, String value);
 
     /**
      * Validates an XML document contained in a given Context object, at the
@@ -89,17 +89,18 @@ public interface Particle {
      *                other needed contextual variables.
      * @throws XmlException On unresolvable validation error.
      */
-    public void validate(Context context) throws XmlException;
+    void validate(Context context) throws XmlException;
 
-    public ParticleConfig save();
+    ParticleConfig save();
 
     /**
      * An enum representing one of two particle types, element or attribute.
      *
      * @author Dain Nilsson
      */
-    public enum ParticleType {
-        ATTRIBUTE("attribute"), ELEMENT("element");
+    enum ParticleType {
+        ATTRIBUTE("attribute"),
+        ELEMENT("element");
         private final String name;
 
         ParticleType(String name) {
@@ -111,14 +112,12 @@ public interface Particle {
         }
     }
 
-    ;
-
     /**
      * A static factory class for creating new instances.
      *
      * @author Dain Nilsson
      */
-    public class Factory {
+    class Factory {
 
         /**
          * Create a blank new Particle representing an xs:element.
@@ -163,13 +162,13 @@ public interface Particle {
          */
         public static Particle parse(ParticleConfig xml, Schema schema) {
             if (xml instanceof AttributeParticleConfig) {
-                return new AttributeParticle((AttributeParticleConfig) xml, schema);
+                return new AttributeParticle((AttributeParticleConfig)xml, schema);
             }
             if (xml instanceof ElementParticleConfig) {
-                return new ElementParticle((ElementParticleConfig) xml, schema);
+                return new ElementParticle((ElementParticleConfig)xml, schema);
             }
             if (xml instanceof ReferenceParticleConfig) {
-                return new ReferenceParticle((ReferenceParticleConfig) xml, schema);
+                return new ReferenceParticle((ReferenceParticleConfig)xml, schema);
             }
             return null;
         }

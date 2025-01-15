@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.attachments;
@@ -48,17 +48,6 @@ public class WsdlRequestMimeMessageRequestEntity extends AbstractHttpEntity {
         this.wsdlRequest = wsdlRequest;
     }
 
-    public long getContentLength() {
-        try {
-            DummyOutputStream out = new DummyOutputStream();
-            writeTo(out);
-            return out.getSize();
-        } catch (Exception e) {
-            SoapUI.logError(e);
-            return -1;
-        }
-    }
-
     public Header getContentType() {
         try {
             SoapVersion soapVersion = wsdlRequest.getOperation().getInterface().getSoapVersion();
@@ -66,16 +55,25 @@ public class WsdlRequestMimeMessageRequestEntity extends AbstractHttpEntity {
             if (isXOP) {
                 String header = message.getHeader("Content-Type")[0];
 
-                return new BasicHeader("Content-Type", AttachmentUtils.buildMTOMContentType(header,
-                        wsdlRequest.getAction(), soapVersion));
-            } else {
+                return new BasicHeader("Content-Type", AttachmentUtils.buildMTOMContentType(header, wsdlRequest.getAction(), soapVersion));
+            }
+            else {
                 String header = message.getHeader("Content-Type")[0];
                 int ix = header.indexOf("boundary");
 
-                return new BasicHeader("Content-Type", "multipart/related; type=\"" + soapVersion.getContentType()
-                        + "\"; " + "start=\"" + AttachmentUtils.ROOTPART_SOAPUI_ORG + "\"; " + header.substring(ix));
+                return new BasicHeader(
+                    "Content-Type",
+                    "multipart/related; type=\"" +
+                    soapVersion.getContentType() +
+                    "\"; " +
+                    "start=\"" +
+                    AttachmentUtils.ROOTPART_SOAPUI_ORG +
+                    "\"; " +
+                    header.substring(ix)
+                );
             }
-        } catch (MessagingException e) {
+        }
+        catch (MessagingException e) {
             SoapUI.logError(e);
         }
 
@@ -87,13 +85,15 @@ public class WsdlRequestMimeMessageRequestEntity extends AbstractHttpEntity {
         return true;
     }
 
-    @Override
-    public void writeTo(OutputStream arg0) throws IOException {
+    public long getContentLength() {
         try {
-            arg0.write("\r\n".getBytes());
-            ((MimeMultipart) message.getContent()).writeTo(arg0);
-        } catch (Exception e) {
+            DummyOutputStream out = new DummyOutputStream();
+            writeTo(out);
+            return out.getSize();
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
+            return -1;
         }
     }
 
@@ -101,8 +101,20 @@ public class WsdlRequestMimeMessageRequestEntity extends AbstractHttpEntity {
     public InputStream getContent() throws IOException {
         try {
             return message.getInputStream();
-        } catch (MessagingException e) {
+        }
+        catch (MessagingException e) {
             throw new IOException(e);
+        }
+    }
+
+    @Override
+    public void writeTo(OutputStream arg0) throws IOException {
+        try {
+            arg0.write("\r\n".getBytes());
+            ((MimeMultipart)message.getContent()).writeTo(arg0);
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
         }
     }
 
@@ -112,7 +124,7 @@ public class WsdlRequestMimeMessageRequestEntity extends AbstractHttpEntity {
     }
 
     public static class DummyOutputStream extends OutputStream {
-        private int intLength;
+        private final int intLength;
         private long size = 0;
 
         public DummyOutputStream() {

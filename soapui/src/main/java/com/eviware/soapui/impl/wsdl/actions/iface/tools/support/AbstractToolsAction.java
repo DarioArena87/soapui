@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.support;
@@ -40,8 +40,7 @@ import com.eviware.x.form.XFormTextField;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -53,24 +52,21 @@ import java.io.FilenameFilter;
  */
 
 public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractSoapUIAction<T> {
-    @SuppressWarnings("unused")
-    private static final Logger log = LogManager.getLogger(AbstractToolsAction.class);
-
     protected static final String WSDL = "WSDL";
     protected static final String CACHED_WSDL = "Use cached WSDL";
     protected static final String JAVA_ARGS = "Java Args";
     protected static final String TOOL_ARGS = "Tool Args";
     protected static final String SOAPUISETTINGSPASSWORD = "user-settings.xml Password";
-
-    private XFormDialog dialog;
+    @SuppressWarnings("unused")
+    private static final Logger log = LogManager.getLogger(AbstractToolsAction.class);
     protected String valuesSettingID;
+    private XFormDialog dialog;
     private XFormField useCached;
     private T modelItem;
 
     // Configure behavior of this action:
     private boolean fixedWSDL = false;
     private Action toolsSettingsAction = new ShowIntegratedToolsSettingsAction();
-    ;
 
     public AbstractToolsAction(String name, String description) {
         super(name, description);
@@ -94,7 +90,7 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
      * @param b
      */
     public void setFixedWSDL(boolean b) {
-        this.fixedWSDL = b;
+        fixedWSDL = b;
     }
 
     public T getModelItem() {
@@ -102,27 +98,30 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
     }
 
     public void perform(T target, Object param) {
-        this.valuesSettingID = this.getClass().getName() + "@values";
+        valuesSettingID = getClass().getName() + "@values";
         if (target == null) {
-            this.valuesSettingID += "-global";
-        } else {
-            this.valuesSettingID += "-local";
+            valuesSettingID += "-global";
+        }
+        else {
+            valuesSettingID += "-local";
         }
 
         modelItem = target;
 
         // Could reuse the dialog in Swing, but not in Eclipse.
         // if( dialog == null )
-        dialog = buildDialog((T) target);
+        dialog = buildDialog(target);
 
         if (dialog == null) {
             try {
-                generate(initValues((T) target, param), UISupport.getToolHost(), (T) target);
-            } catch (Exception e1) {
+                generate(initValues(target, param), UISupport.getToolHost(), target);
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1);
             }
-        } else {
-            StringToStringMap values = initValues((T) target, param);
+        }
+        else {
+            StringToStringMap values = initValues(target, param);
 
             dialog.setValues(values);
             dialog.setVisible(true);
@@ -136,31 +135,31 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
      * @param param
      */
     public void performHeadless(T target, Object param) {
-        this.valuesSettingID = this.getClass().getName() + "@values";
+        valuesSettingID = getClass().getName() + "@values";
         if (target == null) {
-            this.valuesSettingID += "-global";
-        } else {
-            this.valuesSettingID += "-local";
+            valuesSettingID += "-global";
+        }
+        else {
+            valuesSettingID += "-local";
         }
 
         modelItem = target;
 
         try {
-            generate(initValues((T) target, param), UISupport.getToolHost(), (T) target);
-        } catch (Exception e1) {
+            generate(initValues(target, param), UISupport.getToolHost(), target);
+        }
+        catch (Exception e1) {
             UISupport.showErrorMessage(e1);
         }
     }
 
     protected StringToStringMap initValues(T modelItem, Object param) {
-        String settingValues = modelItem == null ? SoapUI.getSettings().getString(valuesSettingID, null) : modelItem
-                .getSettings().getString(valuesSettingID, null);
+        String settingValues = modelItem == null ? SoapUI.getSettings().getString(valuesSettingID, null) : modelItem.getSettings().getString(valuesSettingID, null);
 
-        StringToStringMap result = settingValues == null ? new StringToStringMap() : StringToStringMap
-                .fromXml(settingValues);
+        StringToStringMap result = settingValues == null ? new StringToStringMap() : StringToStringMap.fromXml(settingValues);
 
         if (modelItem instanceof WsdlInterface) {
-            initWSDL(result, (WsdlInterface) modelItem);
+            initWSDL(result, (WsdlInterface)modelItem);
         }
 
         if (dialog != null && modelItem != null) {
@@ -185,7 +184,8 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
                 useCached = mainForm.addCheckBox(CACHED_WSDL, null);
                 useCached.addComponentEnabler(tf, "false");
             }
-        } else {
+        }
+        else {
             if (modelItem instanceof Interface) {
                 useCached = mainForm.addCheckBox(CACHED_WSDL, null);
             }
@@ -224,7 +224,8 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
 
         if (modelItem == null) {
             SoapUI.getSettings().setString(valuesSettingID, dialog.getValues().toXml());
-        } else {
+        }
+        else {
             modelItem.getSettings().setString(valuesSettingID, dialog.getValues().toXml());
         }
     }
@@ -234,7 +235,7 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
         boolean useCached = values.getBoolean(CACHED_WSDL);
 
         if (modelItem instanceof AbstractInterface) {
-            AbstractInterface<?> iface = (AbstractInterface<?>) modelItem;
+            AbstractInterface<?> iface = (AbstractInterface<?>)modelItem;
 
             boolean hasDefinition = StringUtils.hasContent(iface.getDefinition());
             if (wsdl == null && !useCached && hasDefinition) {
@@ -251,7 +252,8 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
                     // CachedWsdlLoader loader = (CachedWsdlLoader)
                     // iface.createWsdlLoader();
                     // wsdl = loader.saveDefinition(path);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     SoapUI.logError(e);
                 }
             }
@@ -316,7 +318,7 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
         if (modelItem == null) {
             return "";
         }
-        WsdlInterface iface = (WsdlInterface) modelItem;
+        WsdlInterface iface = (WsdlInterface)modelItem;
         String definition = PathUtils.expandPath(iface.getDefinition(), iface);
         if (definition.startsWith("file:")) {
             definition = definition.substring(5);
@@ -349,6 +351,13 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
         return argsForm;
     }
 
+    public void closeDialog(T modelItem) {
+        onClose(modelItem);
+        if (dialog != null) {
+            dialog.setVisible(false);
+        }
+    }
+
     public static final class ShowIntegratedToolsSettingsAction extends AbstractAction {
         public ShowIntegratedToolsSettingsAction() {
             super("Tools");
@@ -372,13 +381,6 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
         }
     }
 
-    public void closeDialog(T modelItem) {
-        onClose(modelItem);
-        if (dialog != null) {
-            dialog.setVisible(false);
-        }
-    }
-
     protected final class GenerateAction extends AbstractAction {
         private final T modelItem;
 
@@ -392,7 +394,8 @@ public abstract class AbstractToolsAction<T extends ModelItem> extends AbstractS
                 if (dialog.validate()) {
                     generate(dialog.getValues(), UISupport.getToolHost(), modelItem);
                 }
-            } catch (Exception e1) {
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1);
             }
         }

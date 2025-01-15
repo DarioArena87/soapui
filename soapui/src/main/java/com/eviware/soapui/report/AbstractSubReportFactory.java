@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.report;
@@ -33,20 +33,13 @@ public abstract class AbstractSubReportFactory implements SubReportFactory, Soap
     }
 
     public AbstractSubReportFactory(String name, String description, String id) {
-        this(name, description, id, new ReportTypeConfig.Enum[]{ReportTypeConfig.PROJECT, ReportTypeConfig.TESTSUITE,
-                ReportTypeConfig.TESTCASE, ReportTypeConfig.LOADTEST});
+        this(name, description, id, new ReportTypeConfig.Enum[]{
+            ReportTypeConfig.PROJECT, ReportTypeConfig.TESTSUITE, ReportTypeConfig.TESTCASE, ReportTypeConfig.LOADTEST
+        });
     }
 
     public AbstractSubReportFactory(String name, String description, String id, ReportTypeConfig.Enum reportLevel) {
         this(name, description, id, new ReportTypeConfig.Enum[]{reportLevel});
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public SubReport[] buildSubReports(ModelItemReport modelItem) {
@@ -54,16 +47,24 @@ public abstract class AbstractSubReportFactory implements SubReportFactory, Soap
         return subReport == null ? new SubReport[0] : new SubReport[]{subReport};
     }
 
-    public SubReport buildSubReport(ModelItemReport modelItem) {
-        return null;
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public ReportTypeConfig.Enum[] getLevels() {
         return levels;
     }
 
-    public String getId() {
-        return id;
+    public SubReport buildSubReport(ModelItemReport modelItem) {
+        return null;
     }
 
     @Override

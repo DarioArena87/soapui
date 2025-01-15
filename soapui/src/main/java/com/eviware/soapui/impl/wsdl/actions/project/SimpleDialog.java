@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.project;
@@ -24,23 +24,16 @@ import com.eviware.soapui.support.action.swing.ActionList;
 import com.eviware.soapui.support.action.swing.DefaultActionList;
 import com.eviware.soapui.support.components.JButtonBar;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JDialog;
-import javax.swing.KeyStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 
-
 public abstract class SimpleDialog extends JDialog {
-    protected JButtonBar buttons = null;
     private final String title;
     private final String description;
     private final String helpUrl;
     private final boolean okAndCancel;
+    protected JButtonBar buttons = null;
     private boolean initialized = false;
 
     public SimpleDialog(String title, String description, String helpUrl, boolean okAndCancel) {
@@ -51,6 +44,10 @@ public abstract class SimpleDialog extends JDialog {
         this.okAndCancel = okAndCancel;
     }
 
+    public SimpleDialog(String title, String description, String helpUrl) {
+        this(title, description, helpUrl, true);
+    }
+
     private synchronized void init() {
         if (initialized) {
             return;
@@ -59,17 +56,13 @@ public abstract class SimpleDialog extends JDialog {
         buttons = UISupport.initDialogActions(buildActions(helpUrl, okAndCancel), this);
         buttons.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
 
-        getContentPane().add(
-                UISupport.buildDescription(title, description, UISupport.createImageIcon(UISupport.TOOL_ICON_PATH)),
-                BorderLayout.NORTH);
+        getContentPane().add(UISupport.buildDescription(title, description, UISupport.createImageIcon(UISupport.TOOL_ICON_PATH)), BorderLayout.NORTH);
 
         getContentPane().add(buildContent(), BorderLayout.CENTER);
 
-        buttons
-                .setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, Color.GRAY),
-                        BorderFactory.createMatteBorder(1, 0, 0, 0, Color.WHITE)), BorderFactory.createEmptyBorder(3, 5,
-                        3, 5)));
+        buttons.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.GRAY),
+                                                                                                BorderFactory.createMatteBorder(1, 0, 0, 0, Color.WHITE)
+        ), BorderFactory.createEmptyBorder(3, 5, 3, 5)));
 
         getContentPane().add(buttons, BorderLayout.SOUTH);
         modifyButtons();
@@ -85,12 +78,6 @@ public abstract class SimpleDialog extends JDialog {
      * Robert.
      */
     protected void modifyButtons() {
-    }
-
-    ;
-
-    public SimpleDialog(String title, String description, String helpUrl) {
-        this(title, description, helpUrl, true);
     }
 
     protected abstract Component buildContent();
@@ -118,17 +105,18 @@ public abstract class SimpleDialog extends JDialog {
 
         if (b) {
             beforeShow();
-        } else {
+        }
+        else {
             beforeHide();
         }
 
         UISupport.centerDialog(this);
         super.setVisible(b);
 
-
         if (b) {
             afterShow();
-        } else {
+        }
+        else {
             afterHide();
         }
     }
@@ -187,12 +175,12 @@ public abstract class SimpleDialog extends JDialog {
         public HelpAction(String title, String url, KeyStroke accelerator) {
             super(title);
             this.url = url;
-            putValue(Action.SHORT_DESCRIPTION, "Show online help");
+            putValue(SHORT_DESCRIPTION, "Show online help");
             if (accelerator != null) {
-                putValue(Action.ACCELERATOR_KEY, accelerator);
+                putValue(ACCELERATOR_KEY, accelerator);
             }
 
-            putValue(Action.SMALL_ICON, UISupport.HELP_ICON);
+            putValue(SMALL_ICON, UISupport.HELP_ICON);
         }
 
         public void actionPerformed(ActionEvent e) {

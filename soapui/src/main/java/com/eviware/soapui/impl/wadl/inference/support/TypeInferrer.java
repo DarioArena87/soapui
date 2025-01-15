@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.inference.support;
@@ -47,15 +47,15 @@ import java.util.Map;
  */
 public class TypeInferrer {
     private static TypeInferrer ref;
-    private TypeTree types;
-    private Map<XmlAnySimpleType, TypeTree> typeTable;
+    private final TypeTree types;
+    private final Map<XmlAnySimpleType, TypeTree> typeTable;
 
     /**
      * Get the instance of the XmlAnySimpleType with the type xs:<typeName>.
      *
      * @param typeName
      * @return Returns the XmlAnySimpleType, if available. Otherwise returns
-     *         null.
+     * null.
      */
     public static XmlAnySimpleType getType(String typeName) {
         for (XmlAnySimpleType item : getRef().typeTable.keySet()) {
@@ -108,16 +108,10 @@ public class TypeInferrer {
         try {
             type.setStringValue(value);
             return type.validate();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
-    }
-
-    private static TypeInferrer getRef() {
-        if (ref == null) {
-            ref = new TypeInferrer();
-        }
-        return ref;
     }
 
     private TypeInferrer() {
@@ -195,6 +189,13 @@ public class TypeInferrer {
         return p.type;
     }
 
+    private static TypeInferrer getRef() {
+        if (ref == null) {
+            ref = new TypeInferrer();
+        }
+        return ref;
+    }
+
     private class TypeTree {
         public XmlAnySimpleType type;
         public TypeTree parent;
@@ -210,5 +211,4 @@ public class TypeInferrer {
             type.parent = this;
         }
     }
-
 }

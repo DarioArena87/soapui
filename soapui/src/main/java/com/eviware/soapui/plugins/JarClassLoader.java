@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.plugins;
@@ -33,10 +33,10 @@ import java.util.jar.JarFile;
 
 public class JarClassLoader extends URLClassLoader implements PluginClassLoader {
 
-    private static final Logger log = LogManager.getLogger(JarClassLoader.class);
     public static final String LIB_PREFIX = "lib/";
+    private static final Logger log = LogManager.getLogger(JarClassLoader.class);
     private final ClassLoader parent;
-    private Collection<JarClassLoader> dependencyClassLoaders;
+    private final Collection<JarClassLoader> dependencyClassLoaders;
     private GroovyClassLoader scriptClassLoader;
 
     public JarClassLoader(File jarFile, ClassLoader parent, Collection<JarClassLoader> dependencyClassLoaders) throws IOException {
@@ -52,7 +52,8 @@ public class JarClassLoader extends URLClassLoader implements PluginClassLoader 
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         try {
             return super.loadClass(name);
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
             for (JarClassLoader dependencyClassLoader : dependencyClassLoaders) {
                 try {
                     return dependencyClassLoader.loadClass(name);
@@ -90,7 +91,7 @@ public class JarClassLoader extends URLClassLoader implements PluginClassLoader 
                     String fileName = jarEntry.getName().substring(LIB_PREFIX.length());
                     File outputFile = new File(libDirectory, fileName);
                     FileUtils.copyInputStreamToFile(jarFile.getInputStream(jarEntry), outputFile);
-                    this.addURL(outputFile.toURI().toURL());
+                    addURL(outputFile.toURI().toURL());
                 }
             }
         }
@@ -171,7 +172,6 @@ public class JarClassLoader extends URLClassLoader implements PluginClassLoader 
     private boolean isScript(JarEntry jarEntry) {
         return jarEntry.getName().endsWith(".groovy");
     }
-
 
     public boolean hasScripts() {
         return scriptClassLoader != null;

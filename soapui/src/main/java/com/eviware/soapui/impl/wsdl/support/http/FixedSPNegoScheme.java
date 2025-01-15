@@ -14,9 +14,7 @@ public class FixedSPNegoScheme extends SPNegoScheme {
     }
 
     @Override
-    protected byte[] generateToken(final byte[] input, final String authServer, final Credentials credentials) throws GSSException {
-        return KerberosProtocolFixer.generateFixedToken(this, new Oid(SPNEGO_OID),
-                input, authServer, credentials);
+    protected byte[] generateToken(byte[] input, String authServer, Credentials credentials) throws GSSException {
+        return KerberosProtocolFixer.generateFixedToken(this, new Oid(SPNEGO_OID), input, authServer, credentials);
     }
-
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.result;
@@ -22,7 +22,7 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.action.swing.ActionList;
 import com.eviware.soapui.support.action.swing.DefaultActionList;
 
-import javax.swing.AbstractAction;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -36,20 +36,19 @@ import java.util.List;
  */
 
 public class SecurityTestStepResult implements SecurityResult {
-    private ResultStatus status = ResultStatus.UNKNOWN;
     public static final String TYPE = "SecurityTestStepResult";
-    private TestStep testStep;
+    private ResultStatus status = ResultStatus.UNKNOWN;
+    private final TestStep testStep;
     private long size;
-    private List<SecurityScanResult> securityScanResultList;
+    private final List<SecurityScanResult> securityScanResultList;
     private boolean discarded;
     private long timeTaken = 0;
-    private long timeStamp;
-    private StringBuffer testLog = new StringBuffer();
+    private final long timeStamp;
+    private final StringBuffer testLog = new StringBuffer();
     private TestStepResult originalTestStepResult;
     private DefaultActionList actionList;
     private boolean hasAddedRequests;
     private ResultStatus executionProgressStatus = ResultStatus.UNKNOWN;
-    ;
     private ResultStatus logIconStatus = ResultStatus.UNKNOWN;
     // indicates if log entries need to be deleted when logging only warnings
     // (status not suitable since can be canceled with warnings)
@@ -60,38 +59,11 @@ public class SecurityTestStepResult implements SecurityResult {
         executionProgressStatus = ResultStatus.INITIALIZED;
         securityScanResultList = new ArrayList<SecurityScanResult>();
         timeStamp = System.currentTimeMillis();
-        this.originalTestStepResult = originalResult;
+        originalTestStepResult = originalResult;
     }
 
     public List<SecurityScanResult> getSecurityScanResultList() {
         return securityScanResultList;
-    }
-
-    public ResultStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ResultStatus status) {
-        this.status = status;
-    }
-
-    /**
-     * Returns a list of actions that can be applied to this result
-     */
-
-    public ActionList getActions() {
-        if (actionList == null) {
-            actionList = new DefaultActionList(getTestStep().getName());
-            actionList.setDefaultAction(new AbstractAction() {
-
-                public void actionPerformed(ActionEvent e) {
-                    UISupport.showInfoMessage("Step [" + getTestStep().getName() + "] ran with security status ["
-                            + getExecutionProgressStatus() + "]", "TestStep Result");
-                }
-            });
-        }
-
-        return actionList;
     }
 
     public void addSecurityScanResult(SecurityScanResult securityScanResult) {
@@ -102,44 +74,52 @@ public class SecurityTestStepResult implements SecurityResult {
 
         if (!hasAddedRequests) {
             status = securityScanResult.getStatus();
-        } else if (status != ResultStatus.FAILED) {
+        }
+        else if (status != ResultStatus.FAILED) {
             status = securityScanResult.getStatus();
         }
 
         securityScanResult.detectMissingItems();
         if (!hasAddedRequests) {
             executionProgressStatus = securityScanResult.getExecutionProgressStatus();
-        } else {
+        }
+        else {
             if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.CANCELED)) {
                 executionProgressStatus = securityScanResult.getExecutionProgressStatus();
-            } else if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.MISSING_PARAMETERS)
-                    && executionProgressStatus != ResultStatus.CANCELED) {
+            }
+            else if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.MISSING_PARAMETERS) && executionProgressStatus != ResultStatus.CANCELED) {
                 executionProgressStatus = ResultStatus.MISSING_PARAMETERS;
-            } else if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.MISSING_ASSERTIONS)
-                    && executionProgressStatus != ResultStatus.CANCELED
-                    && executionProgressStatus != ResultStatus.MISSING_PARAMETERS) {
+            }
+            else if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.MISSING_ASSERTIONS) &&
+                     executionProgressStatus != ResultStatus.CANCELED &&
+                     executionProgressStatus != ResultStatus.MISSING_PARAMETERS) {
                 executionProgressStatus = ResultStatus.MISSING_ASSERTIONS;
-            } else if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.FAILED)
-                    && executionProgressStatus != ResultStatus.CANCELED
-                    && executionProgressStatus != ResultStatus.MISSING_PARAMETERS
-                    && executionProgressStatus != ResultStatus.MISSING_ASSERTIONS) {
+            }
+            else if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.FAILED) &&
+                     executionProgressStatus != ResultStatus.CANCELED &&
+                     executionProgressStatus != ResultStatus.MISSING_PARAMETERS &&
+                     executionProgressStatus != ResultStatus.MISSING_ASSERTIONS) {
                 executionProgressStatus = ResultStatus.FAILED;
-            } else if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.OK)
-                    && executionProgressStatus != ResultStatus.CANCELED
-                    && executionProgressStatus != ResultStatus.MISSING_PARAMETERS
-                    && executionProgressStatus != ResultStatus.MISSING_ASSERTIONS
-                    && executionProgressStatus != ResultStatus.FAILED) {
+            }
+            else if (securityScanResult.getExecutionProgressStatus().equals(ResultStatus.OK) &&
+                     executionProgressStatus != ResultStatus.CANCELED &&
+                     executionProgressStatus != ResultStatus.MISSING_PARAMETERS &&
+                     executionProgressStatus != ResultStatus.MISSING_ASSERTIONS &&
+                     executionProgressStatus != ResultStatus.FAILED) {
                 executionProgressStatus = ResultStatus.OK;
             }
         }
         if (securityScanResult.getLogIconStatus().equals(ResultStatus.FAILED)) {
             logIconStatus = securityScanResult.getLogIconStatus();
-        } else if ((securityScanResult.getLogIconStatus().equals(ResultStatus.MISSING_ASSERTIONS) || securityScanResult
-                .getLogIconStatus().equals(ResultStatus.MISSING_PARAMETERS))
-                && logIconStatus != ResultStatus.FAILED) {
+        }
+        else if ((securityScanResult.getLogIconStatus().equals(ResultStatus.MISSING_ASSERTIONS) || securityScanResult.getLogIconStatus().equals(ResultStatus.MISSING_PARAMETERS)) &&
+                 logIconStatus != ResultStatus.FAILED) {
             logIconStatus = securityScanResult.getLogIconStatus();
-        } else if (securityScanResult.getLogIconStatus().equals(ResultStatus.OK) && logIconStatus != ResultStatus.FAILED
-                && logIconStatus != ResultStatus.MISSING_ASSERTIONS && logIconStatus != ResultStatus.MISSING_PARAMETERS) {
+        }
+        else if (securityScanResult.getLogIconStatus().equals(ResultStatus.OK) &&
+                 logIconStatus != ResultStatus.FAILED &&
+                 logIconStatus != ResultStatus.MISSING_ASSERTIONS &&
+                 logIconStatus != ResultStatus.MISSING_PARAMETERS) {
             logIconStatus = ResultStatus.OK;
         }
 
@@ -148,7 +128,7 @@ public class SecurityTestStepResult implements SecurityResult {
         // securityCheckResultList.indexOf( securityCheckResult ) ).append(
         // securityCheckResult.getStatus().toString() ).append( ": took " )
         // .append( securityCheckResult.getTimeTaken() ).append( " ms" );
-        this.testLog.append(securityScanResult.getSecurityTestLog());
+        testLog.append(securityScanResult.getSecurityTestLog());
 
         hasAddedRequests = true;
 
@@ -210,9 +190,7 @@ public class SecurityTestStepResult implements SecurityResult {
                 writer.println();
                 i++;
             }
-
         }
-
     }
 
     /**
@@ -252,9 +230,14 @@ public class SecurityTestStepResult implements SecurityResult {
      * Raturns Security Test Log
      */
     public String getSecurityTestLog() {
-        StringBuffer tl = new StringBuffer().append("Step ").append(" [").append(testStep.getName()).append("] ")
-                .append(getExecutionProgressStatus().toString()).append(": took ").append(
-                        getOriginalTestStepResult().getTimeTaken()).append(" ms");
+        StringBuffer tl = new StringBuffer().append("Step ")
+                                            .append(" [")
+                                            .append(testStep.getName())
+                                            .append("] ")
+                                            .append(getExecutionProgressStatus().toString())
+                                            .append(": took ")
+                                            .append(getOriginalTestStepResult().getTimeTaken())
+                                            .append(" ms");
         tl.append(testLog);
         return tl.toString();
     }
@@ -278,6 +261,32 @@ public class SecurityTestStepResult implements SecurityResult {
         return logIconStatus;
     }
 
+    public ResultStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ResultStatus status) {
+        this.status = status;
+    }
+
+    /**
+     * Returns a list of actions that can be applied to this result
+     */
+
+    public ActionList getActions() {
+        if (actionList == null) {
+            actionList = new DefaultActionList(getTestStep().getName());
+            actionList.setDefaultAction(new AbstractAction() {
+
+                public void actionPerformed(ActionEvent e) {
+                    UISupport.showInfoMessage("Step [" + getTestStep().getName() + "] ran with security status [" + getExecutionProgressStatus() + "]", "TestStep Result");
+                }
+            });
+        }
+
+        return actionList;
+    }
+
     public String getSecurityTestStepName() {
         return getTestStep().getName();
     }
@@ -295,5 +304,4 @@ public class SecurityTestStepResult implements SecurityResult {
             securityScanResultList.clear();
         }
     }
-
 }

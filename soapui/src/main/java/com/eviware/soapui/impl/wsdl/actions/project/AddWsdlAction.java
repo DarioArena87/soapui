@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.project;
@@ -48,9 +48,8 @@ import java.io.File;
 
 public class AddWsdlAction extends AbstractSoapUIAction<WsdlProject> {
     public static final String SOAPUI_ACTION_ID = "NewWsdlProjectAction";
-    private XFormDialog dialog;
-
     public static final MessageSupport messages = MessageSupport.getMessages(AddWsdlAction.class);
+    private XFormDialog dialog;
 
     public AddWsdlAction() {
         super(messages.get("Title"), messages.get("Description"));
@@ -69,7 +68,8 @@ public class AddWsdlAction extends AbstractSoapUIAction<WsdlProject> {
                     dialog.getFormField(Form.GENERATETESTSUITE).setEnabled(newValue.trim().length() > 0);
                 }
             });
-        } else {
+        }
+        else {
             dialog.setValue(Form.INITIALWSDL, "");
 
             dialog.getFormField(Form.CREATEREQUEST).setEnabled(false);
@@ -97,9 +97,11 @@ public class AddWsdlAction extends AbstractSoapUIAction<WsdlProject> {
                         break;
                     }
                 }
-            } catch (InvalidDefinitionException ex) {
+            }
+            catch (InvalidDefinitionException ex) {
                 ex.show();
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 UISupport.showErrorMessage(ex);
             }
         }
@@ -107,8 +109,7 @@ public class AddWsdlAction extends AbstractSoapUIAction<WsdlProject> {
 
     @Nullable
     private WsdlInterface[] importWsdl(WsdlProject project, String url) throws SoapUIException {
-        WsdlInterface[] results = WsdlInterfaceFactory.importWsdl(project, url, dialog.getValue(Form.CREATEREQUEST)
-                .equals("true"));
+        WsdlInterface[] results = WsdlInterfaceFactory.importWsdl(project, url, dialog.getValue(Form.CREATEREQUEST).equals("true"));
 
         if (results != null) {
             for (WsdlInterface iface : results) {
@@ -132,15 +133,15 @@ public class AddWsdlAction extends AbstractSoapUIAction<WsdlProject> {
     @AForm(name = "Form.Title", description = "Form.Description", helpUrl = HelpUrls.NEWPROJECT_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
     public interface Form {
         @AField(description = "Form.InitialWsdl.Description", type = AFieldType.FILE)
-        public final static String INITIALWSDL = messages.get("Form.InitialWsdl.Label");
+        String INITIALWSDL = messages.get("Form.InitialWsdl.Label");
 
         @AField(description = "Form.CreateRequests.Description", type = AFieldType.BOOLEAN, enabled = false)
-        public final static String CREATEREQUEST = messages.get("Form.CreateRequests.Label");
+        String CREATEREQUEST = messages.get("Form.CreateRequests.Label");
 
         @AField(description = "Form.GenerateTestSuite.Description", type = AFieldType.BOOLEAN, enabled = false)
-        public final static String GENERATETESTSUITE = messages.get("Form.GenerateTestSuite.Label");
+        String GENERATETESTSUITE = messages.get("Form.GenerateTestSuite.Label");
 
         @AField(description = "Form.GenerateMockService.Description", type = AFieldType.BOOLEAN, enabled = false)
-        public final static String GENERATEMOCKSERVICE = messages.get("Form.GenerateMockService.Label");
+        String GENERATEMOCKSERVICE = messages.get("Form.GenerateMockService.Label");
     }
 }

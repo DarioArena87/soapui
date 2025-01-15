@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.actions;
@@ -35,10 +35,9 @@ import com.eviware.x.form.XFormFieldListener;
  */
 
 public class SecurityTestOptionsAction extends AbstractSoapUIAction<SecurityTest> {
+    public static final String SOAPUI_ACTION_ID = "SecurityTestOptionsAction";
     private static final String FAIL_ON_ERROR = "Abort on Error";
     private static final String FAIL_SECURITYTEST_ON_ERROR = "Fail SecurityTest on Error";
-    public static final String SOAPUI_ACTION_ID = "SecurityTestOptionsAction";
-
     private XFormDialog dialog;
     private XForm form;
 
@@ -59,7 +58,9 @@ public class SecurityTestOptionsAction extends AbstractSoapUIAction<SecurityTest
             form.addCheckBox(FAIL_SECURITYTEST_ON_ERROR, "Fail SecurityTest if it has failed TestSteps");
 
             dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.SECURITYTESTEDITOR_HELP_URL),
-                    "Specify general options for this SecurityTest", UISupport.OPTIONS_ICON);
+                                         "Specify general options for this SecurityTest",
+                                         UISupport.OPTIONS_ICON
+            );
         }
 
         StringToStringMap values = new StringToStringMap();
@@ -71,10 +72,9 @@ public class SecurityTestOptionsAction extends AbstractSoapUIAction<SecurityTest
         if (dialog.getReturnValue() == XFormDialog.OK_OPTION) {
             try {
                 securityTest.setFailOnError(Boolean.parseBoolean(values.get(FAIL_ON_ERROR)));
-                securityTest.setFailSecurityTestOnScanErrors(Boolean
-                        .parseBoolean(values.get(FAIL_SECURITYTEST_ON_ERROR)));
-
-            } catch (Exception e1) {
+                securityTest.setFailSecurityTestOnScanErrors(Boolean.parseBoolean(values.get(FAIL_SECURITYTEST_ON_ERROR)));
+            }
+            catch (Exception e1) {
                 UISupport.showErrorMessage(e1.getMessage());
             }
         }

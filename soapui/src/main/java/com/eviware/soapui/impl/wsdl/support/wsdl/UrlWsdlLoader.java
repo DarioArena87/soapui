@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wsdl;
@@ -32,6 +32,7 @@ import com.eviware.x.form.XForm;
 import com.eviware.x.form.XFormDialog;
 import com.eviware.x.form.XFormDialogBuilder;
 import com.eviware.x.form.XFormFactory;
+import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
@@ -64,16 +65,27 @@ import java.util.Map;
  */
 
 public class UrlWsdlLoader extends WsdlLoader {
-    private HttpContext state;
-    protected HttpGet getMethod;
-    private boolean aborted;
-    protected Map<String, byte[]> urlCache = new HashMap<String, byte[]>();
-    protected boolean finished;
-    private boolean useWorker;
-    private ModelItem contextModelItem;
-    private org.apache.http.HttpResponse httpResponse;
     private static Credentials proxyCredentials;
     private static boolean isProxyCredentialsUsed;
+    /**
+     * CredentialsProvider for providing login information during WSDL loading
+     *
+     * @author ole.matzura
+     */
+
+    private static final Map<AuthScope, Credentials> cache = new HashMap<AuthScope, Credentials>();
+    protected HttpGet getMethod;
+    protected Map<String, byte[]> urlCache = new HashMap<String, byte[]>();
+    protected boolean finished;
+    private final HttpContext state;
+    private boolean aborted;
+    private boolean useWorker;
+    private final ModelItem contextModelItem;
+    private HttpResponse httpResponse;
+
+    public static void setProxyCredentials(Credentials proxyCredentials) {
+        UrlWsdlLoader.proxyCredentials = proxyCredentials;
+    }
 
     public UrlWsdlLoader(String url) {
         this(url, null);
@@ -104,7 +116,8 @@ public class UrlWsdlLoader extends WsdlLoader {
                 if (file.exists()) {
                     url = file.toURI().toURL().toString();
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
             }
         }
 
@@ -128,7 +141,8 @@ public class UrlWsdlLoader extends WsdlLoader {
         LoaderWorker worker = new LoaderWorker();
         if (useWorker) {
             worker.start();
-        } else {
+        }
+        else {
             worker.construct();
         }
 
@@ -153,7 +167,8 @@ public class UrlWsdlLoader extends WsdlLoader {
 
         if (aborted) {
             throw new Exception("Load of url [" + url + "] was aborted");
-        } else {
+        }
+        else {
             if (content != null) {
                 String compressionAlg = HttpClientSupport.getResponseCompressionType(httpResponse);
                 if (compressionAlg != null) {
@@ -168,10 +183,14 @@ public class UrlWsdlLoader extends WsdlLoader {
                 setNewBaseURI(newUrl);
                 urlCache.put(newUrl, content);
                 return new ByteArrayInputStream(content);
-            } else {
-                throw new Exception("Failed to load url; " + url + ", "
-                        + (httpResponse != null ? httpResponse.getStatusLine().getStatusCode() : 0) + " - "
-                        + (httpResponse != null ? httpResponse.getStatusLine().getReasonPhrase() : ""));
+            }
+            else {
+                throw new Exception("Failed to load url; " +
+                                    url +
+                                    ", " +
+                                    (httpResponse != null ? httpResponse.getStatusLine().getStatusCode() : 0) +
+                                    " - " +
+                                    (httpResponse != null ? httpResponse.getStatusLine().getReasonPhrase() : ""));
             }
         }
     }
@@ -204,29 +223,6 @@ public class UrlWsdlLoader extends WsdlLoader {
         }
     }
 
-    public final class LoaderWorker extends SwingWorker {
-        public Object construct() {
-            HttpClientSupport.SoapUIHttpClient httpClient = HttpClientSupport.getHttpClient();
-            try {
-                Settings soapuiSettings = SoapUI.getSettings();
-
-                HttpClientSupport.applyHttpSettings(getMethod, soapuiSettings);
-
-                httpResponse = httpClient.execute(getMethod, state);
-            } catch (Exception e) {
-                return e;
-            } finally {
-                finished = true;
-            }
-
-            return null;
-        }
-    }
-
-    public static void setProxyCredentials(Credentials proxyCredentials) {
-        UrlWsdlLoader.proxyCredentials = proxyCredentials;
-    }
-
     public boolean abort() {
         if (getMethod != null) {
             getMethod.abort();
@@ -241,13 +237,29 @@ public class UrlWsdlLoader extends WsdlLoader {
         return aborted;
     }
 
-    /**
-     * CredentialsProvider for providing login information during WSDL loading
-     *
-     * @author ole.matzura
-     */
+    public void close() {
+    }
 
-    private static Map<AuthScope, Credentials> cache = new HashMap<AuthScope, Credentials>();
+    public final class LoaderWorker extends SwingWorker {
+        public Object construct() {
+            HttpClientSupport.SoapUIHttpClient httpClient = HttpClientSupport.getHttpClient();
+            try {
+                Settings soapuiSettings = SoapUI.getSettings();
+
+                HttpClientSupport.applyHttpSettings(getMethod, soapuiSettings);
+
+                httpResponse = httpClient.execute(getMethod, state);
+            }
+            catch (Exception e) {
+                return e;
+            }
+            finally {
+                finished = true;
+            }
+
+            return null;
+        }
+    }
 
     public final class WsdlCredentialsProvider implements CredentialsProvider {
         private XFormDialog basicDialog;
@@ -256,7 +268,31 @@ public class UrlWsdlLoader extends WsdlLoader {
         public WsdlCredentialsProvider() {
         }
 
-        public Credentials getCredentials(final AuthScope authScope) {
+        private void buildBasicDialog() {
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Basic Authentication");
+            XForm mainForm = builder.createForm("Basic");
+            mainForm.addLabel("Info", "");
+            mainForm.addTextField("Username", "Username for authentication", XForm.FieldType.TEXT);
+            mainForm.addTextField("Password", "Password for authentication", XForm.FieldType.PASSWORD);
+
+            basicDialog = builder.buildDialog(builder.buildOkCancelActions(), "Specify Basic Authentication Credentials", UISupport.OPTIONS_ICON);
+        }
+
+        private void buildNtDialog() {
+            XFormDialogBuilder builder = XFormFactory.createDialogBuilder("NT Authentication");
+            XForm mainForm = builder.createForm("Basic");
+            mainForm.addLabel("Info", "");
+            mainForm.addTextField("Username", "Username for authentication", XForm.FieldType.TEXT);
+            mainForm.addTextField("Password", "Password for authentication", XForm.FieldType.PASSWORD);
+            mainForm.addTextField("Domain", "NT Domain for authentication", XForm.FieldType.TEXT);
+
+            ntDialog = builder.buildDialog(builder.buildOkCancelActions(), "Specify NT Authentication Credentials", UISupport.OPTIONS_ICON);
+        }
+
+        public void setCredentials(AuthScope arg0, Credentials arg1) {
+        }
+
+        public Credentials getCredentials(AuthScope authScope) {
             if (authScope == null) {
                 throw new IllegalArgumentException("Authentication scope may not be null");
             }
@@ -271,12 +307,12 @@ public class UrlWsdlLoader extends WsdlLoader {
                 pw = "";
             }
 
-            if (AuthPolicy.NTLM.equalsIgnoreCase(authScope.getScheme())
-                    || AuthPolicy.SPNEGO.equalsIgnoreCase(authScope.getScheme())) {
+            if (AuthPolicy.NTLM.equalsIgnoreCase(authScope.getScheme()) || AuthPolicy.SPNEGO.equalsIgnoreCase(authScope.getScheme())) {
                 String workstation = "";
                 try {
                     workstation = InetAddress.getLocalHost().getHostName();
-                } catch (UnknownHostException e) {
+                }
+                catch (UnknownHostException e) {
                 }
 
                 if (hasCredentials()) {
@@ -295,14 +331,13 @@ public class UrlWsdlLoader extends WsdlLoader {
 
                 if (ntDialog.show()) {
                     values = ntDialog.getValues();
-                    NTCredentials credentials = new NTCredentials(values.get("Username"), values.get("Password"),
-                            workstation, values.get("Domain"));
+                    NTCredentials credentials = new NTCredentials(values.get("Username"), values.get("Password"), workstation, values.get("Domain"));
 
                     cache.put(authScope, credentials);
                     return credentials;
                 }
-            } else if (AuthPolicy.BASIC.equalsIgnoreCase(authScope.getScheme())
-                    || AuthPolicy.DIGEST.equalsIgnoreCase(authScope.getScheme())) {
+            }
+            else if (AuthPolicy.BASIC.equalsIgnoreCase(authScope.getScheme()) || AuthPolicy.DIGEST.equalsIgnoreCase(authScope.getScheme())) {
                 if (hasCredentials()) {
                     log.info("Returning url credentials");
                     UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(getUsername(), pw);
@@ -310,16 +345,13 @@ public class UrlWsdlLoader extends WsdlLoader {
                     return credentials;
                 }
 
-                log.info(authScope.getHost() + ":" + authScope.getPort() + " requires authentication with the realm '"
-                        + authScope.getRealm() + "'");
+                log.info(authScope.getHost() + ":" + authScope.getPort() + " requires authentication with the realm '" + authScope.getRealm() + "'");
                 ShowDialog showDialog = new ShowDialog();
-                showDialog.values.put("Info",
-                        "Authentication required for [" + authScope.getHost() + ":" + authScope.getPort() + "]");
+                showDialog.values.put("Info", "Authentication required for [" + authScope.getHost() + ":" + authScope.getPort() + "]");
 
                 UISupport.getUIUtils().runInUIThreadIfSWT(showDialog);
                 if (showDialog.result) {
-                    UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-                            showDialog.values.get("Username"), showDialog.values.get("Password"));
+                    UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(showDialog.values.get("Username"), showDialog.values.get("Password"));
                     cache.put(authScope, credentials);
                     return credentials;
                 }
@@ -328,27 +360,8 @@ public class UrlWsdlLoader extends WsdlLoader {
             return null;
         }
 
-        private void buildBasicDialog() {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder("Basic Authentication");
-            XForm mainForm = builder.createForm("Basic");
-            mainForm.addLabel("Info", "");
-            mainForm.addTextField("Username", "Username for authentication", XForm.FieldType.TEXT);
-            mainForm.addTextField("Password", "Password for authentication", XForm.FieldType.PASSWORD);
-
-            basicDialog = builder.buildDialog(builder.buildOkCancelActions(), "Specify Basic Authentication Credentials",
-                    UISupport.OPTIONS_ICON);
-        }
-
-        private void buildNtDialog() {
-            XFormDialogBuilder builder = XFormFactory.createDialogBuilder("NT Authentication");
-            XForm mainForm = builder.createForm("Basic");
-            mainForm.addLabel("Info", "");
-            mainForm.addTextField("Username", "Username for authentication", XForm.FieldType.TEXT);
-            mainForm.addTextField("Password", "Password for authentication", XForm.FieldType.PASSWORD);
-            mainForm.addTextField("Domain", "NT Domain for authentication", XForm.FieldType.TEXT);
-
-            ntDialog = builder.buildDialog(builder.buildOkCancelActions(), "Specify NT Authentication Credentials",
-                    UISupport.OPTIONS_ICON);
+        public void clear() {
+            cache.clear();
         }
 
         private class ShowDialog implements Runnable {
@@ -368,15 +381,5 @@ public class UrlWsdlLoader extends WsdlLoader {
                 }
             }
         }
-
-        public void clear() {
-            cache.clear();
-        }
-
-        public void setCredentials(AuthScope arg0, Credentials arg1) {
-        }
-    }
-
-    public void close() {
     }
 }

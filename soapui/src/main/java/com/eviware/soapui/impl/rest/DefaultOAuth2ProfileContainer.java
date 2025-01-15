@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest;
@@ -35,8 +35,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class DefaultOAuth2ProfileContainer implements OAuth2ProfileContainer {
     private final WsdlProject project;
     private final OAuth2ProfileContainerConfig configuration;
-    private List<OAuth2Profile> oAuth2ProfileList = new ArrayList<OAuth2Profile>();
-    private List<OAuth2ProfileListener> listeners = new CopyOnWriteArrayList<OAuth2ProfileListener>();
+    private final List<OAuth2Profile> oAuth2ProfileList = new ArrayList<OAuth2Profile>();
+    private final List<OAuth2ProfileListener> listeners = new CopyOnWriteArrayList<OAuth2ProfileListener>();
 
     public DefaultOAuth2ProfileContainer(WsdlProject project, OAuth2ProfileContainerConfig configuration) {
         this.project = project;
@@ -53,6 +53,48 @@ public class DefaultOAuth2ProfileContainer implements OAuth2ProfileContainer {
     @Override
     public List<OAuth2Profile> getOAuth2ProfileList() {
         return oAuth2ProfileList;
+    }
+
+    @Override
+    public void release() {
+        //FIXME: Add implementation when we implement the GUI with listeners
+    }
+
+    @Override
+    public OAuth2ProfileContainerConfig getConfig() {
+        return configuration;
+    }
+
+    @Override
+    public OAuth2Profile addNewOAuth2Profile(String profileName) {
+        OAuth2ProfileConfig profileConfig = configuration.addNewOAuth2Profile();
+        profileConfig.setName(profileName);
+
+        OAuth2Profile oAuth2Profile = new OAuth2Profile(this, profileConfig);
+        buildOAuth2ProfileList();
+        fireOAuth2ProfileAdded(oAuth2Profile);
+
+        return oAuth2Profile;
+    }
+
+    @Override
+    public void removeProfile(String profileName) {
+        for (int count = 0; count < configuration.sizeOfOAuth2ProfileArray(); count++) {
+            if (configuration.getOAuth2ProfileArray(count).getName().equals(profileName)) {
+                configuration.removeOAuth2Profile(count);
+                break;
+            }
+        }
+        buildOAuth2ProfileList();
+        doForAllRestRequests(new RestRequestCallback() {
+            @Override
+            public void doit(RestRequest restRequest) {
+                if (ObjectUtils.equals(restRequest.getSelectedAuthProfile(), profileName)) {
+                    restRequest.setSelectedAuthProfileAndAuthType(CredentialsConfig.AuthType.NO_AUTHORIZATION.toString(), CredentialsConfig.AuthType.NO_AUTHORIZATION);
+                }
+            }
+        });
+        fireOAuth2ProfileRemoved(profileName);
     }
 
     @Override
@@ -75,54 +117,21 @@ public class DefaultOAuth2ProfileContainer implements OAuth2ProfileContainer {
     }
 
     @Override
+    public void addOAuth2ProfileListener(OAuth2ProfileListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeOAuth2ProfileListener(OAuth2ProfileListener listener) {
+        listeners.remove(listener);
+    }
+
+    @Override
     public void renameProfile(String profileOldName, String newName) {
         getProfileByName(profileOldName).setName(newName);
         updateProfileForAllRequests(profileOldName, newName);
         fireOAuth2ProfileRenamed(profileOldName, newName);
     }
-
-    @Override
-    public void release() {
-        //FIXME: Add implementation when we implement the GUI with listeners
-    }
-
-    @Override
-    public OAuth2Profile addNewOAuth2Profile(String profileName) {
-        OAuth2ProfileConfig profileConfig = configuration.addNewOAuth2Profile();
-        profileConfig.setName(profileName);
-
-        OAuth2Profile oAuth2Profile = new OAuth2Profile(this, profileConfig);
-        buildOAuth2ProfileList();
-        fireOAuth2ProfileAdded(oAuth2Profile);
-
-        return oAuth2Profile;
-    }
-
-    @Override
-    public void removeProfile(final String profileName) {
-        for (int count = 0; count < configuration.sizeOfOAuth2ProfileArray(); count++) {
-            if (configuration.getOAuth2ProfileArray(count).getName().equals(profileName)) {
-                configuration.removeOAuth2Profile(count);
-                break;
-            }
-        }
-        buildOAuth2ProfileList();
-        doForAllRestRequests(new RestRequestCallback() {
-            @Override
-            public void doit(RestRequest restRequest) {
-                if (ObjectUtils.equals(restRequest.getSelectedAuthProfile(), profileName)) {
-                    restRequest.setSelectedAuthProfileAndAuthType(CredentialsConfig.AuthType.NO_AUTHORIZATION.toString(), CredentialsConfig.AuthType.NO_AUTHORIZATION);
-                }
-            }
-        });
-        fireOAuth2ProfileRemoved(profileName);
-    }
-
-    @Override
-    public OAuth2ProfileContainerConfig getConfig() {
-        return configuration;
-    }
-
 
     @Override
     public PropertyExpansion[] getPropertyExpansions() {
@@ -142,7 +151,7 @@ public class DefaultOAuth2ProfileContainer implements OAuth2ProfileContainer {
         }
     }
 
-    private void updateProfileForAllRequests(final String profileOldName, final String newName) {
+    private void updateProfileForAllRequests(String profileOldName, String newName) {
         doForAllRestRequests(new RestRequestCallback() {
             @Override
             public void doit(RestRequest restRequest) {
@@ -156,7 +165,7 @@ public class DefaultOAuth2ProfileContainer implements OAuth2ProfileContainer {
     private void doForAllRestRequests(RestRequestCallback callback) {
         for (Interface iface : project.getInterfaceList()) {
             if (iface instanceof RestService) {
-                for (RestResource restResource : ((RestService) iface).getAllResources()) {
+                for (RestResource restResource : ((RestService)iface).getAllResources()) {
                     for (RestMethod restMethod : restResource.getRestMethodList()) {
                         for (RestRequest restRequest : restMethod.getRequestList()) {
                             callback.doit(restRequest);
@@ -172,16 +181,6 @@ public class DefaultOAuth2ProfileContainer implements OAuth2ProfileContainer {
                 }
             }
         }
-    }
-
-    @Override
-    public void addOAuth2ProfileListener(OAuth2ProfileListener listener) {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removeOAuth2ProfileListener(OAuth2ProfileListener listener) {
-        listeners.remove(listener);
     }
 
     private void fireOAuth2ProfileAdded(OAuth2Profile oAuth2Profile) {
@@ -205,6 +204,5 @@ public class DefaultOAuth2ProfileContainer implements OAuth2ProfileContainer {
     private interface RestRequestCallback {
 
         void doit(RestRequest restRequest);
-
     }
 }

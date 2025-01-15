@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest;
@@ -47,22 +47,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implements MutableTestPropertyHolder,
-        PropertyChangeListener {
-    private List<RestRequest> requests = new ArrayList<RestRequest>();
-    private List<RestRepresentation> representations = new ArrayList<RestRepresentation>();
-    private RestResource resource;
-    private XmlBeansRestParamsTestPropertyHolder params;
+public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implements MutableTestPropertyHolder, PropertyChangeListener {
+    private final List<RestRequest> requests = new ArrayList<RestRequest>();
+    private final List<RestRepresentation> representations = new ArrayList<RestRepresentation>();
+    private final RestResource resource;
+    private final XmlBeansRestParamsTestPropertyHolder params;
     private RestParamsPropertyHolder overlayParams;
 
-    private PropertyChangeListener representationPropertyChangeListener = new RepresentationPropertyChangeListener();
-    private TestPropertyListener testPropertyListener = new InternalTestPropertyListener();
+    private final PropertyChangeListener representationPropertyChangeListener = new RepresentationPropertyChangeListener();
+    private final TestPropertyListener testPropertyListener = new InternalTestPropertyListener();
 
     public RestMethod(RestResource service, RestMethodConfig methodConfig) {
-        super(methodConfig, service, "/"
-                + (StringUtils.isNullOrEmpty(methodConfig.getMethod()) ? "get" : methodConfig.getMethod().toLowerCase())
-                + "_method.gif");
-        this.resource = service;
+        super(methodConfig, service, "/" + (StringUtils.isNullOrEmpty(methodConfig.getMethod()) ? "get" : methodConfig.getMethod().toLowerCase()) + "_method.gif");
+        resource = service;
 
         if (methodConfig.getParameters() == null) {
             methodConfig.addNewParameters();
@@ -93,8 +90,7 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
     }
 
     private RestParamsPropertyHolder buildOverlay(RestResource resource) {
-        return resource.getParentResource() == null ? resource.getParams() : new OverlayRestParamsPropertyHolder(
-                buildOverlay(resource.getParentResource()), resource.getParams());
+        return resource.getParentResource() == null ? resource.getParams() : new OverlayRestParamsPropertyHolder(buildOverlay(resource.getParentResource()), resource.getParams());
     }
 
     public RestResource getOperation() {
@@ -105,10 +101,6 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
         return params.addProperty(name);
     }
 
-    public void moveProperty(String propertyName, int targetIndex) {
-        params.moveProperty(propertyName, targetIndex);
-    }
-
     public RestParamProperty removeProperty(String propertyName) {
         return params.removeProperty(propertyName);
     }
@@ -117,52 +109,60 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
         return params.renameProperty(name, newName);
     }
 
-    public void addTestPropertyListener(TestPropertyListener listener) {
-        params.addTestPropertyListener(listener);
+    public void moveProperty(String propertyName, int targetIndex) {
+        params.moveProperty(propertyName, targetIndex);
     }
 
     public RestParamsPropertyHolder getParams() {
         return params;
     }
 
-    public ModelItem getModelItem() {
-        return this;
-    }
-
-    public Map<String, TestProperty> getProperties() {
-        return params.getProperties();
-    }
-
-    public RestParamProperty getProperty(String name) {
-        return params.getProperty(name);
-    }
-
-    public RestParamProperty getPropertyAt(int index) {
-        return params.getPropertyAt(index);
-    }
-
-    public int getPropertyCount() {
-        return params.getPropertyCount();
-    }
-
     public String[] getPropertyNames() {
         return params.getPropertyNames();
+    }
+
+    public void setPropertyValue(String name, String value) {
+        params.setPropertyValue(name, value);
     }
 
     public String getPropertyValue(String name) {
         return params.getPropertyValue(name);
     }
 
-    public boolean hasProperty(String name) {
-        return params.hasProperty(name);
+    public RestParamProperty getProperty(String name) {
+        return params.getProperty(name);
+    }
+
+    public Map<String, TestProperty> getProperties() {
+        return params.getProperties();
+    }
+
+    public void addTestPropertyListener(TestPropertyListener listener) {
+        params.addTestPropertyListener(listener);
     }
 
     public void removeTestPropertyListener(TestPropertyListener listener) {
         params.removeTestPropertyListener(listener);
     }
 
-    public void setPropertyValue(String name, String value) {
-        params.setPropertyValue(name, value);
+    public boolean hasProperty(String name) {
+        return params.hasProperty(name);
+    }
+
+    public ModelItem getModelItem() {
+        return this;
+    }
+
+    public int getPropertyCount() {
+        return params.getPropertyCount();
+    }
+
+    public List<TestProperty> getPropertyList() {
+        return params.getPropertyList();
+    }
+
+    public RestParamProperty getPropertyAt(int index) {
+        return params.getPropertyAt(index);
     }
 
     public String getPropertiesLabel() {
@@ -171,9 +171,12 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
 
     public boolean hasRequestBody() {
         RestRequestInterface.HttpMethod method = getMethod();
-        return method == RestRequestInterface.HttpMethod.POST || method == RestRequestInterface.HttpMethod.PUT
-                || method == RestRequestInterface.HttpMethod.PATCH || method == RestRequestInterface.HttpMethod.DELETE
-                || method == RestRequestInterface.HttpMethod.PROPFIND || method == RestRequestInterface.HttpMethod.LOCK;
+        return method == RestRequestInterface.HttpMethod.POST ||
+               method == RestRequestInterface.HttpMethod.PUT ||
+               method == RestRequestInterface.HttpMethod.PATCH ||
+               method == RestRequestInterface.HttpMethod.DELETE ||
+               method == RestRequestInterface.HttpMethod.PROPFIND ||
+               method == RestRequestInterface.HttpMethod.LOCK;
     }
 
     public void propertyChange(PropertyChangeEvent arg0) {
@@ -214,8 +217,7 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
         Set<String> addedTypes = new HashSet<String>();
 
         for (RestRepresentation representation : representations) {
-            if ((type == null || type == representation.getType())
-                    && (mediaType == null || mediaType.equals(representation.getMediaType()))) {
+            if ((type == null || type == representation.getType()) && (mediaType == null || mediaType.equals(representation.getMediaType()))) {
                 result.add(representation);
                 addedTypes.add(representation.getMediaType());
             }
@@ -224,10 +226,8 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
         if (type == RestRepresentation.Type.REQUEST) {
             for (RestRequest request : requests) {
                 for (Attachment attachment : request.getAttachments()) {
-                    if ((mediaType == null || mediaType.equals(attachment.getContentType()))
-                            && !addedTypes.contains(attachment.getContentType())) {
-                        RestRepresentation representation = new RestRepresentation(this,
-                                RestResourceRepresentationConfig.Factory.newInstance());
+                    if ((mediaType == null || mediaType.equals(attachment.getContentType())) && !addedTypes.contains(attachment.getContentType())) {
+                        RestRepresentation representation = new RestRepresentation(this, RestResourceRepresentationConfig.Factory.newInstance());
                         representation.setType(RestRepresentation.Type.REQUEST);
                         representation.setMediaType(attachment.getContentType());
                         result.add(representation);
@@ -282,7 +282,8 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
         try {
             (getInterface()).fireRequestRemoved(request);
             notifyPropertyChanged("childRequests", request, null);
-        } finally {
+        }
+        finally {
             request.release();
             getConfig().removeRequest(ix);
         }
@@ -301,7 +302,7 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
     }
 
     public RestRequest getRequestByName(String name) {
-        return (RestRequest) getWsdlModelItemByName(requests, name);
+        return (RestRequest)getWsdlModelItemByName(requests, name);
     }
 
     public int getRequestCount() {
@@ -327,7 +328,7 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
 
     public RestRequest cloneRequest(RestRequest request, String name) {
         request.beforeSave();
-        RestRequestConfig requestConfig = (RestRequestConfig) getConfig().addNewRequest().set(request.getConfig());
+        RestRequestConfig requestConfig = (RestRequestConfig)getConfig().addNewRequest().set(request.getConfig());
         requestConfig.setName(name);
 
         RestRequest newRequest = new RestRequest(this, requestConfig, false);
@@ -365,7 +366,7 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
 
     @Override
     public void release() {
-        ((AbstractSoapUIDesktop) SoapUI.getDesktop()).closeDependantPanels(this);
+        ((AbstractSoapUIDesktop)SoapUI.getDesktop()).closeDependantPanels(this);
         super.release();
         for (int i = requests.size(); i > 0; i--) {
             requests.get(i - 1).release();
@@ -376,24 +377,16 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
         removeTestPropertyListener(testPropertyListener);
     }
 
-    public List<TestProperty> getPropertyList() {
-        return params.getPropertyList();
-    }
-
     private class RepresentationPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(Request.MEDIA_TYPE)
-                    && ((RestRepresentation) evt.getSource()).getType() == Type.RESPONSE) {
-                RestMethod.this.notifyPropertyChanged("responseMediaTypes", null, getResponseMediaTypes());
+            if (evt.getPropertyName().equals(Request.MEDIA_TYPE) && ((RestRepresentation)evt.getSource()).getType() == Type.RESPONSE) {
+                notifyPropertyChanged("responseMediaTypes", null, getResponseMediaTypes());
             }
         }
     }
 
     private class InternalTestPropertyListener implements TestPropertyListener {
         public void propertyAdded(String name) {
-        }
-
-        public void propertyMoved(String name, int oldIndex, int newIndex) {
         }
 
         public void propertyRemoved(String name) {
@@ -406,6 +399,7 @@ public class RestMethod extends AbstractWsdlModelItem<RestMethodConfig> implemen
             getProperty(name).setDefaultValue(newValue);
         }
 
+        public void propertyMoved(String name, int oldIndex, int newIndex) {
+        }
     }
-
 }

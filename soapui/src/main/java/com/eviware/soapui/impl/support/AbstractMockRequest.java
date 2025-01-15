@@ -45,15 +45,15 @@ import java.io.IOException;
 import java.util.Enumeration;
 
 public abstract class AbstractMockRequest implements MockRequest {
-    private StringToStringsMap requestHeaders;
-    private String requestContent;
-    private MultipartMessageSupport multipartMessageSupport;
     private final HttpServletResponse response;
-    private String protocol;
-    private String path;
     private final WsdlMockRunContext context;
     private final WsdlMockRunContext requestContext;
     private final HttpServletRequest request;
+    private final StringToStringsMap requestHeaders;
+    private String requestContent;
+    private MultipartMessageSupport multipartMessageSupport;
+    private final String protocol;
+    private String path;
     private MockRequestDataSource mockRequestDataSource;
     private String actualRequestContent;
     private boolean responseMessage;
@@ -68,17 +68,21 @@ public abstract class AbstractMockRequest implements MockRequest {
 
         requestHeaders = new StringToStringsMap();
         for (Enumeration<?> e = request.getHeaderNames(); e.hasMoreElements(); ) {
-            String header = (String) e.nextElement();
+            String header = (String)e.nextElement();
             String lcHeader = header.toLowerCase();
             if (lcHeader.equals("soapaction")) {
                 requestHeaders.put("SOAPAction", request.getHeader(header));
-            } else if (lcHeader.equals("content-type")) {
+            }
+            else if (lcHeader.equals("content-type")) {
                 requestHeaders.put("Content-Type", request.getHeader(header));
-            } else if (lcHeader.equals("content-length")) {
+            }
+            else if (lcHeader.equals("content-length")) {
                 requestHeaders.put("Content-Length", request.getHeader(header));
-            } else if (lcHeader.equals("content-encoding")) {
+            }
+            else if (lcHeader.equals("content-encoding")) {
                 requestHeaders.put("Content-Encoding", request.getHeader(header));
-            } else {
+            }
+            else {
                 requestHeaders.put(header, request.getHeader(header));
             }
         }
@@ -92,7 +96,6 @@ public abstract class AbstractMockRequest implements MockRequest {
         if ("POST".equals(request.getMethod())) {
             initPostRequest(request, context);
         }
-
     }
 
     protected void initPostRequest(HttpServletRequest request, WsdlMockRunContext context) throws Exception {
@@ -101,7 +104,8 @@ public abstract class AbstractMockRequest implements MockRequest {
         if (isMultiPart(contentType)) {
             readMultipartRequest(request);
             contentType = getMultiPartContentType(contentType);
-        } else {
+        }
+        else {
             String requestContent = readRequestContent(request);
             setRequestContent(requestContent);
         }
@@ -153,21 +157,21 @@ public abstract class AbstractMockRequest implements MockRequest {
         if (is.markSupported() && request.getContentLength() > 0) {
             try {
                 is.reset();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 SoapUI.logError(e);
             }
         }
 
         // decompress
-        String compressionAlg = HttpClientSupport.getCompressionType(request.getContentType(),
-                getRequestHeaders().get("Content-Encoding", (String) null));
+        String compressionAlg = HttpClientSupport.getCompressionType(request.getContentType(), getRequestHeaders().get("Content-Encoding", (String)null));
 
         if (compressionAlg != null) {
             try {
                 data = CompressionSupport.decompress(compressionAlg, data);
-            } catch (Exception e) {
-                IOException ioe = new IOException("Decompression of response failed");
-                ioe.initCause(e);
+            }
+            catch (Exception e) {
+                IOException ioe = new IOException("Decompression of response failed", e);
                 throw ioe;
             }
         }
@@ -177,7 +181,7 @@ public abstract class AbstractMockRequest implements MockRequest {
         String contentType = request.getContentType();
         if (contentType != null && data.length > 0) {
             if (contentType.toLowerCase().endsWith("xml")) {
-                if (data.length > 3 && data[0] == (byte) 239 && data[1] == (byte) 187 && data[2] == (byte) 191) {
+                if (data.length > 3 && data[0] == (byte)239 && data[1] == (byte)187 && data[2] == (byte)191) {
                     encoding = "UTF-8";
                     contentOffset = 3;
                 }
@@ -185,8 +189,7 @@ public abstract class AbstractMockRequest implements MockRequest {
 
             encoding = StringUtils.unquote(encoding);
 
-            messageContent = encoding == null ? new String(data) : new String(data, contentOffset,
-                    (int) (data.length - contentOffset), encoding);
+            messageContent = encoding == null ? new String(data) : new String(data, contentOffset, data.length - contentOffset, encoding);
         }
 
         if (encoding == null) {
@@ -200,20 +203,14 @@ public abstract class AbstractMockRequest implements MockRequest {
         return messageContent;
     }
 
-
-    @Override
-    public String getProtocol() {
-        return protocol;
-    }
-
     @Override
     public Attachment[] getRequestAttachments() {
         return multipartMessageSupport == null ? new Attachment[0] : multipartMessageSupport.getAttachments();
     }
 
     @Override
-    public String getRequestContent() {
-        return multipartMessageSupport == null ? requestContent : multipartMessageSupport.getContentAsString();
+    public HttpServletRequest getHttpRequest() {
+        return request;
     }
 
     @Override
@@ -222,13 +219,18 @@ public abstract class AbstractMockRequest implements MockRequest {
     }
 
     @Override
-    public HttpServletResponse getHttpResponse() {
-        return response;
+    public String getRequestContent() {
+        return multipartMessageSupport == null ? requestContent : multipartMessageSupport.getContentAsString();
     }
 
     @Override
-    public HttpServletRequest getHttpRequest() {
-        return request;
+    public WsdlMockRunContext getContext() {
+        return context;
+    }
+
+    @Override
+    public WsdlMockRunContext getRequestContext() {
+        return requestContext;
     }
 
     @Override
@@ -242,25 +244,49 @@ public abstract class AbstractMockRequest implements MockRequest {
     }
 
     @Override
-    public WsdlMockRunContext getContext() {
-        return context;
+    public byte[] getRawRequestData() {
+        return mockRequestDataSource == null ? actualRequestContent == null ? requestContent.getBytes() : actualRequestContent.getBytes() : mockRequestDataSource.getData();
+    }
+
+    @Override
+    public String getProtocol() {
+        return protocol;
+    }
+
+    @Override
+    public HttpServletResponse getHttpResponse() {
+        return response;
+    }
+
+    @Override
+    public XmlObject getRequestXmlObject() throws XmlException {
+        if (requestXmlObject == null && StringUtils.hasContent(getRequestContent())) {
+            requestXmlObject = XmlUtils.createXmlObject(getRequestContent(), XmlUtils.createDefaultXmlOptions());
+        }
+
+        return requestXmlObject;
+    }
+
+    public void setRequestXmlObject(XmlObject requestXmlObject) {
+        this.requestXmlObject = requestXmlObject;
+    }
+
+    @Override
+    public void setRequestContent(String requestContent) {
+        this.requestContent = requestContent;
+    }
+
+    @Override
+    public void refreshRequestXmlObject() throws XmlException {
+        if (StringUtils.hasContent(getRequestContent())) {
+            requestXmlObject = XmlUtils.createXmlObject(getRequestContent(), XmlUtils.createDefaultXmlOptions());
+        }
     }
 
     public void setOperation(WsdlOperation operation) {
         if (multipartMessageSupport != null) {
             multipartMessageSupport.setOperation(operation);
         }
-    }
-
-    @Override
-    public WsdlMockRunContext getRequestContext() {
-        return requestContext;
-    }
-
-    @Override
-    public byte[] getRawRequestData() {
-        return mockRequestDataSource == null ? actualRequestContent == null ? requestContent.getBytes()
-                : actualRequestContent.getBytes() : mockRequestDataSource.getData();
     }
 
     public HttpServletRequest getRequest() {
@@ -271,17 +297,12 @@ public abstract class AbstractMockRequest implements MockRequest {
         this.actualRequestContent = actualRequestContent;
     }
 
-    public void setMultipartMessageSupport(MultipartMessageSupport multipartMessageSupport) {
-        this.multipartMessageSupport = multipartMessageSupport;
-    }
-
     public MultipartMessageSupport getMultipartMessageSupport() {
         return multipartMessageSupport;
     }
 
-    @Override
-    public void setRequestContent(String requestContent) {
-        this.requestContent = requestContent;
+    public void setMultipartMessageSupport(MultipartMessageSupport multipartMessageSupport) {
+        this.multipartMessageSupport = multipartMessageSupport;
     }
 
     public void setMockRequestDataSource(MockRequestDataSource mockRequestDataSource) {
@@ -290,25 +311,5 @@ public abstract class AbstractMockRequest implements MockRequest {
 
     public void setResponseMessage(boolean responseMessage) {
         this.responseMessage = responseMessage;
-    }
-
-    public void setRequestXmlObject(XmlObject requestXmlObject) {
-        this.requestXmlObject = requestXmlObject;
-    }
-
-    @Override
-    public void refreshRequestXmlObject() throws XmlException {
-        if (StringUtils.hasContent(getRequestContent())) {
-            this.requestXmlObject = XmlUtils.createXmlObject(getRequestContent(), XmlUtils.createDefaultXmlOptions());
-        }
-    }
-
-    @Override
-    public XmlObject getRequestXmlObject() throws XmlException {
-        if (requestXmlObject == null && StringUtils.hasContent(getRequestContent())) {
-            requestXmlObject = XmlUtils.createXmlObject(getRequestContent(), XmlUtils.createDefaultXmlOptions());
-        }
-
-        return requestXmlObject;
     }
 }

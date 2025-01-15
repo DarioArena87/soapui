@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.components;
@@ -26,29 +26,10 @@ import com.jgoodies.forms.layout.RowSpec;
 import org.apache.commons.lang.StringUtils;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
-import javax.swing.ComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.text.JTextComponent;
-import java.awt.Color;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -77,13 +58,13 @@ public class SimpleForm {
     private static final int DEFAULT_COLUMN_SPAN = 1;
     private static final String DEFAULT_COLUMN_SPECS = "5px:none,left:pref,10px,left:default,5px:grow(1.0)";
 
-    private JPanel panel;
-    private CellConstraints cc = new CellConstraints();
-    private FormLayout layout;
+    private final JPanel panel;
+    private final CellConstraints cc = new CellConstraints();
+    private final FormLayout layout;
     private RowSpec rowSpec;
     private int rowSpacing = 5;
-    private Map<String, JComponent> components = new HashMap<String, JComponent>();
-    private Map<JComboBox, Object[]> comboBoxMaps = new HashMap<JComboBox, Object[]>();
+    private final Map<String, JComponent> components = new HashMap<String, JComponent>();
+    private final Map<JComboBox, Object[]> comboBoxMaps = new HashMap<JComboBox, Object[]>();
     private String rowAlignment = "top";
     private Map<String, String> hiddenValues;
     private boolean appended;
@@ -127,6 +108,11 @@ public class SimpleForm {
         return rowAlignment;
     }
 
+    public void setRowAlignment(String rowAlignment) {
+        this.rowAlignment = rowAlignment;
+        rowSpec = new RowSpec(rowAlignment + ":pref");
+    }
+
     public Font getLabelFont() {
         return labelFont;
     }
@@ -135,13 +121,8 @@ public class SimpleForm {
         this.labelFont = labelFont;
     }
 
-    public void setRowAlignment(String rowAlignment) {
-        this.rowAlignment = rowAlignment;
-        rowSpec = new RowSpec(rowAlignment + ":pref");
-    }
-
     public void setRowAlignment(String alignment, String size, String resize) {
-        this.rowAlignment = alignment + ":" + size + ":" + resize;
+        rowAlignment = alignment + ":" + size + ":" + resize;
         rowSpec = new RowSpec(rowAlignment);
     }
 
@@ -156,36 +137,38 @@ public class SimpleForm {
     public String getComponentValue(String label) {
         JComponent component = getComponent(label);
         if (component == null) {
-            return (String) (hiddenValues == null ? null : hiddenValues.get(label));
+            return hiddenValues == null ? null : hiddenValues.get(label);
         }
 
         if (component instanceof JTextComponent) {
-            return ((JTextComponent) component).getText();
+            return ((JTextComponent)component).getText();
         }
 
         if (component instanceof JComboBox) {
-            JComboBox comboBox = ((JComboBox) component);
+            JComboBox comboBox = ((JComboBox)component);
             int selectedIndex = comboBox.getSelectedIndex();
             if (selectedIndex != -1) {
                 if (comboBoxMaps.containsKey(component)) {
-                    Object[] keys = (Object[]) comboBoxMaps.get(comboBox);
+                    Object[] keys = comboBoxMaps.get(comboBox);
                     Object value = keys[selectedIndex];
-                    return (String) value == null ? null : value.toString();
-                } else {
+                    return value == null ? null : value.toString();
+                }
+                else {
                     Object value = comboBox.getSelectedItem();
-                    return (String) value == null ? null : value.toString();
+                    return value == null ? null : value.toString();
                 }
             }
         }
 
         if (component instanceof JList) {
-            return (String) ((JList) component).getSelectedValue();
+            return (String)((JList)component).getSelectedValue();
         }
 
         if (component instanceof JCheckBox) {
-            return String.valueOf(((JCheckBox) component).isSelected());
-        } else if (component instanceof JFormComponent) {
-            return ((JFormComponent) component).getValue();
+            return String.valueOf(((JCheckBox)component).isSelected());
+        }
+        else if (component instanceof JFormComponent) {
+            return ((JFormComponent)component).getValue();
         }
 
         return null;
@@ -195,22 +178,27 @@ public class SimpleForm {
         JComponent component = getComponent(label);
 
         if (component instanceof JScrollPane) {
-            component = (JComponent) ((JScrollPane) component).getViewport().getComponent(0);
+            component = (JComponent)((JScrollPane)component).getViewport().getComponent(0);
         }
 
         if (component instanceof JTextComponent) {
-            ((JTextComponent) component).setText(value);
-        } else if (component instanceof JComboBox) {
-            JComboBox comboBox = ((JComboBox) component);
+            ((JTextComponent)component).setText(value);
+        }
+        else if (component instanceof JComboBox) {
+            JComboBox comboBox = ((JComboBox)component);
             comboBox.setSelectedItem(value);
-        } else if (component instanceof JList) {
-            ((JList) component).setSelectedValue(value, true);
-        } else if (component instanceof JCheckBox) {
-            ((JCheckBox) component).setSelected(Boolean.valueOf(value));
-        } else if (component instanceof JFormComponent) {
-            ((JFormComponent) component).setValue(value);
-        } else if (component instanceof RSyntaxTextArea) {
-            ((RSyntaxTextArea) component).setText(value);
+        }
+        else if (component instanceof JList) {
+            ((JList)component).setSelectedValue(value, true);
+        }
+        else if (component instanceof JCheckBox) {
+            ((JCheckBox)component).setSelected(Boolean.valueOf(value));
+        }
+        else if (component instanceof JFormComponent) {
+            ((JFormComponent)component).setValue(value);
+        }
+        else if (component instanceof RSyntaxTextArea) {
+            ((RSyntaxTextArea)component).setText(value);
         }
     }
 
@@ -230,7 +218,7 @@ public class SimpleForm {
     public void setEnabled(boolean b) {
         for (JComponent component : components.values()) {
             if (component instanceof JScrollPane) {
-                ((JScrollPane) component).getViewport().getView().setEnabled(b);
+                ((JScrollPane)component).getViewport().getView().setEnabled(b);
             }
 
             component.setEnabled(b);
@@ -260,16 +248,16 @@ public class SimpleForm {
         return defaultTextAreaColumns;
     }
 
+    public void setDefaultTextAreaColumns(int defaultTextAreaColumns) {
+        this.defaultTextAreaColumns = defaultTextAreaColumns;
+    }
+
     /**
      * @param defaultTextFieldColumns Should be a constant defined in SimpleForm
-     * @see com.eviware.soapui.support.components.SimpleForm
+     * @see SimpleForm
      */
     public void setDefaultTextFieldColumns(int defaultTextFieldColumns) {
         this.defaultTextFieldColumns = defaultTextFieldColumns;
-    }
-
-    public void setDefaultTextAreaColumns(int defaultTextAreaColumns) {
-        this.defaultTextAreaColumns = defaultTextAreaColumns;
     }
 
     public int getDefaultTextAreaRows() {
@@ -279,7 +267,6 @@ public class SimpleForm {
     public void setDefaultTextAreaRows(int defaultTextAreaRows) {
         this.defaultTextAreaRows = defaultTextAreaRows;
     }
-
 
     // -- Custom components -- //
 
@@ -455,7 +442,7 @@ public class SimpleForm {
      * @param tooltip          The value of the text field tool tip
      * @param textFieldColumns The number of columns to display for the text field. Should be a constant defined in SimpleForm
      * @return The text field
-     * @see com.eviware.soapui.support.components.SimpleForm
+     * @see SimpleForm
      */
     public JTextField appendTextField(String label, String name, String tooltip, int textFieldColumns) {
         JTextField textField = new JUndoableTextField();
@@ -587,7 +574,6 @@ public class SimpleForm {
         return append(label, jlabel, component, alignments, DEFAULT_COMPONENT_COLUMN, getColumnSpanToTheEnd(DEFAULT_COMPONENT_COLUMN));
     }
 
-
     public <T extends JComponent> T append(String name, JLabel label, T field) {
         return append(name, label, field, null, DEFAULT_COMPONENT_COLUMN, getColumnSpanToTheEnd(DEFAULT_COMPONENT_COLUMN));
     }
@@ -606,7 +592,8 @@ public class SimpleForm {
             PropertyComponent propertyComponent = propertyComponents[i];
             if (i == 0) {
                 append(null, null, propertyComponent.getComponent(), "left,center", currentColumn, DEFAULT_COLUMN_SPAN);
-            } else {
+            }
+            else {
                 addComponentToRow(null, propertyComponent.getComponent(), "left,center", currentColumn, getRowCount(), DEFAULT_COLUMN_SPAN);
             }
             currentColumn += 2;
@@ -630,7 +617,7 @@ public class SimpleForm {
             component.addPropertyChangeListener(ENABLED_PROPERTY_NAME, new LabelEnabler(label));
 
             if (label instanceof JLabel) {
-                JLabel jl = ((JLabel) label);
+                JLabel jl = ((JLabel)label);
                 jl.setLabelFor(component);
                 String text = jl.getText();
                 int ix = text.indexOf('&');
@@ -644,7 +631,8 @@ public class SimpleForm {
                     component.getAccessibleContext().setAccessibleName(text);
                 }
             }
-        } else {
+        }
+        else {
             component.addComponentListener(new LabelHider(null, spaceRowIndex));
         }
 
@@ -656,7 +644,8 @@ public class SimpleForm {
     private <T extends JComponent> void addComponentToRow(String name, T component, String alignments, int column, int row, int columnSpan) {
         if (alignments == null) {
             panel.add(component, cc.xyw(column, row, columnSpan));
-        } else {
+        }
+        else {
             panel.add(component, cc.xyw(column, row, columnSpan, alignments));
         }
 
@@ -671,12 +660,11 @@ public class SimpleForm {
      *
      * @param startingColumn The column from where the column span should be calculated.
      *                       Should preferly be a constant defined in SimpleForm
-     * @see com.eviware.soapui.support.components.SimpleForm
+     * @see SimpleForm
      */
     private int getColumnSpanToTheEnd(int startingColumn) {
         return layout.getColumnCount() - startingColumn;
     }
-
 
     private static class LabelEnabler implements PropertyChangeListener {
 
@@ -688,9 +676,8 @@ public class SimpleForm {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            label.setEnabled((Boolean) evt.getNewValue());
+            label.setEnabled((Boolean)evt.getNewValue());
         }
-
     }
 
     private final class LabelHider extends ComponentAdapter {
@@ -699,18 +686,8 @@ public class SimpleForm {
         private final int rowIndex;
 
         public LabelHider(JComponent label, int i) {
-            this.jlabel = label;
-            this.rowIndex = i;
-        }
-
-        public void componentHidden(ComponentEvent e) {
-            if (jlabel != null) {
-                jlabel.setVisible(false);
-            }
-
-            if (rowIndex >= 0 && rowIndex < layout.getRowCount()) {
-                layout.setRowSpec(rowIndex, new RowSpec("0px"));
-            }
+            jlabel = label;
+            rowIndex = i;
         }
 
         public void componentShown(ComponentEvent e) {
@@ -720,6 +697,16 @@ public class SimpleForm {
 
             if (rowIndex >= 0 && rowIndex < layout.getRowCount()) {
                 layout.setRowSpec(rowIndex, new RowSpec(rowSpacing + "px"));
+            }
+        }
+
+        public void componentHidden(ComponentEvent e) {
+            if (jlabel != null) {
+                jlabel.setVisible(false);
+            }
+
+            if (rowIndex >= 0 && rowIndex < layout.getRowCount()) {
+                layout.setRowSpec(rowIndex, new RowSpec("0px"));
             }
         }
     }

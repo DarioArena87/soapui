@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.method;
@@ -29,10 +29,8 @@ import com.eviware.soapui.support.action.swing.SwingActionDelegate;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.ui.support.ModelItemDesktopPanel;
 
-import javax.swing.JComboBox;
-import javax.swing.JTabbedPane;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -61,23 +59,19 @@ public class RestMethodDesktopPanel extends ModelItemDesktopPanel<RestMethod> {
         tabs.addTab("Method Parameters", paramsTable);
 
         restRepresentationsTable = new RestRepresentationsTable(getModelItem(), new RestRepresentation.Type[]{
-                RestRepresentation.Type.REQUEST, RestRepresentation.Type.RESPONSE, RestRepresentation.Type.FAULT}, false);
+            RestRepresentation.Type.REQUEST, RestRepresentation.Type.RESPONSE, RestRepresentation.Type.FAULT
+        }, false);
 
         tabs.addTab("Representations", restRepresentationsTable);
 
-		/*
+        /*
          * tabs.addTab("Response Representations", new RestRepresentationsTable(
-		 * getModelItem(), new RestRepresentation.Type[] {
-		 * RestRepresentation.Type.RESPONSE, RestRepresentation.Type.FAULT },
-		 * false));
-		 */
+         * getModelItem(), new RestRepresentation.Type[] {
+         * RestRepresentation.Type.RESPONSE, RestRepresentation.Type.FAULT },
+         * false));
+         */
 
         return UISupport.createTabPanel(tabs, false);
-    }
-
-    @Override
-    public String getTitle() {
-        return getName(getModelItem());
     }
 
     public RestParamsTable getParamsTable() {
@@ -89,6 +83,33 @@ public class RestMethodDesktopPanel extends ModelItemDesktopPanel<RestMethod> {
         paramsTable.release();
         restRepresentationsTable.release();
         return super.release();
+    }
+
+    @Override
+    public String getTitle() {
+        return getName(getModelItem());
+    }
+
+    public boolean onClose(boolean canCancel) {
+        return release();
+    }
+
+    @Override
+    public boolean dependsOn(ModelItem modelItem) {
+        return getModelItem().dependsOn(modelItem);
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        super.propertyChange(evt);
+
+        if (evt.getPropertyName().equals("method") && !updatingRequest) {
+            methodCombo.setSelectedItem(evt.getNewValue());
+        }
+
+        if (paramsTable != null) {
+            paramsTable.refresh();
+        }
     }
 
     private String getName(RestMethod modelItem) {
@@ -105,7 +126,7 @@ public class RestMethodDesktopPanel extends ModelItemDesktopPanel<RestMethod> {
         methodCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 updatingRequest = true;
-                getModelItem().setMethod((RestRequestInterface.HttpMethod) methodCombo.getSelectedItem());
+                getModelItem().setMethod((RestRequestInterface.HttpMethod)methodCombo.getSelectedItem());
                 updatingRequest = false;
             }
         });
@@ -113,8 +134,7 @@ public class RestMethodDesktopPanel extends ModelItemDesktopPanel<RestMethod> {
         toolbar.addLabeledFixed("HTTP method", methodCombo);
         toolbar.addSeparator();
 
-        toolbar.addFixed(createActionButton(SwingActionDelegate.createDelegate(NewRestRequestAction.SOAPUI_ACTION_ID,
-                getModelItem(), null, "/create_empty_request.gif"), true));
+        toolbar.addFixed(createActionButton(SwingActionDelegate.createDelegate(NewRestRequestAction.SOAPUI_ACTION_ID, getModelItem(), null, "/create_empty_request.gif"), true));
 
         toolbar.addSeparator();
 
@@ -123,27 +143,4 @@ public class RestMethodDesktopPanel extends ModelItemDesktopPanel<RestMethod> {
 
         return toolbar;
     }
-
-    @Override
-    public boolean dependsOn(ModelItem modelItem) {
-        return getModelItem().dependsOn(modelItem);
-    }
-
-    public boolean onClose(boolean canCancel) {
-        return release();
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        super.propertyChange(evt);
-
-        if (evt.getPropertyName().equals("method") && !updatingRequest) {
-            methodCombo.setSelectedItem(evt.getNewValue());
-        }
-
-        if (paramsTable != null) {
-            paramsTable.refresh();
-        }
-    }
-
 }

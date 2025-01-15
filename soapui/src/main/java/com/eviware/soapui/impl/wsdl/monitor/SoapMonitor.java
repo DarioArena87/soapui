@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.monitor;
@@ -67,22 +67,11 @@ import org.jdesktop.swingx.decorator.Filter;
 import org.jdesktop.swingx.decorator.FilterPipeline;
 import org.jdesktop.swingx.decorator.PatternFilter;
 
-import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -101,17 +90,14 @@ import java.util.Stack;
 @SuppressWarnings("serial")
 public class SoapMonitor extends JPanel {
     private static final String ALL_FILTER_OPTION = "- all -";
+    private final WsdlProject project;
     private JProgressBar progressBar;
     private JButton stopButton = null;
-
     private JXTable logTable = null;
     private MonitorLogTableModel tableModel = null;
-
     private String httpProxyHost = null;
     private int httpProxyPort = 80;
-
     private JButton startButton;
-    private final WsdlProject project;
     private MessageExchangeRequestMessageEditor requestViewer;
     private MessageExchangeResponseMessageEditor responseViewer;
 
@@ -125,8 +111,8 @@ public class SoapMonitor extends JPanel {
     // private JButton addToRestTestCaseButton;
     private JButton createRequestButton;
     private JButton addToMockServiceButton;
-    private Stack<WsdlMonitorMessageExchange> messageExchangeStack = new Stack<WsdlMonitorMessageExchange>();
-    private StackProcessor stackProcessor = new StackProcessor();
+    private final Stack<WsdlMonitorMessageExchange> messageExchangeStack = new Stack<WsdlMonitorMessageExchange>();
+    private final StackProcessor stackProcessor = new StackProcessor();
     private PatternFilter operationFilter;
     private PatternFilter interfaceFilter;
     private PatternFilter targetHostFilter;
@@ -139,36 +125,37 @@ public class SoapMonitor extends JPanel {
     private DefaultComboBoxModel operationFilterModel;
     private DefaultComboBoxModel requestFilterModel;
     private DefaultComboBoxModel targetHostFilterModel;
-    private JLabel rowCountLabel = new JLabel();
+    private final JLabel rowCountLabel = new JLabel();
     private Map<AbstractInterface<?>, String> addedEndpoints;
     private JXToolBar toolbar;
     private String incomingRequestWss;
     private String incomingResponseWss;
-    private boolean setAsProxy;
+    private final boolean setAsProxy;
     private XFormDialog optionsDialog;
     private SoapMonitorEngine monitorEngine;
     private String oldProxyHost;
     private String oldProxyPort;
     private boolean oldProxyEnabled;
     private boolean oldProxyAuto;
-    private String sslEndpoint;
+    private final String sslEndpoint;
     private JInspectorPanel inspectorPanel;
     private SoapMonitorListenerCallBack listenerCallBack;
 
-    public SoapMonitor(WsdlProject project, int listenPort, String incomingRequestWss, String incomingResponseWss,
-                       JXToolBar mainToolbar, boolean setAsProxy, String sslEndpoint) {
+    public SoapMonitor(
+        WsdlProject project, int listenPort, String incomingRequestWss, String incomingResponseWss, JXToolBar mainToolbar, boolean setAsProxy, String sslEndpoint
+    ) {
         super(new BorderLayout());
         this.project = project;
         this.listenPort = listenPort;
         this.incomingRequestWss = incomingRequestWss;
         this.incomingResponseWss = incomingResponseWss;
         this.setAsProxy = setAsProxy;
-        this.maxRows = 100;
+        maxRows = 100;
         this.sslEndpoint = sslEndpoint;
 
         // set the slow link to the passed down link
 
-        this.setLayout(new BorderLayout());
+        setLayout(new BorderLayout());
 
         add(buildToolbars(mainToolbar), BorderLayout.NORTH);
         add(buildContent(), BorderLayout.CENTER);
@@ -176,16 +163,16 @@ public class SoapMonitor extends JPanel {
         start();
     }
 
-    public SoapMonitor(WsdlProject project, int sourcePort, String incomingRequestWss, String incomingResponseWss,
-                       JXToolBar toolbar, boolean setAsProxy) {
+    public SoapMonitor(
+        WsdlProject project, int sourcePort, String incomingRequestWss, String incomingResponseWss, JXToolBar toolbar, boolean setAsProxy
+    ) {
         this(project, sourcePort, incomingRequestWss, incomingResponseWss, toolbar, setAsProxy, null);
     }
 
     private JComponent buildContent() {
         inspectorPanel = JInspectorPanelFactory.build(buildLog());
 
-        JComponentInspector<JComponent> viewInspector = new JComponentInspector<JComponent>(buildViewer(),
-                "Message Content", "Shows message content", true);
+        JComponentInspector<JComponent> viewInspector = new JComponentInspector<JComponent>(buildViewer(), "Message Content", "Shows message content", true);
         inspectorPanel.addInspector(viewInspector);
 
         return inspectorPanel.getComponent();
@@ -219,7 +206,8 @@ public class SoapMonitor extends JPanel {
                 int row = logTable.getSelectedRow();
                 if (row == -1) {
                     requestModelItem.setMessageExchange(null);
-                } else {
+                }
+                else {
                     WsdlMonitorMessageExchange exchange = tableModel.getMessageExchangeAt(row);
                     requestModelItem.setMessageExchange(exchange);
                 }
@@ -269,7 +257,8 @@ public class SoapMonitor extends JPanel {
 
                 if (ix == 0) {
                     requestHostFilter.setPattern(".*", 0);
-                } else {
+                }
+                else {
                     requestHostFilter.setPattern(requestHostFilterCombo.getSelectedItem().toString(), 0);
                 }
 
@@ -294,7 +283,8 @@ public class SoapMonitor extends JPanel {
 
                 if (ix == 0) {
                     targetHostFilter.setPattern(".*", 0);
-                } else {
+                }
+                else {
                     targetHostFilter.setPattern(targetHostFilterCombo.getSelectedItem().toString(), 0);
                 }
 
@@ -302,8 +292,7 @@ public class SoapMonitor extends JPanel {
             }
         });
 
-        String[] interfaceNames = ModelSupport.getNames(new String[]{ALL_FILTER_OPTION},
-                ModelSupport.getChildren(getProject(), WsdlInterface.class));
+        String[] interfaceNames = ModelSupport.getNames(new String[]{ALL_FILTER_OPTION}, ModelSupport.getChildren(getProject(), WsdlInterface.class));
 
         toolbar.addFixed(new JLabel("Interface"));
         toolbar.addRelatedGap();
@@ -314,16 +303,16 @@ public class SoapMonitor extends JPanel {
         operationFilterModel = new DefaultComboBoxModel(new String[]{ALL_FILTER_OPTION});
         interfaceFilterCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                String item = (String) interfaceFilterCombo.getSelectedItem();
+                String item = (String)interfaceFilterCombo.getSelectedItem();
                 operationFilterModel.removeAllElements();
 
                 if (item == null || getProject().getInterfaceByName(item) == null) {
                     operationFilterModel.addElement(ALL_FILTER_OPTION);
                     interfaceFilter.setPattern(".*", 0);
-                } else if (getProject().getInterfaceByName(item) != null) {
-                    WsdlInterface iface = (WsdlInterface) getProject().getInterfaceByName(item);
-                    String[] operationNames = ModelSupport.getNames(new String[]{ALL_FILTER_OPTION},
-                            iface.getOperationList());
+                }
+                else if (getProject().getInterfaceByName(item) != null) {
+                    WsdlInterface iface = (WsdlInterface)getProject().getInterfaceByName(item);
+                    String[] operationNames = ModelSupport.getNames(new String[]{ALL_FILTER_OPTION}, iface.getOperationList());
                     for (String s : operationNames) {
                         operationFilterModel.addElement(s);
                     }
@@ -351,7 +340,8 @@ public class SoapMonitor extends JPanel {
 
                 if (ix == 0) {
                     operationFilter.setPattern(".*", 0);
-                } else {
+                }
+                else {
                     operationFilter.setPattern(operationFilterCombo.getSelectedItem().toString(), 0);
                 }
 
@@ -384,23 +374,17 @@ public class SoapMonitor extends JPanel {
 
     private JComponent buildToolbars(JXToolBar mainToolbar) {
         toolbar = UISupport.createSmallToolbar();
-        mainToolbar.addFixed(startButton = UISupport.createToolbarButton(UISupport
-                .createImageIcon("/start.png")));
-        mainToolbar.addFixed(stopButton = UISupport.createToolbarButton(UISupport
-                .createImageIcon("/stop.png")));
+        mainToolbar.addFixed(startButton = UISupport.createToolbarButton(UISupport.createImageIcon("/start.png")));
+        mainToolbar.addFixed(stopButton = UISupport.createToolbarButton(UISupport.createImageIcon("/stop.png")));
         mainToolbar.addFixed(optionsButton = UISupport.createToolbarButton(new SoapMonitorOptionsAction()));
 
-        toolbar
-                .addFixed(createRequestButton = UISupport.createToolbarButton(UISupport.createImageIcon("/soap_request.png")));
-        toolbar.addFixed(addToTestCaseButton = UISupport.createToolbarButton(UISupport
-                .createImageIcon("/testcase.png")));
+        toolbar.addFixed(createRequestButton = UISupport.createToolbarButton(UISupport.createImageIcon("/soap_request.png")));
+        toolbar.addFixed(addToTestCaseButton = UISupport.createToolbarButton(UISupport.createImageIcon("/testcase.png")));
         // toolbar.addFixed( addToRestTestCaseButton =
         // UISupport.createToolbarButton( UISupport
         // .createImageIcon( "/testcase.png" ) ) );
-        toolbar.addFixed(addToMockServiceButton = UISupport.createToolbarButton(UISupport
-                .createImageIcon("/soap_virt.png")));
-        toolbar
-                .addFixed(clearButton = UISupport.createToolbarButton(UISupport.createImageIcon("/clear.png")));
+        toolbar.addFixed(addToMockServiceButton = UISupport.createToolbarButton(UISupport.createImageIcon("/soap_virt.png")));
+        toolbar.addFixed(clearButton = UISupport.createToolbarButton(UISupport.createImageIcon("/clear.png")));
 
         startButton.setToolTipText("Starts the HTTP Monitor as configured");
         stopButton.setToolTipText("Stops the HTTP Monitor");
@@ -465,8 +449,11 @@ public class SoapMonitor extends JPanel {
         };
         monitorEngine = new SoapMonitorEngineImpl(sslEndpoint);
         monitorEngine.setIncludedContentTypes(ContentTypes.of(project.getSettings()
-                .getString(SoapMonitorAction.LaunchForm.SET_CONTENT_TYPES, SoapMonitorAction.defaultContentTypes().toString())));
-        monitorEngine.start(this.getProject(), localPort, listenerCallBack);
+                                                                     .getString(
+                                                                         SoapMonitorAction.LaunchForm.SET_CONTENT_TYPES,
+                                                                         SoapMonitorAction.defaultContentTypes().toString()
+                                                                     )));
+        monitorEngine.start(getProject(), localPort, listenerCallBack);
 
         if (monitorEngine.isRunning()) {
             stopButton.setEnabled(true);
@@ -489,7 +476,8 @@ public class SoapMonitor extends JPanel {
             }
 
             SoapUI.log.info("Started HTTP Monitor on local port " + localPort);
-        } else {
+        }
+        else {
             stopButton.setEnabled(false);
             startButton.setEnabled(true);
             optionsButton.setEnabled(true);
@@ -535,16 +523,125 @@ public class SoapMonitor extends JPanel {
         }
     }
 
+    protected String getHttpProxyHost() {
+        return httpProxyHost;
+    }
+
+    protected void setHttpProxyHost(String proxyHost) {
+        httpProxyHost = proxyHost;
+    }
+
+    /**
+     * Excludes proxy headers
+     *
+     * @param requestHeaders
+     * @return
+     */
+    private StringToStringsMap excludeProxyHeaders(StringToStringsMap requestHeaders) {
+        StringToStringsMap stsmap = new StringToStringsMap();
+        for (String key : requestHeaders.getKeys()) {
+            if (!(key.contains("Proxy") || key.contains("Content"))) {
+                stsmap.add(key, requestHeaders.get(key, ""));
+            }
+        }
+        return stsmap;
+    }
+
+    protected int getHttpProxyPort() {
+        return httpProxyPort;
+    }
+
+    protected void setHttpProxyPort(int proxyPort) {
+        httpProxyPort = proxyPort;
+    }
+
+    public String getTargetHost() {
+        String host = targetEndpoint;
+
+        try {
+            URL url = new URL(host);
+            return url.getHost();
+        }
+        catch (MalformedURLException e) {
+            return host;
+        }
+    }
+
+    public String getTargetEndpoint() {
+        return targetEndpoint;
+    }
+
+    public int getTargetPort() {
+        try {
+            URL url = new URL(targetEndpoint);
+            return url.getPort() == -1 ? 80 : url.getPort();
+        }
+        catch (MalformedURLException e) {
+            return 80;
+        }
+    }
+
+    public int getLocalPort() {
+        return listenPort;
+    }
+
+    public synchronized void addMessageExchange(WsdlMonitorMessageExchange messageExchange) {
+        messageExchangeStack.push(messageExchange);
+
+        if (!stackProcessor.isRunning()) {
+            new Thread(stackProcessor, "SoapMonitor StackProcessor for project [" + getProject().getName() + "]").start();
+        }
+    }
+
+    // protected SlowLinkSimulator getSlowLink()
+    // {
+    // return slowLink;
+    // }
+
+    public MonitorLogTableModel getLogModel() {
+        return tableModel;
+    }
+
+    public void addSoapMonitorListener(MonitorListener listener) {
+        listenerCallBack.addSoapMonitorListener(listener);
+    }
+
+    public void removeSoapMonitorListener(MonitorListener listener) {
+        listenerCallBack.removeSoapMonitorListener(listener);
+    }
+
+    public WsdlProject getProject() {
+        return project;
+    }
+
+    public void release() {
+        requestViewer.release();
+        responseViewer.release();
+
+        if (optionsDialog != null) {
+            optionsDialog.release();
+            optionsDialog = null;
+        }
+
+        inspectorPanel.release();
+    }
+
+    public boolean isRunning() {
+        return monitorEngine.isRunning();
+    }
+
+    public MessageExchangeModelItem getRequestModelItem() {
+        return requestModelItem;
+    }
+
     @AForm(description = "Set options for adding selected requests to a MockService", name = "Add To MockService")
     private final class AddToMockServiceAction implements ActionListener {
-        private static final String CREATE_NEW_OPTION = "<Create New>";
-        private XFormDialog dialog;
-
         @AField(name = "Target MockService", description = "The target TestSuite", type = AFieldType.ENUMERATION)
         public final static String MOCKSERVICE = "Target MockService";
-
         @AField(name = "Open Editor", description = "Open the created MockService", type = AFieldType.BOOLEAN)
         public final static String OPENEDITOR = "Open Editor";
+        private static final String CREATE_NEW_OPTION = "<Create New>";
+        private XFormDialog dialog;
 
         public void actionPerformed(ActionEvent e) {
             int[] rows = logTable.getSelectedRows();
@@ -553,11 +650,10 @@ public class SoapMonitor extends JPanel {
             }
 
             if (dialog == null) {
-                dialog = ADialogBuilder.buildDialog(this.getClass());
+                dialog = ADialogBuilder.buildDialog(getClass());
             }
 
-            String[] testSuiteNames = ModelSupport.getNames(new String[]{CREATE_NEW_OPTION}, getProject()
-                    .getMockServiceList());
+            String[] testSuiteNames = ModelSupport.getNames(new String[]{CREATE_NEW_OPTION}, getProject().getMockServiceList());
             dialog.setOptions(MOCKSERVICE, testSuiteNames);
 
             if (dialog.show()) {
@@ -594,11 +690,10 @@ public class SoapMonitor extends JPanel {
 
                     WsdlMockOperation mockOperation = mockService.getMockOperation(me.getOperation());
                     if (mockOperation == null) {
-                        mockOperation = (WsdlMockOperation) mockService.addNewMockOperation(me.getOperation());
+                        mockOperation = (WsdlMockOperation)mockService.addNewMockOperation(me.getOperation());
                     }
 
-                    WsdlMockResponse mockResponse = mockOperation
-                            .addNewMockResponse("Monitor Response " + (++cnt), false);
+                    WsdlMockResponse mockResponse = mockOperation.addNewMockResponse("Monitor Response " + (++cnt), false);
                     mockResponse.setResponseContent(me.getResponseContent());
 
                     Attachment[] requestAttachments = me.getResponseAttachments();
@@ -611,7 +706,8 @@ public class SoapMonitor extends JPanel {
 
                 if (cnt == 0) {
                     UISupport.showInfoMessage("No response messages found");
-                } else {
+                }
+                else {
                     UISupport.showInfoMessage("Added " + cnt + " MockResponses to MockService");
 
                     if (dialog.getBooleanValue(OPENEDITOR)) {
@@ -624,19 +720,15 @@ public class SoapMonitor extends JPanel {
 
     @AForm(description = "Set options for adding selected requests to a TestCase", name = "Add To TestCase")
     private final class AddToTestCaseAction implements ActionListener {
-        private static final String CREATE_NEW_OPTION = "<Create New>";
-        private XFormDialog dialog;
-
         @AField(name = "Target TestSuite", description = "The target TestSuite", type = AFieldType.ENUMERATION)
         public final static String TESTSUITE = "Target TestSuite";
-
         @AField(name = "Target TestCase", description = "The target TestCase for the requests", type = AFieldType.ENUMERATION)
         public final static String TESTCASE = "Target TestCase";
-
         @AField(name = "Open Editor", description = "Open the created TestCase", type = AFieldType.BOOLEAN)
         public final static String OPENEDITOR = "Open Editor";
-
+        private static final String CREATE_NEW_OPTION = "<Create New>";
         TestSuite testSuite;
+        private XFormDialog dialog;
 
         public void actionPerformed(ActionEvent e) {
             int[] rows = logTable.getSelectedRows();
@@ -645,30 +737,28 @@ public class SoapMonitor extends JPanel {
             }
 
             if (dialog == null) {
-                dialog = ADialogBuilder.buildDialog(this.getClass());
+                dialog = ADialogBuilder.buildDialog(getClass());
                 dialog.getFormField(TESTSUITE).addFormFieldListener(new XFormFieldListener() {
                     public void valueChanged(XFormField sourceField, String newValue, String oldValue) {
                         if (newValue.equals(CREATE_NEW_OPTION)) {
                             dialog.setOptions(TESTCASE, new String[]{CREATE_NEW_OPTION});
-                        } else {
+                        }
+                        else {
                             testSuite = getProject().getTestSuiteByName(newValue);
-                            dialog.setOptions(
-                                    TESTCASE,
-                                    testSuite == null ? new String[]{CREATE_NEW_OPTION} : ModelSupport.getNames(
-                                            testSuite.getTestCaseList(), new String[]{CREATE_NEW_OPTION}));
+                            dialog.setOptions(TESTCASE,
+                                              testSuite == null
+                                              ? new String[]{CREATE_NEW_OPTION}
+                                              : ModelSupport.getNames(testSuite.getTestCaseList(), new String[]{CREATE_NEW_OPTION})
+                            );
                         }
                     }
                 });
             }
 
-            String[] testSuiteNames = ModelSupport.getNames(new String[]{CREATE_NEW_OPTION}, getProject()
-                    .getTestSuiteList());
+            String[] testSuiteNames = ModelSupport.getNames(new String[]{CREATE_NEW_OPTION}, getProject().getTestSuiteList());
             dialog.setOptions(TESTSUITE, testSuiteNames);
             testSuite = getProject().getTestSuiteByName(dialog.getValue(TESTSUITE));
-            dialog.setOptions(
-                    TESTCASE,
-                    testSuite == null ? new String[]{CREATE_NEW_OPTION} : ModelSupport.getNames(
-                            testSuite.getTestCaseList(), new String[]{CREATE_NEW_OPTION}));
+            dialog.setOptions(TESTCASE, testSuite == null ? new String[]{CREATE_NEW_OPTION} : ModelSupport.getNames(testSuite.getTestCaseList(), new String[]{CREATE_NEW_OPTION}));
 
             if (dialog.show()) {
                 String targetTestSuiteName = dialog.getValue(TESTSUITE);
@@ -697,9 +787,10 @@ public class SoapMonitor extends JPanel {
                 for (int row : rows) {
                     WsdlMonitorMessageExchange me = tableModel.getMessageExchangeAt(row);
                     if (me.getOperation() != null) {
-                        WsdlTestRequestStep test = (WsdlTestRequestStep) testCase.insertTestStep(
-                                WsdlTestRequestStepFactory.createConfig(me.getOperation(), "Monitor Request " + (row + 1)),
-                                -1);
+                        WsdlTestRequestStep test = (WsdlTestRequestStep)testCase.insertTestStep(WsdlTestRequestStepFactory.createConfig(
+                            me.getOperation(),
+                            "Monitor Request " + (row + 1)
+                        ), -1);
 
                         WsdlTestRequest request = test.getTestRequest();
                         request.setRequestContent(me.getRequestContent());
@@ -712,14 +803,14 @@ public class SoapMonitor extends JPanel {
                                 request.importAttachment(attachment);
                             }
                         }
-                    } else {
+                    }
+                    else {
                         HttpRequestStepFactory httpRequestStepFactory = new HttpRequestStepFactory();
-                        HttpTestRequestStep test = (HttpTestRequestStep) testCase.insertTestStep(
-                                httpRequestStepFactory.createConfig(me, "Monitor Request " + (row + 1)), -1);
+                        HttpTestRequestStep test = (HttpTestRequestStep)testCase.insertTestStep(httpRequestStepFactory.createConfig(me, "Monitor Request " + (row + 1)), -1);
 
                         test.getTestRequest().setRequestHeaders(excludeProxyHeaders(me.getRequestHeaders()));
 
-                        HttpTestRequest request = (HttpTestRequest) test.getHttpRequest();
+                        HttpTestRequest request = (HttpTestRequest)test.getHttpRequest();
 
                         request.setEndpoint(me.getTargetUrl().toString());
                         // request.setIncomingWss( incomingRequestWss );
@@ -727,10 +818,10 @@ public class SoapMonitor extends JPanel {
                         if (!StringUtils.isNullOrEmpty(existingMediaType)) {
                             request.setMediaType(existingMediaType);
                         }
-                        if ("application/octet-stream".equals(existingMediaType)
-                                || "application/x-amf".equals(existingMediaType)) {
+                        if ("application/octet-stream".equals(existingMediaType) || "application/x-amf".equals(existingMediaType)) {
                             request.attachBinaryData(me.getRequestContent().getBytes(), existingMediaType);
-                        } else {
+                        }
+                        else {
                             request.setRequestContent(me.getRequestContent());
                             test.getTestRequest().setRequestContent(me.getRequestContent());
                         }
@@ -781,8 +872,7 @@ public class SoapMonitor extends JPanel {
                     }
                 }
                 if (withoutOperation > 0) {
-                    UISupport.showInfoMessage("For " + withoutOperation + "request(s) there are no operations",
-                            "Create Request");
+                    UISupport.showInfoMessage("For " + withoutOperation + "request(s) there are no operations", "Create Request");
                 }
             }
         }
@@ -800,7 +890,8 @@ public class SoapMonitor extends JPanel {
                 if (UISupport.confirm("Clear monitor log?", "Clear Log")) {
                     tableModel.clear();
                 }
-            } else if (UISupport.confirm("Clear " + rows.length + " rows from monitor log?", "Clear Log")) {
+            }
+            else if (UISupport.confirm("Clear " + rows.length + " rows from monitor log?", "Clear Log")) {
                 tableModel.clearRows(rows);
             }
         }
@@ -808,7 +899,7 @@ public class SoapMonitor extends JPanel {
 
     @SuppressWarnings("unchecked")
     public class MonitorLogTableModel extends AbstractTableModel {
-        private List<WsdlMonitorMessageExchange> exchanges = new TreeList();
+        private final List<WsdlMonitorMessageExchange> exchanges = new TreeList();
 
         public MonitorLogTableModel() {
         }
@@ -841,10 +932,6 @@ public class SoapMonitor extends JPanel {
                 fireTableRowsDeleted(index, index);
                 updateRowCountLabel();
             }
-        }
-
-        public int getColumnCount() {
-            return 12;
         }
 
         public WsdlMonitorMessageExchange getMessageExchangeAt(int tableRow) {
@@ -885,6 +972,10 @@ public class SoapMonitor extends JPanel {
 
         public int getRowCount() {
             return exchanges.size();
+        }
+
+        public int getColumnCount() {
+            return 12;
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
@@ -963,80 +1054,6 @@ public class SoapMonitor extends JPanel {
         }
     }
 
-    protected String getHttpProxyHost() {
-        return httpProxyHost;
-    }
-
-    /**
-     * Excludes proxy headers
-     *
-     * @param requestHeaders
-     * @return
-     */
-    private StringToStringsMap excludeProxyHeaders(StringToStringsMap requestHeaders) {
-        StringToStringsMap stsmap = new StringToStringsMap();
-        for (String key : requestHeaders.getKeys()) {
-            if (!(key.contains("Proxy") || key.contains("Content"))) {
-                stsmap.add(key, requestHeaders.get(key, ""));
-            }
-        }
-        return stsmap;
-    }
-
-    protected void setHttpProxyHost(String proxyHost) {
-        httpProxyHost = proxyHost;
-    }
-
-    protected int getHttpProxyPort() {
-        return httpProxyPort;
-    }
-
-    protected void setHttpProxyPort(int proxyPort) {
-        httpProxyPort = proxyPort;
-    }
-
-    // protected SlowLinkSimulator getSlowLink()
-    // {
-    // return slowLink;
-    // }
-
-    public String getTargetHost() {
-        String host = targetEndpoint;
-
-        try {
-            URL url = new URL(host);
-            return url.getHost();
-        } catch (MalformedURLException e) {
-            return host;
-        }
-    }
-
-    public String getTargetEndpoint() {
-        return targetEndpoint;
-    }
-
-    public int getTargetPort() {
-        try {
-            URL url = new URL(targetEndpoint);
-            return url.getPort() == -1 ? 80 : url.getPort();
-        } catch (MalformedURLException e) {
-            return 80;
-        }
-    }
-
-    public int getLocalPort() {
-        return listenPort;
-    }
-
-    public synchronized void addMessageExchange(WsdlMonitorMessageExchange messageExchange) {
-        messageExchangeStack.push(messageExchange);
-
-        if (!stackProcessor.isRunning()) {
-            new Thread(stackProcessor, "SoapMonitor StackProcessor for project [" + getProject().getName() + "]")
-                    .start();
-        }
-    }
-
     private class StackProcessor implements Runnable {
         private boolean canceled;
         private boolean running;
@@ -1052,7 +1069,8 @@ public class SoapMonitor extends JPanel {
 
                 try {
                     Thread.sleep(100);
-                } catch (InterruptedException e) {
+                }
+                catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
@@ -1060,8 +1078,7 @@ public class SoapMonitor extends JPanel {
         }
 
         private synchronized void processMessage(WsdlMonitorMessageExchange messageExchange) {
-            messageExchange.prepare(project.getWssContainer().getIncomingWssByName(incomingRequestWss), project
-                    .getWssContainer().getIncomingWssByName(incomingResponseWss));
+            messageExchange.prepare(project.getWssContainer().getIncomingWssByName(incomingRequestWss), project.getWssContainer().getIncomingWssByName(incomingResponseWss));
 
             tableModel.addMessageExchange(messageExchange);
 
@@ -1081,22 +1098,6 @@ public class SoapMonitor extends JPanel {
         protected boolean isRunning() {
             return running;
         }
-    }
-
-    public MonitorLogTableModel getLogModel() {
-        return tableModel;
-    }
-
-    public void addSoapMonitorListener(MonitorListener listener) {
-        listenerCallBack.addSoapMonitorListener(listener);
-    }
-
-    public void removeSoapMonitorListener(MonitorListener listener) {
-        listenerCallBack.removeSoapMonitorListener(listener);
-    }
-
-    public WsdlProject getProject() {
-        return project;
     }
 
     public class SoapMonitorOptionsAction extends AbstractAction {
@@ -1120,18 +1121,12 @@ public class SoapMonitor extends JPanel {
             optionsDialog.setIntValue(OptionsForm.PORT, listenPort);
             optionsDialog.setIntValue(OptionsForm.MAXROWS, maxRows);
 
-            optionsDialog.setOptions(OptionsForm.REQUEST_WSS,
-                    StringUtils.merge(project.getWssContainer().getIncomingWssNames(), "<none>"));
-            optionsDialog.setOptions(OptionsForm.RESPONSE_WSS,
-                    StringUtils.merge(project.getWssContainer().getIncomingWssNames(), "<none>"));
+            optionsDialog.setOptions(OptionsForm.REQUEST_WSS, StringUtils.merge(project.getWssContainer().getIncomingWssNames(), "<none>"));
+            optionsDialog.setOptions(OptionsForm.RESPONSE_WSS, StringUtils.merge(project.getWssContainer().getIncomingWssNames(), "<none>"));
 
             optionsDialog.setValue(OptionsForm.REQUEST_WSS, incomingRequestWss);
             optionsDialog.setValue(OptionsForm.RESPONSE_WSS, incomingResponseWss);
-            optionsDialog
-                    .setValue(
-                            LaunchForm.SET_CONTENT_TYPES,
-                            project.getSettings().getString(LaunchForm.SET_CONTENT_TYPES,
-                                    SoapMonitorAction.defaultContentTypes().toString()));
+            optionsDialog.setValue(LaunchForm.SET_CONTENT_TYPES, project.getSettings().getString(LaunchForm.SET_CONTENT_TYPES, SoapMonitorAction.defaultContentTypes().toString()));
 
             if (optionsDialog.show()) {
                 Settings settings = getProject().getSettings();
@@ -1164,26 +1159,5 @@ public class SoapMonitor extends JPanel {
             @AField(description = "Content types to monitor", name = "Content types to monitor", type = AFieldType.STRINGAREA)
             public final static String SET_CONTENT_TYPES = "Content types to monitor";
         }
-    }
-
-    public void release() {
-        requestViewer.release();
-        responseViewer.release();
-
-        if (optionsDialog != null) {
-            optionsDialog.release();
-            optionsDialog = null;
-        }
-
-        inspectorPanel.release();
-    }
-
-    public boolean isRunning() {
-        return monitorEngine.isRunning();
-    }
-
-
-    public MessageExchangeModelItem getRequestModelItem() {
-        return requestModelItem;
     }
 }

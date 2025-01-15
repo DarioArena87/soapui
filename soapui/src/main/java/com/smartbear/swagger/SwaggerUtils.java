@@ -33,10 +33,56 @@ import java.util.List;
 import java.util.Map;
 
 class SwaggerUtils {
-    private static final Logger logger = LogManager.getLogger(SwaggerUtils.class);
-
     public static final String DEFAULT_MEDIA_TYPE = "application/json";
     public static final boolean DEFAULT_FOR_CREATE_TEST_CASE = false;
+    private static final Logger logger = LogManager.getLogger(SwaggerUtils.class);
+
+    public static boolean matchesPath(String path, String swaggerPath) {
+
+        String[] pathSegments = path.split("\\/");
+        String[] swaggerPathSegments = swaggerPath.split("\\/");
+
+        if (pathSegments.length != swaggerPathSegments.length) {
+            return false;
+        }
+
+        for (int c = 0; c < pathSegments.length; c++) {
+            String pathSegment = pathSegments[c];
+            String swaggerPathSegment = swaggerPathSegments[c];
+
+            if (swaggerPathSegment.startsWith("{") && swaggerPathSegment.endsWith("}")) {
+                continue;
+            }
+            else if (!swaggerPathSegment.equalsIgnoreCase(pathSegment)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static Swagger getSwagger(String swaggerAsString) {
+        return getSwagger(swaggerAsString, true);
+    }
+
+    public static Swagger getSwagger(String swaggerAsString, boolean resolve) {
+        SwaggerDeserializationResult swaggerDeserializationResult = new SwaggerParser().readWithInfo(swaggerAsString, resolve);
+        logErrors(swaggerDeserializationResult);
+        return swaggerDeserializationResult.getSwagger();
+    }
+
+    public static Swagger getSwagger(String url, List<AuthorizationValue> auths, boolean resolve, boolean disableLogger) {
+        SwaggerParser swaggerParser = new SwaggerParser();
+        SwaggerDeserializationResult swaggerDeserializationResult = swaggerParser.readWithInfo(url, auths, resolve);
+        if (!disableLogger) {
+            logErrors(swaggerDeserializationResult);
+        }
+        return swaggerDeserializationResult.getSwagger();
+    }
+
+    public static Swagger getSwagger(String url, List<AuthorizationValue> auths, boolean resolve) {
+        return getSwagger(url, auths, resolve, false);
+    }
 
     /**
      * Selects the appropriate SwaggerImporter for the specified URL. For .yaml urls the Swagger2Importer
@@ -50,8 +96,9 @@ class SwaggerUtils {
      * @return the corresponding SwaggerImporter based on the described "algorithm"
      */
 
-    static SwaggerImporter createSwaggerImporter(String url, WsdlProject project, String defaultMediaType,
-                                                 boolean generateTestCase) throws Exception {
+    static SwaggerImporter createSwaggerImporter(
+        String url, WsdlProject project, String defaultMediaType, boolean generateTestCase
+    ) throws Exception {
         if (url.endsWith(".yaml") || url.endsWith(".yml")) {
             return new Swagger2Importer(project, defaultMediaType);
         }
@@ -59,11 +106,11 @@ class SwaggerUtils {
         UrlWsdlLoader loader = new UrlWsdlLoader(url);
         Object json = new JsonSlurper().parse(loader.load());
 
-        if (json instanceof Map){
-            Map mapJson  = (Map)json;
+        if (json instanceof Map) {
+            Map mapJson = (Map)json;
             Object swagger = mapJson.get("swagger");
             Object swaggerVersion = mapJson.get("swaggerVersion");
-            if("2.0".equals(swaggerVersion) || "2.0".equals(swagger)) {
+            if ("2.0".equals(swaggerVersion) || "2.0".equals(swagger)) {
                 return new Swagger2Importer(project, defaultMediaType);
             }
         }
@@ -75,8 +122,7 @@ class SwaggerUtils {
     }
 
     static SwaggerImporter createSwaggerImporter(String url, WsdlProject project) throws Exception {
-        return createSwaggerImporter(url, project, DEFAULT_MEDIA_TYPE,
-                DEFAULT_FOR_CREATE_TEST_CASE);
+        return createSwaggerImporter(url, project, DEFAULT_MEDIA_TYPE, DEFAULT_FOR_CREATE_TEST_CASE);
     }
 
     @Deprecated
@@ -85,7 +131,8 @@ class SwaggerUtils {
     }
 
     static SwaggerImporter importSwaggerFromUrl(
-            final WsdlProject project, final String finalExpUrl) throws Exception {
+        WsdlProject project, String finalExpUrl
+    ) throws Exception {
         return importSwaggerFromUrl(project, finalExpUrl, DEFAULT_MEDIA_TYPE);
     }
 
@@ -96,17 +143,20 @@ class SwaggerUtils {
             if (location.toLowerCase().startsWith("http")) {
                 UrlWsdlLoader loader = new UrlWsdlLoader(location);
                 data = IOUtils.toString(loader.load());
-            } else {
+            }
+            else {
                 final String fileScheme = "file:";
                 Path path;
                 if (location.toLowerCase().startsWith(fileScheme)) {
                     path = Paths.get(URI.create(location));
-                } else {
+                }
+                else {
                     path = Paths.get(location);
                 }
                 if (Files.exists(path)) {
                     data = FileUtils.readFileToString(path.toFile(), "UTF-8");
-                } else {
+                }
+                else {
                     data = ClasspathHelper.loadFileFromClasspath(location);
                 }
             }
@@ -114,8 +164,9 @@ class SwaggerUtils {
             if (data.trim().startsWith("{")) {
                 ObjectMapper mapper = Json.mapper();
                 rootNode = mapper.readTree(data);
-            } else {
-                SwaggerDeserializationResult result  = new SwaggerDeserializationResult();
+            }
+            else {
+                SwaggerDeserializationResult result = new SwaggerDeserializationResult();
                 rootNode = DeserializationUtils.readYamlTree(data, result);
                 logErrors(result);
             }
@@ -127,11 +178,11 @@ class SwaggerUtils {
         }
     }
 
-    static SwaggerImporter importSwaggerFromUrl(final WsdlProject project,
-                                                final String finalExpUrl,
-                                                final String defaultMediaType) throws Exception {
+    static SwaggerImporter importSwaggerFromUrl(
+        WsdlProject project, String finalExpUrl, String defaultMediaType
+    ) throws Exception {
 
-        final SwaggerImporter importer = SwaggerUtils.createSwaggerImporter(finalExpUrl, project, defaultMediaType);
+        SwaggerImporter importer = createSwaggerImporter(finalExpUrl, project, defaultMediaType);
 
         XProgressDialog dlg = UISupport.getDialogs().createProgressDialog("Importing Swagger", 0, "", false);
         dlg.run(new Worker.WorkerAdapter() {
@@ -158,54 +209,8 @@ class SwaggerUtils {
         return importer;
     }
 
-    public static boolean matchesPath(String path, String swaggerPath) {
-
-        String[] pathSegments = path.split("\\/");
-        String[] swaggerPathSegments = swaggerPath.split("\\/");
-
-        if (pathSegments.length != swaggerPathSegments.length) {
-            return false;
-        }
-
-        for (int c = 0; c < pathSegments.length; c++) {
-            String pathSegment = pathSegments[c];
-            String swaggerPathSegment = swaggerPathSegments[c];
-
-            if (swaggerPathSegment.startsWith("{") && swaggerPathSegment.endsWith("}")) {
-                continue;
-            } else if (!swaggerPathSegment.equalsIgnoreCase(pathSegment)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     static boolean isOAS3Definition(String oasVersion) {
         return oasVersion.startsWith("3.");
-    }
-
-    public static Swagger getSwagger(String swaggerAsString) {
-        return getSwagger(swaggerAsString, true);
-    }
-
-    public static Swagger getSwagger(String swaggerAsString, boolean resolve) {
-        SwaggerDeserializationResult swaggerDeserializationResult = new SwaggerParser().readWithInfo(swaggerAsString, resolve);
-        logErrors(swaggerDeserializationResult);
-        return swaggerDeserializationResult.getSwagger();
-    }
-
-    public static Swagger getSwagger(String url, List<AuthorizationValue> auths, boolean resolve, boolean disableLogger) {
-        SwaggerParser swaggerParser = new SwaggerParser();
-        SwaggerDeserializationResult swaggerDeserializationResult = swaggerParser.readWithInfo(url, auths, resolve);
-        if (!disableLogger) {
-            logErrors(swaggerDeserializationResult);
-        }
-        return swaggerDeserializationResult.getSwagger();
-    }
-
-    public static Swagger getSwagger(String url, List<AuthorizationValue> auths, boolean resolve) {
-        return getSwagger(url, auths, resolve, false);
     }
 
     private static void logErrors(SwaggerDeserializationResult swaggerDeserializationResult) {

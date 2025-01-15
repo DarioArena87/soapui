@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.testsuite;
@@ -33,20 +33,8 @@ import com.eviware.soapui.support.dnd.SoapUIDragAndDropHandler;
 import com.eviware.soapui.support.dnd.SoapUIDragAndDropable;
 import com.eviware.soapui.support.swing.AutoscrollSupport;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.Point;
-import java.awt.Rectangle;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.dnd.Autoscroll;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
@@ -67,9 +55,9 @@ import java.util.Map;
  */
 
 public class JTestSuiteTestCaseList extends JPanel {
-    private Map<TestCase, TestCaseListPanel> panels = new HashMap<TestCase, TestCaseListPanel>();
     private final WsdlTestSuite testSuite;
     private final InternalTestSuiteListener testSuiteListener = new InternalTestSuiteListener();
+    private final Map<TestCase, TestCaseListPanel> panels = new HashMap<TestCase, TestCaseListPanel>();
     private TestCaseListPanel selectedTestCase;
 
     public JTestSuiteTestCaseList(WsdlTestSuite testSuite) {
@@ -94,8 +82,7 @@ public class JTestSuiteTestCaseList extends JPanel {
 
         DragSource dragSource = DragSource.getDefaultDragSource();
 
-        SoapUIDragAndDropHandler dragAndDropHandler = new SoapUIDragAndDropHandler(
-                new TestCaseListDragAndDropable(this), DropType.AFTER);
+        SoapUIDragAndDropHandler dragAndDropHandler = new SoapUIDragAndDropHandler(new TestCaseListDragAndDropable(this), DropType.AFTER);
 
         dragSource.createDefaultDragGestureRecognizer(this, DnDConstants.ACTION_COPY_OR_MOVE, dragAndDropHandler);
     }
@@ -116,6 +103,57 @@ public class JTestSuiteTestCaseList extends JPanel {
     public void removeNotify() {
         super.removeNotify();
         testSuite.removeTestSuiteListener(testSuiteListener);
+    }
+
+    protected int getIndexOf(TestCaseListPanel panel) {
+        return Arrays.asList(getComponents()).indexOf(panel);
+    }
+
+    protected TestCaseListPanel createTestCaseListPanel(TestCase testCase) {
+        TestCaseListPanel testCaseListPanel = new TestCaseListPanel((WsdlTestCase)testCase);
+
+        DragSource dragSource = DragSource.getDefaultDragSource();
+
+        SoapUIDragAndDropHandler dragAndDropHandler = new SoapUIDragAndDropHandler(new TestCaseListPanelDragAndDropable(testCaseListPanel), DropType.BEFORE_AND_AFTER);
+
+        dragSource.createDefaultDragGestureRecognizer(testCaseListPanel, DnDConstants.ACTION_COPY_OR_MOVE, dragAndDropHandler);
+
+        return testCaseListPanel;
+    }
+
+    private static class TestCaseListPanelDragAndDropable implements SoapUIDragAndDropable<ModelItem> {
+        private final TestCaseListPanel testCasePanel;
+
+        public TestCaseListPanelDragAndDropable(TestCaseListPanel testCasePanel) {
+            this.testCasePanel = testCasePanel;
+        }
+
+        public JComponent getComponent() {
+            return testCasePanel;
+        }
+
+        public void setDragInfo(String dropInfo) {
+            testCasePanel.setToolTipText(dropInfo.length() == 0 ? null : dropInfo);
+        }
+
+        public void selectModelItem(ModelItem path) {
+            testCasePanel.setSelected(!testCasePanel.isSelected());
+        }
+
+        public ModelItem getModelItemForLocation(int x, int y) {
+            return testCasePanel.getModelItem();
+        }
+
+        public Rectangle getModelItemBounds(ModelItem path) {
+            return new Rectangle(testCasePanel.getSize());
+        }
+
+        public Component getRenderer(ModelItem path) {
+            return null;
+        }
+
+        public void toggleExpansion(ModelItem last) {
+        }
     }
 
     private final class InternalTestSuiteListener extends TestSuiteListenerAdapter {
@@ -158,11 +196,11 @@ public class JTestSuiteTestCaseList extends JPanel {
 
     public final class TestCaseListPanel extends JPanel implements Autoscroll {
         private final WsdlTestCase testCase;
-        private JProgressBar progressBar;
-        private JLabel label;
+        private final JProgressBar progressBar;
+        private final JLabel label;
         private ProgressBarTestCaseAdapter progressBarAdapter;
-        private TestCasePropertyChangeListener testCasePropertyChangeListener;
-        private AutoscrollSupport autoscrollSupport;
+        private final TestCasePropertyChangeListener testCasePropertyChangeListener;
+        private final AutoscrollSupport autoscrollSupport;
 
         public TestCaseListPanel(WsdlTestCase testCase) {
             super(new BorderLayout());
@@ -188,8 +226,17 @@ public class JTestSuiteTestCaseList extends JPanel {
                  * coordinate space.
                  */
                 private MouseEvent translateMouseEvent(MouseEvent e) {
-                    return new MouseEvent(TestCaseListPanel.this, e.getID(), e.getWhen(), e.getModifiers(), e.getX()
-                            + getX(), e.getY() + getY(), e.getClickCount(), e.isPopupTrigger(), e.getButton());
+                    return new MouseEvent(
+                        TestCaseListPanel.this,
+                        e.getID(),
+                        e.getWhen(),
+                        e.getModifiers(),
+                        e.getX() + getX(),
+                        e.getY() + getY(),
+                        e.getClickCount(),
+                        e.isPopupTrigger(),
+                        e.getButton()
+                    );
                 }
             };
 
@@ -213,11 +260,6 @@ public class JTestSuiteTestCaseList extends JPanel {
 
             addMouseListener(new MouseAdapter() {
 
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    requestFocus();
-                }
-
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() < 2) {
                         if (selectedTestCase != null) {
@@ -230,6 +272,11 @@ public class JTestSuiteTestCaseList extends JPanel {
                     }
 
                     UISupport.selectAndShow(TestCaseListPanel.this.testCase);
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    requestFocus();
                 }
             });
 
@@ -246,11 +293,16 @@ public class JTestSuiteTestCaseList extends JPanel {
 
         private void initPopup(WsdlTestCase testCase) {
             ActionList actions = ActionListBuilder.buildActions(testCase);
-            actions.insertAction(
-                    SwingActionDelegate.createDelegate(AddNewTestCaseAction.SOAPUI_ACTION_ID, testSuite, null, null), 0);
+            actions.insertAction(SwingActionDelegate.createDelegate(AddNewTestCaseAction.SOAPUI_ACTION_ID, testSuite, null, null), 0);
             actions.insertAction(ActionSupport.SEPARATOR_ACTION, 1);
 
             setComponentPopupMenu(ActionSupport.buildPopup(actions));
+        }
+
+        public Dimension getMaximumSize() {
+            Dimension size = super.getMaximumSize();
+            size.height = 50;
+            return size;
         }
 
         public void addNotify() {
@@ -269,36 +321,20 @@ public class JTestSuiteTestCaseList extends JPanel {
             }
         }
 
-        public Dimension getMaximumSize() {
-            Dimension size = super.getMaximumSize();
-            size.height = 50;
-            return size;
+        public boolean isSelected() {
+            return selectedTestCase != null && selectedTestCase.getTestCase() == testCase;
         }
 
         public void setSelected(boolean selected) {
             if (selected) {
                 setBorder(BorderFactory.createLineBorder(Color.GRAY));
-            } else {
+            }
+            else {
                 setBorder(BorderFactory.createLineBorder(Color.WHITE));
             }
         }
 
-        public boolean isSelected() {
-            return selectedTestCase != null && selectedTestCase.getTestCase() == testCase;
-        }
-
-        private final class TestCasePropertyChangeListener implements PropertyChangeListener {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(TestCase.LABEL_PROPERTY)) {
-                    label.setEnabled(!testCase.isDisabled());
-                    label.setText(testCase.getLabel());
-                } else if (evt.getPropertyName().equals(TestCase.DISABLED_PROPERTY)) {
-                    initPopup(testCase);
-                }
-            }
-        }
-
-        protected TestCase getTestCase() {
+        private TestCase getTestCase() {
             return testCase;
         }
 
@@ -306,19 +342,32 @@ public class JTestSuiteTestCaseList extends JPanel {
             return testCase;
         }
 
+        public Insets getAutoscrollInsets() {
+            return autoscrollSupport.getAutoscrollInsets();
+        }
+
         public void autoscroll(Point pt) {
             int ix = getIndexOf(this);
             if (pt.getY() < 12 && ix > 0) {
                 Rectangle bounds = JTestSuiteTestCaseList.this.getComponent(ix - 1).getBounds();
                 JTestSuiteTestCaseList.this.scrollRectToVisible(bounds);
-            } else if (pt.getY() > getHeight() - 12 && ix < testSuite.getTestCaseCount() - 1) {
+            }
+            else if (pt.getY() > getHeight() - 12 && ix < testSuite.getTestCaseCount() - 1) {
                 Rectangle bounds = JTestSuiteTestCaseList.this.getComponent(ix + 1).getBounds();
                 JTestSuiteTestCaseList.this.scrollRectToVisible(bounds);
             }
         }
 
-        public Insets getAutoscrollInsets() {
-            return autoscrollSupport.getAutoscrollInsets();
+        private final class TestCasePropertyChangeListener implements PropertyChangeListener {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(TestCase.LABEL_PROPERTY)) {
+                    label.setEnabled(!testCase.isDisabled());
+                    label.setText(testCase.getLabel());
+                }
+                else if (evt.getPropertyName().equals(TestCase.DISABLED_PROPERTY)) {
+                    initPopup(testCase);
+                }
+            }
         }
 
         private final class TestCaseListPanelKeyHandler extends KeyAdapter {
@@ -326,7 +375,8 @@ public class JTestSuiteTestCaseList extends JPanel {
                 if (e.getKeyChar() == KeyEvent.VK_ENTER) {
                     UISupport.selectAndShow(testCase);
                     e.consume();
-                } else {
+                }
+                else {
                     ActionList actions = ActionListBuilder.buildActions(testCase);
                     if (actions != null) {
                         actions.dispatchKeyEvent(e);
@@ -334,24 +384,6 @@ public class JTestSuiteTestCaseList extends JPanel {
                 }
             }
         }
-    }
-
-    protected int getIndexOf(TestCaseListPanel panel) {
-        return Arrays.asList(getComponents()).indexOf(panel);
-    }
-
-    protected TestCaseListPanel createTestCaseListPanel(TestCase testCase) {
-        TestCaseListPanel testCaseListPanel = new TestCaseListPanel((WsdlTestCase) testCase);
-
-        DragSource dragSource = DragSource.getDefaultDragSource();
-
-        SoapUIDragAndDropHandler dragAndDropHandler = new SoapUIDragAndDropHandler(new TestCaseListPanelDragAndDropable(
-                testCaseListPanel), DropType.BEFORE_AND_AFTER);
-
-        dragSource.createDefaultDragGestureRecognizer(testCaseListPanel, DnDConstants.ACTION_COPY_OR_MOVE,
-                dragAndDropHandler);
-
-        return testCaseListPanel;
     }
 
     private class TestCaseListDragAndDropable implements SoapUIDragAndDropable<ModelItem> {
@@ -365,8 +397,11 @@ public class JTestSuiteTestCaseList extends JPanel {
             return list;
         }
 
-        public Rectangle getModelItemBounds(ModelItem modelItem) {
-            return list.getBounds();
+        public void setDragInfo(String dropInfo) {
+            list.setToolTipText(dropInfo);
+        }
+
+        public void selectModelItem(ModelItem modelItem) {
         }
 
         public ModelItem getModelItemForLocation(int x, int y) {
@@ -374,53 +409,15 @@ public class JTestSuiteTestCaseList extends JPanel {
             return testCaseCount == 0 ? testSuite : testSuite.getTestCaseAt(testCaseCount - 1);
         }
 
+        public Rectangle getModelItemBounds(ModelItem modelItem) {
+            return list.getBounds();
+        }
+
         public Component getRenderer(ModelItem modelItem) {
             return null;
         }
 
-        public void selectModelItem(ModelItem modelItem) {
-        }
-
-        public void setDragInfo(String dropInfo) {
-            list.setToolTipText(dropInfo);
-        }
-
         public void toggleExpansion(ModelItem modelItem) {
-        }
-    }
-
-    private static class TestCaseListPanelDragAndDropable implements SoapUIDragAndDropable<ModelItem> {
-        private final TestCaseListPanel testCasePanel;
-
-        public TestCaseListPanelDragAndDropable(TestCaseListPanel testCasePanel) {
-            this.testCasePanel = testCasePanel;
-        }
-
-        public JComponent getComponent() {
-            return testCasePanel;
-        }
-
-        public void setDragInfo(String dropInfo) {
-            testCasePanel.setToolTipText(dropInfo.length() == 0 ? null : dropInfo);
-        }
-
-        public Rectangle getModelItemBounds(ModelItem path) {
-            return new Rectangle(testCasePanel.getSize());
-        }
-
-        public ModelItem getModelItemForLocation(int x, int y) {
-            return testCasePanel.getModelItem();
-        }
-
-        public Component getRenderer(ModelItem path) {
-            return null;
-        }
-
-        public void selectModelItem(ModelItem path) {
-            testCasePanel.setSelected(!testCasePanel.isSelected());
-        }
-
-        public void toggleExpansion(ModelItem last) {
         }
     }
 }

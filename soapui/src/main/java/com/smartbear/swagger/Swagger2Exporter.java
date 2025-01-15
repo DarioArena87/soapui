@@ -1,13 +1,26 @@
 package com.smartbear.swagger;
 
 import com.eviware.soapui.SoapUI;
-import com.eviware.soapui.impl.rest.*;
+import com.eviware.soapui.impl.rest.RestMethod;
+import com.eviware.soapui.impl.rest.RestRepresentation;
+import com.eviware.soapui.impl.rest.RestRequestInterface;
+import com.eviware.soapui.impl.rest.RestResource;
+import com.eviware.soapui.impl.rest.RestService;
 import com.eviware.soapui.impl.rest.support.RestParamProperty;
 import com.eviware.soapui.impl.rest.support.RestParamsPropertyHolder;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.models.*;
-import io.swagger.models.parameters.*;
+import io.swagger.models.Info;
+import io.swagger.models.Operation;
+import io.swagger.models.Path;
+import io.swagger.models.Response;
+import io.swagger.models.Swagger;
+import io.swagger.models.parameters.AbstractSerializableParameter;
+import io.swagger.models.parameters.BodyParameter;
+import io.swagger.models.parameters.HeaderParameter;
+import io.swagger.models.parameters.Parameter;
+import io.swagger.models.parameters.PathParameter;
+import io.swagger.models.parameters.QueryParameter;
 import io.swagger.util.Json;
 import io.swagger.util.Yaml;
 
@@ -52,12 +65,13 @@ public class Swagger2Exporter implements SwaggerExporter {
                         RestRepresentation.Type type = representation.getType();
                         if (type == RestRepresentation.Type.RESPONSE || type == RestRepresentation.Type.FAULT) {
                             List<?> statuses = representation.getStatus();
-                            if(statuses != null){
+                            if (statuses != null) {
                                 for (Object status : statuses) {
                                     operation.addResponse(String.valueOf(status), new Response());
                                 }
                             }
-                        } else if (type == RestRepresentation.Type.REQUEST && representation.getMediaType() != null) {
+                        }
+                        else if (type == RestRepresentation.Type.REQUEST && representation.getMediaType() != null) {
                             operation.addConsumes(representation.getMediaType());
                         }
                     }
@@ -89,7 +103,8 @@ public class Swagger2Exporter implements SwaggerExporter {
         ObjectMapper mapper = format.equals("yaml") ? Yaml.mapper() : Json.mapper();
         try {
             mapper.writeValue(new FileWriter(fileName), swagger);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             SoapUI.logError(e);
         }
 
@@ -103,15 +118,21 @@ public class Swagger2Exporter implements SwaggerExporter {
 
     private void addParametersToOperation(RestParamsPropertyHolder params, Operation op) {
 
-        for (String name: params.getPropertyNames()) {
+        for (String name : params.getPropertyNames()) {
             RestParamProperty param = params.getProperty(name);
             if (!operationHasParameter(op, name)) {
                 AbstractSerializableParameter<?> p = null;
 
                 switch (param.getStyle()) {
-                    case HEADER: p = new HeaderParameter(); break;
-                    case QUERY: p = new QueryParameter(); break;
-                    case TEMPLATE: p = new PathParameter(); break;
+                    case HEADER:
+                        p = new HeaderParameter();
+                        break;
+                    case QUERY:
+                        p = new QueryParameter();
+                        break;
+                    case TEMPLATE:
+                        p = new PathParameter();
+                        break;
                 }
 
                 if (p != null) {
@@ -154,9 +175,9 @@ public class Swagger2Exporter implements SwaggerExporter {
     }
 
     boolean operationHasParameter(Operation operation, String name) {
-        if(operation!= null) {
+        if (operation != null) {
             for (Parameter parameter : operation.getParameters()) {
-                if(parameter.getName().equals(name)) {
+                if (parameter.getName().equals(name)) {
                     return true;
                 }
             }

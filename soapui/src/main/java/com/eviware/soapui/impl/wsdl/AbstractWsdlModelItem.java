@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl;
@@ -29,7 +29,7 @@ import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.resolver.ResolveContext;
 
-import javax.swing.ImageIcon;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,13 +41,11 @@ import java.util.UUID;
  * @author Ole.Matzura
  */
 
-public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
-        extends AbstractModelItem
-        implements Releasable, AnimatableItem {
+public abstract class AbstractWsdlModelItem<T extends ModelItemConfig> extends AbstractModelItem implements Releasable, AnimatableItem {
+    private final ModelItem parent;
     private XmlBeansSettingsImpl settings;
     private T config;
     private ImageIcon icon;
-    private final ModelItem parent;
 
     protected AbstractWsdlModelItem(T config, ModelItem parent, String icon) {
         this.parent = parent;
@@ -65,8 +63,19 @@ public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
         return ModelSupport.dependsOn(this, modelItem);
     }
 
-    public ModelItem getParent() {
-        return parent;
+    public String getName() {
+        return config.getName();
+    }
+
+    public void setName(String name) {
+        String old = getName();
+        name = name.trim();
+        config.setName(name);
+        notifyPropertyChanged(NAME_PROPERTY, old, name);
+    }
+
+    public String getId() {
+        return config.getId();
     }
 
     public ImageIcon getIcon() {
@@ -99,19 +108,20 @@ public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
         notifyPropertyChanged(DESCRIPTION_PROPERTY, old, description);
     }
 
-    public String getName() {
-        return config.getName();
-    }
-
-    public void setName(String name) {
-        String old = getName();
-        name = name.trim();
-        config.setName(name);
-        notifyPropertyChanged(NAME_PROPERTY, old, name);
-    }
-
     public XmlBeansSettingsImpl getSettings() {
         return settings;
+    }
+
+    public ModelItem getParent() {
+        return parent;
+    }
+
+    protected void setSettings(XmlBeansSettingsImpl settings) {
+        if (this.settings != null) {
+            this.settings.release();
+        }
+
+        this.settings = settings;
     }
 
     public T getConfig() {
@@ -136,12 +146,7 @@ public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
             config.addNewSettings();
         }
 
-        settings = new XmlBeansSettingsImpl(this, parent == null ? SoapUI.getSettings() : parent.getSettings(),
-                this.config.getSettings());
-    }
-
-    public String getId() {
-        return config.getId();
+        settings = new XmlBeansSettingsImpl(this, parent == null ? SoapUI.getSettings() : parent.getSettings(), this.config.getSettings());
     }
 
     private void ensureIdIsSet() {
@@ -150,16 +155,9 @@ public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
         }
     }
 
-    protected void setSettings(XmlBeansSettingsImpl settings) {
-        if (this.settings != null) {
-            this.settings.release();
-        }
-
-        this.settings = settings;
-    }
-
-    public ModelItem getWsdlModelItemByName(Collection<? extends ModelItem> items,
-                                            String name) {
+    public ModelItem getWsdlModelItemByName(
+        Collection<? extends ModelItem> items, String name
+    ) {
         for (ModelItem item : items) {
             if (item.getName() != null && item.getName().equals(name)) {
                 return item;
@@ -193,7 +191,7 @@ public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
 
         for (ModelItem modelItem : children) {
             if (modelItem instanceof AbstractWsdlModelItem<?>) {
-                ((AbstractWsdlModelItem<?>) modelItem).resolve(context);
+                ((AbstractWsdlModelItem<?>)modelItem).resolve(context);
             }
         }
     }
@@ -212,7 +210,7 @@ public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
 
         for (ModelItem modelItem : children) {
             if (modelItem instanceof AbstractWsdlModelItem<?>) {
-                ((AbstractWsdlModelItem<?>) modelItem).addExternalDependencies(dependencies);
+                ((AbstractWsdlModelItem<?>)modelItem).addExternalDependencies(dependencies);
             }
         }
     }
@@ -225,7 +223,7 @@ public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
 
         for (ModelItem modelItem : children) {
             if (modelItem instanceof AbstractWsdlModelItem<?>) {
-                ((AbstractWsdlModelItem<?>) modelItem).beforeSave();
+                ((AbstractWsdlModelItem<?>)modelItem).beforeSave();
             }
         }
     }
@@ -238,7 +236,7 @@ public abstract class AbstractWsdlModelItem<T extends ModelItemConfig>
 
         for (ModelItem modelItem : children) {
             if (modelItem instanceof AbstractWsdlModelItem<?>) {
-                ((AbstractWsdlModelItem<?>) modelItem).afterLoad();
+                ((AbstractWsdlModelItem<?>)modelItem).afterLoad();
             }
         }
     }

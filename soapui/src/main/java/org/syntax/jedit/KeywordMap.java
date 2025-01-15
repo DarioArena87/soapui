@@ -12,13 +12,13 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit;
 
-import javax.swing.text.Segment;
-
 import org.syntax.jedit.tokenmarker.Token;
+
+import javax.swing.text.Segment;
 
 /**
  * A <code>KeywordMap</code> is similar to a hashtable in that it maps keys to
@@ -31,6 +31,11 @@ import org.syntax.jedit.tokenmarker.Token;
  * @version $Id$
  */
 public class KeywordMap {
+    // protected members
+    protected int mapLength;
+    private final Keyword[] map;
+    private boolean ignoreCase;
+
     /**
      * Creates a new <code>KeywordMap</code>.
      *
@@ -108,12 +113,8 @@ public class KeywordMap {
         this.ignoreCase = ignoreCase;
     }
 
-    // protected members
-    protected int mapLength;
-
     protected int getStringMapKey(String s) {
-        return (Character.toUpperCase(s.charAt(0)) + Character.toUpperCase(s.charAt(s.length() - 1)))
-                % mapLength;
+        return (Character.toUpperCase(s.charAt(0)) + Character.toUpperCase(s.charAt(s.length() - 1))) % mapLength;
     }
 
     protected int getSegmentMapKey(Segment s, int off, int len) {
@@ -122,17 +123,13 @@ public class KeywordMap {
 
     // private members
     class Keyword {
+        public char[] keyword;
+        public byte id;
+        public Keyword next;
         public Keyword(char[] keyword, byte id, Keyword next) {
             this.keyword = keyword;
             this.id = id;
             this.next = next;
         }
-
-        public char[] keyword;
-        public byte id;
-        public Keyword next;
     }
-
-    private Keyword[] map;
-    private boolean ignoreCase;
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.soap;
@@ -56,6 +56,10 @@ public class WSARequestAssertion extends WsdlMessageAssertion implements Request
     public static final String ID = "WS-A Request Assertion";
     public static final String LABEL = "WS-Addressing Request";
     public static final String DESCRIPTION = "Validates that the last received request contains valid WS-Addressing Headers. Applicable to MockResponse TestSteps only.";
+    private static final String ASSERT_ACTION = "wsa:Action";
+    private static final String ASSERT_TO = "wsa:To";
+    private static final String ASSERT_REPLY_TO = "wsa:ReplyTo";
+    private static final String ASSERT_MESSAGE_ID = "wsa:MessageId";
     private WsaAssertionConfiguration wsaAssertionConfiguration;
     private boolean assertWsaAction;
     private boolean assertWsaTo;
@@ -65,10 +69,6 @@ public class WSARequestAssertion extends WsdlMessageAssertion implements Request
     // private boolean assertReplyToRefParams;
     // private boolean assertFaultToRefParams;
     private XFormDialog dialog;
-    private static final String ASSERT_ACTION = "wsa:Action";
-    private static final String ASSERT_TO = "wsa:To";
-    private static final String ASSERT_REPLY_TO = "wsa:ReplyTo";
-    private static final String ASSERT_MESSAGE_ID = "wsa:MessageId";
 
     // private static final String ASSERT_RELATES_TO = "wsa:RelatesTo";
     // private static final String ASSERT_REPLY_TO_REF_PARAMS =
@@ -95,53 +95,11 @@ public class WSARequestAssertion extends WsdlMessageAssertion implements Request
         // false);
         // assertFaultToRefParams = reader.readBoolean("assertFaultToRefParams",
         // false);
-        wsaAssertionConfiguration = new WsaAssertionConfiguration(assertWsaAction, assertWsaTo, assertWsaReplyTo,
-                assertWsaMessageId, false, false, false);
-    }
-
-    public static class Factory extends AbstractTestAssertionFactory {
-        public Factory() {
-            super(WSARequestAssertion.ID, WSARequestAssertion.LABEL, WSARequestAssertion.class,
-                    WsdlMockResponseTestStep.class);
-        }
-
-        @Override
-        public String getCategory() {
-            return AssertionCategoryMapping.STATUS_CATEGORY;
-        }
-
-        @Override
-        public Class<? extends WsdlMessageAssertion> getAssertionClassType() {
-            return WSARequestAssertion.class;
-        }
-
-        @Override
-        public AssertionListEntry getAssertionListEntry() {
-            return new AssertionListEntry(WSARequestAssertion.ID, WSARequestAssertion.LABEL,
-                    WSARequestAssertion.DESCRIPTION);
-        }
+        wsaAssertionConfiguration = new WsaAssertionConfiguration(assertWsaAction, assertWsaTo, assertWsaReplyTo, assertWsaMessageId, false, false, false);
     }
 
     @Override
-    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
-        try {
-            new WsaValidator((WsdlMessageExchange) messageExchange, wsaAssertionConfiguration)
-                    .validateWsAddressingRequest();
-        } catch (AssertionException e) {
-            throw new AssertionException(new AssertionError(e.getMessage()));
-        } catch (XmlException e) {
-            SoapUI.logError(e);
-            throw new AssertionException(new AssertionError(
-                    "There has been some XmlException, ws-a couldn't be validated properly."));
-        }
-
-        return "Request WS-Addressing is valid";
-    }
-
-    @Override
-    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
+    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
         // try
         // {
         // new WsaValidator( (WsdlMessageExchange) messageExchange,
@@ -164,8 +122,25 @@ public class WSARequestAssertion extends WsdlMessageAssertion implements Request
         return null;
     }
 
-    protected String internalAssertProperty(TestPropertyHolder source, String propertyName,
-                                            MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+    @Override
+    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+        try {
+            new WsaValidator((WsdlMessageExchange)messageExchange, wsaAssertionConfiguration).validateWsAddressingRequest();
+        }
+        catch (AssertionException e) {
+            throw new AssertionException(new AssertionError(e.getMessage()));
+        }
+        catch (XmlException e) {
+            SoapUI.logError(e);
+            throw new AssertionException(new AssertionError("There has been some XmlException, ws-a couldn't be validated properly."));
+        }
+
+        return "Request WS-Addressing is valid";
+    }
+
+    protected String internalAssertProperty(
+        TestPropertyHolder source, String propertyName, MessageExchange messageExchange, SubmitContext context
+    ) throws AssertionException {
         return null;
     }
 
@@ -196,8 +171,7 @@ public class WSARequestAssertion extends WsdlMessageAssertion implements Request
             // .getBoolean(ASSERT_FAULT_TO_REF_PARAMS);
         }
 
-        wsaAssertionConfiguration = new WsaAssertionConfiguration(assertWsaAction, assertWsaTo, assertWsaReplyTo,
-                assertWsaMessageId, false, false, false);
+        wsaAssertionConfiguration = new WsaAssertionConfiguration(assertWsaAction, assertWsaTo, assertWsaReplyTo, assertWsaMessageId, false, false, false);
         setConfiguration(createConfiguration());
         return true;
     }
@@ -216,8 +190,7 @@ public class WSARequestAssertion extends WsdlMessageAssertion implements Request
         // mainForm.addCheckBox(ASSERT_FAULT_TO_REF_PARAMS,
         // "Check if 'wsa:FaultTo' ReferenceParameters exist");
 
-        dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.SIMPLE_CONTAINS_HELP_URL),
-                "Specify options", UISupport.OPTIONS_ICON);
+        dialog = builder.buildDialog(builder.buildOkCancelHelpActions(HelpUrls.SIMPLE_CONTAINS_HELP_URL), "Specify options", UISupport.OPTIONS_ICON);
     }
 
     protected XmlObject createConfiguration() {
@@ -232,4 +205,24 @@ public class WSARequestAssertion extends WsdlMessageAssertion implements Request
         return builder.finish();
     }
 
+    public static class Factory extends AbstractTestAssertionFactory {
+        public Factory() {
+            super(ID, LABEL, WSARequestAssertion.class, WsdlMockResponseTestStep.class);
+        }
+
+        @Override
+        public Class<? extends WsdlMessageAssertion> getAssertionClassType() {
+            return WSARequestAssertion.class;
+        }
+
+        @Override
+        public AssertionListEntry getAssertionListEntry() {
+            return new AssertionListEntry(ID, LABEL, DESCRIPTION);
+        }
+
+        @Override
+        public String getCategory() {
+            return AssertionCategoryMapping.STATUS_CATEGORY;
+        }
+    }
 }

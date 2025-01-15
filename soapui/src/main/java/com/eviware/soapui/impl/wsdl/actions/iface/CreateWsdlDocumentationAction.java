@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface;
@@ -43,14 +43,12 @@ import java.util.Map;
 public class CreateWsdlDocumentationAction extends AbstractSoapUIAction<WsdlInterface> {
     public static final String SOAPUI_ACTION_ID = "CreateWsdlDocumentationAction";
 
-    private static final String REPORT_DIRECTORY_SETTING = CreateWsdlDocumentationAction.class.getSimpleName()
-            + "@report-directory";
-    private XFormDialog dialog;
+    private static final String REPORT_DIRECTORY_SETTING = CreateWsdlDocumentationAction.class.getSimpleName() + "@report-directory";
     private static Map<String, Transformer> transformers;
+    private XFormDialog dialog;
 
     public CreateWsdlDocumentationAction() {
-        super("CreateWsdlDocumentationAction", "Generate Documentation",
-                "Generate simple HTML Documentation for this WSDL");
+        super("CreateWsdlDocumentationAction", "Generate Documentation", "Generate simple HTML Documentation for this WSDL");
     }
 
     public void perform(WsdlInterface target, Object param) {
@@ -68,18 +66,29 @@ public class CreateWsdlDocumentationAction extends AbstractSoapUIAction<WsdlInte
 
             settings.setString(REPORT_DIRECTORY_SETTING, dialog.getValue(Form.OUTPUT_FOLDER));
 
-            final File reportDirectory = new File(settings.getString(REPORT_DIRECTORY_SETTING, ""));
+            File reportDirectory = new File(settings.getString(REPORT_DIRECTORY_SETTING, ""));
             String reportDirAbsolutePath = reportDirectory.getAbsolutePath();
             String filename = reportDirAbsolutePath + File.separatorChar + "report.xml";
             String reportUrl = transform(target, reportDirAbsolutePath, filename);
             Tools.openURL(reportUrl);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(e);
         }
     }
 
-    private static String transform(WsdlInterface target, String reportDirAbsolutePath, String filename)
-            throws Exception {
+    protected static void initTransformers() throws Exception {
+        transformers = new HashMap<String, Transformer>();
+        TransformerFactory xformFactory = TransformerFactory.newInstance();
+
+        Transformer transformer = xformFactory.newTransformer(new StreamSource(SoapUI.class.getResourceAsStream("/com/eviware/soapui/resources/doc/wsdl-viewer.xsl")
+
+                                                                               // new File( "C:\\dev\\wsdl-viewer-1.3\\wsdl-viewer.xsl")
+        ));
+        transformers.put("WSDL", transformer);
+    }
+
+    private static String transform(WsdlInterface target, String reportDirAbsolutePath, String filename) throws Exception {
         if (transformers == null) {
             initTransformers();
         }
@@ -103,21 +112,9 @@ public class CreateWsdlDocumentationAction extends AbstractSoapUIAction<WsdlInte
         return reportUrl;
     }
 
-    protected static void initTransformers() throws Exception {
-        transformers = new HashMap<String, Transformer>();
-        TransformerFactory xformFactory = TransformerFactory.newInstance();
-
-        Transformer transformer = xformFactory.newTransformer(new StreamSource(SoapUI.class
-                .getResourceAsStream("/com/eviware/soapui/resources/doc/wsdl-viewer.xsl")
-
-                // new File( "C:\\dev\\wsdl-viewer-1.3\\wsdl-viewer.xsl")
-        ));
-        transformers.put("WSDL", transformer);
-    }
-
     @AForm(description = "Creates an HTML-Report for the interface WSDL", name = "Create Documentation", helpUrl = HelpUrls.CREATEWADLDOC_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
     public interface Form {
         @AField(name = "Output Folder", description = "The folder where to create the report", type = AFieldType.FOLDER)
-        public final static String OUTPUT_FOLDER = "Output Folder";
+        String OUTPUT_FOLDER = "Output Folder";
     }
 }

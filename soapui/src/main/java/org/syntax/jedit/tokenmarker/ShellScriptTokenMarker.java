@@ -12,13 +12,13 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
-import javax.swing.text.Segment;
-
 import org.syntax.jedit.SyntaxUtilities;
+
+import javax.swing.text.Segment;
 
 /**
  * Shell script token marker.
@@ -39,11 +39,12 @@ public class ShellScriptTokenMarker extends TokenMarker {
         int length = line.count + offset;
 
         if (token == Token.LITERAL1 && lineIndex != 0 && lineInfo[lineIndex - 1].obj != null) {
-            String str = (String) lineInfo[lineIndex - 1].obj;
+            String str = (String)lineInfo[lineIndex - 1].obj;
             if (str != null && str.length() == line.count && SyntaxUtilities.regionMatches(false, line, offset, str)) {
                 addToken(line.count, Token.LITERAL1);
                 return Token.NULL;
-            } else {
+            }
+            else {
                 addToken(line.count, Token.LITERAL1);
                 lineInfo[lineIndex].obj = str;
                 return Token.LITERAL1;
@@ -89,14 +90,16 @@ public class ShellScriptTokenMarker extends TokenMarker {
                         case ';':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 cmdState = 0; /* beforeCmd */
                             }
                             break;
                         case '#':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 addToken(length - i, Token.COMMENT1);
                                 lastOffset = length;
@@ -106,7 +109,8 @@ public class ShellScriptTokenMarker extends TokenMarker {
                         case '$':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 cmdState = 2; /* afterCmd */
                                 lastOffset = i;
@@ -121,7 +125,8 @@ public class ShellScriptTokenMarker extends TokenMarker {
                                             token = Token.KEYWORD2;
                                             break;
                                     }
-                                } else {
+                                }
+                                else {
                                     token = Token.KEYWORD2;
                                 }
                             }
@@ -129,7 +134,8 @@ public class ShellScriptTokenMarker extends TokenMarker {
                         case '"':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 token = Token.LITERAL1;
                                 lineInfo[lineIndex].obj = null;
@@ -140,7 +146,8 @@ public class ShellScriptTokenMarker extends TokenMarker {
                         case '\'':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 addToken(i - lastOffset, token);
                                 token = Token.LITERAL2;
                                 cmdState = 2; /* afterCmd */
@@ -150,7 +157,8 @@ public class ShellScriptTokenMarker extends TokenMarker {
                         case '<':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 if (length - i > 1 && array[i1] == '<') {
                                     addToken(i - lastOffset, token);
                                     token = Token.LITERAL1;
@@ -179,7 +187,8 @@ public class ShellScriptTokenMarker extends TokenMarker {
                             lastOffset = i1;
                             token = Token.NULL;
                             continue;
-                        } else {
+                        }
+                        else {
                             addToken(i - lastOffset, token);
                             lastOffset = i;
                             token = Token.NULL;
@@ -189,24 +198,28 @@ public class ShellScriptTokenMarker extends TokenMarker {
                 case Token.LITERAL1:
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '"') {
+                    }
+                    else if (c == '"') {
                         addToken(i1 - lastOffset, token);
                         cmdState = 2; /* afterCmd */
                         lastOffset = i1;
                         token = Token.NULL;
-                    } else {
+                    }
+                    else {
                         backslash = false;
                     }
                     break;
                 case Token.LITERAL2:
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '\'') {
+                    }
+                    else if (c == '\'') {
                         addToken(i1 - lastOffset, Token.LITERAL1);
                         cmdState = 2; /* afterCmd */
                         lastOffset = i1;
                         token = Token.NULL;
-                    } else {
+                    }
+                    else {
                         backslash = false;
                     }
                     break;
@@ -227,7 +240,8 @@ public class ShellScriptTokenMarker extends TokenMarker {
             case Token.NULL:
                 if (cmdState == 1) {
                     addToken(length - lastOffset, Token.KEYWORD1);
-                } else {
+                }
+                else {
                     addToken(length - lastOffset, token);
                 }
                 break;

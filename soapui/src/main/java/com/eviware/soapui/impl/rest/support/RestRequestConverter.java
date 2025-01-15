@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.support;
@@ -66,8 +66,8 @@ import java.util.Map;
  */
 public class RestRequestConverter {
 
-    private static Map<Project, Boolean> autoConvert = new HashMap<Project, Boolean>();
     private final static Logger log = LogManager.getLogger(RestRequestConverter.class);
+    private static final Map<Project, Boolean> autoConvert = new HashMap<Project, Boolean>();
 
     public static void convert(RestResource resource, OldRestRequestConfig oldConfig) {
         convert(resource, oldConfig, getMethod(resource, oldConfig.getMethod(), oldConfig.getName()));
@@ -76,15 +76,12 @@ public class RestRequestConverter {
     public static RestMethod getMethod(RestResource resource, String methodType, String requestName) {
         WsdlProject project = resource.getService().getProject();
         if (!autoConvert.containsKey(project)) {
-            autoConvert
-                    .put(project,
-                            UISupport
-                                    .confirm(
-                                            "The model for REST requests has changed slightly,\r\n"
-                                                    + "introducing a new REST Method item in-between each REST Resource and Request.\r\n"
-                                                    + "Any existing REST Request must now be placed under either an existing Method or a new one, "
-                                                    + "either automatically or manually.\r\n\r\nWould You like SoapUI to do this automatically using the default values?",
-                                            "Update REST model for project: " + project.getName()));
+            autoConvert.put(project, UISupport.confirm("The model for REST requests has changed slightly,\r\n" +
+                                                       "introducing a new REST Method item in-between each REST Resource and Request.\r\n" +
+                                                       "Any existing REST Request must now be placed under either an existing Method or a new one, " +
+                                                       "either automatically or manually.\r\n\r\nWould You like SoapUI to do this automatically using the default values?",
+                                                       "Update REST model for project: " + project.getName()
+            ));
         }
         RestMethod method = null;
         List<String> options = new ArrayList<String>();
@@ -97,14 +94,15 @@ public class RestRequestConverter {
         if (autoConvert.get(project)) {
             if (options.size() > 0) {
                 method = resource.getRestMethodByName(options.get(0));
-                log.info("Placed request '" + requestName + "' under method '" + method.getName() + "' in Resource '"
-                        + resource.getName() + "'.");
-            } else {
+                log.info("Placed request '" + requestName + "' under method '" + method.getName() + "' in Resource '" + resource.getName() + "'.");
+            }
+            else {
                 method = resource.addNewMethod(methodType + " Method");
                 method.setMethod(RestRequestInterface.HttpMethod.valueOf(methodType));
                 log.info("Created new Method for Resource '" + resource.getName() + "'.");
             }
-        } else {
+        }
+        else {
             options.add("[Create new REST Method]");
             if (requestName == null) {
                 requestName = "REST Request";
@@ -114,14 +112,14 @@ public class RestRequestConverter {
             if (op != null) {
                 int ix = options.indexOf(op);
                 if (ix != -1 && ix != options.size() - 1) {
-                    method = resource.getRestMethodByName((String) op);
+                    method = resource.getRestMethodByName((String)op);
                 }
-            } else {
+            }
+            else {
                 throw new RestConversionException("Cannot get RestMethod selection!");
             }
             if (method == null) {
-                String name = UISupport.prompt("Name for REST " + methodType + " Method", "Create new REST Method",
-                        methodType + " Method");
+                String name = UISupport.prompt("Name for REST " + methodType + " Method", "Create new REST Method", methodType + " Method");
                 if (name == null) {
                     throw new RestConversionException("Cannot get name for RestMethod!");
                 }
@@ -137,13 +135,14 @@ public class RestRequestConverter {
 
         WsdlProject project = requestStep.getTestCase().getTestSuite().getProject();
         String serviceName = requestStep.getRequestStepConfig().getService();
-        RestService service = (RestService) project.getInterfaceByName(serviceName);
+        RestService service = (RestService)project.getInterfaceByName(serviceName);
         if (service != null) {
             addResources(service, options);
-        } else {
+        }
+        else {
             for (Interface iface : project.getInterfaceList()) {
                 if (iface instanceof RestService) {
-                    addResources((RestService) iface, options);
+                    addResources((RestService)iface, options);
                 }
             }
         }
@@ -156,123 +155,26 @@ public class RestRequestConverter {
         return resource;
     }
 
-    private static void addResources(RestService service, Map<String, RestResource> list) {
-        for (RestResource resource : service.getResources().values()) {
-            list.put(service.getName() + " > " + resource.getName(), resource);
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    private static void convert(RestResource resource, OldRestRequestConfig oldConfig, RestMethod method) {
-
-        RestRequest request = method.addNewRequest(oldConfig.getName());
-
-        XmlBeansRestParamsTestPropertyHolder params = new XmlBeansRestParamsTestPropertyHolder(null,
-                oldConfig.getParameters());
-        RestParamsPropertyHolder parentParams = method.getOverlayParams();
-
-        for (TestProperty prop : params.values()) {
-            if (!parentParams.containsKey(prop.getName())) {
-                method.getParams().addParameter((RestParamProperty) prop);
-            }
-            request.setPropertyValue(prop.getName(), prop.getValue());
-        }
-        params.release();
-
-        boolean exists;
-        for (RestResourceRepresentationConfig rep : oldConfig.getRepresentationList()) {
-            exists = false;
-            for (RestRepresentation existing : method.getRepresentations(
-                    RestRepresentation.Type.valueOf(rep.getType().toString()), rep.getMediaType())) {
-                if (existing.getElement() == null && rep.getElement() == null
-                        || existing.getElement().equals(rep.getElement())) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
-                RestRepresentation repr = method.addNewRepresentation(RestRepresentation.Type.valueOf(rep.getType()
-                        .toString()));
-                repr.setConfig((RestResourceRepresentationConfig) rep.copy());
-            }
-        }
-
-        RestRequestConfig newConfig = request.getConfig();
-
-        newConfig.setRequest(oldConfig.getRequest());
-
-        for (AttachmentConfig ac : oldConfig.getAttachmentList()) {
-            try {
-                if (ac.isSetData()) {
-                    File temp = File.createTempFile("pattern", ".suffix");
-                    temp.deleteOnExit();
-                    FileOutputStream out = new FileOutputStream(temp);
-                    out.write(ac.getData());
-                    request.attachFile(temp, true);
-                } else {
-                    request.attachFile(new File(ac.getUrl()), false);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        newConfig.setAttachmentArray(oldConfig.getAttachmentArray());
-
-        if (oldConfig.isSetFullPath()) {
-            newConfig.setFullPath(oldConfig.getFullPath());
-        }
-        if (oldConfig.isSetMediaType()) {
-            newConfig.setMediaType(oldConfig.getMediaType());
-        }
-        if (oldConfig.isSetPostQueryString()) {
-            newConfig.setPostQueryString(oldConfig.getPostQueryString());
-        }
-        if (oldConfig.isSetAccept()) {
-            newConfig.setAccept(oldConfig.getAccept());
-        }
-        if (oldConfig.isSetDescription()) {
-            newConfig.setDescription(oldConfig.getDescription());
-        }
-        if (oldConfig.isSetId()) {
-            newConfig.setId(oldConfig.getId());
-        }
-        if (oldConfig.isSetSettings()) {
-            newConfig.setSettings((SettingsConfig) oldConfig.getSettings().copy());
-        }
-        if (oldConfig.isSetSslKeystore()) {
-            newConfig.setSslKeystore(oldConfig.getSslKeystore());
-        }
-        if (oldConfig.isSetTimestamp()) {
-            newConfig.setTimestamp(oldConfig.getTimestamp());
-        }
-        if (oldConfig.isSetWadlId()) {
-            newConfig.setWadlId(oldConfig.getWadlId());
-        }
-
-        request.updateConfig(newConfig);
-
-    }
-
     public static HttpRequestConfig convert(OldRestRequestConfig old) {
         HttpRequestConfig config = HttpRequestConfig.Factory.newInstance();
         config.setAssertionArray(old.getAssertionList().toArray(new TestAssertionConfig[old.sizeOfAssertionArray()]));
         config.setAttachmentArray(old.getAttachmentList().toArray(new AttachmentConfig[old.sizeOfAttachmentArray()]));
         XmlObject obj = old.getCredentials();
         if (obj != null) {
-            config.setCredentials((CredentialsConfig) obj.copy());
+            config.setCredentials((CredentialsConfig)obj.copy());
         }
         obj = old.getParameters();
         if (obj != null) {
-            config.setParameters((RestParametersConfig) obj.copy());
+            config.setParameters((RestParametersConfig)obj.copy());
         }
 
         obj = old.getRequest();
         if (obj != null) {
-            config.setRequest((CompressedStringConfig) obj.copy());
+            config.setRequest((CompressedStringConfig)obj.copy());
         }
         obj = old.getSettings();
         if (obj != null) {
-            config.setSettings((SettingsConfig) obj.copy());
+            config.setSettings((SettingsConfig)obj.copy());
         }
         if (old.isSetDescription()) {
             config.setDescription(old.getDescription());
@@ -298,26 +200,20 @@ public class RestRequestConverter {
     public static HttpRequestConfig updateIfNeeded(XmlObject config) {
         try {
             if (config instanceof RestRequestStepConfig) {
-                return convert(OldRestRequestConfig.Factory.parse(config.selectChildren(
-                        "http://eviware.com/soapui/config", "restRequest")[0].toString()));
-            } else {
-                return (HttpRequestConfig) config.changeType(HttpRequestConfig.type);
+                return convert(OldRestRequestConfig.Factory.parse(config.selectChildren("http://eviware.com/soapui/config", "restRequest")[0].toString()));
             }
-        } catch (XmlException e) {
-            return HttpRequestConfig.Factory.newInstance();
+            else {
+                return (HttpRequestConfig)config.changeType(HttpRequestConfig.type);
+            }
         }
-    }
-
-    public static class RestConversionException extends RuntimeException {
-        public RestConversionException(String message) {
-            super(message);
+        catch (XmlException e) {
+            return HttpRequestConfig.Factory.newInstance();
         }
     }
 
     public static void updateRestTestRequest(RestTestRequestStep restTestRequestStep) {
         try {
-            RestRequestStepConfig restRequestStepConfig = (RestRequestStepConfig) restTestRequestStep.getConfig()
-                    .getConfig();
+            RestRequestStepConfig restRequestStepConfig = (RestRequestStepConfig)restTestRequestStep.getConfig().getConfig();
             RestRequestConfig restRequestConfig = restRequestStepConfig.getRestRequest();
             OldRestRequestConfig oldConfig = OldRestRequestConfig.Factory.parse(restRequestConfig.toString());
 
@@ -333,11 +229,111 @@ public class RestRequestConverter {
                     }
                 }
 
-                restRequestConfig.getParameters().getDomNode().getParentNode()
-                        .removeChild(restRequestConfig.getParameters().getDomNode());
+                restRequestConfig.getParameters().getDomNode().getParentNode().removeChild(restRequestConfig.getParameters().getDomNode());
             }
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             SoapUI.logError(e);
+        }
+    }
+
+    private static void addResources(RestService service, Map<String, RestResource> list) {
+        for (RestResource resource : service.getResources().values()) {
+            list.put(service.getName() + " > " + resource.getName(), resource);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void convert(RestResource resource, OldRestRequestConfig oldConfig, RestMethod method) {
+
+        RestRequest request = method.addNewRequest(oldConfig.getName());
+
+        XmlBeansRestParamsTestPropertyHolder params = new XmlBeansRestParamsTestPropertyHolder(null, oldConfig.getParameters());
+        RestParamsPropertyHolder parentParams = method.getOverlayParams();
+
+        for (TestProperty prop : params.values()) {
+            if (!parentParams.containsKey(prop.getName())) {
+                method.getParams().addParameter((RestParamProperty)prop);
+            }
+            request.setPropertyValue(prop.getName(), prop.getValue());
+        }
+        params.release();
+
+        boolean exists;
+        for (RestResourceRepresentationConfig rep : oldConfig.getRepresentationList()) {
+            exists = false;
+            for (RestRepresentation existing : method.getRepresentations(RestRepresentation.Type.valueOf(rep.getType().toString()), rep.getMediaType())) {
+                if (existing.getElement() == null && rep.getElement() == null || existing.getElement().equals(rep.getElement())) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                RestRepresentation repr = method.addNewRepresentation(RestRepresentation.Type.valueOf(rep.getType().toString()));
+                repr.setConfig((RestResourceRepresentationConfig)rep.copy());
+            }
+        }
+
+        RestRequestConfig newConfig = request.getConfig();
+
+        newConfig.setRequest(oldConfig.getRequest());
+
+        for (AttachmentConfig ac : oldConfig.getAttachmentList()) {
+            try {
+                if (ac.isSetData()) {
+                    File temp = File.createTempFile("pattern", ".suffix");
+                    temp.deleteOnExit();
+                    FileOutputStream out = new FileOutputStream(temp);
+                    out.write(ac.getData());
+                    request.attachFile(temp, true);
+                }
+                else {
+                    request.attachFile(new File(ac.getUrl()), false);
+                }
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        newConfig.setAttachmentArray(oldConfig.getAttachmentArray());
+
+        if (oldConfig.isSetFullPath()) {
+            newConfig.setFullPath(oldConfig.getFullPath());
+        }
+        if (oldConfig.isSetMediaType()) {
+            newConfig.setMediaType(oldConfig.getMediaType());
+        }
+        if (oldConfig.isSetPostQueryString()) {
+            newConfig.setPostQueryString(oldConfig.getPostQueryString());
+        }
+        if (oldConfig.isSetAccept()) {
+            newConfig.setAccept(oldConfig.getAccept());
+        }
+        if (oldConfig.isSetDescription()) {
+            newConfig.setDescription(oldConfig.getDescription());
+        }
+        if (oldConfig.isSetId()) {
+            newConfig.setId(oldConfig.getId());
+        }
+        if (oldConfig.isSetSettings()) {
+            newConfig.setSettings((SettingsConfig)oldConfig.getSettings().copy());
+        }
+        if (oldConfig.isSetSslKeystore()) {
+            newConfig.setSslKeystore(oldConfig.getSslKeystore());
+        }
+        if (oldConfig.isSetTimestamp()) {
+            newConfig.setTimestamp(oldConfig.getTimestamp());
+        }
+        if (oldConfig.isSetWadlId()) {
+            newConfig.setWadlId(oldConfig.getWadlId());
+        }
+
+        request.updateConfig(newConfig);
+    }
+
+    public static class RestConversionException extends RuntimeException {
+        public RestConversionException(String message) {
+            super(message);
         }
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.wss;
@@ -24,53 +24,53 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public interface WssContainer extends PropertyExpansionContainer {
-    public ModelItem getModelItem();
+    ModelItem getModelItem();
 
-    public void addWssContainerListener(WssContainerListener listener);
+    void addWssContainerListener(WssContainerListener listener);
 
-    public void removeWssContainerListener(WssContainerListener listener);
+    void removeWssContainerListener(WssContainerListener listener);
 
-    public List<WssCrypto> getCryptoList();
+    List<WssCrypto> getCryptoList();
 
-    public WssCrypto addCrypto(String source, String password, @Nonnull CryptoType type);
+    WssCrypto addCrypto(String source, String password, @Nonnull CryptoType type);
 
-    public int getCryptoCount();
+    int getCryptoCount();
 
-    public void removeCrypto(@Nonnull WssCrypto crypto);
+    void removeCrypto(@Nonnull WssCrypto crypto);
 
-    public List<IncomingWss> getIncomingWssList();
+    List<IncomingWss> getIncomingWssList();
 
-    public IncomingWss addIncomingWss(String label);
+    IncomingWss addIncomingWss(String label);
 
-    public int getIncomingWssCount();
+    int getIncomingWssCount();
 
-    public IncomingWss getIncomingWssAt(int index);
+    IncomingWss getIncomingWssAt(int index);
 
-    public void removeIncomingWssAt(int row);
+    void removeIncomingWssAt(int row);
 
-    public List<OutgoingWss> getOutgoingWssList();
+    List<OutgoingWss> getOutgoingWssList();
 
-    public OutgoingWss addOutgoingWss(String label);
+    OutgoingWss addOutgoingWss(String label);
 
-    public int getOutgoingWssCount();
+    int getOutgoingWssCount();
 
-    public OutgoingWss getOutgoingWssAt(int index);
+    OutgoingWss getOutgoingWssAt(int index);
 
-    public void removeOutgoingWssAt(int row);
+    void removeOutgoingWssAt(int row);
 
-    public WssCrypto getCryptoByName(String cryptoName);
+    WssCrypto getCryptoByName(String cryptoName);
 
-    public WssCrypto getCryptoByName(String cryptoName, boolean outgoingWSSConfig);
+    WssCrypto getCryptoByName(String cryptoName, boolean outgoingWSSConfig);
 
-    public OutgoingWss getOutgoingWssByName(String outgoingName);
+    OutgoingWss getOutgoingWssByName(String outgoingName);
 
-    public IncomingWss getIncomingWssByName(String incomingName);
+    IncomingWss getIncomingWssByName(String incomingName);
 
-    public String[] getCryptoNames();
+    String[] getCryptoNames();
 
-    public String[] getOutgoingWssNames();
+    String[] getOutgoingWssNames();
 
-    public String[] getIncomingWssNames();
+    String[] getIncomingWssNames();
 
-    public void importConfig(WssContainer wssContainer);
+    void importConfig(WssContainer wssContainer);
 }

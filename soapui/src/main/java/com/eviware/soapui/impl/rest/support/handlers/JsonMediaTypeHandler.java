@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.support.handlers;
@@ -33,6 +33,10 @@ import net.sf.json.JSONException;
 import java.net.URL;
 
 public class JsonMediaTypeHandler implements MediaTypeHandler {
+
+    public static String makeNamespaceUriFrom(URL url) {
+        return url.getProtocol() + "://" + url.getHost() + url.getPath();
+    }
 
     public boolean canHandle(String contentType) {
         return JsonUtil.seemsToBeJsonContentType(contentType);
@@ -62,13 +66,14 @@ public class JsonMediaTypeHandler implements MediaTypeHandler {
             content = XmlUtils.prettyPrintXml(content);
 
             return content;
-        } catch (JSONException ignore) {
+        }
+        catch (JSONException ignore) {
             // if the content is not valid JSON, empty XML will be returned
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
         return "<xml/>";
-
     }
 
     public String createXmlRepresentation(TypedContent typedContent) {
@@ -88,9 +93,11 @@ public class JsonMediaTypeHandler implements MediaTypeHandler {
             content = XmlUtils.prettyPrintXml(content);
 
             return content;
-        } catch (JSONException ignore) {
+        }
+        catch (JSONException ignore) {
             // if the content is not valid JSON, empty XML will be returned
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
         return "<xml/>";
@@ -98,19 +105,16 @@ public class JsonMediaTypeHandler implements MediaTypeHandler {
 
     private String readOriginalUriFrom(AbstractHttpRequestInterface<?> request) {
         if (request instanceof RestRequest) {
-            AbstractRequestConfig config = ((RestRequest) request).getConfig();
+            AbstractRequestConfig config = ((RestRequest)request).getConfig();
             String originalUri = config.getOriginalUri();
             // if URI contains unexpanded template parameters
             if (originalUri != null && originalUri.contains("{")) {
                 return null;
             }
             return originalUri;
-        } else {
+        }
+        else {
             return null;
         }
-    }
-
-    public static String makeNamespaceUriFrom(URL url) {
-        return url.getProtocol() + "://" + url.getHost() + url.getPath();
     }
 }

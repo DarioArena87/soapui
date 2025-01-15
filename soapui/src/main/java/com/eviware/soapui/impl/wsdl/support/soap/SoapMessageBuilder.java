@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.soap;
@@ -61,9 +61,44 @@ public class SoapMessageBuilder implements MessageBuilder {
     private WsdlInterface iface;
     private Map<QName, String[]> multiValues = null;
 
+    public static String buildFault(String faultcode, String faultstring, SoapVersion soapVersion) {
+        SampleXmlUtil generator = new SampleXmlUtil(false);
+        generator.setTypeComment(false);
+        generator.setIgnoreOptional(true);
+
+        String emptyResponse = buildEmptyFault(generator, soapVersion);
+
+        if (soapVersion == SoapVersion.Soap11) {
+            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//faultcode", faultcode);
+            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//faultstring", faultstring);
+        }
+        else if (soapVersion == SoapVersion.Soap12) {
+            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Value", faultcode);
+            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Text", faultstring);
+            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Text/@xml:lang", "en");
+        }
+
+        return emptyResponse;
+    }
+
+    public static String buildEmptyFault(SoapVersion soapVersion) {
+        SampleXmlUtil generator = new SampleXmlUtil(false);
+
+        String emptyResponse = buildEmptyFault(generator, soapVersion);
+
+        return emptyResponse;
+    }
+
+    public static String buildEmptyMessage(SoapVersion soapVersion) {
+        SampleXmlUtil generator = new SampleXmlUtil(false);
+        generator.setTypeComment(false);
+        generator.setIgnoreOptional(true);
+        return generator.createSample(soapVersion.getEnvelopeType());
+    }
+
     public SoapMessageBuilder(WsdlInterface iface) throws Exception {
         this.iface = iface;
-        this.wsdlContext = iface.getWsdlContext();
+        wsdlContext = iface.getWsdlContext();
     }
 
     public SoapMessageBuilder(WsdlContext wsdlContext) {
@@ -78,6 +113,10 @@ public class SoapMessageBuilder implements MessageBuilder {
         return iface;
     }
 
+    public void setInterface(WsdlInterface iface) {
+        this.iface = iface;
+    }
+
     public String buildFault(String faultcode, String faultstring) {
         return buildFault(faultcode, faultstring, getSoapVersion());
     }
@@ -86,76 +125,21 @@ public class SoapMessageBuilder implements MessageBuilder {
         return iface == null ? wsdlContext.getSoapVersion() : iface.getSoapVersion();
     }
 
-    public static String buildFault(String faultcode, String faultstring, SoapVersion soapVersion) {
-        SampleXmlUtil generator = new SampleXmlUtil(false);
-        generator.setTypeComment(false);
-        generator.setIgnoreOptional(true);
-
-        String emptyResponse = buildEmptyFault(generator, soapVersion);
-
-        if (soapVersion == SoapVersion.Soap11) {
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//faultcode", faultcode);
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//faultstring", faultstring);
-        } else if (soapVersion == SoapVersion.Soap12) {
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Value", faultcode);
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Text", faultstring);
-            emptyResponse = XmlUtils.setXPathContent(emptyResponse, "//soap:Text/@xml:lang", "en");
-        }
-
-        return emptyResponse;
-    }
-
     public String buildEmptyFault() {
         return buildEmptyFault(getSoapVersion());
-    }
-
-    public static String buildEmptyFault(SoapVersion soapVersion) {
-        SampleXmlUtil generator = new SampleXmlUtil(false);
-
-        String emptyResponse = buildEmptyFault(generator, soapVersion);
-
-        return emptyResponse;
-    }
-
-    private static String buildEmptyFault(SampleXmlUtil generator, SoapVersion soapVersion) {
-        String emptyResponse = buildEmptyMessage(soapVersion);
-        try {
-            // XmlObject xmlObject = XmlObject.Factory.parse( emptyResponse );
-            XmlObject xmlObject = XmlUtils.createXmlObject(emptyResponse);
-            XmlCursor cursor = xmlObject.newCursor();
-
-            if (cursor.toChild(soapVersion.getEnvelopeQName()) && cursor.toChild(soapVersion.getBodyQName())) {
-                SchemaType faultType = soapVersion.getFaultType();
-                Node bodyNode = cursor.getDomNode();
-                Document dom = XmlUtils.parseXml(generator.createSample(faultType));
-                bodyNode.appendChild(bodyNode.getOwnerDocument().importNode(dom.getDocumentElement(), true));
-            }
-
-            cursor.dispose();
-            emptyResponse = xmlObject.toString();
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
-        return emptyResponse;
     }
 
     public String buildEmptyMessage() {
         return buildEmptyMessage(getSoapVersion());
     }
 
-    public static String buildEmptyMessage(SoapVersion soapVersion) {
-        SampleXmlUtil generator = new SampleXmlUtil(false);
-        generator.setTypeComment(false);
-        generator.setIgnoreOptional(true);
-        return generator.createSample(soapVersion.getEnvelopeType());
-    }
-
     public String buildSoapMessageFromInput(BindingOperation bindingOperation, boolean buildOptional) throws Exception {
         return buildSoapMessageFromInput(bindingOperation, buildOptional, true);
     }
 
-    public String buildSoapMessageFromInput(BindingOperation bindingOperation, boolean buildOptional,
-                                            boolean alwaysBuildHeaders) throws Exception {
+    public String buildSoapMessageFromInput(
+        BindingOperation bindingOperation, boolean buildOptional, boolean alwaysBuildHeaders
+    ) throws Exception {
         boolean inputSoapEncoded = WsdlUtils.isInputSoapEncoded(bindingOperation);
         SampleXmlUtil xmlGenerator = new SampleXmlUtil(inputSoapEncoded);
         xmlGenerator.setMultiValues(multiValues);
@@ -178,7 +162,8 @@ public class SoapMessageBuilder implements MessageBuilder {
 
         if (WsdlUtils.isRpc(wsdlContext.getDefinition(), bindingOperation)) {
             buildRpcRequest(bindingOperation, cursor, xmlGenerator);
-        } else {
+        }
+        else {
             buildDocumentRequest(bindingOperation, cursor, xmlGenerator);
         }
 
@@ -196,7 +181,8 @@ public class SoapMessageBuilder implements MessageBuilder {
             StringWriter writer = new StringWriter();
             XmlUtils.serializePretty(object, writer);
             return writer.toString();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return object.xmlText();
         }
@@ -224,7 +210,8 @@ public class SoapMessageBuilder implements MessageBuilder {
 
             if (part != null) {
                 createElementForPart(part, cursor, xmlGenerator);
-            } else {
+            }
+            else {
                 log.error("Missing part for header; " + header.getPart());
             }
         }
@@ -242,13 +229,15 @@ public class SoapMessageBuilder implements MessageBuilder {
                 if (elm != null) {
                     cursor.toFirstChild();
                     xmlGenerator.createSampleForType(elm.getType(), cursor);
-                } else {
+                }
+                else {
                     log.error("Could not find element [" + elementName + "] specified in part [" + part.getName() + "]");
                 }
             }
 
             cursor.toParent();
-        } else {
+        }
+        else {
             // cursor.beginElement( new QName(
             // wsdlContext.getWsdlDefinition().getTargetNamespace(), part.getName()
             // ));
@@ -259,7 +248,8 @@ public class SoapMessageBuilder implements MessageBuilder {
                 if (type != null) {
                     cursor.toFirstChild();
                     xmlGenerator.createSampleForType(type, cursor);
-                } else {
+                }
+                else {
                     log.error("Could not find type [" + typeName + "] specified in part [" + part.getName() + "]");
                 }
             }
@@ -268,14 +258,12 @@ public class SoapMessageBuilder implements MessageBuilder {
         }
     }
 
-    private void buildDocumentRequest(BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator)
-            throws Exception {
+    private void buildDocumentRequest(BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator) throws Exception {
         Part[] parts = WsdlUtils.getInputParts(bindingOperation);
 
         for (int i = 0; i < parts.length; i++) {
             Part part = parts[i];
-            if (!WsdlUtils.isAttachmentInputPart(part, bindingOperation)
-                    && (part.getElementName() != null || part.getTypeName() != null)) {
+            if (!WsdlUtils.isAttachmentInputPart(part, bindingOperation) && (part.getElementName() != null || part.getTypeName() != null)) {
                 XmlCursor c = cursor.newCursor();
                 c.toLastChild();
                 createElementForPart(part, c, xmlGenerator);
@@ -284,15 +272,13 @@ public class SoapMessageBuilder implements MessageBuilder {
         }
     }
 
-    private void buildDocumentResponse(BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator)
-            throws Exception {
+    private void buildDocumentResponse(BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator) throws Exception {
         Part[] parts = WsdlUtils.getOutputParts(bindingOperation);
 
         for (int i = 0; i < parts.length; i++) {
             Part part = parts[i];
 
-            if (!WsdlUtils.isAttachmentOutputPart(part, bindingOperation)
-                    && (part.getElementName() != null || part.getTypeName() != null)) {
+            if (!WsdlUtils.isAttachmentOutputPart(part, bindingOperation) && (part.getElementName() != null || part.getTypeName() != null)) {
                 XmlCursor c = cursor.newCursor();
                 c.toLastChild();
                 createElementForPart(part, c, xmlGenerator);
@@ -301,8 +287,7 @@ public class SoapMessageBuilder implements MessageBuilder {
         }
     }
 
-    private void buildRpcRequest(BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator)
-            throws Exception {
+    private void buildRpcRequest(BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator) throws Exception {
         // rpc requests use the operation name as root element
         String ns = WsdlUtils.getSoapBodyNamespace(bindingOperation.getBindingInput().getExtensibilityElements());
         if (ns == null) {
@@ -312,8 +297,7 @@ public class SoapMessageBuilder implements MessageBuilder {
 
         cursor.beginElement(new QName(ns, bindingOperation.getName()));
         if (xmlGenerator.isSoapEnc()) {
-            cursor.insertAttributeWithValue(new QName(wsdlContext.getSoapVersion().getEnvelopeNamespace(),
-                    "encodingStyle"), wsdlContext.getSoapVersion().getEncodingNamespace());
+            cursor.insertAttributeWithValue(new QName(wsdlContext.getSoapVersion().getEnvelopeNamespace(), "encodingStyle"), wsdlContext.getSoapVersion().getEncodingNamespace());
         }
 
         Part[] inputParts = WsdlUtils.getInputParts(bindingOperation);
@@ -327,7 +311,8 @@ public class SoapMessageBuilder implements MessageBuilder {
                     c.insertAttributeWithValue("href", part.getName() + "Attachment");
                     c.dispose();
                 }
-            } else {
+            }
+            else {
                 if (wsdlContext.hasSchemaTypes()) {
                     QName typeName = part.getTypeName();
                     if (typeName != null) {
@@ -341,10 +326,12 @@ public class SoapMessageBuilder implements MessageBuilder {
 
                             xmlGenerator.createSampleForType(type, c);
                             c.dispose();
-                        } else {
+                        }
+                        else {
                             log.warn("Failed to find type [" + typeName + "]");
                         }
-                    } else {
+                    }
+                    else {
                         SchemaGlobalElement element = wsdlContext.getSchemaTypeLoader().findElement(part.getElementName());
                         if (element != null) {
                             XmlCursor c = cursor.newCursor();
@@ -354,7 +341,8 @@ public class SoapMessageBuilder implements MessageBuilder {
 
                             xmlGenerator.createSampleForType(element.getType(), c);
                             c.dispose();
-                        } else {
+                        }
+                        else {
                             log.warn("Failed to find element [" + part.getElementName() + "]");
                         }
                     }
@@ -363,12 +351,10 @@ public class SoapMessageBuilder implements MessageBuilder {
         }
     }
 
-    private void buildRpcResponse(BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator)
-            throws Exception {
+    private void buildRpcResponse(BindingOperation bindingOperation, XmlCursor cursor, SampleXmlUtil xmlGenerator) throws Exception {
         // rpc requests use the operation name as root element
         BindingOutput bindingOutput = bindingOperation.getBindingOutput();
-        String ns = bindingOutput == null ? null : WsdlUtils.getSoapBodyNamespace(bindingOutput
-                .getExtensibilityElements());
+        String ns = bindingOutput == null ? null : WsdlUtils.getSoapBodyNamespace(bindingOutput.getExtensibilityElements());
 
         if (ns == null) {
             ns = WsdlUtils.getTargetNamespace(wsdlContext.getDefinition());
@@ -377,8 +363,7 @@ public class SoapMessageBuilder implements MessageBuilder {
 
         cursor.beginElement(new QName(ns, bindingOperation.getName() + "Response"));
         if (xmlGenerator.isSoapEnc()) {
-            cursor.insertAttributeWithValue(new QName(wsdlContext.getSoapVersion().getEnvelopeNamespace(),
-                    "encodingStyle"), wsdlContext.getSoapVersion().getEncodingNamespace());
+            cursor.insertAttributeWithValue(new QName(wsdlContext.getSoapVersion().getEnvelopeNamespace(), "encodingStyle"), wsdlContext.getSoapVersion().getEncodingNamespace());
         }
 
         Part[] inputParts = WsdlUtils.getOutputParts(bindingOperation);
@@ -392,7 +377,8 @@ public class SoapMessageBuilder implements MessageBuilder {
                     c.insertAttributeWithValue("href", part.getName() + "Attachment");
                     c.dispose();
                 }
-            } else {
+            }
+            else {
                 if (wsdlContext.hasSchemaTypes()) {
                     QName typeName = part.getTypeName();
                     if (typeName != null) {
@@ -406,10 +392,12 @@ public class SoapMessageBuilder implements MessageBuilder {
 
                             xmlGenerator.createSampleForType(type, c);
                             c.dispose();
-                        } else {
+                        }
+                        else {
                             log.warn("Failed to find type [" + typeName + "]");
                         }
-                    } else {
+                    }
+                    else {
                         SchemaGlobalElement element = wsdlContext.getSchemaTypeLoader().findElement(part.getElementName());
                         if (element != null) {
                             XmlCursor c = cursor.newCursor();
@@ -419,7 +407,8 @@ public class SoapMessageBuilder implements MessageBuilder {
 
                             xmlGenerator.createSampleForType(element.getType(), c);
                             c.dispose();
-                        } else {
+                        }
+                        else {
                             log.warn("Failed to find element [" + part.getElementName() + "]");
                         }
                     }
@@ -432,17 +421,13 @@ public class SoapMessageBuilder implements MessageBuilder {
         this.wsdlContext = wsdlContext;
     }
 
-    public void setInterface(WsdlInterface iface) {
-        this.iface = iface;
-    }
-
-    public String buildSoapMessageFromOutput(BindingOperation bindingOperation, boolean buildOptional)
-            throws Exception {
+    public String buildSoapMessageFromOutput(BindingOperation bindingOperation, boolean buildOptional) throws Exception {
         return buildSoapMessageFromOutput(bindingOperation, buildOptional, true);
     }
 
-    public String buildSoapMessageFromOutput(BindingOperation bindingOperation, boolean buildOptional,
-                                             boolean alwaysBuildHeaders) throws Exception {
+    public String buildSoapMessageFromOutput(
+        BindingOperation bindingOperation, boolean buildOptional, boolean alwaysBuildHeaders
+    ) throws Exception {
         boolean inputSoapEncoded = WsdlUtils.isInputSoapEncoded(bindingOperation);
         SampleXmlUtil xmlGenerator = new SampleXmlUtil(inputSoapEncoded);
         xmlGenerator.setIgnoreOptional(!buildOptional);
@@ -465,7 +450,8 @@ public class SoapMessageBuilder implements MessageBuilder {
 
         if (WsdlUtils.isRpc(wsdlContext.getDefinition(), bindingOperation)) {
             buildRpcResponse(bindingOperation, cursor, xmlGenerator);
-        } else {
+        }
+        else {
             buildDocumentResponse(bindingOperation, cursor, xmlGenerator);
         }
 
@@ -485,7 +471,8 @@ public class SoapMessageBuilder implements MessageBuilder {
             StringWriter writer = new StringWriter();
             XmlUtils.serializePretty(object, writer);
             return writer.toString();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return object.xmlText();
         }
@@ -509,8 +496,7 @@ public class SoapMessageBuilder implements MessageBuilder {
                 cursor.toFirstContentToken();
 
                 generator.setTypeComment(true);
-                generator.setIgnoreOptional(iface.getSettings().getBoolean(
-                        WsdlSettings.XML_GENERATION_ALWAYS_INCLUDE_OPTIONAL_ELEMENTS));
+                generator.setIgnoreOptional(iface.getSettings().getBoolean(WsdlSettings.XML_GENERATION_ALWAYS_INCLUDE_OPTIONAL_ELEMENTS));
 
                 for (Part part : faultPart.getWsdlParts()) {
                     createElementForPart(part, cursor, generator);
@@ -518,14 +504,39 @@ public class SoapMessageBuilder implements MessageBuilder {
             }
 
             faultResponse = xmlObject.xmlText(new XmlOptions().setSaveAggressiveNamespaces().setSavePrettyPrint());
-        } catch (Exception e1) {
+        }
+        catch (Exception e1) {
             SoapUI.logError(e1);
-        } finally {
+        }
+        finally {
             if (cursor != null) {
                 cursor.dispose();
             }
         }
 
         return faultResponse;
+    }
+
+    private static String buildEmptyFault(SampleXmlUtil generator, SoapVersion soapVersion) {
+        String emptyResponse = buildEmptyMessage(soapVersion);
+        try {
+            // XmlObject xmlObject = XmlObject.Factory.parse( emptyResponse );
+            XmlObject xmlObject = XmlUtils.createXmlObject(emptyResponse);
+            XmlCursor cursor = xmlObject.newCursor();
+
+            if (cursor.toChild(soapVersion.getEnvelopeQName()) && cursor.toChild(soapVersion.getBodyQName())) {
+                SchemaType faultType = soapVersion.getFaultType();
+                Node bodyNode = cursor.getDomNode();
+                Document dom = XmlUtils.parseXml(generator.createSample(faultType));
+                bodyNode.appendChild(bodyNode.getOwnerDocument().importNode(dom.getDocumentElement(), true));
+            }
+
+            cursor.dispose();
+            emptyResponse = xmlObject.toString();
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+        return emptyResponse;
     }
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.monitor;
@@ -37,19 +37,15 @@ public class SoapMonitorEngineImpl implements SoapMonitorEngine {
     private static final String ROOT = "/";
     private static final String HTTP = "http://";
     private static final String HTTPS = "https://";
+    private final String sslEndpoint;
     JettyServer server = new JettyServer();
     SocketConnector connector = new SocketConnector();
     private SslSocketConnector sslConnector;
-    private final String sslEndpoint;
     private boolean proxyOrTunnel = true;
     private ContentTypes includedContentTypes = SoapMonitorAction.defaultContentTypes();
 
-    public SoapMonitorEngineImpl(final String sslEndpoint) {
+    public SoapMonitorEngineImpl(String sslEndpoint) {
         this.sslEndpoint = sslEndpoint;
-    }
-
-    public boolean isRunning() {
-        return server.isRunning();
     }
 
     public void start(WsdlProject project, int localPort, SoapMonitorListenerCallBack listenerCallBack) {
@@ -60,15 +56,11 @@ public class SoapMonitorEngineImpl implements SoapMonitorEngine {
         if (!StringUtils.isNullOrEmpty(sslEndpoint)) {
             if (sslEndpoint.startsWith(HTTPS)) {
                 sslConnector = new SslSocketConnector();
-                sslConnector
-                        .setKeystore(settings.getString(SoapMonitorAction.SecurityTabForm.SSLTUNNEL_KEYSTORE, "JKS"));
+                sslConnector.setKeystore(settings.getString(SoapMonitorAction.SecurityTabForm.SSLTUNNEL_KEYSTORE, "JKS"));
                 sslConnector.setPassword(settings.getString(SoapMonitorAction.SecurityTabForm.SSLTUNNEL_PASSWORD, ""));
-                sslConnector.setKeyPassword(settings.getString(SoapMonitorAction.SecurityTabForm.SSLTUNNEL_KEYPASSWORD,
-                        ""));
-                sslConnector.setTruststore(settings.getString(SoapMonitorAction.SecurityTabForm.SSLTUNNEL_TRUSTSTORE,
-                        "JKS"));
-                sslConnector.setTrustPassword(settings.getString(
-                        SoapMonitorAction.SecurityTabForm.SSLTUNNEL_TRUSTSTORE_PASSWORD, ""));
+                sslConnector.setKeyPassword(settings.getString(SoapMonitorAction.SecurityTabForm.SSLTUNNEL_KEYPASSWORD, ""));
+                sslConnector.setTruststore(settings.getString(SoapMonitorAction.SecurityTabForm.SSLTUNNEL_TRUSTSTORE, "JKS"));
+                sslConnector.setTrustPassword(settings.getString(SoapMonitorAction.SecurityTabForm.SSLTUNNEL_TRUSTSTORE_PASSWORD, ""));
                 sslConnector.setNeedClientAuth(false);
                 sslConnector.setMaxIdleTime(30000);
                 sslConnector.setPort(localPort);
@@ -77,20 +69,23 @@ public class SoapMonitorEngineImpl implements SoapMonitorEngine {
                 TunnelServlet tunnelServlet = new TunnelServlet(project, sslEndpoint, listenerCallBack);
                 tunnelServlet.setIncludedContentTypes(includedContentTypes);
                 context.addServlet(new ServletHolder(tunnelServlet), ROOT);
-            } else {
+            }
+            else {
                 if (sslEndpoint.startsWith(HTTP)) {
                     connector.setPort(localPort);
                     server.addConnector(connector);
                     TunnelServlet tunnelServlet = new TunnelServlet(project, sslEndpoint, listenerCallBack);
                     tunnelServlet.setIncludedContentTypes(includedContentTypes);
                     context.addServlet(new ServletHolder(tunnelServlet), ROOT);
-                } else {
+                }
+                else {
                     UISupport.showErrorMessage("Unsupported/unknown protocol tunnel will not start");
                     return;
                 }
             }
             proxyOrTunnel = false;
-        } else {
+        }
+        else {
             proxyOrTunnel = true;
             connector.setPort(localPort);
             server.addConnector(connector);
@@ -100,16 +95,13 @@ public class SoapMonitorEngineImpl implements SoapMonitorEngine {
         }
         try {
             server.start();
-        } catch (BindException e) {
+        }
+        catch (BindException e) {
             UISupport.showErrorMessage("Error starting " + getProxyOrTunnelString() + ": Could not open port " + localPort + ".\nTry a different port number.");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage("Error starting " + getProxyOrTunnelString() + ": " + e.getMessage());
         }
-
-    }
-
-    private String getProxyOrTunnelString() {
-        return proxyOrTunnel ? "proxy" : "tunnel";
     }
 
     public void stop() {
@@ -118,14 +110,28 @@ public class SoapMonitorEngineImpl implements SoapMonitorEngine {
             if (server != null) {
                 server.stop();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
-        } finally {
+        }
+        finally {
             if (server != null) {
                 server.destroy();
             }
         }
+    }
 
+    public boolean isRunning() {
+        return server.isRunning();
+    }
+
+    /*
+     * @return true if proxy, false if ssl tunnel (non-Javadoc)
+     *
+     * @see com.eviware.soapui.impl.wsdl.monitor.SoapMonitorEngine#isProxy()
+     */
+    public boolean isProxy() {
+        return proxyOrTunnel;
     }
 
     @Override
@@ -133,13 +139,7 @@ public class SoapMonitorEngineImpl implements SoapMonitorEngine {
         this.includedContentTypes = includedContentTypes;
     }
 
-    /*
-         * @return true if proxy, false if ssl tunnel (non-Javadoc)
-         *
-         * @see com.eviware.soapui.impl.wsdl.monitor.SoapMonitorEngine#isProxy()
-         */
-    public boolean isProxy() {
-        return proxyOrTunnel;
+    private String getProxyOrTunnelString() {
+        return proxyOrTunnel ? "proxy" : "tunnel";
     }
-
 }

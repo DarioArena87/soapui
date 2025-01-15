@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.panels.loadtest;
@@ -28,25 +28,13 @@ import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.support.swing.JTableFactory;
 import org.jdesktop.swingx.JXTable;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -61,18 +49,18 @@ import java.beans.PropertyChangeListener;
  */
 
 public class JLoadTestAssertionsTable extends JPanel {
-    private JXTable table;
     private final WsdlLoadTest loadTest;
+    private final JXTable table;
     private ConfigureAssertionAction configureAssertionAction;
     private RemoveAssertionAction removeAssertionAction;
     private AddLoadTestAssertionAction addLoadTestAssertionAction;
-    private LoadTestAssertionsTableModel tableModel;
-    private JPopupMenu assertionPopup;
-    private InternalLoadTestListener internalLoadTestListener = new InternalLoadTestListener();
+    private final LoadTestAssertionsTableModel tableModel;
+    private final JPopupMenu assertionPopup;
+    private final InternalLoadTestListener internalLoadTestListener = new InternalLoadTestListener();
 
     public JLoadTestAssertionsTable(WsdlLoadTest wsdlLoadTest) {
         super(new BorderLayout());
-        this.loadTest = wsdlLoadTest;
+        loadTest = wsdlLoadTest;
 
         loadTest.addLoadTestListener(internalLoadTestListener);
 
@@ -105,8 +93,9 @@ public class JLoadTestAssertionsTable extends JPanel {
 
                 Object obj = loadTest.getAssertionAt(ix);
                 if (obj instanceof Configurable) {
-                    ((Configurable) obj).configure();
-                } else {
+                    ((Configurable)obj).configure();
+                }
+                else {
                     Toolkit.getDefaultToolkit().beep();
                 }
             }
@@ -167,6 +156,27 @@ public class JLoadTestAssertionsTable extends JPanel {
         return toolbar;
     }
 
+    private static final class IconTableCellRenderer extends DefaultTableCellRenderer {
+        public Component getTableCellRendererComponent(
+            JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column
+        ) {
+            if (value != null) {
+                setIcon((Icon)value);
+            }
+
+            if (isSelected) {
+                setBackground(table.getSelectionBackground());
+                setForeground(table.getSelectionForeground());
+            }
+            else {
+                setBackground(table.getBackground());
+                setForeground(table.getForeground());
+            }
+
+            return this;
+        }
+    }
+
     private class LoadTestAssertionsTableModel extends AbstractTableModel implements PropertyChangeListener {
         public LoadTestAssertionsTableModel() {
             for (int c = 0; c < loadTest.getAssertionCount(); c++) {
@@ -188,30 +198,6 @@ public class JLoadTestAssertionsTable extends JPanel {
             return 4;
         }
 
-        public Class<?> getColumnClass(int columnIndex) {
-            switch (columnIndex) {
-                case 0:
-                    return ImageIcon.class;
-                default:
-                    return String.class;
-            }
-        }
-
-        public String getColumnName(int column) {
-            switch (column) {
-                case 0:
-                    return " ";
-                case 1:
-                    return "Name";
-                case 2:
-                    return "Step";
-                case 3:
-                    return "Details";
-            }
-
-            return null;
-        }
-
         public Object getValueAt(int rowIndex, int columnIndex) {
             LoadTestAssertion assertion = loadTest.getAssertionAt(rowIndex);
 
@@ -229,6 +215,30 @@ public class JLoadTestAssertionsTable extends JPanel {
             return null;
         }
 
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0:
+                    return " ";
+                case 1:
+                    return "Name";
+                case 2:
+                    return "Step";
+                case 3:
+                    return "Details";
+            }
+
+            return null;
+        }
+
+        public Class<?> getColumnClass(int columnIndex) {
+            switch (columnIndex) {
+                case 0:
+                    return ImageIcon.class;
+                default:
+                    return String.class;
+            }
+        }
+
         public void assertionRemoved(LoadTestAssertion assertion) {
             assertion.removePropertyChangeListener(LoadTestAssertion.CONFIGURATION_PROPERTY, this);
             fireTableDataChanged();
@@ -244,36 +254,17 @@ public class JLoadTestAssertionsTable extends JPanel {
         }
     }
 
-    private static final class IconTableCellRenderer extends DefaultTableCellRenderer {
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
-                                                       int row, int column) {
-            if (value != null) {
-                setIcon((Icon) value);
-            }
-
-            if (isSelected) {
-                setBackground(table.getSelectionBackground());
-                setForeground(table.getSelectionForeground());
-            } else {
-                setBackground(table.getBackground());
-                setForeground(table.getForeground());
-            }
-
-            return this;
-        }
-    }
-
     public class AddLoadTestAssertionAction extends AbstractAction {
         public AddLoadTestAssertionAction() {
             super("Add Assertion");
 
-            putValue(Action.SHORT_DESCRIPTION, "Adds an assertion to this LoadTest");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds an assertion to this LoadTest");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
         }
 
         public void actionPerformed(ActionEvent e) {
             String[] types = LoadTestAssertionRegistry.getAvailableAssertions();
-            String type = (String) UISupport.prompt("Select assertion type to add", "Add Assertion", types);
+            String type = UISupport.prompt("Select assertion type to add", "Add Assertion", types);
             if (type != null) {
                 loadTest.addAssertion(type, LoadTestAssertion.ANY_TEST_STEP, true);
             }
@@ -283,8 +274,8 @@ public class JLoadTestAssertionsTable extends JPanel {
     public class ConfigureAssertionAction extends AbstractAction {
         ConfigureAssertionAction() {
             super("Configure");
-            putValue(Action.SHORT_DESCRIPTION, "Configures the selection assertion");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
+            putValue(SHORT_DESCRIPTION, "Configures the selection assertion");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/preferences.png"));
             setEnabled(false);
         }
 
@@ -297,9 +288,10 @@ public class JLoadTestAssertionsTable extends JPanel {
 
             Object obj = loadTest.getAssertionAt(ix);
             if (obj instanceof Configurable) {
-                ((Configurable) obj).configure();
+                ((Configurable)obj).configure();
                 tableModel.fireTableRowsUpdated(ix, ix);
-            } else {
+            }
+            else {
                 Toolkit.getDefaultToolkit().beep();
             }
         }
@@ -308,8 +300,8 @@ public class JLoadTestAssertionsTable extends JPanel {
     public class RemoveAssertionAction extends AbstractAction {
         public RemoveAssertionAction() {
             super("Remove Assertion");
-            putValue(Action.SHORT_DESCRIPTION, "Removes the selected assertion from this LoadTest");
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/remove_assertion.gif"));
+            putValue(SHORT_DESCRIPTION, "Removes the selected assertion from this LoadTest");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/remove_assertion.gif"));
             setEnabled(false);
         }
 

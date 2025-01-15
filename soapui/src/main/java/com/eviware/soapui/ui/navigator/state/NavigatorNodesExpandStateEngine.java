@@ -7,7 +7,7 @@ import com.eviware.soapui.model.tree.SoapUITreeNode;
 import com.eviware.soapui.plugins.factories.navigator.NavigatorNodesExpandStateProvider;
 import com.eviware.soapui.plugins.factories.navigator.NavigatroNodeExpandStateProviderFactory;
 
-import javax.swing.JTree;
+import javax.swing.*;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.util.List;
@@ -16,6 +16,9 @@ public class NavigatorNodesExpandStateEngine {
     private JTree navigatorTree;
     private NavigatorNodesExpandStateProvider navigatorNodesExpandStateProvider;
     private NavigatorTreeExpanedListener treeExpansionListener;
+
+    public NavigatorNodesExpandStateEngine() {
+    }
 
     /**
      * take "currentNode" and check historical state.
@@ -45,7 +48,7 @@ public class NavigatorNodesExpandStateEngine {
      * @param node
      */
     private void restoreNodeHistoricalState(SoapUITreeNode node) {
-        SoapUITreeModel soapUITreeModel = (SoapUITreeModel) navigatorTree.getModel();
+        SoapUITreeModel soapUITreeModel = (SoapUITreeModel)navigatorTree.getModel();
         restoreNodeHistoricalState(node, soapUITreeModel);
     }
 
@@ -60,19 +63,16 @@ public class NavigatorNodesExpandStateEngine {
         if (treeModel == null || !(treeModel instanceof SoapUITreeModel)) {
             return;
         }
-        SoapUITreeModel soapUITreeModel = (SoapUITreeModel) treeModel;
+        SoapUITreeModel soapUITreeModel = (SoapUITreeModel)treeModel;
         Object rootObject = treeModel.getRoot();
         if (rootObject == null || !(rootObject instanceof SoapUITreeNode)) {
             return;
         }
-        SoapUITreeNode rootNode = (SoapUITreeNode) rootObject;
+        SoapUITreeNode rootNode = (SoapUITreeNode)rootObject;
         int childNodesAmount = rootNode.getChildCount();
         for (int i = 0; i < childNodesAmount; i++) {
             restoreNodeHistoricalState(rootNode.getChildNode(i), soapUITreeModel);
         }
-    }
-
-    public NavigatorNodesExpandStateEngine() {
     }
 
     /**

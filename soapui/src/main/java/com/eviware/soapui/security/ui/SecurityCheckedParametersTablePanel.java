@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.ui;
@@ -42,18 +42,12 @@ import com.eviware.x.impl.swing.JTextFieldFormField;
 import com.eviware.x.impl.swing.SwingXFormDialog;
 import org.jdesktop.swingx.JXTable;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListSelectionModel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,9 +68,10 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
     protected XFormDialog dialog;
     protected AbstractSecurityScanWithProperties securityScan;
 
-    public SecurityCheckedParametersTablePanel(SecurityParametersTableModel model,
-                                               Map<String, TestProperty> properties, AbstractSecurityScanWithProperties securityCheck) {
-        this.securityScan = securityCheck;
+    public SecurityCheckedParametersTablePanel(
+        SecurityParametersTableModel model, Map<String, TestProperty> properties, AbstractSecurityScanWithProperties securityCheck
+    ) {
+        securityScan = securityCheck;
         this.model = model;
         initRequestPartProperties(properties);
         init();
@@ -115,10 +110,10 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
 
         pathPane = new JUndoableTextArea();
         if (securityScan instanceof BoundarySecurityScan) {
-            ((BoundarySecurityScan) securityScan).refreshRestrictionLabel(-1);
+            ((BoundarySecurityScan)securityScan).refreshRestrictionLabel(-1);
         }
         if (securityScan instanceof InvalidTypesSecurityScan) {
-            ((InvalidTypesSecurityScan) securityScan).refreshRestrictionLabel(-1);
+            ((InvalidTypesSecurityScan)securityScan).refreshRestrictionLabel(-1);
         }
     }
 
@@ -176,10 +171,10 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
         addAction.setDialog(dialog);
         addAndCopy.setDialog(dialog);
 
-        final JTextFieldFormField labelField = (JTextFieldFormField) dialog.getFormField(AddParameterDialog.LABEL);
+        JTextFieldFormField labelField = (JTextFieldFormField)dialog.getFormField(AddParameterDialog.LABEL);
         labelField.getComponent().setColumns(30);
         labelField.setEnabled(false);
-        JComboBoxFormField nameField = (JComboBoxFormField) dialog.getFormField(AddParameterDialog.NAME);
+        JComboBoxFormField nameField = (JComboBoxFormField)dialog.getFormField(AddParameterDialog.NAME);
         enablePathField(false);
         nameField.addFormFieldListener(new XFormFieldListener() {
 
@@ -188,11 +183,11 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
                 if (!newValue.equals(CHOOSE_TEST_PROPERTY)) {
                     labelField.setEnabled(true);
                     enablePathField(true);
-                } else {
+                }
+                else {
                     labelField.setEnabled(false);
                     enablePathField(false);
                 }
-
             }
         });
         ArrayList<String> options = new ArrayList<String>();
@@ -200,7 +195,7 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
         options.addAll(properties.keySet());
         nameField.setOptions(options.toArray(new String[0]));
 
-        ((JFormDialog) dialog).getDialog().setResizable(false);
+        ((JFormDialog)dialog).getDialog().setResizable(false);
 
         return dialog;
     }
@@ -219,10 +214,54 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
         pathPane.setEnabled(enable);
     }
 
+    private void initDialogForCopy(XFormDialog dialog, int row) {
+        dialog.setValue(AddParameterDialog.LABEL, (String)model.getValueAt(row, 0));
+        dialog.setValue(AddParameterDialog.NAME, (String)model.getValueAt(row, 1));
+        pathPane.setText((String)model.getValueAt(row, 2));
+    }
+
+    public JUndoableTextArea getPathPane() {
+        return pathPane;
+    }
+
+    public JUndoableTextField getLabel() {
+        return ((JTextFieldFormField)dialog.getFormField(AddParameterDialog.LABEL)).getComponent();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event
+     * .ListSelectionEvent)
+     */
+    @Override
+    public void valueChanged(ListSelectionEvent lse) {
+        DefaultListSelectionModel dlsm = ((DefaultListSelectionModel)lse.getSource());
+        if (securityScan instanceof BoundarySecurityScan) {
+            ((BoundarySecurityScan)securityScan).refreshRestrictionLabel(dlsm.getAnchorSelectionIndex());
+        }
+        if (securityScan instanceof InvalidTypesSecurityScan) {
+            ((InvalidTypesSecurityScan)securityScan).refreshRestrictionLabel(dlsm.getAnchorSelectionIndex());
+        }
+    }
+
+    @AForm(description = "Add New Security Test Step Parameter", name = "Configure Security Test Step Parameters", helpUrl = HelpUrls.SECURITY_SCANS_OVERVIEW)
+    interface AddParameterDialog {
+        @AField(description = "Parameter Name", name = "Parameter Name", type = AFieldType.ENUMERATION)
+        String NAME = "Parameter Name";
+
+        @AField(description = "Parameter Label", name = "Parameter Label", type = AFieldType.STRING)
+        String LABEL = "Parameter Label";
+
+        @AField(description = "Parameter XPath", name = "XPath", type = AFieldType.COMPONENT)
+        String PATH = "XPath";
+    }
+
     class AddNewParameterAction extends AbstractAction {
         public AddNewParameterAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/add.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Adds a parameter to security scan");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds a parameter to security scan");
         }
 
         @Override
@@ -235,8 +274,8 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
 
     class RemoveParameterAction extends AbstractAction {
         public RemoveParameterAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Removes parameter from security scan");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
+            putValue(SHORT_DESCRIPTION, "Removes parameter from security scan");
         }
 
         @Override
@@ -244,7 +283,6 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
             model.removeRows(table.getSelectedRows());
             model.fireTableDataChanged();
         }
-
     }
 
     public class AddAndCopy extends AbstractAction {
@@ -261,17 +299,15 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (dialog.getValue(AddParameterDialog.LABEL) == null
-                    || dialog.getValue(AddParameterDialog.LABEL).trim().length() == 0) {
+            if (dialog.getValue(AddParameterDialog.LABEL) == null || dialog.getValue(AddParameterDialog.LABEL).trim().length() == 0) {
                 UISupport.showErrorMessage("Label is required!");
-            } else {
-                if (!model.addParameter(dialog.getValue(AddParameterDialog.LABEL),
-                        dialog.getValue(AddParameterDialog.NAME), pathPane.getText())) {
+            }
+            else {
+                if (!model.addParameter(dialog.getValue(AddParameterDialog.LABEL), dialog.getValue(AddParameterDialog.NAME), pathPane.getText())) {
                     UISupport.showErrorMessage("Label have to be unique!");
                 }
             }
         }
-
     }
 
     private class Close extends AbstractAction {
@@ -289,25 +325,23 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
         @Override
         public void actionPerformed(ActionEvent e) {
             if (dialog != null) {
-                ((SwingXFormDialog) dialog).setReturnValue(XFormDialog.CANCEL_OPTION);
+                ((SwingXFormDialog)dialog).setReturnValue(XFormDialog.CANCEL_OPTION);
 
-                JComboBoxFormField nameField = (JComboBoxFormField) dialog.getFormField(AddParameterDialog.NAME);
+                JComboBoxFormField nameField = (JComboBoxFormField)dialog.getFormField(AddParameterDialog.NAME);
                 nameField.setSelectedOptions(new Object[]{nameField.getOptions()[0]});
                 dialog.setValue(AddParameterDialog.LABEL, "");
                 pathPane.setText("");
 
                 dialog.setVisible(false);
             }
-
         }
-
     }
 
     class CopyParameterAction extends AbstractAction {
 
         public CopyParameterAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/copy.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Copies parameter");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/copy.png"));
+            putValue(SHORT_DESCRIPTION, "Copies parameter");
         }
 
         @Override
@@ -322,17 +356,6 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
                 model.fireTableDataChanged();
             }
         }
-
-    }
-
-    private void initDialogForCopy(XFormDialog dialog, int row) {
-        dialog.setValue(AddParameterDialog.LABEL, (String) model.getValueAt(row, 0));
-        dialog.setValue(AddParameterDialog.NAME, (String) model.getValueAt(row, 1));
-        pathPane.setText((String) model.getValueAt(row, 2));
-    }
-
-    public JUndoableTextArea getPathPane() {
-        return pathPane;
     }
 
     private class AddAction extends AbstractAction {
@@ -349,55 +372,20 @@ public class SecurityCheckedParametersTablePanel extends JPanel implements ListS
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            if (dialog.getValue(AddParameterDialog.LABEL) == null
-                    || dialog.getValue(AddParameterDialog.LABEL).trim().length() == 0) {
+            if (dialog.getValue(AddParameterDialog.LABEL) == null || dialog.getValue(AddParameterDialog.LABEL).trim().length() == 0) {
                 UISupport.showErrorMessage("Label is required!");
-            } else {
-                if (model.addParameter(dialog.getValue(AddParameterDialog.LABEL),
-                        dialog.getValue(AddParameterDialog.NAME), pathPane.getText())) {
-                    JComboBoxFormField nameField = (JComboBoxFormField) dialog.getFormField(AddParameterDialog.NAME);
+            }
+            else {
+                if (model.addParameter(dialog.getValue(AddParameterDialog.LABEL), dialog.getValue(AddParameterDialog.NAME), pathPane.getText())) {
+                    JComboBoxFormField nameField = (JComboBoxFormField)dialog.getFormField(AddParameterDialog.NAME);
                     nameField.setSelectedOptions(new Object[]{nameField.getOptions()[0]});
                     dialog.setValue(AddParameterDialog.LABEL, "");
                     pathPane.setText("");
-                } else {
+                }
+                else {
                     UISupport.showErrorMessage("Label have to be unique!");
                 }
             }
-        }
-
-    }
-
-    public JUndoableTextField getLabel() {
-        return ((JTextFieldFormField) dialog.getFormField(AddParameterDialog.LABEL)).getComponent();
-    }
-
-    @AForm(description = "Add New Security Test Step Parameter", name = "Configure Security Test Step Parameters", helpUrl = HelpUrls.SECURITY_SCANS_OVERVIEW)
-    interface AddParameterDialog {
-        @AField(description = "Parameter Name", name = "Parameter Name", type = AFieldType.ENUMERATION)
-        static String NAME = "Parameter Name";
-
-        @AField(description = "Parameter Label", name = "Parameter Label", type = AFieldType.STRING)
-        static String LABEL = "Parameter Label";
-
-        @AField(description = "Parameter XPath", name = "XPath", type = AFieldType.COMPONENT)
-        static String PATH = "XPath";
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * javax.swing.event.ListSelectionListener#valueChanged(javax.swing.event
-     * .ListSelectionEvent)
-     */
-    @Override
-    public void valueChanged(ListSelectionEvent lse) {
-        DefaultListSelectionModel dlsm = ((DefaultListSelectionModel) lse.getSource());
-        if (securityScan instanceof BoundarySecurityScan) {
-            ((BoundarySecurityScan) securityScan).refreshRestrictionLabel(dlsm.getAnchorSelectionIndex());
-        }
-        if (securityScan instanceof InvalidTypesSecurityScan) {
-            ((InvalidTypesSecurityScan) securityScan).refreshRestrictionLabel(dlsm.getAnchorSelectionIndex());
         }
     }
 }

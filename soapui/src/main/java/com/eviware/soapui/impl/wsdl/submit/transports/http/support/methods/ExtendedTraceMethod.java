@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.transports.http.support.methods;
@@ -40,7 +40,7 @@ import java.net.URL;
  */
 
 public final class ExtendedTraceMethod extends HttpTrace implements ExtendedHttpMethod {
-    private HttpMethodSupport httpMethodSupport;
+    private final HttpMethodSupport httpMethodSupport;
     private IAfterRequestInjection afterRequestInjection;
 
     public ExtendedTraceMethod() {
@@ -55,29 +55,16 @@ public final class ExtendedTraceMethod extends HttpTrace implements ExtendedHttp
         httpMethodSupport.setDumpFile(dumpFile);
     }
 
-    public boolean hasResponse() {
-        return httpMethodSupport.hasResponse();
-    }
-
-    public void afterReadResponse(SSLSession session) {
-        httpMethodSupport.afterReadResponse(session);
-    }
-
-    @Override
-    public String getResponseCharSet() {
-        return httpMethodSupport.getResponseCharset();
-    }
-
-    public HttpEntity getRequestEntity() {
-        return null;
-    }
-
     public long getMaxSize() {
         return httpMethodSupport.getMaxSize();
+    }    public boolean hasResponse() {
+        return httpMethodSupport.hasResponse();
     }
 
     public void setMaxSize(long maxSize) {
         httpMethodSupport.setMaxSize(maxSize);
+    }    public void afterReadResponse(SSLSession session) {
+        httpMethodSupport.afterReadResponse(session);
     }
 
     public long getResponseReadTime() {
@@ -86,13 +73,8 @@ public final class ExtendedTraceMethod extends HttpTrace implements ExtendedHttp
 
     public long getResponseReadTimeNanos() {
         return httpMethodSupport.getResponseReadTimeNanos();
-    }
-
-    public void afterWriteRequest() {
-        httpMethodSupport.afterWriteRequest();
-        if (afterRequestInjection != null) {
-            afterRequestInjection.executeAfterRequest();
-        }
+    }    public HttpEntity getRequestEntity() {
+        return null;
     }
 
     public void initStartTime() {
@@ -111,6 +93,16 @@ public final class ExtendedTraceMethod extends HttpTrace implements ExtendedHttp
         return httpMethodSupport.getSSLInfo();
     }
 
+    @Override
+    public String getResponseCharSet() {
+        return httpMethodSupport.getResponseCharset();
+    }    public void afterWriteRequest() {
+        httpMethodSupport.afterWriteRequest();
+        if (afterRequestInjection != null) {
+            afterRequestInjection.executeAfterRequest();
+        }
+    }
+
     public String getResponseContentType() {
         return httpMethodSupport.getResponseContentType();
     }
@@ -122,6 +114,14 @@ public final class ExtendedTraceMethod extends HttpTrace implements ExtendedHttp
     public void setAfterRequestInjection(IAfterRequestInjection injection) {
         afterRequestInjection = injection;
     }
+
+
+
+
+
+
+
+
 
     public Throwable getFailureCause() {
         return httpMethodSupport.getFailureCause();
@@ -163,7 +163,8 @@ public final class ExtendedTraceMethod extends HttpTrace implements ExtendedHttp
         byte[] rawdata = getResponseBody();
         if (rawdata != null) {
             return EncodingUtil.getString(rawdata, getResponseCharSet());
-        } else {
+        }
+        else {
             return null;
         }
     }

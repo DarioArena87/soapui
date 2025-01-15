@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps;
@@ -37,7 +37,7 @@ public class WsdlResponseMessageExchange extends AbstractWsdlMessageExchange<Wsd
 
     public WsdlResponseMessageExchange(WsdlRequest request) {
         super(request);
-        response = (isDiscarded() == true) ? null : request.getResponse();
+        response = (isDiscarded()) ? null : request.getResponse();
 
         if (response != null) {
             for (String key : response.getPropertyNames()) {
@@ -46,16 +46,12 @@ public class WsdlResponseMessageExchange extends AbstractWsdlMessageExchange<Wsd
         }
     }
 
-    public String getEndpoint() {
-        return String.valueOf(response.getURL());
-    }
-
     public WsdlRequest getRequest() {
         return getModelItem();
     }
 
-    public WsdlResponse getResponse() {
-        return response;
+    public WsdlOperation getOperation() {
+        return getModelItem().getOperation();
     }
 
     public boolean hasRawData() {
@@ -70,8 +66,24 @@ public class WsdlResponseMessageExchange extends AbstractWsdlMessageExchange<Wsd
         return response == null ? null : response.getRawResponseData();
     }
 
-    public void setResponse(WsdlResponse response) {
-        this.response = response;
+    public long getTimestamp() {
+        if (response == null) {
+            response = getModelItem().getResponse();
+        }
+
+        return response == null ? 0 : response.getTimestamp();
+    }
+
+    public long getTimeTaken() {
+        if (response == null) {
+            response = getModelItem().getResponse();
+        }
+
+        return response == null ? 0 : response.getTimeTaken();
+    }
+
+    public String getEndpoint() {
+        return String.valueOf(response.getURL());
     }
 
     public String getRequestContent() {
@@ -86,8 +98,24 @@ public class WsdlResponseMessageExchange extends AbstractWsdlMessageExchange<Wsd
         return response == null ? getModelItem().getRequestContent() : response.getRequestContent();
     }
 
+    public String getResponseContent() {
+        if (response == null) {
+            response = getModelItem().getResponse();
+        }
+
+        return response == null ? null : response.getContentAsString();
+    }
+
     public StringToStringsMap getRequestHeaders() {
         return response == null ? getModelItem().getRequestHeaders() : response.getRequestHeaders();
+    }
+
+    public StringToStringsMap getResponseHeaders() {
+        if (response == null) {
+            response = getModelItem().getResponse();
+        }
+
+        return response == null ? new StringToStringsMap() : response.getResponseHeaders();
     }
 
     public Attachment[] getRequestAttachments() {
@@ -102,48 +130,20 @@ public class WsdlResponseMessageExchange extends AbstractWsdlMessageExchange<Wsd
         return response == null ? null : response.getAttachments();
     }
 
-    public String getResponseContent() {
-        if (response == null) {
-            response = getModelItem().getResponse();
-        }
-
-        return response == null ? null : response.getContentAsString();
+    public boolean isDiscarded() {
+        return discardResponse;
     }
 
-    public StringToStringsMap getResponseHeaders() {
-        if (response == null) {
-            response = getModelItem().getResponse();
-        }
-
-        return response == null ? new StringToStringsMap() : response.getResponseHeaders();
+    public WsdlResponse getResponse() {
+        return response;
     }
 
-    public WsdlOperation getOperation() {
-        return getModelItem().getOperation();
-    }
-
-    public long getTimeTaken() {
-        if (response == null) {
-            response = getModelItem().getResponse();
-        }
-
-        return response == null ? 0 : response.getTimeTaken();
-    }
-
-    public long getTimestamp() {
-        if (response == null) {
-            response = getModelItem().getResponse();
-        }
-
-        return response == null ? 0 : response.getTimestamp();
+    public void setResponse(WsdlResponse response) {
+        this.response = response;
     }
 
     public void setRequestContent(String requestContent) {
         this.requestContent = requestContent;
-    }
-
-    public boolean isDiscarded() {
-        return discardResponse;
     }
 
     public Vector<?> getRequestWssResult() {
@@ -154,11 +154,11 @@ public class WsdlResponseMessageExchange extends AbstractWsdlMessageExchange<Wsd
         return response.getWssResult();
     }
 
-    public String getResponseContentType() {
-        return response.getContentType();
-    }
-
     public int getResponseStatusCode() {
         return response.getStatusCode();
+    }
+
+    public String getResponseContentType() {
+        return response.getContentType();
     }
 }

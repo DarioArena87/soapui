@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.support.xsd;
@@ -38,7 +38,8 @@ public class SettingUtils {
                     QName qname = string2qname(name);
                     result.add(qname);
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
@@ -53,25 +54,6 @@ public class SettingUtils {
             names.add(string);
         }
         return names.toXml();
-    }
-
-    private static QName string2qname(String name) {
-        int ix = name.indexOf('@');
-        if (ix >= 0) {
-            return new QName(name.substring(ix + 1), name.substring(0, ix));
-        } else {
-            return new QName(name);
-        }
-    }
-
-    private static String qname2string(QName qname) {
-        String ns = qname.getNamespaceURI();
-        String localPart = qname.getLocalPart();
-        if (ns != null && ns.length() > 0) {
-            return localPart + "@" + ns;
-        } else {
-            return localPart;
-        }
     }
 
     public static String qnameValues2String(Map<QName, String[]> valueMap) {
@@ -99,11 +81,33 @@ public class SettingUtils {
                         }
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }
 
         return result;
+    }
+
+    private static QName string2qname(String name) {
+        int ix = name.indexOf('@');
+        if (ix >= 0) {
+            return new QName(name.substring(ix + 1), name.substring(0, ix));
+        }
+        else {
+            return new QName(name);
+        }
+    }
+
+    private static String qname2string(QName qname) {
+        String ns = qname.getNamespaceURI();
+        String localPart = qname.getLocalPart();
+        if (ns != null && ns.length() > 0) {
+            return localPart + "@" + ns;
+        }
+        else {
+            return localPart;
+        }
     }
 }

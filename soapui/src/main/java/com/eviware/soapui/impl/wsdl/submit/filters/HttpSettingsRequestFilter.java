@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.submit.filters;
@@ -40,7 +40,7 @@ import org.apache.http.params.HttpConnectionParams;
 
 public class HttpSettingsRequestFilter extends AbstractRequestFilter {
     public void filterAbstractHttpRequest(SubmitContext context, AbstractHttpRequest<?> httpRequest) {
-        ExtendedHttpMethod httpMethod = (ExtendedHttpMethod) context.getProperty(BaseHttpRequestTransport.HTTP_METHOD);
+        ExtendedHttpMethod httpMethod = (ExtendedHttpMethod)context.getProperty(BaseHttpRequestTransport.HTTP_METHOD);
 
         // set maxsize
         Settings settings = httpRequest.getSettings();
@@ -69,9 +69,11 @@ public class HttpSettingsRequestFilter extends AbstractRequestFilter {
         String httpVersion = settings.getString(HttpSettings.HTTP_VERSION, "1.1");
         if (httpVersion.equals(HttpSettings.HTTP_VERSION_1_1)) {
             httpMethod.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
-        } else if (httpVersion.equals(HttpSettings.HTTP_VERSION_1_0)) {
+        }
+        else if (httpVersion.equals(HttpSettings.HTTP_VERSION_1_0)) {
             httpMethod.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_0);
-        } else if (httpVersion.equals(HttpSettings.HTTP_VERSION_0_9)) {
+        }
+        else if (httpVersion.equals(HttpSettings.HTTP_VERSION_0_9)) {
             httpMethod.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
         }
 
@@ -94,7 +96,8 @@ public class HttpSettingsRequestFilter extends AbstractRequestFilter {
         if (StringUtils.hasContent(timeout)) {
             try {
                 HttpConnectionParams.setSoTimeout(httpMethod.getParams(), Integer.parseInt(timeout));
-            } catch (NumberFormatException e) {
+            }
+            catch (NumberFormatException e) {
                 SoapUI.logError(e);
             }
         }

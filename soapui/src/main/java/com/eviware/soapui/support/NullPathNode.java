@@ -16,8 +16,8 @@ public class NullPathNode extends ValueNode {
     }
 
     @Override
-    public JsonToken asToken() {
-        return JsonToken.VALUE_NULL;
+    public String asText() {
+        return "null";
     }
 
     @Override
@@ -26,23 +26,22 @@ public class NullPathNode extends ValueNode {
     }
 
     @Override
-    public String asText() {
-        return "null";
-    }
-
-    @Override
-    public final void serialize(JsonGenerator g, SerializerProvider provider)
-            throws IOException {
-        provider.defaultSerializeNull(g);
-    }
-
-    @Override
     public boolean equals(Object o) {
         return (o == this);
     }
 
     @Override
+    public JsonToken asToken() {
+        return JsonToken.VALUE_NULL;
+    }
+
+    @Override
     public int hashCode() {
         return JsonNodeType.NULL.ordinal();
+    }
+
+    @Override
+    public final void serialize(JsonGenerator g, SerializerProvider provider) throws IOException {
+        provider.defaultSerializeNull(g);
     }
 }

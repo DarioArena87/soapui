@@ -10,15 +10,9 @@ import com.eviware.soapui.support.components.SimpleBindingForm;
 import com.jgoodies.binding.PresentationModel;
 
 import javax.annotation.Nonnull;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.border.Border;
-import java.awt.Color;
+import java.awt.*;
 
 public class OAuth1GetTokenForm implements OAuth1TokenStatusChangeListener {
     protected static final String GET_ACCESS_TOKEN_FORM_LAYOUT = "7dlu:none,left:pref,10dlu,left:pref,10dlu,left:MAX(112dlu;pref),7dlu";
@@ -134,21 +128,18 @@ public class OAuth1GetTokenForm implements OAuth1TokenStatusChangeListener {
     }
 
     private JTextField appendClientSecretField(SimpleBindingForm accessTokenForm) {
-        final JTextField clientSecretField = accessTokenForm.appendTextField(OAuth1Profile.CONSUMER_SECRET_PROPERTY,
-                CONSUMER_SECRET_TITLE, "");
+        JTextField clientSecretField = accessTokenForm.appendTextField(OAuth1Profile.CONSUMER_SECRET_PROPERTY, CONSUMER_SECRET_TITLE, "");
         return clientSecretField;
     }
 
     private JTextField appendAccessTokenUriField(SimpleBindingForm accessTokenForm) {
-        final JTextField accessTokenUriField = accessTokenForm.appendTextField(OAuth1Profile.ACCESS_TOKEN_URI_PROPERTY,
-                ACCESS_TOKEN_URI_TITLE, "");
+        JTextField accessTokenUriField = accessTokenForm.appendTextField(OAuth1Profile.ACCESS_TOKEN_URI_PROPERTY, ACCESS_TOKEN_URI_TITLE, "");
 
         return accessTokenUriField;
     }
 
     protected PropertyComponent createGetAccessTokenButton() {
-        JButton getAccessTokenButton = new JButton(new GetOAuth1TokenAction(profile,
-                GET_ACCESS_BUTTON_LABEL));
+        JButton getAccessTokenButton = new JButton(new GetOAuth1TokenAction(profile, GET_ACCESS_BUTTON_LABEL));
         getAccessTokenButton.setName(GET_ACCESS_TOKEN_BUTTON_NAME);
         return new PropertyComponent(getAccessTokenButton);
     }
@@ -159,7 +150,7 @@ public class OAuth1GetTokenForm implements OAuth1TokenStatusChangeListener {
     }
 
     private JDialog createGetAccessTokenDialog(JPanel accessTokenFormPanel) {
-        final JDialog accessTokenFormDialog = new JDialog();
+        JDialog accessTokenFormDialog = new JDialog();
         accessTokenFormDialog.setName(getFormDialogName());
         accessTokenFormDialog.setTitle(getFormDialogTitle());
         accessTokenFormDialog.setIconImages(SoapUI.getFrameIcons());
@@ -187,17 +178,21 @@ public class OAuth1GetTokenForm implements OAuth1TokenStatusChangeListener {
         // There are no auth profile selected
         if (status == null) {
             setDefaultFeedback();
-        } else {
-            if (status == AccessTokenStatusConfig.WAITING_FOR_AUTHORIZATION
-                    || status == AccessTokenStatusConfig.RECEIVED_AUTHORIZATION_CODE) {
+        }
+        else {
+            if (status == AccessTokenStatusConfig.WAITING_FOR_AUTHORIZATION || status == AccessTokenStatusConfig.RECEIVED_AUTHORIZATION_CODE) {
                 setWaitingFeedback();
-            } else if (status == AccessTokenStatusConfig.RETRIEVAL_CANCELED) {
+            }
+            else if (status == AccessTokenStatusConfig.RETRIEVAL_CANCELED) {
                 setCanceledFeedback();
-            } else if (status == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER) {
+            }
+            else if (status == AccessTokenStatusConfig.RETRIEVED_FROM_SERVER) {
                 setSuccessfulFeedback();
-            } else if (status == AccessTokenStatusConfig.ENTERED_MANUALLY) {
+            }
+            else if (status == AccessTokenStatusConfig.ENTERED_MANUALLY) {
                 setEnteredManuallyFeedback();
-            } else {
+            }
+            else {
                 setDefaultFeedback();
             }
         }

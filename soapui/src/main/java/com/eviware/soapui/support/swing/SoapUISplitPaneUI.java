@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.support.swing;
@@ -38,25 +38,13 @@ import java.awt.LayoutManager;
  */
 
 public class SoapUISplitPaneUI extends BasicSplitPaneUI {
-    private boolean hasBeenDragged;
     private final static ImageIcon upArrow = UISupport.createImageIcon("/up_arrow.gif");
     private final static ImageIcon leftArrow = UISupport.createImageIcon("/left_arrow.gif");
     private final static ImageIcon rightArrow = UISupport.createImageIcon("/right_arrow.gif");
     private final static ImageIcon downArrow = UISupport.createImageIcon("/down_arrow.gif");
+    private boolean hasBeenDragged;
 
     public SoapUISplitPaneUI() {
-        super();
-    }
-
-    protected void finishDraggingTo(int location) {
-        super.finishDraggingTo(location);
-
-        hasBeenDragged = true;
-    }
-
-    public void resetToPreferredSizes(JSplitPane jc) {
-        super.resetToPreferredSizes(jc);
-        hasBeenDragged = false;
     }
 
     public boolean hasBeenDragged() {
@@ -69,6 +57,40 @@ public class SoapUISplitPaneUI extends BasicSplitPaneUI {
 
     public BasicSplitPaneDivider createDefaultDivider() {
         return new SoapUIDivider(this);
+    }
+
+    public void resetToPreferredSizes(JSplitPane jc) {
+        super.resetToPreferredSizes(jc);
+        hasBeenDragged = false;
+    }
+
+    public void setDividerLocation(JSplitPane jc, int location) {
+        super.setDividerLocation(jc, location);
+        enableOneTouchButtons(jc, location);
+    }
+
+    protected void finishDraggingTo(int location) {
+        super.finishDraggingTo(location);
+
+        hasBeenDragged = true;
+    }
+
+    public void update(Graphics g, JComponent c) {
+        super.update(g, c);
+        enableOneTouchButtons(getSplitPane(), getSplitPane().getDividerLocation());
+    }
+
+    private void enableOneTouchButtons(JSplitPane jc, int location) {
+        JButton leftButton = ((SoapUIDivider)getDivider()).getLeftButton();
+        JButton rightButton = ((SoapUIDivider)getDivider()).getRightButton();
+
+        if (leftButton != null) {
+            leftButton.setEnabled(location > jc.getMinimumDividerLocation() && jc.getRightComponent() != null && jc.getRightComponent().isVisible());
+        }
+
+        if (rightButton != null) {
+            rightButton.setEnabled(location < jc.getMaximumDividerLocation() && jc.getLeftComponent() != null && jc.getLeftComponent().isVisible());
+        }
     }
 
     public class SoapUIDivider extends BasicSplitPaneDivider {
@@ -90,7 +112,8 @@ public class SoapUISplitPaneUI extends BasicSplitPaneUI {
                 b.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
                 return b;
-            } else {
+            }
+            else {
                 JButton b = new JButton(leftArrow);
 
                 b.setMinimumSize(new Dimension(6, 8));
@@ -116,7 +139,8 @@ public class SoapUISplitPaneUI extends BasicSplitPaneUI {
                 b.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
                 return b;
-            } else {
+            }
+            else {
                 JButton b = new JButton(rightArrow);
 
                 b.setMinimumSize(new Dimension(6, 8));
@@ -130,6 +154,14 @@ public class SoapUISplitPaneUI extends BasicSplitPaneUI {
             }
         }
 
+        public JButton getLeftButton() {
+            return leftButton;
+        }
+
+        public JButton getRightButton() {
+            return rightButton;
+        }
+
         protected class SoapUIDividerLayout implements LayoutManager {
             private int lastOrientation;
 
@@ -137,18 +169,30 @@ public class SoapUISplitPaneUI extends BasicSplitPaneUI {
                 lastOrientation = getOrientation();
             }
 
+            public void addLayoutComponent(String string, Component c) {
+            }
+
+            public void removeLayoutComponent(Component c) {
+            }
+
+            public Dimension preferredLayoutSize(Container c) {
+                return minimumLayoutSize(c);
+            }
+
+            public Dimension minimumLayoutSize(Container parent) {
+                return new Dimension(10, 10);
+            }
+
             public void layoutContainer(Container c) {
                 if (lastOrientation != getOrientation()) {
                     if (leftButton != null) {
                         leftButton.setIcon(getOrientation() == JSplitPane.VERTICAL_SPLIT ? upArrow : leftArrow);
-                        leftButton.setMinimumSize(getOrientation() == JSplitPane.VERTICAL_SPLIT ? new Dimension(8, 6)
-                                : new Dimension(6, 8));
+                        leftButton.setMinimumSize(getOrientation() == JSplitPane.VERTICAL_SPLIT ? new Dimension(8, 6) : new Dimension(6, 8));
                     }
 
                     if (rightButton != null) {
                         rightButton.setIcon(getOrientation() == JSplitPane.VERTICAL_SPLIT ? downArrow : rightArrow);
-                        rightButton.setMinimumSize(getOrientation() == JSplitPane.VERTICAL_SPLIT ? new Dimension(8, 6)
-                                : new Dimension(6, 8));
+                        rightButton.setMinimumSize(getOrientation() == JSplitPane.VERTICAL_SPLIT ? new Dimension(8, 6) : new Dimension(6, 8));
                     }
 
                     lastOrientation = getOrientation();
@@ -162,7 +206,8 @@ public class SoapUISplitPaneUI extends BasicSplitPaneUI {
                     if (rightButton != null) {
                         rightButton.setBounds(12, 2, 8, 6);
                     }
-                } else {
+                }
+                else {
                     if (leftButton != null) {
                         leftButton.setBounds(2, 2, 6, 8);
                     }
@@ -172,53 +217,6 @@ public class SoapUISplitPaneUI extends BasicSplitPaneUI {
                     }
                 }
             }
-
-            public Dimension preferredLayoutSize(Container c) {
-                return minimumLayoutSize(c);
-            }
-
-            public void removeLayoutComponent(Component c) {
-            }
-
-            public void addLayoutComponent(String string, Component c) {
-            }
-
-            public Dimension minimumLayoutSize(Container parent) {
-                return new Dimension(10, 10);
-            }
-        }
-
-        public JButton getLeftButton() {
-            return leftButton;
-        }
-
-        public JButton getRightButton() {
-            return rightButton;
-        }
-    }
-
-    public void setDividerLocation(JSplitPane jc, int location) {
-        super.setDividerLocation(jc, location);
-        enableOneTouchButtons(jc, location);
-    }
-
-    public void update(Graphics g, JComponent c) {
-        super.update(g, c);
-        enableOneTouchButtons(getSplitPane(), getSplitPane().getDividerLocation());
-    }
-
-    private void enableOneTouchButtons(JSplitPane jc, int location) {
-        JButton leftButton = ((SoapUIDivider) getDivider()).getLeftButton();
-        JButton rightButton = ((SoapUIDivider) getDivider()).getRightButton();
-
-        if (leftButton != null) {
-            leftButton.setEnabled(location > jc.getMinimumDividerLocation() && jc.getRightComponent() != null
-                    && jc.getRightComponent().isVisible());
-        }
-
-        if (rightButton != null) {
-            rightButton.setEnabled(location < jc.getMaximumDividerLocation() && jc.getLeftComponent() != null
-                    && jc.getLeftComponent().isVisible());
         }
     }
 }

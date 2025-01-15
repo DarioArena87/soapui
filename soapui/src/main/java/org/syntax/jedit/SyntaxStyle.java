@@ -12,15 +12,11 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Toolkit;
+import java.awt.*;
 
 /**
  * A simple text style class. It can specify the color, italic flag, and bold
@@ -30,6 +26,14 @@ import java.awt.Toolkit;
  * @version $Id$
  */
 public class SyntaxStyle {
+    // private members
+    private final Color color;
+    private final boolean italic;
+    private final boolean bold;
+    private Font lastFont;
+    private Font lastStyledFont;
+    private FontMetrics fontMetrics;
+
     /**
      * Creates a new SyntaxStyle.
      *
@@ -83,8 +87,7 @@ public class SyntaxStyle {
             return lastStyledFont;
         }
         lastFont = font;
-        lastStyledFont = new Font(font.getFamily(), (bold ? Font.BOLD : 0) | (italic ? Font.ITALIC : 0),
-                font.getSize());
+        lastStyledFont = new Font(font.getFamily(), (bold ? Font.BOLD : 0) | (italic ? Font.ITALIC : 0), font.getSize());
         return lastStyledFont;
     }
 
@@ -99,8 +102,7 @@ public class SyntaxStyle {
             return fontMetrics;
         }
         lastFont = font;
-        lastStyledFont = new Font(font.getFamily(), (bold ? Font.BOLD : 0) | (italic ? Font.ITALIC : 0),
-                font.getSize());
+        lastStyledFont = new Font(font.getFamily(), (bold ? Font.BOLD : 0) | (italic ? Font.ITALIC : 0), font.getSize());
         fontMetrics = Toolkit.getDefaultToolkit().getFontMetrics(lastStyledFont);
         return fontMetrics;
     }
@@ -124,12 +126,4 @@ public class SyntaxStyle {
     public String toString() {
         return getClass().getName() + "[color=" + color + (italic ? ",italic" : "") + (bold ? ",bold" : "") + "]";
     }
-
-    // private members
-    private Color color;
-    private boolean italic;
-    private boolean bold;
-    private Font lastFont;
-    private Font lastStyledFont;
-    private FontMetrics fontMetrics;
 }

@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface.tools.axis1;
@@ -43,6 +43,8 @@ import java.util.Map;
  */
 
 public class Axis1XWSDL2JavaAction extends AbstractToolsAction<Interface> {
+    public static final String SOAPUI_ACTION_ID = "Axis1XWSDL2JavaAction";
+    public static final MessageSupport messages = MessageSupport.getMessages(Axis1XWSDL2JavaAction.class);
     private static final String NAMESPACE_MAPPING = "namespace mapping";
     private static final String FACTORY = "factory";
     private static final String OUTPUT = "output directory";
@@ -57,13 +59,9 @@ public class Axis1XWSDL2JavaAction extends AbstractToolsAction<Interface> {
     private static final String SERVER_SIDE = "server-side";
     private static final String NO_WRAPPED = "noWrapped";
     private static final String NO_IMPORTS = "noImports";
-
     private static final String IMPLCLASS = "implementationClassName";
     private static final String USERNAME = "user";
     private static final String PASSWORD = "password";
-
-    public static final String SOAPUI_ACTION_ID = "Axis1XWSDL2JavaAction";
-    public static final MessageSupport messages = MessageSupport.getMessages(Axis1XWSDL2JavaAction.class);
 
     public Axis1XWSDL2JavaAction() {
         super(messages.get("Title"), messages.get("Description"));
@@ -89,11 +87,9 @@ public class Axis1XWSDL2JavaAction extends AbstractToolsAction<Interface> {
         mainForm.addCheckBox(SERVER_SIDE, messages.get("Dialog.Basic.ServerSide"));
         mainForm.addCheckBox(ALL, messages.get("Dialog.Basic.All"));
 
-        mainForm.addComboBox(DEPLOY_SCOPE, new String[]{"none", "Application", "Session", "Request"},
-                messages.get("Axis1XWSDL2JavaAction.Dialog.Basic.AddScope"));
+        mainForm.addComboBox(DEPLOY_SCOPE, new String[]{"none", "Application", "Session", "Request"}, messages.get("Axis1XWSDL2JavaAction.Dialog.Basic.AddScope"));
 
-        mainForm.addComboBox(SKELETON_DEPLOY, new String[]{"none", "true", "false"},
-                messages.get("Dialog.Basic.DeploySkeleton"));
+        mainForm.addComboBox(SKELETON_DEPLOY, new String[]{"none", "true", "false"}, messages.get("Dialog.Basic.DeploySkeleton"));
 
         mainForm.addCheckBox(NO_IMPORTS, messages.get("Dialog.Basic.NoImports"));
         mainForm.addCheckBox(NO_WRAPPED, messages.get("Dialog.Basic.NoWrapped"));
@@ -102,8 +98,7 @@ public class Axis1XWSDL2JavaAction extends AbstractToolsAction<Interface> {
         mainForm.addCheckBox(WRAP_ARRAYS, messages.get("Dialog.Basic.WrapArrays"));
 
         XForm advForm = builder.createForm(messages.get("Dialog.Advanced.Label"));
-        advForm.addComboBox(TYPE_MAPPING_VERSION, new String[]{"1.2", "1.1"},
-                messages.get("Dialog.Advanced.TypeMappingVersion"));
+        advForm.addComboBox(TYPE_MAPPING_VERSION, new String[]{"1.2", "1.1"}, messages.get("Dialog.Advanced.TypeMappingVersion"));
 
         advForm.addTextField(IMPLCLASS, messages.get("Dialog.Advanced.ImplClass"), XForm.FieldType.JAVA_CLASS);
         advForm.addTextField(FACTORY, messages.get("Dialog.Advanced.Factory"), XForm.FieldType.JAVA_CLASS);
@@ -116,8 +111,7 @@ public class Axis1XWSDL2JavaAction extends AbstractToolsAction<Interface> {
 
         buildArgsForm(builder, true, "WSDL2Java"); //$NON-NLS-1$
 
-        return builder.buildDialog(buildDefaultActions(HelpUrls.AXIS1X_HELP_URL, modelItem),
-                messages.get("Dialog.Description"), UISupport.TOOL_ICON);
+        return builder.buildDialog(buildDefaultActions(HelpUrls.AXIS1X_HELP_URL, modelItem), messages.get("Dialog.Description"), UISupport.TOOL_ICON);
     }
 
     protected void generate(StringToStringMap values, ToolHost toolHost, Interface modelItem) throws Exception {
@@ -183,7 +177,8 @@ public class Axis1XWSDL2JavaAction extends AbstractToolsAction<Interface> {
             for (Map.Entry<String, String> entry : nsMappings.entrySet()) {
                 builder.addArgs("-N" + entry.getKey() + "=" + entry.getValue());
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 

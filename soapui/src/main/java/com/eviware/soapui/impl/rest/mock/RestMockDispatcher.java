@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.mock;
@@ -28,8 +28,8 @@ import javax.servlet.http.HttpServletResponse;
 
 public class RestMockDispatcher extends AbstractMockDispatcher {
 
-    private RestMockService mockService;
-    private WsdlMockRunContext mockContext;
+    private final RestMockService mockService;
+    private final WsdlMockRunContext mockContext;
 
     public RestMockDispatcher(RestMockService mockService, WsdlMockRunContext mockContext) {
         this.mockService = mockService;
@@ -49,12 +49,14 @@ public class RestMockDispatcher extends AbstractMockDispatcher {
                 result = getMockResult(restMockRequest);
             }
 
-            mockService.runAfterRequestScript(mockContext, (MockResult) result);
-            return (MockResult) result;
-        } catch (Exception e) {
+            mockService.runAfterRequestScript(mockContext, (MockResult)result);
+            return (MockResult)result;
+        }
+        catch (Exception e) {
             SoapUI.logError(e, "got an exception while dispatching - returning a default 500 response");
             return createServerErrorMockResult(restMockRequest);
-        } finally {
+        }
+        finally {
             mockService.fireOnMockResult(result);
         }
     }
@@ -68,14 +70,14 @@ public class RestMockDispatcher extends AbstractMockDispatcher {
 
         String pathToFind = getPathRemainder(restMockRequest);
 
-        RestMockAction mockAction = (RestMockAction) mockService.findBestMatchedOperation(pathToFind, restMockRequest.getMethod());
+        RestMockAction mockAction = (RestMockAction)mockService.findBestMatchedOperation(pathToFind, restMockRequest.getMethod());
 
         if (mockAction != null) {
             return mockAction.dispatchRequest(restMockRequest);
-        } else {
+        }
+        else {
             return createNotFoundResponse(restMockRequest);
         }
-
     }
 
     private String getPathRemainder(RestMockRequest restMockRequest) {

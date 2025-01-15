@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.teststeps.assertions.recent;
@@ -26,7 +26,7 @@ import com.eviware.soapui.support.types.StringList;
 import java.util.List;
 
 public class RecentAssertionHandler {
-    private BoundedQueue bq;
+    private final BoundedQueue bq;
 
     public RecentAssertionHandler() {
         bq = new BoundedQueue();
@@ -39,7 +39,7 @@ public class RecentAssertionHandler {
         String type = TestAssertionRegistry.getInstance().getAssertionTypeForName(name);
 
         if (type == null) {
-            this.bq.remove(name);
+            bq.remove(name);
             save();
         }
 
@@ -55,17 +55,17 @@ public class RecentAssertionHandler {
     }
 
     public void add(String assertion) {
-        this.bq.add(assertion);
+        bq.add(assertion);
         save();
     }
 
     public List<String> get() {
-        return this.bq.getByAlphabeticalOrder();
+        return bq.getByAlphabeticalOrder();
     }
 
     private void save() {
         StringList list = new StringList();
-        list.addAll(this.bq.getByInsertionOrder());
+        list.addAll(bq.getByInsertionOrder());
         SoapUI.getSettings().setString(RecentAssertionSettings.RECENT_ASSERTIONS, list.toXml());
     }
 
@@ -78,7 +78,8 @@ public class RecentAssertionHandler {
                 for (String assertion : assertions) {
                     list.add(assertion);
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 SoapUI.logError(e);
             }
         }

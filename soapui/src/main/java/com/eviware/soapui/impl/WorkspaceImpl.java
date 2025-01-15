@@ -68,9 +68,8 @@ import static com.eviware.soapui.impl.wsdl.WsdlProject.ProjectEncryptionStatus.N
  */
 
 public class WorkspaceImpl extends AbstractModelItem implements Workspace {
-    private final static Logger log = LogManager.getLogger(WorkspaceImpl.class);
     public static final MessageSupport messages = MessageSupport.getMessages(WorkspaceImpl.class);
-
+    private final static Logger log = LogManager.getLogger(WorkspaceImpl.class);
     private List<Project> projectList = new ArrayList<Project>();
     private SoapuiWorkspaceDocumentConfig workspaceConfig;
     private String path = null;
@@ -83,7 +82,8 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
     public WorkspaceImpl(String path, StringToStringMap projectOptions) throws XmlException, IOException {
         if (projectOptions == null) {
             this.projectOptions = new StringToStringMap();
-        } else {
+        }
+        else {
             this.projectOptions = projectOptions;
         }
         File file = new File(path);
@@ -94,45 +94,6 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         }
     }
 
-    public void switchWorkspace(File file) throws SoapUIException {
-        // check first if valid workspace file
-        if (file.exists()) {
-            try {
-                SoapuiWorkspaceDocumentConfig.Factory.parse(file);
-            } catch (Exception e) {
-                throw new SoapUIException(messages.get("FailedToLoadWorkspaceException") + e.toString());
-            }
-        }
-
-        fireWorkspaceSwitching();
-
-        while (projectList.size() > 0) {
-            Project project = projectList.remove(0);
-            try {
-                fireProjectRemoved(project);
-            } finally {
-                project.release();
-            }
-        }
-
-        try {
-            String oldName = getName();
-
-            loadWorkspace(file);
-            this.path = file.getAbsolutePath();
-
-            for (Project project : projectList) {
-                fireProjectAdded(project);
-            }
-
-            notifyPropertyChanged(ModelItem.NAME_PROPERTY, oldName, getName());
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
-
-        fireWorkspaceSwitched();
-    }
-
     public void loadWorkspace(File file) throws XmlException, IOException {
         if (file.exists()) {
             log.info(messages.get("FailedToLoadWorkspaceFrom", file.getAbsolutePath()));
@@ -141,8 +102,7 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
                 workspaceConfig.getSoapuiWorkspace().addNewSettings();
             }
             setPath(file.getAbsolutePath());
-            settings = new XmlBeansSettingsImpl(this, SoapUI.getSettings(), workspaceConfig.getSoapuiWorkspace()
-                    .getSettings());
+            settings = new XmlBeansSettingsImpl(this, SoapUI.getSettings(), workspaceConfig.getSoapuiWorkspace().getSettings());
 
             boolean closeOnStartup = getSettings().getBoolean(UISettings.CLOSE_PROJECTS);
             List<WorkspaceProjectConfig> projects = workspaceConfig.getSoapuiWorkspace().getProjectList();
@@ -152,25 +112,30 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
                 str = PathUtils.adjustRelativePath(str, getProjectRoot(), this);
 
                 try {
-                    WsdlProject project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(str,
-                            this, !closeOnStartup && wsc.getStatus() != Status.CLOSED && wsc.getType() != Type.REMOTE,
-                            wsc.getName(), null);
+                    WsdlProject project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl")
+                                                                             .createNew(str,
+                                                                                        this,
+                                                                                        !closeOnStartup && wsc.getStatus() != Status.CLOSED && wsc.getType() != Type.REMOTE,
+                                                                                        wsc.getName(),
+                                                                                        null
+                                                                             );
 
                     projectList.add(project);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     UISupport.showErrorMessage(messages.get("FailedToLoadProjectInWorkspace", str) + e.getMessage());
 
                     SoapUI.logError(e);
                 }
             }
             ensureProjectsCompatibility(projectList);
-        } else {
+        }
+        else {
             workspaceConfig = SoapuiWorkspaceDocumentConfig.Factory.newInstance();
             workspaceConfig.addNewSoapuiWorkspace().setName(messages.get("DefaultWorkspaceName"));
             workspaceConfig.getSoapuiWorkspace().addNewSettings();
 
-            settings = new XmlBeansSettingsImpl(this, SoapUI.getSettings(), workspaceConfig.getSoapuiWorkspace()
-                    .getSettings());
+            settings = new XmlBeansSettingsImpl(this, SoapUI.getSettings(), workspaceConfig.getSoapuiWorkspace().getSettings());
         }
     }
 
@@ -179,42 +144,25 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         List<String> readyProjectsList = new ArrayList<>();
         for (Project project : projects) {
             if (project instanceof WsdlProject) {
-                if (((WsdlProject) project).isFromReadyApi()) {
-                    ProjectConfig config = ((WsdlProject) project).getProjectDocument().getSoapuiProject();
+                if (((WsdlProject)project).isFromReadyApi()) {
+                    ProjectConfig config = ((WsdlProject)project).getProjectDocument().getSoapuiProject();
                     String version = StringUtils.isNullOrEmpty(config.getUpdated()) ? "" : StringUtils.getSubstringBeforeFirstWhitespace(config.getUpdated());
-                    readyProjectsList.add(
-                            messages.get(
-                                    "Compatibility.with.ReadyAPI.one.project",
-                                    config.getName(),
-                                    StringUtils.hasContent(version) ? "(" + version + ")" : ""));
-                } else if (((WsdlProject) project).isFromNewerVersion()) {
-                    ProjectConfig config = ((WsdlProject) project).getProjectDocument().getSoapuiProject();
+                    readyProjectsList.add(messages.get("Compatibility.with.ReadyAPI.one.project", config.getName(), StringUtils.hasContent(version) ? "(" + version + ")" : ""));
+                }
+                else if (((WsdlProject)project).isFromNewerVersion()) {
+                    ProjectConfig config = ((WsdlProject)project).getProjectDocument().getSoapuiProject();
                     String version = config.getSoapuiVersion();
-                    newerProjectsList.add(
-                            messages.get(
-                                    "Compatibility.with.SoapUI.one.project",
-                                    config.getName(),
-                                    version,
-                                    SoapUI.PRODUCT_NAME));
+                    newerProjectsList.add(messages.get("Compatibility.with.SoapUI.one.project", config.getName(), version, SoapUI.PRODUCT_NAME));
                 }
             }
         }
-        String message = messages.get(
-                "WorkspaceImpl.Compatibility.Text",
-                SoapUI.PRODUCT_NAME,
-                SoapUI.SOAPUI_VERSION);
+        String message = messages.get("WorkspaceImpl.Compatibility.Text", SoapUI.PRODUCT_NAME, SoapUI.SOAPUI_VERSION);
         if (!readyProjectsList.isEmpty()) {
-            UISupport.showInfoMessage(String.join("\r\n", readyProjectsList) + message,
-                    messages.get("Compatibility.with.ReadyAPI.Title"));
+            UISupport.showInfoMessage(String.join("\r\n", readyProjectsList) + message, messages.get("Compatibility.with.ReadyAPI.Title"));
         }
         if (!newerProjectsList.isEmpty()) {
-            UISupport.showInfoMessage(String.join("\r\n", newerProjectsList) + message,
-                    messages.get("Compatibility.with.SoapUI.Title"));
+            UISupport.showInfoMessage(String.join("\r\n", newerProjectsList) + message, messages.get("Compatibility.with.SoapUI.Title"));
         }
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 
     public Map<String, Project> getProjects() {
@@ -227,11 +175,27 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         return result;
     }
 
+    public String getName() {
+        return workspaceConfig.getSoapuiWorkspace().isSetName() ? workspaceConfig.getSoapuiWorkspace().getName() : messages.get("DefaultWorkspaceName");
+    }
+
     public void setName(String name) {
         String oldName = getName();
 
         workspaceConfig.getSoapuiWorkspace().setName(name);
         notifyPropertyChanged(ModelItem.NAME_PROPERTY, oldName, name);
+    }
+
+    public String getId() {
+        return String.valueOf(hashCode());
+    }
+
+    public ImageIcon getIcon() {
+        return workspaceIcon;
+    }
+
+    public String getDescription() {
+        return workspaceConfig.getSoapuiWorkspace().getDescription();
     }
 
     public void setDescription(String description) {
@@ -241,9 +205,12 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         notifyPropertyChanged(ModelItem.DESCRIPTION_PROPERTY, oldDescription, description);
     }
 
-    public String getName() {
-        return workspaceConfig.getSoapuiWorkspace().isSetName() ? workspaceConfig.getSoapuiWorkspace().getName()
-                : messages.get("DefaultWorkspaceName");
+    public Settings getSettings() {
+        return settings;
+    }
+
+    public ModelItem getParent() {
+        return null;
     }
 
     public Project getProjectAt(int index) {
@@ -272,12 +239,187 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         return save(workspaceOnly, false);
     }
 
+    public void addWorkspaceListener(WorkspaceListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeWorkspaceListener(WorkspaceListener listener) {
+        listeners.remove(listener);
+    }
+
+    public WsdlProject createProject(String name, File file) throws SoapUIException {
+        File projectFile = file;
+        while (projectFile != null && projectFile.exists()) {
+            Boolean result = Boolean.FALSE;
+            while (!result) {
+                result = UISupport.confirmOrCancel(messages.get("OverwriteProject.Label"), messages.get("OverwriteProject.Title"));
+                if (result == null) {
+                    return null;
+                }
+                if (result) {
+                    projectFile.delete();
+                }
+                else {
+                    projectFile = UISupport.getFileDialogs().saveAs(this, messages.get("CreateProject.Title"), ".xml", "XML Files (*.xml)", projectFile); //$NON-NLS-1$
+                    if (projectFile != null) {
+                        break;
+                    }
+                    else {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        WsdlProject project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory(WsdlProjectFactory.WSDL_TYPE).createNew((String)null, this);
+
+        project.setName(name);
+        projectList.add(project);
+
+        fireProjectAdded(project);
+
+        try {
+            if (projectFile != null) {
+                project.saveAs(projectFile.getAbsolutePath());
+            }
+        }
+        catch (IOException e) {
+            log.error(messages.get("FailedToSaveProject.Error") + e.getMessage(), e);
+        }
+
+        return project;
+    }
+
+    public void removeProject(Project project) {
+        int ix = projectList.indexOf(project);
+        if (ix == -1) {
+            throw new RuntimeException("Project [" + project.getName() + "] not available in workspace for removal");
+        }
+
+        projectList.remove(ix);
+
+        try {
+            fireProjectRemoved(project);
+        }
+        finally {
+            project.release();
+        }
+    }
+
+    public Project importProject(String fileName) throws SoapUIException {
+        File projectFile = new File(fileName);
+        WsdlProject project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(projectFile.getAbsolutePath(), this);
+
+        ensureProjectsCompatibility(Arrays.asList(project));
+
+        afterProjectImport(project);
+
+        return project;
+    }
+
+    @Override
+    public Project importProject(InputStream inputStream) {
+        WsdlProject project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(inputStream, this);
+
+        ensureProjectsCompatibility(Arrays.asList(project));
+
+        afterProjectImport(project);
+
+        return project;
+    }
+
+    public int getIndexOfProject(Project project) {
+        return projectList.indexOf(project);
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public List<? extends Project> getProjectList() {
+        return projectList;
+    }
+
+    public void switchWorkspace(File file) throws SoapUIException {
+        // check first if valid workspace file
+        if (file.exists()) {
+            try {
+                SoapuiWorkspaceDocumentConfig.Factory.parse(file);
+            }
+            catch (Exception e) {
+                throw new SoapUIException(messages.get("FailedToLoadWorkspaceException") + e.toString());
+            }
+        }
+
+        fireWorkspaceSwitching();
+
+        while (projectList.size() > 0) {
+            Project project = projectList.remove(0);
+            try {
+                fireProjectRemoved(project);
+            }
+            finally {
+                project.release();
+            }
+        }
+
+        try {
+            String oldName = getName();
+
+            loadWorkspace(file);
+            this.path = file.getAbsolutePath();
+
+            for (Project project : projectList) {
+                fireProjectAdded(project);
+            }
+
+            notifyPropertyChanged(ModelItem.NAME_PROPERTY, oldName, getName());
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
+
+        fireWorkspaceSwitched();
+    }
+
+    public Project openProject(Project project) throws SoapUIException {
+        return reloadProject(project);
+    }
+
+    public void inspectProjects() {
+        for (Project project : projectList) {
+            if (project.isOpen()) {
+                project.inspect();
+            }
+        }
+    }
+
+    public boolean isSupportInformationDialog() {
+        boolean isCollect = false;
+        if (workspaceConfig != null) {
+            if (!workspaceConfig.getSoapuiWorkspace().isSetCollectInfoForSupport()) {
+                return true;
+            }
+            isCollect = workspaceConfig.getSoapuiWorkspace().getCollectInfoForSupport();
+        }
+        return isCollect;
+    }
+
+    public void setSupportInformationDialog(boolean value) {
+        if (workspaceConfig != null) {
+            workspaceConfig.getSoapuiWorkspace().setCollectInfoForSupport(value);
+        }
+    }
+
     public SaveStatus save(boolean saveWorkspaceOnly, boolean skipProjectsWithRunningTests) {
         try {
             // not saved?
             if (path == null) {
-                File file = UISupport.getFileDialogs().saveAs(this, messages.get("SaveWorkspace.Title"), ".xml",
-                        "XML Files (*.xml)", null);
+                File file = UISupport.getFileDialogs().saveAs(this, messages.get("SaveWorkspace.Title"), ".xml", "XML Files (*.xml)", null);
                 if (file == null) {
                     return SaveStatus.CANCELLED;
                 }
@@ -289,7 +431,7 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
 
             // save projects first
             for (int c = 0; c < getProjectCount(); c++) {
-                WsdlProject project = (WsdlProject) getProjectAt(c);
+                WsdlProject project = (WsdlProject)getProjectAt(c);
 
                 if (!saveWorkspaceOnly) {
                     SaveStatus status = saveProject(skipProjectsWithRunningTests, project);
@@ -302,7 +444,8 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
             }
 
             saveWorkspaceConfig(projects);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             log.error(messages.get("FailedToSaveWorkspace.Error") + e.getMessage(), e); //$NON-NLS-1$
             return SaveStatus.FAILED;
         }
@@ -310,8 +453,7 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
     }
 
     private void saveWorkspaceConfig(List<WorkspaceProjectConfig> projects) throws IOException {
-        workspaceConfig.getSoapuiWorkspace().setProjectArray(
-                projects.toArray(new WorkspaceProjectConfig[projects.size()]));
+        workspaceConfig.getSoapuiWorkspace().setProjectArray(projects.toArray(new WorkspaceProjectConfig[projects.size()]));
         workspaceConfig.getSoapuiWorkspace().setSoapuiVersion(SoapUI.SOAPUI_VERSION);
 
         File workspaceFile = new File(path);
@@ -334,7 +476,8 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
             if (!project.isOpen()) {
                 if (project.getEncryptionStatus() == NOT_ENCRYPTED) {
                     wpc.setStatus(Status.CLOSED);
-                } else {
+                }
+                else {
                     wpc.setStatus(Status.CLOSED_AND_ENCRYPTED);
                 }
             }
@@ -347,10 +490,10 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
     private SaveStatus saveProject(boolean skipProjectsWithRunningTests, WsdlProject project) throws IOException {
         if (skipProjectsWithRunningTests && SoapUI.getTestMonitor().hasRunningTests(project)) {
             log.warn(messages.get("ProjectHasRunningTests.Warning", project.getName()));
-        } else {
+        }
+        else {
             if (!StringUtils.hasContent(project.getPath())) {
-                Boolean shouldSave = UISupport.confirmOrCancel(messages.get("ProjectHasNotBeenSaved.Label", project.getName()),
-                        messages.get("ProjectHasNotBeenSaved.Title"));
+                Boolean shouldSave = UISupport.confirmOrCancel(messages.get("ProjectHasNotBeenSaved.Label", project.getName()), messages.get("ProjectHasNotBeenSaved.Title"));
 
                 if (shouldSave == null) {
                     return SaveStatus.CANCELLED;
@@ -358,45 +501,16 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
 
                 if (shouldSave) {
                     return project.save();
-                } else {
+                }
+                else {
                     return SaveStatus.DONT_SAVE;
                 }
-            } else {
+            }
+            else {
                 return project.save();
             }
         }
         return SaveStatus.SUCCESS;
-    }
-
-    public void addWorkspaceListener(WorkspaceListener listener) {
-        listeners.add(listener);
-    }
-
-    public void removeWorkspaceListener(WorkspaceListener listener) {
-        listeners.remove(listener);
-    }
-
-    public Project importProject(String fileName) throws SoapUIException {
-        File projectFile = new File(fileName);
-        WsdlProject project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(
-                projectFile.getAbsolutePath(), this);
-
-        ensureProjectsCompatibility(Arrays.asList(project));
-
-        afterProjectImport(project);
-
-        return project;
-    }
-
-    @Override
-    public Project importProject(InputStream inputStream) {
-        WsdlProject project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(inputStream, this);
-
-        ensureProjectsCompatibility(Arrays.asList(project));
-
-        afterProjectImport(project);
-
-        return project;
     }
 
     public void resolveProject(WsdlProject project) {
@@ -410,56 +524,12 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
 
     public WsdlProject createProject(String name) throws SoapUIException {
         File projectFile = new File(createProjectFileName(name));
-        File file = UISupport.getFileDialogs().saveAs(this, messages.get("CreateProject.Title"), ".xml",
-                "XML Files (*.xml)", projectFile);
+        File file = UISupport.getFileDialogs().saveAs(this, messages.get("CreateProject.Title"), ".xml", "XML Files (*.xml)", projectFile);
         if (file == null) {
             return null;
         }
 
         return createProject(name, file);
-    }
-
-    public WsdlProject createProject(String name, File file) throws SoapUIException {
-        File projectFile = file;
-        while (projectFile != null && projectFile.exists()) {
-            Boolean result = Boolean.FALSE;
-            while (!result) {
-                result = UISupport.confirmOrCancel(messages.get("OverwriteProject.Label"),
-                        messages.get("OverwriteProject.Title"));
-                if (result == null) {
-                    return null;
-                }
-                if (result) {
-                    projectFile.delete();
-                } else {
-                    projectFile = UISupport.getFileDialogs().saveAs(this, messages.get("CreateProject.Title"), ".xml",
-                            "XML Files (*.xml)", projectFile); //$NON-NLS-1$
-                    if (projectFile != null) {
-                        break;
-                    } else {
-                        return null;
-                    }
-                }
-            }
-        }
-
-        WsdlProject project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory(WsdlProjectFactory.WSDL_TYPE)
-                .createNew((String) null, this);
-
-        project.setName(name);
-        projectList.add(project);
-
-        fireProjectAdded(project);
-
-        try {
-            if (projectFile != null) {
-                project.saveAs(projectFile.getAbsolutePath());
-            }
-        } catch (IOException e) {
-            log.error(messages.get("FailedToSaveProject.Error") + e.getMessage(), e);
-        }
-
-        return project;
     }
 
     private void afterProjectImport(WsdlProject project) {
@@ -505,26 +575,11 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         return name + "-soapui-project.xml"; //$NON-NLS-1$
     }
 
-    public void removeProject(Project project) {
-        int ix = projectList.indexOf(project);
-        if (ix == -1) {
-            throw new RuntimeException("Project [" + project.getName() + "] not available in workspace for removal");
-        }
-
-        projectList.remove(ix);
-
-        try {
-            fireProjectRemoved(project);
-        } finally {
-            project.release();
-        }
-    }
-
     public Project reloadProject(Project project) throws SoapUIException {
         int ix = projectList.indexOf(project);
         if (ix == -1) {
             throw new RuntimeException("Project [" + project.getName() //$NON-NLS-1$
-                    + "] not available in workspace for reload"); //$NON-NLS-1$
+                                       + "] not available in workspace for reload"); //$NON-NLS-1$
         }
 
         projectList.remove(ix);
@@ -532,8 +587,7 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
 
         String tempName = project.getName();
         project.release();
-        project = ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(project.getPath(), this,
-                true, tempName, null);
+        project = ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(project.getPath(), this, true, tempName, null);
         projectList.add(ix, project);
 
         fireProjectAdded(project);
@@ -546,22 +600,6 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         for (WorkspaceListener listener : listeners) {
             listener.projectRemoved(project);
         }
-    }
-
-    public ImageIcon getIcon() {
-        return workspaceIcon;
-    }
-
-    public Settings getSettings() {
-        return settings;
-    }
-
-    public int getIndexOfProject(Project project) {
-        return projectList.indexOf(project);
-    }
-
-    public String getPath() {
-        return path;
     }
 
     public String getProjectRoot() {
@@ -580,16 +618,8 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         }
     }
 
-    public List<? extends Project> getProjectList() {
-        return projectList;
-    }
-
-    public String getDescription() {
-        return workspaceConfig.getSoapuiWorkspace().getDescription();
-    }
-
     public WsdlProject importRemoteProject(String url) throws SoapUIException {
-        WsdlProject project = (WsdlProject) ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(url, this);
+        WsdlProject project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory("wsdl").createNew(url, this);
 
         ensureProjectsCompatibility(Arrays.asList(project));
 
@@ -599,7 +629,7 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
     }
 
     public void closeProject(Project project) {
-        ProjectEncryptionStatus oldProjectEncrypt = ((WsdlProject) project).getEncryptionStatus();
+        ProjectEncryptionStatus oldProjectEncrypt = ((WsdlProject)project).getEncryptionStatus();
         int ix = projectList.indexOf(project);
         if (ix == -1) {
             throw new RuntimeException("Project [" + project.getName() + "] not available in workspace for close");
@@ -613,12 +643,12 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         project.release();
 
         try {
-            project = ProjectFactoryRegistry.getProjectFactory(WsdlProjectFactory.WSDL_TYPE).createNew(
-                    project.getPath(), this, false, name, null);
-            ((WsdlProject) project).setEncryptionStatus(oldProjectEncrypt);
+            project = ProjectFactoryRegistry.getProjectFactory(WsdlProjectFactory.WSDL_TYPE).createNew(project.getPath(), this, false, name, null);
+            ((WsdlProject)project).setEncryptionStatus(oldProjectEncrypt);
             projectList.add(ix, project);
             fireProjectAdded(project);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             UISupport.showErrorMessage(messages.get("FailedToCloseProject.Error", name) + e.getMessage());
             SoapUI.logError(e);
         }
@@ -636,28 +666,8 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
         return availableProjects;
     }
 
-    public Project openProject(Project project) throws SoapUIException {
-        return reloadProject(project);
-    }
-
-    public String getId() {
-        return String.valueOf(hashCode());
-    }
-
     public List<? extends ModelItem> getChildren() {
         return getProjectList();
-    }
-
-    public ModelItem getParent() {
-        return null;
-    }
-
-    public void inspectProjects() {
-        for (Project project : projectList) {
-            if (project.isOpen()) {
-                project.inspect();
-            }
-        }
     }
 
     public String getProjectPassword(String name) {
@@ -666,22 +676,5 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
 
     public void clearProjectPassword(String name) {
         projectOptions.remove(name);
-    }
-
-    public boolean isSupportInformationDialog() {
-        boolean isCollect = false;
-        if (workspaceConfig != null) {
-            if (!workspaceConfig.getSoapuiWorkspace().isSetCollectInfoForSupport()) {
-                return true;
-            }
-            isCollect = workspaceConfig.getSoapuiWorkspace().getCollectInfoForSupport();
-        }
-        return isCollect;
-    }
-
-    public void setSupportInformationDialog(boolean value) {
-        if (workspaceConfig != null) {
-            workspaceConfig.getSoapuiWorkspace().setCollectInfoForSupport(value);
-        }
     }
 }

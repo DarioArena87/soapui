@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.mock;
@@ -28,33 +28,33 @@ import java.io.IOException;
  */
 
 public interface MockResult {
-    public MockRequest getMockRequest();
+    MockRequest getMockRequest();
 
-    public StringToStringsMap getResponseHeaders();
+    StringToStringsMap getResponseHeaders();
 
-    public String getResponseContent();
+    String getResponseContent();
 
-    public MockResponse getMockResponse();
+    void setResponseContent(String responseContent);
 
-    public MockOperation getMockOperation();
+    MockResponse getMockResponse();
 
-    public ActionList getActions();
+    MockOperation getMockOperation();
 
-    public long getTimeTaken();
+    ActionList getActions();
 
-    public long getTimestamp();
+    long getTimeTaken();
 
-    public void finish();
+    long getTimestamp();
 
-    public byte[] getRawResponseData();
+    void finish();
 
-    public void addHeader(String name, String value);
+    byte[] getRawResponseData();
 
-    public boolean isCommitted();
+    void addHeader(String name, String value);
 
-    public void setResponseContent(String responseContent);
+    boolean isCommitted();
 
-    public void setContentType(String contentTypeHttpHeader);
+    void setContentType(String contentTypeHttpHeader);
 
-    public void writeRawResponseData(byte[] data) throws IOException;
+    void writeRawResponseData(byte[] data) throws IOException;
 }

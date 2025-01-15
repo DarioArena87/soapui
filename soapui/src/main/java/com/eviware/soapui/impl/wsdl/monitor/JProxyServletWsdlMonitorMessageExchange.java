@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.monitor;
@@ -61,7 +61,7 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
     private StringToStringsMap responseHeaders;
     private MultipartMessageSupport requestMmSupport;
     private boolean discarded;
-    private long timestampStart;
+    private final long timestampStart;
     private byte[] request;
     private byte[] response;
     private String requestHost;
@@ -91,8 +91,9 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
         capture = true;
     }
 
-    public String getEndpoint() {
-        return targetURL == null ? null : targetURL.toString();
+    @Override
+    public URL getTargetUrl() {
+        return targetURL;
     }
 
     @Override
@@ -117,9 +118,8 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
     }
 
     @Override
-    public Response getResponse() {
-        // TODO Auto-generated method stub
-        return null;
+    public String getRequestHost() {
+        return requestHost;
     }
 
     @Override
@@ -128,24 +128,50 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
     }
 
     @Override
-    public String getRequestHost() {
-        return requestHost;
-    }
-
-    @Override
     public long getResponseContentLength() {
         return response == null ? -1 : response.length;
-    }
-
-    @Override
-    public URL getTargetUrl() {
-        return this.targetURL;
     }
 
     @Override
     public void prepare(IncomingWss incomingRequestWss, IncomingWss incomingResponseWss) {
         parseRequestData(incomingRequestWss);
         parseResponseData(incomingResponseWss);
+    }
+
+    public String getRequestMethod() {
+        return requestMethod;
+    }
+
+    public void setRequestMethod(String requestMethod) {
+        this.requestMethod = requestMethod;
+    }
+
+    public Map<String, String> getHttpRequestParameters() {
+        return httpRequestParameters;
+    }
+
+    public void setHttpRequestParameters(HttpServletRequest httpRequest) {
+        Enumeration<String> parameterNames = httpRequest.getParameterNames();
+        Map<String, String> parameterMap = new HashMap<String, String>();
+        while (parameterNames.hasMoreElements()) {
+            String name = parameterNames.nextElement();
+            parameterMap.put(name, httpRequest.getParameter(name));
+        }
+
+        httpRequestParameters = parameterMap;
+    }
+
+    @Override
+    public String getQueryParameters() {
+        return queryParameters;
+    }
+
+    public void setQueryParameters(String queryParameters) {
+        this.queryParameters = queryParameters;
+    }
+
+    public void setRequestHost(String serverName) {
+        requestHost = serverName;
     }
 
     private void parseResponseData(IncomingWss incomingResponseWss) {
@@ -156,23 +182,31 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
             if (responseContent == null) {
                 if (responseContentType != null && responseContentType.toUpperCase().startsWith("MULTIPART")) {
                     StringToStringMap values = StringToStringMap.fromHttpHeader(responseContentType);
-                    responseMmSupport = new MultipartMessageSupport(new MonitorMessageExchangeDataSource(
-                            "monitor response", in, responseContentType), values.get("start"), null, true, false);
+                    responseMmSupport = new MultipartMessageSupport(
+                        new MonitorMessageExchangeDataSource("monitor response", in, responseContentType),
+                        values.get("start"),
+                        null,
+                        true,
+                        false
+                    );
                     responseContentType = responseMmSupport.getRootPart().getContentType();
-                } else {
+                }
+                else {
                     String charset = getCharset(responseHeaders);
-                    this.responseContent = charset == null ? Tools.readAll(in, 0).toString() : Tools.readAll(in, 0)
-                            .toString(charset);
+                    responseContent = charset == null ? Tools.readAll(in, 0).toString() : Tools.readAll(in, 0).toString(charset);
                 }
             }
 
             processResponseWss(incomingResponseWss);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
-        } finally {
+        }
+        finally {
             try {
                 in.close();
-            } catch (IOException e1) {
+            }
+            catch (IOException e1) {
                 SoapUI.logError(e1);
             }
         }
@@ -183,46 +217,44 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
         return operation;
     }
 
-    public void setResponseContent(String content) throws IOException {
-        this.responseContent = content;
-    }
-
     private void processResponseWss(IncomingWss incomingResponseWss) throws IOException {
         if (incomingResponseWss != null) {
             Document dom = XmlUtils.parseXml(responseContent);
             try {
-                responseWssResult = incomingResponseWss
-                        .processIncoming(dom, new DefaultPropertyExpansionContext(project));
+                responseWssResult = incomingResponseWss.processIncoming(dom, new DefaultPropertyExpansionContext(project));
                 if (responseWssResult != null && responseWssResult.size() > 0) {
                     StringWriter writer = new StringWriter();
                     XmlUtils.serialize(dom, writer);
                     responseContent = writer.toString();
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 if (responseWssResult == null) {
                     responseWssResult = new Vector<Object>();
                 }
                 responseWssResult.add(e);
             }
         }
-
     }
 
     private void parseRequestData(IncomingWss incomingRequestWss) {
-        ByteArrayInputStream in = request == null ? new ByteArrayInputStream(new byte[0]) : new ByteArrayInputStream(
-                request);
+        ByteArrayInputStream in = request == null ? new ByteArrayInputStream(new byte[0]) : new ByteArrayInputStream(request);
         try {
             requestContentType = requestHeaders.get("Content-Type", "");
             if (requestContentType != null && requestContentType.toUpperCase().startsWith("MULTIPART")) {
                 StringToStringMap values = StringToStringMap.fromHttpHeader(requestContentType);
-                requestMmSupport = new MultipartMessageSupport(new MonitorMessageExchangeDataSource("monitor request",
-                        in, requestContentType), values.get("start"), null, true, false);
-                requestContentType = requestMmSupport.getRootPart() != null ? requestMmSupport.getRootPart()
-                        .getContentType() : null;
-            } else {
+                requestMmSupport = new MultipartMessageSupport(
+                    new MonitorMessageExchangeDataSource("monitor request", in, requestContentType),
+                    values.get("start"),
+                    null,
+                    true,
+                    false
+                );
+                requestContentType = requestMmSupport.getRootPart() != null ? requestMmSupport.getRootPart().getContentType() : null;
+            }
+            else {
                 String charset = getCharset(requestHeaders);
-                this.requestContent = charset == null ? Tools.readAll(in, 0).toString() : Tools.readAll(in, 0)
-                        .toString(charset);
+                requestContent = charset == null ? Tools.readAll(in, 0).toString() : Tools.readAll(in, 0).toString(charset);
             }
 
             processRequestWss(incomingRequestWss);
@@ -230,12 +262,15 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
             if (checkParse()) {
                 operation = findOperation();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
-        } finally {
+        }
+        finally {
             try {
                 in.close();
-            } catch (IOException e1) {
+            }
+            catch (IOException e1) {
                 SoapUI.logError(e1);
             }
         }
@@ -245,33 +280,11 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
         try {
             // XmlObject.Factory.parse( getRequestContent() );
             XmlUtils.createXmlObject(getRequestContent());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
         return true;
-    }
-
-    private static String getCharset(StringToStringsMap headers) {
-        String requestContentType = headers.get("Content-Type", "");
-        if (requestContentType != null) {
-            StringToStringMap values = StringToStringMap.fromHttpHeader(requestContentType);
-            if (values.containsKey("charset")) {
-                return values.get("charset");
-            }
-        }
-
-        String contentEncodingHeader = headers.get("Content-Encoding", "");
-        if (contentEncodingHeader != null) {
-            try {
-                if (CompressionSupport.getAvailableAlgorithm(contentEncodingHeader) == null) {
-                    "".getBytes(contentEncodingHeader);
-                    return contentEncodingHeader;
-                }
-            } catch (Exception e) {
-            }
-        }
-
-        return null;
     }
 
     private WsdlOperation findOperation() throws Exception {
@@ -287,15 +300,14 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
         List<WsdlOperation> operations = new ArrayList<WsdlOperation>();
         for (WsdlInterface iface : ModelSupport.getChildren(project, WsdlInterface.class)) {
             for (Operation operation : iface.getOperationList()) {
-                operations.add((WsdlOperation) operation);
+                operations.add((WsdlOperation)operation);
             }
         }
 
         // return SoapUtils.findOperationForRequest( soapVersion, soapAction,
         // XmlObject.Factory.parse( getRequestContent() ), operations, true,
         // false, getRequestAttachments() );
-        return SoapUtils.findOperationForRequest(soapVersion, soapAction,
-                XmlUtils.createXmlObject(getRequestContent()), operations, true, false, getRequestAttachments());
+        return SoapUtils.findOperationForRequest(soapVersion, soapAction, XmlUtils.createXmlObject(getRequestContent()), operations, true, false, getRequestAttachments());
     }
 
     private void processRequestWss(IncomingWss incomingRequestWss) throws IOException {
@@ -309,40 +321,25 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
                     XmlUtils.serialize(dom, writer);
                     requestContent = writer.toString();
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 if (requestWssResult == null) {
                     requestWssResult = new Vector<Object>();
                 }
                 requestWssResult.add(e);
             }
         }
-
     }
 
     public WsdlOperation getOperation() {
         return operation;
     }
 
-    public Vector<?> getRequestWssResult() {
-        return requestWssResult;
-    }
-
-    public Vector<?> getResponseWssResult() {
-        return responseWssResult;
-    }
-
-    public Attachment[] getRequestAttachments() {
-        return requestMmSupport == null ? new Attachment[0] : requestMmSupport.getAttachments();
-    }
-
-    public String getRequestContent() {
-        return requestMmSupport == null ? requestContent : requestMmSupport.getContentAsString();
-    }
-
     public byte[] getRawRequestData() {
         if (requestRaw != null) {
             return requestRaw;
-        } else {
+        }
+        else {
             return request;
         }
     }
@@ -354,7 +351,8 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
     public byte[] getRawResponseData() {
         if (responseRaw == null) {
             return response;
-        } else {
+        }
+        else {
             return responseRaw;
         }
     }
@@ -363,32 +361,62 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
         responseRaw = data;
     }
 
-    public StringToStringsMap getRequestHeaders() {
-        return requestHeaders;
+    public Vector<?> getRequestWssResult() {
+        return requestWssResult;
     }
 
-    public Attachment[] getResponseAttachments() {
-        return requestMmSupport == null ? new Attachment[0] : requestMmSupport.getAttachments();
-    }
-
-    public String getResponseContent() {
-        return responseContent;
-    }
-
-    public StringToStringsMap getResponseHeaders() {
-        return responseHeaders;
-    }
-
-    public long getTimeTaken() {
-        return timestampEnd - timestampStart;
+    public Vector<?> getResponseWssResult() {
+        return responseWssResult;
     }
 
     public long getTimestamp() {
         return timestampStart;
     }
 
+    public long getTimeTaken() {
+        return timestampEnd - timestampStart;
+    }
+
+    public String getEndpoint() {
+        return targetURL == null ? null : targetURL.toString();
+    }
+
+    public String getRequestContent() {
+        return requestMmSupport == null ? requestContent : requestMmSupport.getContentAsString();
+    }
+
+    public String getResponseContent() {
+        return responseContent;
+    }
+
+    public void setResponseContent(String content) throws IOException {
+        responseContent = content;
+    }
+
+    public StringToStringsMap getRequestHeaders() {
+        return requestHeaders;
+    }
+
+    public StringToStringsMap getResponseHeaders() {
+        return responseHeaders;
+    }
+
+    public Attachment[] getRequestAttachments() {
+        return requestMmSupport == null ? new Attachment[0] : requestMmSupport.getAttachments();
+    }
+
+    public Attachment[] getResponseAttachments() {
+        return requestMmSupport == null ? new Attachment[0] : requestMmSupport.getAttachments();
+    }
+
     public boolean isDiscarded() {
         return discarded;
+    }
+
+    @Override
+    public Response getResponse() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     public void stopCapture() {
@@ -420,10 +448,6 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
         responseHeaders.put(name, value);
     }
 
-    public void setRequestHost(String serverName) {
-        requestHost = serverName;
-    }
-
     public void setTargetHost(String remoteHost) {
     }
 
@@ -444,8 +468,9 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
 
     public void setTargetURL(String url) {
         try {
-            this.targetURL = new URL(url);
-        } catch (MalformedURLException e) {
+            targetURL = new URL(url);
+        }
+        catch (MalformedURLException e) {
             e.printStackTrace();
         }
     }
@@ -456,6 +481,10 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
 
     public String getResponseContentType() {
         return responseContentType;
+    }
+
+    public void setResponseStatusCode(int statusCode) {
+        this.statusCode = statusCode;
     }
 
     public void setResponseHeader(HttpResponse response) {
@@ -469,47 +498,35 @@ public class JProxyServletWsdlMonitorMessageExchange extends WsdlMonitorMessageE
         }
     }
 
-    public String getRequestMethod() {
-        return requestMethod;
-    }
-
-    public void setRequestMethod(String requestMethod) {
-        this.requestMethod = requestMethod;
-    }
-
-    public void setHttpRequestParameters(HttpServletRequest httpRequest) {
-        Enumeration<String> parameterNames = httpRequest.getParameterNames();
-        Map<String, String> parameterMap = new HashMap<String, String>();
-        while (parameterNames.hasMoreElements()) {
-            String name = parameterNames.nextElement();
-            parameterMap.put(name, httpRequest.getParameter(name));
-        }
-
-        this.httpRequestParameters = parameterMap;
-    }
-
-    public Map<String, String> getHttpRequestParameters() {
-        return httpRequestParameters;
-    }
-
-    @Override
-    public String getQueryParameters() {
-        return queryParameters;
-    }
-
-    public void setQueryParameters(String queryParameters) {
-        this.queryParameters = queryParameters;
-    }
-
-    public void setResponseStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
     public void setResponseStatusLine(String responseStatusLine) {
         this.responseStatusLine = responseStatusLine;
     }
 
     public WsdlProject getProject() {
         return project;
+    }
+
+    private static String getCharset(StringToStringsMap headers) {
+        String requestContentType = headers.get("Content-Type", "");
+        if (requestContentType != null) {
+            StringToStringMap values = StringToStringMap.fromHttpHeader(requestContentType);
+            if (values.containsKey("charset")) {
+                return values.get("charset");
+            }
+        }
+
+        String contentEncodingHeader = headers.get("Content-Encoding", "");
+        if (contentEncodingHeader != null) {
+            try {
+                if (CompressionSupport.getAvailableAlgorithm(contentEncodingHeader) == null) {
+                    "".getBytes(contentEncodingHeader);
+                    return contentEncodingHeader;
+                }
+            }
+            catch (Exception e) {
+            }
+        }
+
+        return null;
     }
 }

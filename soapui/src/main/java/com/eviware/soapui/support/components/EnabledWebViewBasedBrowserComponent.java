@@ -34,21 +34,14 @@ import javafx.util.Callback;
 import netscape.javascript.JSObject;
 import org.apache.commons.lang.StringUtils;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.DefaultKeyboardFocusManager;
-import java.awt.HeadlessException;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -62,6 +55,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,23 +65,42 @@ import static com.eviware.soapui.SoapUI.getThreadPool;
 class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponent {
     public static final String CHARSET_PATTERN = "(.+)(;\\s*charset=)(.+)";
     public static final String DEFAULT_ERROR_PAGE = "<html><body><h1>The page could not be loaded</h1></body></html>";
-    private Pattern charsetFinderPattern = Pattern.compile(CHARSET_PATTERN);
-
-    private JPanel panel = new JPanel(new BorderLayout());
+    public String url;
+    public WebView webView;
+    private final Pattern charsetFinderPattern = Pattern.compile(CHARSET_PATTERN);
+    private final JPanel panel = new JPanel(new BorderLayout());
     private String errorPage;
     private boolean showingErrorPage;
-    public String url;
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-
-    private java.util.List<BrowserListener> listeners = new ArrayList<BrowserListener>();
-
-    public WebView webView;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private final List<BrowserListener> listeners = new ArrayList<BrowserListener>();
     private WebViewNavigationBar navigationBar;
     private String lastLocation;
-    private Set<BrowserWindow> browserWindows = new HashSet<BrowserWindow>();
+    private final Set<BrowserWindow> browserWindows = new HashSet<BrowserWindow>();
 
     private JFXPanel browserPanel;
-    private PopupStrategy popupStrategy;
+    private final PopupStrategy popupStrategy;
+
+    public static boolean verifyReturnCode(String urlString) {
+        try {
+            int neededIndex = urlString.indexOf("?");
+            if (neededIndex != -1) {
+                urlString = urlString.substring(0, neededIndex);
+            }
+            URL url = new URL(urlString);
+            URLConnection urlConnection = url.openConnection();
+            if (urlConnection instanceof HttpURLConnection) {
+                HttpURLConnection httpURLConnection = (HttpURLConnection)urlConnection;
+                int statusCode = httpURLConnection.getResponseCode();
+                return statusCode == HttpURLConnection.HTTP_OK;
+            }
+            else {
+                return true;
+            }
+        }
+        catch (IOException e) {
+            return false;
+        }
+    }
 
     EnabledWebViewBasedBrowserComponent(boolean addNavigationBar, PopupStrategy popupStrategy) {
         this.popupStrategy = popupStrategy;
@@ -99,19 +112,43 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
         return panel;
     }
 
+    @Override
+    public void navigate(String url) {
+        navigate(url, DEFAULT_ERROR_PAGE);
+    }
+
+    public void navigate(String url, String backupUrl) {
+        if (SoapUI.isBrowserDisabled()) {
+            return;
+        }
+
+        loadUrl(url);
+
+        if (StringUtils.isNotBlank(backupUrl)) {
+            getThreadPool().submit(new BrowserFallbackTask(url, backupUrl));
+        }
+
+        Platform.runLater(new Runnable() {
+            public void run() {
+                getWebEngine().load(url);
+            }
+        });
+    }
+
     private void initializeWebView(boolean addNavigationBar) {
         if (addNavigationBar) {
             navigationBar = new WebViewNavigationBar();
             panel.add(navigationBar.getComponent(), BorderLayout.NORTH);
         }
 
-        final JFXPanel browserPanel = new JFXPanel();
+        JFXPanel browserPanel = new JFXPanel();
         panel.add(browserPanel, BorderLayout.CENTER);
 
         WebViewInitialization webViewInitialization = new WebViewInitialization(browserPanel);
         if (Platform.isFxApplicationThread()) {
             webViewInitialization.run();
-        } else {
+        }
+        else {
             Platform.runLater(webViewInitialization);
         }
         Runnable runnable = new Runnable() {
@@ -133,85 +170,72 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 
         StringWriter stringWriter = new StringWriter();
-        transformer.transform(new DOMSource(getWebEngine().getDocument()),
-                new StreamResult(stringWriter));
+        transformer.transform(new DOMSource(getWebEngine().getDocument()), new StreamResult(stringWriter));
 
         return stringWriter.getBuffer().toString().replaceAll("\n|\r", "");
     }
 
-    private void addKeyboardFocusManager(final JFXPanel browserPanel) {
+    private void addKeyboardFocusManager(JFXPanel browserPanel) {
         KeyboardFocusManager kfm = DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager();
         kfm.addKeyEventDispatcher(new KeyEventDispatcher() {
-                                      @Override
-                                      public boolean dispatchKeyEvent(KeyEvent e) {
-                                          if (DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() == browserPanel) {
-                                              if (e.getID() == KeyEvent.KEY_TYPED && e.getKeyChar() == 10) {
-                                                  e.setKeyChar((char) 13);
-                                              }
-                                          }
-                                          return false;
-                                      }
-                                  }
-        );
-    }
-
-    @Override
-    public void executeJavaScript(final String script) {
-        Platform.runLater(new Runnable() {
-            public void run() {
-                try {
-                    webView.getEngine().executeScript(script);
-                    for (BrowserListener listener : listeners) {
-                        listener.javaScriptExecuted(script, null, null);
-                    }
-                } catch (Exception e) {
-                    SoapUI.log.warn("Error executing JavaScript [" + script + "]", e);
-                    for (BrowserListener listener : listeners) {
-                        listener.javaScriptExecuted(script, lastLocation, e);
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent e) {
+                if (DefaultKeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() == browserPanel) {
+                    if (e.getID() == KeyEvent.KEY_TYPED && e.getKeyChar() == 10) {
+                        e.setKeyChar((char)13);
                     }
                 }
+                return false;
             }
         });
     }
 
-    @Override
-    public void addJavaScriptEventHandler(final String memberName, final Object eventHandler) {
+    private void release() {
+        setContent("");
         Platform.runLater(new Runnable() {
-            @Override
             public void run() {
-                getWebEngine().getLoadWorker().stateProperty().addListener(
-                        new ChangeListener<Worker.State>() {
-                            public void changed(ObservableValue observableValue, Worker.State oldState, Worker.State newState) {
-                                if (newState == Worker.State.SUCCEEDED) {
-                                    JSObject window = (JSObject) getWebEngine().executeScript("window");
-                                    window.setMember(memberName, eventHandler);
-                                }
-                            }
-                        }
-                );
+                browserPanel.setScene(null);
             }
         });
     }
 
+    private String removeCharsetFrom(String contentType) {
+        Matcher matcher = charsetFinderPattern.matcher(contentType);
+        return matcher.matches() ? matcher.group(1) : contentType;
+    }
+
+    private WebEngine getWebEngine() {
+        return webView.getEngine();
+    }
+
+    public String getContent() {
+        return webView == null ? null : XmlUtils.serialize(getWebEngine().getDocument());
+    }
+
     @Override
-    public PagePropertyMapper getPagePropertyMapper() {
-        return new PagePropertyMapper() {
-            @Override
-            public void update(String name, Object newValue) {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Object o = getWebEngine().executeScript("window.propertyUpdater");
-                        if (!(o instanceof JSObject)) {
-                            Platform.runLater(this);
-                            return;
-                        }
-                        JSObject updater = (JSObject) o;
-                        updater.call("update", name, newValue);
-                    }
-                });
+    public void setContent(String contentAsString) {
+        if (SoapUI.isBrowserDisabled()) {
+            return;
+        }
+        Platform.runLater(new Runnable() {
+            public void run() {
+                getWebEngine().loadContent(contentAsString);
             }
-        };
+        });
+        pcs.firePropertyChange("content", null, contentAsString);
+    }
+
+    @Override
+    public void setContent(String contentAsString, String contentType) {
+        if (SoapUI.isBrowserDisabled()) {
+            return;
+        }
+        Platform.runLater(new Runnable() {
+            public void run() {
+
+                getWebEngine().loadContent(contentAsString, removeCharsetFrom(contentType));
+            }
+        });
     }
 
     @Override
@@ -229,52 +253,72 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
         release();
     }
 
-    private void release() {
-        setContent("");
+    @Override
+    public void addBrowserStateListener(BrowserListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeBrowserStateListener(BrowserListener listener) {
+        listeners.remove(listener);
+    }
+
+    @Override
+    public void executeJavaScript(String script) {
         Platform.runLater(new Runnable() {
             public void run() {
-                browserPanel.setScene(null);
+                try {
+                    webView.getEngine().executeScript(script);
+                    for (BrowserListener listener : listeners) {
+                        listener.javaScriptExecuted(script, null, null);
+                    }
+                }
+                catch (Exception e) {
+                    SoapUI.log.warn("Error executing JavaScript [" + script + "]", e);
+                    for (BrowserListener listener : listeners) {
+                        listener.javaScriptExecuted(script, lastLocation, e);
+                    }
+                }
             }
         });
     }
 
     @Override
-    public void setContent(final String contentAsString, final String contentType) {
-        if (SoapUI.isBrowserDisabled()) {
-            return;
-        }
+    public void addJavaScriptEventHandler(String memberName, Object eventHandler) {
         Platform.runLater(new Runnable() {
+            @Override
             public void run() {
-
-                getWebEngine().loadContent(contentAsString, removeCharsetFrom(contentType));
+                getWebEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
+                    public void changed(ObservableValue observableValue, Worker.State oldState, Worker.State newState) {
+                        if (newState == Worker.State.SUCCEEDED) {
+                            JSObject window = (JSObject)getWebEngine().executeScript("window");
+                            window.setMember(memberName, eventHandler);
+                        }
+                    }
+                });
             }
         });
-    }
-
-    private String removeCharsetFrom(String contentType) {
-        Matcher matcher = charsetFinderPattern.matcher(contentType);
-        return matcher.matches() ? matcher.group(1) : contentType;
     }
 
     @Override
-    public void setContent(final String contentAsString) {
-        if (SoapUI.isBrowserDisabled()) {
-            return;
-        }
-        Platform.runLater(new Runnable() {
-            public void run() {
-                getWebEngine().loadContent(contentAsString);
+    public PagePropertyMapper getPagePropertyMapper() {
+        return new PagePropertyMapper() {
+            @Override
+            public void update(String name, Object newValue) {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Object o = getWebEngine().executeScript("window.propertyUpdater");
+                        if (!(o instanceof JSObject)) {
+                            Platform.runLater(this);
+                            return;
+                        }
+                        JSObject updater = (JSObject)o;
+                        updater.call("update", name, newValue);
+                    }
+                });
             }
-        });
-        pcs.firePropertyChange("content", null, contentAsString);
-    }
-
-    private WebEngine getWebEngine() {
-        return webView.getEngine();
-    }
-
-    public String getContent() {
-        return webView == null ? null : XmlUtils.serialize(getWebEngine().getDocument());
+        };
     }
 
     public String getUrl() {
@@ -293,66 +337,12 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
         pcs.removePropertyChangeListener(pcl);
     }
 
-    @Override
-    public void navigate(final String url) {
-        navigate(url, DEFAULT_ERROR_PAGE);
-    }
-
-    public void navigate(final String url, String backupUrl) {
-        if (SoapUI.isBrowserDisabled()) {
-            return;
-        }
-
-        loadUrl(url);
-
-        if (StringUtils.isNotBlank(backupUrl)) {
-            getThreadPool().submit(new BrowserFallbackTask(url, backupUrl));
-        }
-
-        Platform.runLater(new Runnable() {
-            public void run() {
-                getWebEngine().load(url);
-            }
-        });
-
-    }
-
-    private void loadUrl(final String url) {
+    private void loadUrl(String url) {
         Platform.runLater(() -> {
 
             getWebEngine().load(url);
         });
         this.url = url;
-    }
-
-    public static boolean verifyReturnCode(String urlString) {
-        try {
-            int neededIndex = urlString.indexOf("?");
-            if (neededIndex != -1) {
-                urlString = urlString.substring(0, neededIndex);
-            }
-            URL url = new URL(urlString);
-            final URLConnection urlConnection = url.openConnection();
-            if (urlConnection instanceof HttpURLConnection) {
-                HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
-                int statusCode = httpURLConnection.getResponseCode();
-                return statusCode == HttpURLConnection.HTTP_OK;
-            } else {
-                return true;
-            }
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-    @Override
-    public void addBrowserStateListener(BrowserListener listener) {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removeBrowserStateListener(BrowserListener listener) {
-        listeners.remove(listener);
     }
 
 	/*
@@ -383,7 +373,6 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
             browser.close(true);
             browser.release();
         }
-
     }
 
 	/*
@@ -438,7 +427,7 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
                     webView.getEngine().setCreatePopupHandler(new Callback<PopupFeatures, WebEngine>() {
                         @Override
                         public WebEngine call(PopupFeatures pf) {
-                            final WebEngine webEngine = new WebEngine();
+                            WebEngine webEngine = new WebEngine();
                             webEngine.locationProperty().addListener(new ChangeListener<String>() {
                                 @Override
                                 public void changed(ObservableValue<? extends String> observableValue, String oldValue, String newValue) {
@@ -473,8 +462,9 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
         private void listenForLocationChanges() {
             webView.getEngine().locationProperty().addListener(new ChangeListener<String>() {
                 @Override
-                public void changed(ObservableValue<? extends String> observableValue, String oldLocation,
-                                    String newLocation) {
+                public void changed(
+                    ObservableValue<? extends String> observableValue, String oldLocation, String newLocation
+                ) {
                     lastLocation = newLocation;
                     for (BrowserListener listener : listeners) {
                         listener.locationChanged(newLocation);
@@ -484,34 +474,34 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
         }
 
         private void listenForStateChanges() {
-            webView.getEngine().getLoadWorker().stateProperty().addListener(
-                    new ChangeListener<Worker.State>() {
-                        @Override
-                        public void changed(ObservableValue value, Worker.State oldState, Worker.State newState) {
-                            if (newState == Worker.State.SUCCEEDED) {
-                                try {
-                                    if (getWebEngine().getDocument() != null) {
-                                        String output = readDocumentAsString();
-                                        for (BrowserListener listener : listeners) {
-                                            listener.contentChanged(output);
-                                        }
-                                    }
-                                } catch (Exception ex) {
-                                    SoapUI.logError(ex, "Error processing state change to " + newState);
-                                }
-                            } else if (newState == Worker.State.FAILED && !showingErrorPage) {
-                                try {
-                                    showingErrorPage = true;
-                                    setContent(errorPage == null ? DEFAULT_ERROR_PAGE : errorPage);
-                                } finally {
-                                    showingErrorPage = false;
+            webView.getEngine().getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
+                @Override
+                public void changed(ObservableValue value, Worker.State oldState, Worker.State newState) {
+                    if (newState == Worker.State.SUCCEEDED) {
+                        try {
+                            if (getWebEngine().getDocument() != null) {
+                                String output = readDocumentAsString();
+                                for (BrowserListener listener : listeners) {
+                                    listener.contentChanged(output);
                                 }
                             }
                         }
+                        catch (Exception ex) {
+                            SoapUI.logError(ex, "Error processing state change to " + newState);
+                        }
                     }
-            );
+                    else if (newState == Worker.State.FAILED && !showingErrorPage) {
+                        try {
+                            showingErrorPage = true;
+                            setContent(errorPage == null ? DEFAULT_ERROR_PAGE : errorPage);
+                        }
+                        finally {
+                            showingErrorPage = false;
+                        }
+                    }
+                }
+            });
         }
-
     }
 
     private class BrowserFallbackTask implements Runnable {
@@ -529,7 +519,6 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
             if (!verifyReturnCode(url)) {
                 loadUrl(backupUrl);
             }
-
         }
     }
 }

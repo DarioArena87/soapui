@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.iface;
@@ -60,14 +60,13 @@ public class GenerateMockServiceAction extends AbstractSoapUIAction<WsdlInterfac
         dialog.setBooleanValue(Form.ADD_ENDPOINT, true);
         String[] names = ModelSupport.getNames(iface.getOperationList());
         dialog.setOptions(Form.OPERATIONS, names);
-        XFormOptionsField operationsFormField = (XFormOptionsField) dialog.getFormField(Form.OPERATIONS);
+        XFormOptionsField operationsFormField = (XFormOptionsField)dialog.getFormField(Form.OPERATIONS);
         operationsFormField.setSelectedOptions(names);
 
         dialog.getFormField(Form.START_MOCKSERVICE).setEnabled(!atCreation);
 
         WsdlProject project = iface.getProject();
-        String[] mockServices = ModelSupport.getNames(new String[]{CREATE_MOCKSUITE_OPTION},
-                project.getMockServiceList());
+        String[] mockServices = ModelSupport.getNames(new String[]{CREATE_MOCKSUITE_OPTION}, project.getMockServiceList());
         dialog.setOptions(Form.MOCKSERVICE, mockServices);
 
         dialog.setValue(Form.PATH, "/mock" + iface.getName());
@@ -90,7 +89,8 @@ public class GenerateMockServiceAction extends AbstractSoapUIAction<WsdlInterfac
 
             try {
                 mockService.setPort(Integer.parseInt(dialog.getValue(Form.PORT)));
-            } catch (NumberFormatException e1) {
+            }
+            catch (NumberFormatException e1) {
             }
 
             for (int i = 0; i < iface.getOperationCount(); i++) {
@@ -110,15 +110,13 @@ public class GenerateMockServiceAction extends AbstractSoapUIAction<WsdlInterfac
             }
 
             if (!atCreation) {
-                WsdlMockServiceDesktopPanel desktopPanel = (WsdlMockServiceDesktopPanel) UISupport
-                        .showDesktopPanel(mockService);
+                WsdlMockServiceDesktopPanel desktopPanel = (WsdlMockServiceDesktopPanel)UISupport.showDesktopPanel(mockService);
 
                 if (dialog.getBooleanValue(Form.START_MOCKSERVICE)) {
                     desktopPanel.startMockService();
                     SoapUI.getDesktop().minimize(desktopPanel);
                 }
             }
-
         }
     }
 
@@ -126,8 +124,7 @@ public class GenerateMockServiceAction extends AbstractSoapUIAction<WsdlInterfac
         MockService mockService = project.getMockServiceByName(mockServiceName);
 
         if (mockService == null || mockServiceName.equals(CREATE_MOCKSUITE_OPTION)) {
-            mockServiceName = UISupport.prompt("Specify name of MockService to create", getName(), modelItem.getName()
-                    + " MockService");
+            mockServiceName = UISupport.prompt("Specify name of MockService to create", getName(), modelItem.getName() + " MockService");
             if (mockServiceName != null) {
                 mockService = project.addNewMockService(mockServiceName);
             }
@@ -136,24 +133,29 @@ public class GenerateMockServiceAction extends AbstractSoapUIAction<WsdlInterfac
         return mockService;
     }
 
-    @AForm(name = "Generate MockService", description = "Set options for generated MockOperations for this Interface", helpUrl = HelpUrls.GENERATE_MOCKSERVICE_HELP_URL, icon = UISupport.TOOL_ICON_PATH)
+    @AForm(
+        name = "Generate MockService",
+        description = "Set options for generated MockOperations for this Interface",
+        helpUrl = HelpUrls.GENERATE_MOCKSERVICE_HELP_URL,
+        icon = UISupport.TOOL_ICON_PATH
+    )
     private interface Form {
         @AField(name = "MockService", description = "The MockService to create or use", type = AFieldType.ENUMERATION)
-        public final static String MOCKSERVICE = "MockService";
+        String MOCKSERVICE = "MockService";
 
         @AField(name = "Operations", description = "The Operations for which to Generate MockOperations", type = AFieldType.MULTILIST)
-        public final static String OPERATIONS = "Operations";
+        String OPERATIONS = "Operations";
 
         @AField(name = "Path", description = "The URL path to mount on", type = AFieldType.STRING)
-        public final static String PATH = "Path";
+        String PATH = "Path";
 
         @AField(name = "Port", description = "The endpoint port to listen on", type = AFieldType.STRING)
-        public final static String PORT = "Port";
+        String PORT = "Port";
 
         @AField(name = "Add Endpoint", description = "Adds the MockServices endpoint to the mocked Interface", type = AFieldType.BOOLEAN)
-        public final static String ADD_ENDPOINT = "Add Endpoint";
+        String ADD_ENDPOINT = "Add Endpoint";
 
         @AField(name = "Start MockService", description = "Starts the MockService immediately", type = AFieldType.BOOLEAN)
-        public final static String START_MOCKSERVICE = "Start MockService";
+        String START_MOCKSERVICE = "Start MockService";
     }
 }

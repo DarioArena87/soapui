@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.actions.mockresponse;
@@ -55,7 +55,7 @@ public class CreateTestRequestForMockResponseAction extends AbstractAddToTestCas
     }
 
     public void perform(WsdlMockResponse mockResponse, Object param) {
-        WsdlProject project = (WsdlProject) ModelSupport.getModelItemProject(mockResponse);
+        WsdlProject project = (WsdlProject)ModelSupport.getModelItemProject(mockResponse);
 
         WsdlTestCase testCase = getTargetTestCase(project);
         if (testCase != null) {
@@ -79,12 +79,13 @@ public class CreateTestRequestForMockResponseAction extends AbstractAddToTestCas
         if (dialog.getReturnValue() != XFormDialog.OK_OPTION) {
             return null;
         }
-        ;
 
         String name = dialogValues.get(STEP_NAME);
 
-        WsdlTestRequestStep testStep = (WsdlTestRequestStep) testCase.insertTestStep(
-                WsdlTestRequestStepFactory.createConfig(mockResponse.getMockOperation().getOperation(), name), position);
+        WsdlTestRequestStep testStep = (WsdlTestRequestStep)testCase.insertTestStep(
+            WsdlTestRequestStepFactory.createConfig(mockResponse.getMockOperation().getOperation(), name),
+            position
+        );
 
         if (testStep == null) {
             return null;
@@ -121,8 +122,7 @@ public class CreateTestRequestForMockResponseAction extends AbstractAddToTestCas
         mainForm.addCheckBox(ADD_SCHEMA_ASSERTION, "(adds validation that response complies with its schema)");
         mainForm.addCheckBox(ADD_SOAP_FAULT_ASSERTION, "(adds validation that response is not a SOAP Fault)");
 
-        dialog = builder.buildDialog(builder.buildOkCancelActions(), "Specify options for creating the TestRequest",
-                UISupport.OPTIONS_ICON);
+        dialog = builder.buildDialog(builder.buildOkCancelActions(), "Specify options for creating the TestRequest", UISupport.OPTIONS_ICON);
 
         dialogValues.put(ADD_SOAP_RESPONSE_ASSERTION, Boolean.TRUE.toString());
     }

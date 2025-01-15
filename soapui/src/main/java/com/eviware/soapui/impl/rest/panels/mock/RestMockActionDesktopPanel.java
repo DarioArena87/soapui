@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.mock;
@@ -25,14 +25,8 @@ import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.components.JXToolBar;
 import com.eviware.soapui.ui.support.AbstractMockOperationDesktopPanel;
 
-import javax.swing.Box;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import java.awt.BorderLayout;
-import java.awt.Component;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
@@ -46,6 +40,12 @@ public class RestMockActionDesktopPanel extends AbstractMockOperationDesktopPane
     @Override
     protected String getAddToMockOperationIconPath() {
         return "/addToRestMockAction.gif";
+    }
+
+    protected String[] getAvailableDispatchTypes() {
+        return new String[]{
+            MockOperationDispatchStyleConfig.SEQUENCE.toString(), MockOperationDispatchStyleConfig.SCRIPT.toString()
+        };
     }
 
     @Override
@@ -66,7 +66,7 @@ public class RestMockActionDesktopPanel extends AbstractMockOperationDesktopPane
     }
 
     private JComponent createResourcePathTextField() {
-        final JTextField resourcePathEditor = new JTextField();
+        JTextField resourcePathEditor = new JTextField();
         resourcePathEditor.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -81,13 +81,13 @@ public class RestMockActionDesktopPanel extends AbstractMockOperationDesktopPane
 
         comboPanel.add(new JLabel("Method"), BorderLayout.NORTH);
 
-        final JComboBox methodCombo = new JComboBox(RestRequestInterface.HttpMethod.getMethods());
+        JComboBox methodCombo = new JComboBox(RestRequestInterface.HttpMethod.getMethods());
 
         methodCombo.setSelectedItem(getModelItem().getMethod());
         methodCombo.setToolTipText("Set desired HTTP method");
         methodCombo.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
-                getModelItem().setMethod((RestRequestInterface.HttpMethod) methodCombo.getSelectedItem());
+                getModelItem().setMethod((RestRequestInterface.HttpMethod)methodCombo.getSelectedItem());
             }
         });
 
@@ -95,13 +95,5 @@ public class RestMockActionDesktopPanel extends AbstractMockOperationDesktopPane
 
         return comboPanel;
     }
-
-    protected String[] getAvailableDispatchTypes() {
-        return new String[]{
-                MockOperationDispatchStyleConfig.SEQUENCE.toString(),
-                MockOperationDispatchStyleConfig.SCRIPT.toString()
-        };
-    }
-
 }
 

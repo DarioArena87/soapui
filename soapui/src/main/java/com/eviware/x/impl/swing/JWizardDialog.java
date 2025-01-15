@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.impl.swing;
@@ -29,18 +29,8 @@ import com.eviware.x.form.XForm;
 import com.eviware.x.form.XFormDialog;
 import com.eviware.x.form.XFormField;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Frame;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,20 +38,20 @@ import java.util.HashMap;
 import java.util.List;
 
 public class JWizardDialog extends SwingXFormDialog {
-    private String name;
-    private ArrayList<String> pageNames = new ArrayList<String>();
+    private final String name;
+    private final ArrayList<String> pageNames = new ArrayList<String>();
 
-    private JFrame dialog;
+    private final JFrame dialog;
     private DescriptionPanel descriptionPanel;
-    private List<SwingXFormImpl> forms = new ArrayList<SwingXFormImpl>();
-    private JPanel pages;
-    private CardLayout cardLayout;
+    private final List<SwingXFormImpl> forms = new ArrayList<SwingXFormImpl>();
+    private final JPanel pages;
+    private final CardLayout cardLayout;
 
-    private HashMap<String, WizardPage> controllers = new HashMap<String, WizardPage>();
+    private final HashMap<String, WizardPage> controllers = new HashMap<String, WizardPage>();
     private int currentPage = 0;
 
     private DefaultActionList actions;
-    private JButtonBar buttons;
+    private final JButtonBar buttons;
 
     public JWizardDialog(String name, XForm[] forms, Action helpAction, String description, ImageIcon icon) {
         this.name = name;
@@ -74,7 +64,7 @@ public class JWizardDialog extends SwingXFormDialog {
         cardLayout = new CardLayout();
         pages = new JPanel(cardLayout);
         for (XForm form : forms) {
-            SwingXFormImpl swingFormImpl = (SwingXFormImpl) form;
+            SwingXFormImpl swingFormImpl = (SwingXFormImpl)form;
             this.forms.add(swingFormImpl);
 
             JPanel panel = swingFormImpl.getPanel();
@@ -97,14 +87,6 @@ public class JWizardDialog extends SwingXFormDialog {
         dialog.pack();
     }
 
-    public XForm[] getForms() {
-        List<XForm> result = new ArrayList<XForm>();
-        for (XForm form : forms) {
-            result.add(form);
-        }
-        return result.toArray(new XForm[result.size()]);
-    }
-
     public void dispose() {
         dialog.dispose();
     }
@@ -118,12 +100,6 @@ public class JWizardDialog extends SwingXFormDialog {
         if (helpAction != null) {
             actions.addAction(helpAction);
         }
-    }
-
-    public void addAction(Action action) {
-        DefaultActionList actions = new DefaultActionList();
-        actions.addAction(action);
-        buttons.addActions(actions);
     }
 
     private void addPage(String name, JComponent component) {
@@ -143,10 +119,62 @@ public class JWizardDialog extends SwingXFormDialog {
         addPageController(controller);
     }
 
+    public StringToStringMap getValues() {
+        StringToStringMap result = new StringToStringMap();
+
+        for (XForm form : forms) {
+            result.putAll(form.getValues());
+        }
+
+        return result;
+    }
+
     public void setValues(StringToStringMap values) {
         for (XForm form : forms) {
             form.setValues(values);
         }
+    }
+
+    public void setVisible(boolean visible) {
+        if (visible) {
+            if (showPage(0)) {
+                Frame mainFrame = UISupport.getMainFrame();
+                UISupport.centerDialog(dialog, mainFrame);
+                // dialog.setVisible( visible );
+                ModalFrameUtil.showAsModal(dialog, mainFrame);
+            }
+        }
+        else {
+            dialog.setVisible(visible);
+        }
+    }
+
+    public void setValue(String field, String value) {
+        for (XForm form : forms) {
+            if (form.getComponent(field) != null) {
+                form.getComponent(field).setValue(value);
+            }
+        }
+    }
+
+    public String getValue(String field) {
+        for (XForm form : forms) {
+            if (form.getComponent(field) != null) {
+                return form.getComponent(field).getValue();
+            }
+        }
+
+        return null;
+    }
+
+    public boolean show() {
+        setReturnValue(CANCEL_OPTION);
+        show(new StringToStringMap());
+        return getReturnValue() == OK_OPTION;
+    }
+
+    public boolean validate() {
+        return true;
     }
 
     public void setOptions(String field, Object[] options) {
@@ -166,54 +194,9 @@ public class JWizardDialog extends SwingXFormDialog {
         return null;
     }
 
-    public StringToStringMap getValues() {
-        StringToStringMap result = new StringToStringMap();
-
-        for (XForm form : forms) {
-            result.putAll(form.getValues());
-        }
-
-        return result;
-    }
-
-    public void setVisible(boolean visible) {
-        if (visible) {
-            if (showPage(0)) {
-                Frame mainFrame = UISupport.getMainFrame();
-                UISupport.centerDialog(dialog, mainFrame);
-                // dialog.setVisible( visible );
-                ModalFrameUtil.showAsModal(dialog, mainFrame);
-            }
-        } else {
-            dialog.setVisible(visible);
-        }
-    }
-
-    public boolean validate() {
-        return true;
-    }
-
     public void setFormFieldProperty(String name, Object value) {
         for (XForm form : forms) {
             form.setFormFieldProperty(name, value);
-        }
-    }
-
-    public String getValue(String field) {
-        for (XForm form : forms) {
-            if (form.getComponent(field) != null) {
-                return form.getComponent(field).getValue();
-            }
-        }
-
-        return null;
-    }
-
-    public void setValue(String field, String value) {
-        for (XForm form : forms) {
-            if (form.getComponent(field) != null) {
-                form.getComponent(field).setValue(value);
-            }
         }
     }
 
@@ -232,14 +215,26 @@ public class JWizardDialog extends SwingXFormDialog {
         return -1;
     }
 
-    public boolean show() {
-        setReturnValue(XFormDialog.CANCEL_OPTION);
-        show(new StringToStringMap());
-        return getReturnValue() == XFormDialog.OK_OPTION;
+    public void setWidth(int i) {
+        dialog.setPreferredSize(new Dimension(i, (int)dialog.getPreferredSize().getHeight()));
     }
 
-    public void setWidth(int i) {
-        dialog.setPreferredSize(new Dimension(i, (int) dialog.getPreferredSize().getHeight()));
+    public void release() {
+        dialog.dispose();
+    }
+
+    public void addAction(Action action) {
+        DefaultActionList actions = new DefaultActionList();
+        actions.addAction(action);
+        buttons.addActions(actions);
+    }
+
+    public XForm[] getForms() {
+        List<XForm> result = new ArrayList<XForm>();
+        for (XForm form : forms) {
+            result.add(form);
+        }
+        return result.toArray(new XForm[result.size()]);
     }
 
     public void setSize(int w, int h) {
@@ -258,7 +253,8 @@ public class JWizardDialog extends SwingXFormDialog {
         if (initPage(pageName, page)) {
             actions.update();
             return true;
-        } else {
+        }
+        else {
             setVisible(false);
             return false;
         }
@@ -268,12 +264,14 @@ public class JWizardDialog extends SwingXFormDialog {
         try {
             dialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             return page.init();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             dialog.setCursor(Cursor.getDefaultCursor());
             SoapUI.logError(e);
-            UISupport.showInfoMessage(pageName + " could not be initialized", this.name);
+            UISupport.showInfoMessage(pageName + " could not be initialized", name);
             return false;
-        } finally {
+        }
+        finally {
             dialog.setCursor(Cursor.getDefaultCursor());
         }
     }
@@ -284,12 +282,14 @@ public class JWizardDialog extends SwingXFormDialog {
         try {
             dialog.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             return controller.run();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             dialog.setCursor(Cursor.getDefaultCursor());
             SoapUI.logError(e);
-            UISupport.showInfoMessage(pageName + " failed", this.name);
+            UISupport.showInfoMessage(pageName + " failed", name);
             return false;
-        } finally {
+        }
+        finally {
             dialog.setCursor(Cursor.getDefaultCursor());
         }
     }
@@ -326,7 +326,8 @@ public class JWizardDialog extends SwingXFormDialog {
         public void actionPerformed(ActionEvent evt) {
             if (runCurrentPage()) {
                 showPage(currentPage + 1);
-            } else {
+            }
+            else {
                 setVisible(false);
             }
         }
@@ -341,7 +342,7 @@ public class JWizardDialog extends SwingXFormDialog {
         }
 
         public void actionPerformed(ActionEvent e) {
-            setReturnValue(XFormDialog.CANCEL_OPTION);
+            setReturnValue(CANCEL_OPTION);
             setVisible(false);
         }
     }
@@ -357,12 +358,8 @@ public class JWizardDialog extends SwingXFormDialog {
 
         public void actionPerformed(ActionEvent e) {
             runCurrentPage();
-            setReturnValue(XFormDialog.OK_OPTION);
+            setReturnValue(OK_OPTION);
             setVisible(false);
         }
-    }
-
-    public void release() {
-        dialog.dispose();
     }
 }

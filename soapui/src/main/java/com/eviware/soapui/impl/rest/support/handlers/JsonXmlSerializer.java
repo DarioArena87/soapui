@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.support.handlers;
@@ -106,7 +106,7 @@ public class JsonXmlSerializer {
     /**
      * Map of namespaces per element
      */
-    private Map namespacesPerElement = new TreeMap();
+    private final Map namespacesPerElement = new TreeMap();
     /**
      * the name for an JSONObject Element
      */
@@ -122,7 +122,7 @@ public class JsonXmlSerializer {
     /**
      * Map of namespaces for root element
      */
-    private Map rootNamespace = new TreeMap();
+    private final Map rootNamespace = new TreeMap();
     /**
      * flag for skipping namespaces while reading
      */
@@ -201,8 +201,9 @@ public class JsonXmlSerializer {
         }
         if (StringUtils.isBlank(elementName)) {
             rootNamespace.put(prefix.trim(), uri.trim());
-        } else {
-            Map nameSpaces = (Map) namespacesPerElement.get(elementName);
+        }
+        else {
+            Map nameSpaces = (Map)namespacesPerElement.get(elementName);
             if (nameSpaces == null) {
                 nameSpaces = new TreeMap();
                 namespacesPerElement.put(elementName, nameSpaces);
@@ -229,7 +230,8 @@ public class JsonXmlSerializer {
     public void clearNamespaces(String elementName) {
         if (StringUtils.isBlank(elementName)) {
             rootNamespace.clear();
-        } else {
+        }
+        else {
             namespacesPerElement.remove(elementName);
         }
     }
@@ -242,10 +244,26 @@ public class JsonXmlSerializer {
     }
 
     /**
+     * Sets the name used for JSONArray.<br>
+     * Default is 'a'.
+     */
+    public void setArrayName(String arrayName) {
+        this.arrayName = StringUtils.isBlank(arrayName) ? "a" : arrayName;
+    }
+
+    /**
      * Returns the name used for JSONArray elements.
      */
     public String getElementName() {
         return elementName;
+    }
+
+    /**
+     * Sets the name used for JSONArray elements.<br>
+     * Default is 'e'.
+     */
+    public void setElementName(String elementName) {
+        this.elementName = StringUtils.isBlank(elementName) ? "e" : elementName;
     }
 
     /**
@@ -256,10 +274,25 @@ public class JsonXmlSerializer {
     }
 
     /**
+     * Sets the list of properties to be expanded from child to parent.
+     */
+    public void setExpandableProperties(String[] expandableProperties) {
+        this.expandableProperties = expandableProperties == null ? EMPTY_ARRAY : expandableProperties;
+    }
+
+    /**
      * Returns the name used for JSONArray.
      */
     public String getObjectName() {
         return objectName;
+    }
+
+    /**
+     * Sets the name used for JSONObject.<br>
+     * Default is 'o'.
+     */
+    public void setObjectName(String objectName) {
+        this.objectName = StringUtils.isBlank(objectName) ? "o" : objectName;
     }
 
     /**
@@ -269,8 +302,19 @@ public class JsonXmlSerializer {
         return rootName;
     }
 
+    /**
+     * Sets the name used for the root element.
+     */
+    public void setRootName(String rootName) {
+        this.rootName = StringUtils.isBlank(rootName) ? null : rootName;
+    }
+
     public boolean isForceTopLevelObject() {
         return forceTopLevelObject;
+    }
+
+    public void setForceTopLevelObject(boolean forceTopLevelObject) {
+        this.forceTopLevelObject = forceTopLevelObject;
     }
 
     /**
@@ -282,11 +326,26 @@ public class JsonXmlSerializer {
     }
 
     /**
+     * Sets wether this serializer is tolerant to namespaces without URIs or not.
+     */
+    public void setNamespaceLenient(boolean namespaceLenient) {
+        this.namespaceLenient = namespaceLenient;
+    }
+
+    /**
      * Returns wether this serializer will remove namespace prefix from elements
      * or not.
      */
     public boolean isRemoveNamespacePrefixFromElements() {
         return removeNamespacePrefixFromElements;
+    }
+
+    /**
+     * Sets if this serializer will remove namespace prefix from elements when
+     * reading.
+     */
+    public void setRemoveNamespacePrefixFromElements(boolean removeNamespacePrefixFromElements) {
+        this.removeNamespacePrefixFromElements = removeNamespacePrefixFromElements;
     }
 
     /**
@@ -298,10 +357,25 @@ public class JsonXmlSerializer {
     }
 
     /**
+     * Sets if this serializer will skip adding namespace declarations to
+     * elements when reading.
+     */
+    public void setSkipNamespaces(boolean skipNamespaces) {
+        this.skipNamespaces = skipNamespaces;
+    }
+
+    /**
      * Returns wether this serializer will skip whitespace or not.
      */
     public boolean isSkipWhitespace() {
         return skipWhitespace;
+    }
+
+    /**
+     * Sets if this serializer will skip whitespace when reading.
+     */
+    public void setSkipWhitespace(boolean skipWhitespace) {
+        this.skipWhitespace = skipWhitespace;
     }
 
     /**
@@ -313,6 +387,14 @@ public class JsonXmlSerializer {
     }
 
     /**
+     * Sets if this serializer will trim leading and trealing whitespace from
+     * values when reading.
+     */
+    public void setTrimSpaces(boolean trimSpaces) {
+        this.trimSpaces = trimSpaces;
+    }
+
+    /**
      * Returns true if types hints will have a 'json_' prefix or not.
      */
     public boolean isTypeHintsCompatibility() {
@@ -320,10 +402,24 @@ public class JsonXmlSerializer {
     }
 
     /**
+     * Sets wether types hints will have a 'json_' prefix or not.
+     */
+    public void setTypeHintsCompatibility(boolean typeHintsCompatibility) {
+        this.typeHintsCompatibility = typeHintsCompatibility;
+    }
+
+    /**
      * Returns true if JSON types will be included as attributes.
      */
     public boolean isTypeHintsEnabled() {
         return typeHintsEnabled;
+    }
+
+    /**
+     * Sets wether JSON types will be included as attributes.
+     */
+    public void setTypeHintsEnabled(boolean typeHintsEnabled) {
+        this.typeHintsEnabled = typeHintsEnabled;
     }
 
     /**
@@ -349,16 +445,19 @@ public class JsonXmlSerializer {
                     String key = removeNamespacePrefix(root.getQualifiedName());
                     json = new JSONObject().element(key, json);
                 }
-            } else {
+            }
+            else {
                 json = processObjectElement(root, defaultType);
                 if (forceTopLevelObject) {
                     String key = removeNamespacePrefix(root.getQualifiedName());
                     json = new JSONObject().element(key, json);
                 }
             }
-        } catch (JSONException jsone) {
+        }
+        catch (JSONException jsone) {
             throw jsone;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new JSONException(e);
         }
         return json;
@@ -384,7 +483,8 @@ public class JsonXmlSerializer {
         }
         try {
             return readFromStream(new FileInputStream(file));
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             throw new JSONException(ioe);
         }
     }
@@ -418,7 +518,8 @@ public class JsonXmlSerializer {
                 xml.append(line);
             }
             return read(xml.toString());
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             throw new JSONException(ioe);
         }
     }
@@ -446,37 +547,11 @@ public class JsonXmlSerializer {
         }
         if (StringUtils.isBlank(elementName)) {
             rootNamespace.remove(prefix.trim());
-        } else {
-            Map nameSpaces = (Map) namespacesPerElement.get(elementName);
+        }
+        else {
+            Map nameSpaces = (Map)namespacesPerElement.get(elementName);
             nameSpaces.remove(prefix);
         }
-    }
-
-    /**
-     * Sets the name used for JSONArray.<br>
-     * Default is 'a'.
-     */
-    public void setArrayName(String arrayName) {
-        this.arrayName = StringUtils.isBlank(arrayName) ? "a" : arrayName;
-    }
-
-    /**
-     * Sets the name used for JSONArray elements.<br>
-     * Default is 'e'.
-     */
-    public void setElementName(String elementName) {
-        this.elementName = StringUtils.isBlank(elementName) ? "e" : elementName;
-    }
-
-    /**
-     * Sets the list of properties to be expanded from child to parent.
-     */
-    public void setExpandableProperties(String[] expandableProperties) {
-        this.expandableProperties = expandableProperties == null ? EMPTY_ARRAY : expandableProperties;
-    }
-
-    public void setForceTopLevelObject(boolean forceTopLevelObject) {
-        this.forceTopLevelObject = forceTopLevelObject;
     }
 
     /**
@@ -509,8 +584,9 @@ public class JsonXmlSerializer {
         if (StringUtils.isBlank(elementName)) {
             rootNamespace.clear();
             rootNamespace.put(prefix.trim(), uri.trim());
-        } else {
-            Map nameSpaces = (Map) namespacesPerElement.get(elementName);
+        }
+        else {
+            Map nameSpaces = (Map)namespacesPerElement.get(elementName);
             if (nameSpaces == null) {
                 nameSpaces = new TreeMap();
                 namespacesPerElement.put(elementName, nameSpaces);
@@ -518,73 +594,6 @@ public class JsonXmlSerializer {
             nameSpaces.clear();
             nameSpaces.put(prefix, uri);
         }
-    }
-
-    /**
-     * Sets wether this serializer is tolerant to namespaces without URIs or not.
-     */
-    public void setNamespaceLenient(boolean namespaceLenient) {
-        this.namespaceLenient = namespaceLenient;
-    }
-
-    /**
-     * Sets the name used for JSONObject.<br>
-     * Default is 'o'.
-     */
-    public void setObjectName(String objectName) {
-        this.objectName = StringUtils.isBlank(objectName) ? "o" : objectName;
-    }
-
-    /**
-     * Sets if this serializer will remove namespace prefix from elements when
-     * reading.
-     */
-    public void setRemoveNamespacePrefixFromElements(boolean removeNamespacePrefixFromElements) {
-        this.removeNamespacePrefixFromElements = removeNamespacePrefixFromElements;
-    }
-
-    /**
-     * Sets the name used for the root element.
-     */
-    public void setRootName(String rootName) {
-        this.rootName = StringUtils.isBlank(rootName) ? null : rootName;
-    }
-
-    /**
-     * Sets if this serializer will skip adding namespace declarations to
-     * elements when reading.
-     */
-    public void setSkipNamespaces(boolean skipNamespaces) {
-        this.skipNamespaces = skipNamespaces;
-    }
-
-    /**
-     * Sets if this serializer will skip whitespace when reading.
-     */
-    public void setSkipWhitespace(boolean skipWhitespace) {
-        this.skipWhitespace = skipWhitespace;
-    }
-
-    /**
-     * Sets if this serializer will trim leading and trealing whitespace from
-     * values when reading.
-     */
-    public void setTrimSpaces(boolean trimSpaces) {
-        this.trimSpaces = trimSpaces;
-    }
-
-    /**
-     * Sets wether types hints will have a 'json_' prefix or not.
-     */
-    public void setTypeHintsCompatibility(boolean typeHintsCompatibility) {
-        this.typeHintsCompatibility = typeHintsCompatibility;
-    }
-
-    /**
-     * Sets wether JSON types will be included as attributes.
-     */
-    public void setTypeHintsEnabled(boolean typeHintsEnabled) {
-        this.typeHintsEnabled = typeHintsEnabled;
     }
 
     /**
@@ -616,21 +625,22 @@ public class JsonXmlSerializer {
             root.addAttribute(new Attribute(addJsonPrefix("null"), "true"));
             Document doc = new Document(root);
             return writeDocument(doc, encoding);
-        } else if (json instanceof JSONArray) {
-            JSONArray jsonArray = (JSONArray) json;
-            Element root = processJSONArray(jsonArray,
-                    newElement(getRootName() == null ? getArrayName() : getRootName()), expandableProperties);
+        }
+        else if (json instanceof JSONArray) {
+            JSONArray jsonArray = (JSONArray)json;
+            Element root = processJSONArray(jsonArray, newElement(getRootName() == null ? getArrayName() : getRootName()), expandableProperties);
             Document doc = new Document(root);
             return writeDocument(doc, encoding);
-        } else {
-            JSONObject jsonObject = (JSONObject) json;
+        }
+        else {
+            JSONObject jsonObject = (JSONObject)json;
             Element root = null;
             if (jsonObject.isNullObject()) {
                 root = newElement(getObjectName());
                 root.addAttribute(new Attribute(addJsonPrefix("null"), "true"));
-            } else {
-                root = processJSONObject(jsonObject,
-                        newElement(getRootName() == null ? getObjectName() : getRootName()), expandableProperties, true);
+            }
+            else {
+                root = processJSONObject(jsonObject, newElement(getRootName() == null ? getObjectName() : getRootName()), expandableProperties, true);
             }
             Document doc = new Document(root);
             return writeDocument(doc, encoding);
@@ -647,20 +657,22 @@ public class JsonXmlSerializer {
     private void addNameSpaceToElement(Element element) {
         String elementName = null;
         if (element instanceof CustomElement) {
-            elementName = ((CustomElement) element).getQName();
-        } else {
+            elementName = ((CustomElement)element).getQName();
+        }
+        else {
             elementName = element.getQualifiedName();
         }
-        Map nameSpaces = (Map) namespacesPerElement.get(elementName);
+        Map nameSpaces = (Map)namespacesPerElement.get(elementName);
         if (nameSpaces != null && !nameSpaces.isEmpty()) {
             setNamespaceLenient(true);
             for (Iterator entries = nameSpaces.entrySet().iterator(); entries.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) entries.next();
-                String prefix = (String) entry.getKey();
-                String uri = (String) entry.getValue();
+                Map.Entry entry = (Map.Entry)entries.next();
+                String prefix = (String)entry.getKey();
+                String uri = (String)entry.getValue();
                 if (StringUtils.isBlank(prefix)) {
                     element.setNamespaceURI(uri);
-                } else {
+                }
+                else {
                     element.addNamespaceDeclaration(prefix, uri);
                 }
             }
@@ -681,11 +693,7 @@ public class JsonXmlSerializer {
                 return true;
             }
             if (elementCount == 1) {
-                if (skipWhitespace || element.getChild(0) instanceof Text) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return skipWhitespace || element.getChild(0) instanceof Text;
             }
         }
 
@@ -693,7 +701,7 @@ public class JsonXmlSerializer {
             for (int i = 0; i < childCount; i++) {
                 Node node = element.getChild(i);
                 if (node instanceof Text) {
-                    Text text = (Text) node;
+                    Text text = (Text)node;
                     if (StringUtils.isNotBlank(StringUtils.strip(text.getValue())) && !skipWhitespace) {
                         return false;
                     }
@@ -718,7 +726,8 @@ public class JsonXmlSerializer {
             String clazzText = attribute.getValue().trim();
             if (JSONTypes.OBJECT.compareToIgnoreCase(clazzText) == 0) {
                 clazz = JSONTypes.OBJECT;
-            } else if (JSONTypes.ARRAY.compareToIgnoreCase(clazzText) == 0) {
+            }
+            else if (JSONTypes.ARRAY.compareToIgnoreCase(clazzText) == 0) {
                 clazz = JSONTypes.ARRAY;
             }
         }
@@ -736,22 +745,30 @@ public class JsonXmlSerializer {
             String typeText = attribute.getValue().trim();
             if (JSONTypes.BOOLEAN.compareToIgnoreCase(typeText) == 0) {
                 type = JSONTypes.BOOLEAN;
-            } else if (JSONTypes.NUMBER.compareToIgnoreCase(typeText) == 0) {
+            }
+            else if (JSONTypes.NUMBER.compareToIgnoreCase(typeText) == 0) {
                 type = JSONTypes.NUMBER;
-            } else if (JSONTypes.INTEGER.compareToIgnoreCase(typeText) == 0) {
+            }
+            else if (JSONTypes.INTEGER.compareToIgnoreCase(typeText) == 0) {
                 type = JSONTypes.INTEGER;
-            } else if (JSONTypes.FLOAT.compareToIgnoreCase(typeText) == 0) {
+            }
+            else if (JSONTypes.FLOAT.compareToIgnoreCase(typeText) == 0) {
                 type = JSONTypes.FLOAT;
-            } else if (JSONTypes.OBJECT.compareToIgnoreCase(typeText) == 0) {
+            }
+            else if (JSONTypes.OBJECT.compareToIgnoreCase(typeText) == 0) {
                 type = JSONTypes.OBJECT;
-            } else if (JSONTypes.ARRAY.compareToIgnoreCase(typeText) == 0) {
+            }
+            else if (JSONTypes.ARRAY.compareToIgnoreCase(typeText) == 0) {
                 type = JSONTypes.ARRAY;
-            } else if (JSONTypes.STRING.compareToIgnoreCase(typeText) == 0) {
+            }
+            else if (JSONTypes.STRING.compareToIgnoreCase(typeText) == 0) {
                 type = JSONTypes.STRING;
-            } else if (JSONTypes.FUNCTION.compareToIgnoreCase(typeText) == 0) {
+            }
+            else if (JSONTypes.FUNCTION.compareToIgnoreCase(typeText) == 0) {
                 type = JSONTypes.FUNCTION;
             }
-        } else {
+        }
+        else {
             if (defaultType != null) {
                 log.info("Using default type " + defaultType);
                 type = defaultType;
@@ -776,17 +793,16 @@ public class JsonXmlSerializer {
     private boolean isArray(Element element, boolean isTopLevel) {
         boolean isArray = false;
         String clazz = getClass(element);
-        if (clazz != null && clazz.equals(JSONTypes.ARRAY)) {
+        if (JSONTypes.ARRAY.equals(clazz)) {
             isArray = true;
-        } else if (element.getAttributeCount() == 0) {
+        }
+        else if (element.getAttributeCount() == 0) {
             isArray = checkChildElements(element, isTopLevel);
-        } else if (element.getAttributeCount() == 1
-                && (element.getAttribute(addJsonPrefix("class")) != null || element
-                .getAttribute(addJsonPrefix("type")) != null)) {
+        }
+        else if (element.getAttributeCount() == 1 && (element.getAttribute(addJsonPrefix("class")) != null || element.getAttribute(addJsonPrefix("type")) != null)) {
             isArray = checkChildElements(element, isTopLevel);
-        } else if (element.getAttributeCount() == 2
-                && (element.getAttribute(addJsonPrefix("class")) != null && element
-                .getAttribute(addJsonPrefix("type")) != null)) {
+        }
+        else if (element.getAttributeCount() == 2 && (element.getAttribute(addJsonPrefix("class")) != null && element.getAttribute(addJsonPrefix("type")) != null)) {
             isArray = checkChildElements(element, isTopLevel);
         }
 
@@ -812,13 +828,10 @@ public class JsonXmlSerializer {
             if (attrCount == 1 && paramsAttr != null) {
                 return true;
             }
-            if (attrCount == 2
-                    && paramsAttr != null
-                    && typeAttr != null
-                    && (typeAttr.getValue().compareToIgnoreCase(JSONTypes.STRING) == 0 || typeAttr.getValue()
-                    .compareToIgnoreCase(JSONTypes.FUNCTION) == 0)) {
-                return true;
-            }
+            return attrCount == 2 &&
+                   paramsAttr != null &&
+                   typeAttr != null &&
+                   (typeAttr.getValue().compareToIgnoreCase(JSONTypes.STRING) == 0 || typeAttr.getValue().compareToIgnoreCase(JSONTypes.FUNCTION) == 0);
         }
         return false;
     }
@@ -827,22 +840,18 @@ public class JsonXmlSerializer {
         if (element.getChildCount() == 0) {
             if (element.getAttributeCount() == 0) {
                 return true;
-            } else if (element.getAttribute(addJsonPrefix("null")) != null) {
+            }
+            else if (element.getAttribute(addJsonPrefix("null")) != null) {
                 return true;
-            } else if (element.getAttributeCount() == 1
-                    && (element.getAttribute(addJsonPrefix("class")) != null || element
-                    .getAttribute(addJsonPrefix("type")) != null)) {
+            }
+            else if (element.getAttributeCount() == 1 && (element.getAttribute(addJsonPrefix("class")) != null || element.getAttribute(addJsonPrefix("type")) != null)) {
                 return true;
-            } else if (element.getAttributeCount() == 2
-                    && (element.getAttribute(addJsonPrefix("class")) != null && element
-                    .getAttribute(addJsonPrefix("type")) != null)) {
+            }
+            else if (element.getAttributeCount() == 2 && (element.getAttribute(addJsonPrefix("class")) != null && element.getAttribute(addJsonPrefix("type")) != null)) {
                 return true;
             }
         }
-        if (skipWhitespace && element.getChildCount() == 1 && element.getChild(0) instanceof Text) {
-            return true;
-        }
-        return false;
+        return skipWhitespace && element.getChildCount() == 1 && element.getChild(0) instanceof Text;
     }
 
     private boolean isObject(Element element, boolean isTopLevel) {
@@ -904,12 +913,13 @@ public class JsonXmlSerializer {
         for (int i = 0; i < childCount; i++) {
             Node child = element.getChild(i);
             if (child instanceof Text) {
-                Text text = (Text) child;
+                Text text = (Text)child;
                 if (StringUtils.isNotBlank(StringUtils.strip(text.getValue()))) {
                     jsonArray.element(text.getValue());
                 }
-            } else if (child instanceof Element) {
-                setValue(jsonArray, (Element) child, defaultType);
+            }
+            else if (child instanceof Element) {
+                setValue(jsonArray, (Element)child, defaultType);
             }
         }
         return jsonArray;
@@ -918,11 +928,14 @@ public class JsonXmlSerializer {
     private Object processElement(Element element, String type) {
         if (isNullObject(element)) {
             return JSONNull.getInstance();
-        } else if (isArray(element, false)) {
+        }
+        else if (isArray(element, false)) {
             return processArrayElement(element, type);
-        } else if (isObject(element, false)) {
+        }
+        else if (isObject(element, false)) {
             return processObjectElement(element, type);
-        } else {
+        }
+        else {
             return trimSpaceFromValue(element.getValue());
         }
     }
@@ -941,7 +954,8 @@ public class JsonXmlSerializer {
         if (jsonObject.isNullObject()) {
             root.addAttribute(new Attribute(addJsonPrefix("null"), "true"));
             return root;
-        } else if (jsonObject.isEmpty()) {
+        }
+        else if (jsonObject.isEmpty()) {
             return root;
         }
 
@@ -949,12 +963,13 @@ public class JsonXmlSerializer {
             if (!rootNamespace.isEmpty()) {
                 setNamespaceLenient(true);
                 for (Iterator entries = rootNamespace.entrySet().iterator(); entries.hasNext(); ) {
-                    Map.Entry entry = (Map.Entry) entries.next();
-                    String prefix = (String) entry.getKey();
-                    String uri = (String) entry.getValue();
+                    Map.Entry entry = (Map.Entry)entries.next();
+                    String prefix = (String)entry.getKey();
+                    String uri = (String)entry.getValue();
                     if (StringUtils.isBlank(prefix)) {
                         root.setNamespaceURI(uri);
-                    } else {
+                    }
+                    else {
                         root.addNamespaceDeclaration(prefix, uri);
                     }
                 }
@@ -967,7 +982,7 @@ public class JsonXmlSerializer {
         Arrays.sort(names);
         Element element = null;
         for (int i = 0; i < names.length; i++) {
-            String name = (String) names[i];
+            String name = (String)names[i];
             Object value = jsonObject.get(name);
             if (name.startsWith("@xmlns")) {
                 setNamespaceLenient(true);
@@ -977,36 +992,43 @@ public class JsonXmlSerializer {
                     if (StringUtils.isBlank(root.getNamespaceURI())) {
                         root.setNamespaceURI(String.valueOf(value));
                     }
-                } else {
+                }
+                else {
                     String prefix = name.substring(colon + 1);
                     if (StringUtils.isBlank(root.getNamespaceURI(prefix))) {
                         root.addNamespaceDeclaration(prefix, String.valueOf(value));
                     }
                 }
-            } else if (name.startsWith("@")) {
+            }
+            else if (name.startsWith("@")) {
                 root.addAttribute(new Attribute(name.substring(1), String.valueOf(value)));
-            } else if (name.equals("#text")) {
+            }
+            else if (name.equals("#text")) {
                 if (value instanceof JSONArray) {
-                    root.appendChild(((JSONArray) value).join("", true));
-                } else {
+                    root.appendChild(((JSONArray)value).join("", true));
+                }
+                else {
                     root.appendChild(String.valueOf(value));
                 }
-            } else if (value instanceof JSONArray
-                    && (((JSONArray) value).isExpandElements() || ArrayUtils.contains(expandableProperties, name))) {
-                JSONArray array = (JSONArray) value;
+            }
+            else if (value instanceof JSONArray && (((JSONArray)value).isExpandElements() || ArrayUtils.contains(expandableProperties, name))) {
+                JSONArray array = (JSONArray)value;
                 for (Object item : array) {
                     element = newElement(name);
                     if (item instanceof JSONObject) {
                         element = processJSONValue(item, root, element, expandableProperties);
-                    } else if (item instanceof JSONArray) {
+                    }
+                    else if (item instanceof JSONArray) {
                         element = processJSONValue(item, root, element, expandableProperties);
-                    } else {
+                    }
+                    else {
                         element = processJSONValue(item, root, element, expandableProperties);
                     }
                     addNameSpaceToElement(element);
                     root.appendChild(element);
                 }
-            } else {
+            }
+            else {
                 element = newElement(name);
                 element = processJSONValue(value, root, element, expandableProperties);
                 addNameSpaceToElement(element);
@@ -1025,16 +1047,18 @@ public class JsonXmlSerializer {
                 target.addAttribute(new Attribute(addJsonPrefix("type"), JSONTypes.BOOLEAN));
             }
             target.appendChild(value.toString());
-        } else if (JSONUtils.isNumber(value)) {
+        }
+        else if (JSONUtils.isNumber(value)) {
             if (isTypeHintsEnabled()) {
                 target.addAttribute(new Attribute(addJsonPrefix("type"), JSONTypes.NUMBER));
             }
             target.appendChild(value.toString());
-        } else if (JSONUtils.isFunction(value)) {
+        }
+        else if (JSONUtils.isFunction(value)) {
             if (value instanceof String) {
-                value = JSONFunction.parse((String) value);
+                value = JSONFunction.parse((String)value);
             }
-            JSONFunction func = (JSONFunction) value;
+            JSONFunction func = (JSONFunction)value;
             if (isTypeHintsEnabled()) {
                 target.addAttribute(new Attribute(addJsonPrefix("type"), JSONTypes.FUNCTION));
             }
@@ -1043,22 +1067,26 @@ public class JsonXmlSerializer {
             params = params.substring(0, params.length() - 1);
             target.addAttribute(new Attribute(addJsonPrefix("params"), params));
             target.appendChild(new Text("<![CDATA[" + func.getText() + "]]>"));
-        } else if (JSONUtils.isString(value)) {
+        }
+        else if (JSONUtils.isString(value)) {
             if (isTypeHintsEnabled()) {
                 target.addAttribute(new Attribute(addJsonPrefix("type"), JSONTypes.STRING));
             }
             target.appendChild(value.toString());
-        } else if (value instanceof JSONArray) {
+        }
+        else if (value instanceof JSONArray) {
             if (isTypeHintsEnabled()) {
                 target.addAttribute(new Attribute(addJsonPrefix("class"), JSONTypes.ARRAY));
             }
-            target = processJSONArray((JSONArray) value, target, expandableProperties);
-        } else if (value instanceof JSONObject) {
+            target = processJSONArray((JSONArray)value, target, expandableProperties);
+        }
+        else if (value instanceof JSONObject) {
             if (isTypeHintsEnabled()) {
                 target.addAttribute(new Attribute(addJsonPrefix("class"), JSONTypes.OBJECT));
             }
-            target = processJSONObject((JSONObject) value, target, expandableProperties, false);
-        } else if (JSONUtils.isNull(value)) {
+            target = processJSONObject((JSONObject)value, target, expandableProperties, false);
+        }
+        else if (JSONUtils.isNull(value)) {
             if (isTypeHintsEnabled()) {
                 target.addAttribute(new Attribute(addJsonPrefix("class"), JSONTypes.OBJECT));
             }
@@ -1092,9 +1120,7 @@ public class JsonXmlSerializer {
         for (int i = 0; i < attrCount; i++) {
             Attribute attr = element.getAttribute(i);
             String attrname = attr.getQualifiedName();
-            if (isTypeHintsEnabled()
-                    && (addJsonPrefix("class").compareToIgnoreCase(attrname) == 0 || addJsonPrefix("type")
-                    .compareToIgnoreCase(attrname) == 0)) {
+            if (isTypeHintsEnabled() && (addJsonPrefix("class").compareToIgnoreCase(attrname) == 0 || addJsonPrefix("type").compareToIgnoreCase(attrname) == 0)) {
                 continue;
             }
             String attrvalue = attr.getValue();
@@ -1106,12 +1132,13 @@ public class JsonXmlSerializer {
         for (int i = 0; i < childCount; i++) {
             Node child = element.getChild(i);
             if (child instanceof Text) {
-                Text text = (Text) child;
+                Text text = (Text)child;
                 if (StringUtils.isNotBlank(StringUtils.strip(text.getValue()))) {
                     setOrAccumulate(jsonObject, "#text", trimSpaceFromValue(text.getValue()));
                 }
-            } else if (child instanceof Element) {
-                setValue(jsonObject, (Element) child, defaultType);
+            }
+            else if (child instanceof Element) {
+                setValue(jsonObject, (Element)child, defaultType);
             }
         }
 
@@ -1131,9 +1158,10 @@ public class JsonXmlSerializer {
             jsonObject.accumulate(key, value);
             Object val = jsonObject.get(key);
             if (val instanceof JSONArray) {
-                ((JSONArray) val).setExpandElements(true);
+                ((JSONArray)val).setExpandElements(true);
             }
-        } else {
+        }
+        else {
             jsonObject.element(key, value);
         }
     }
@@ -1146,7 +1174,8 @@ public class JsonXmlSerializer {
         if (hasNamespaces(element) && !skipNamespaces) {
             jsonArray.element(simplifyValue(null, processElement(element, type)));
             return;
-        } else if (element.getAttributeCount() > 0) {
+        }
+        else if (element.getAttributeCount() > 0) {
             if (isFunction(element)) {
                 Attribute paramsAttribute = element.getAttribute(addJsonPrefix("params"));
                 String[] params = null;
@@ -1154,7 +1183,8 @@ public class JsonXmlSerializer {
                 params = StringUtils.split(paramsAttribute.getValue(), ",");
                 jsonArray.element(new JSONFunction(params, text));
                 return;
-            } else {
+            }
+            else {
                 jsonArray.element(simplifyValue(null, processElement(element, type)));
                 return;
             }
@@ -1165,7 +1195,8 @@ public class JsonXmlSerializer {
             if (clazz.compareToIgnoreCase(JSONTypes.ARRAY) == 0) {
                 jsonArray.element(processArrayElement(element, type));
                 classProcessed = true;
-            } else if (clazz.compareToIgnoreCase(JSONTypes.OBJECT) == 0) {
+            }
+            else if (clazz.compareToIgnoreCase(JSONTypes.OBJECT) == 0) {
                 jsonArray.element(simplifyValue(null, processObjectElement(element, type)));
                 classProcessed = true;
             }
@@ -1173,18 +1204,23 @@ public class JsonXmlSerializer {
         if (!classProcessed) {
             if (type.compareToIgnoreCase(JSONTypes.BOOLEAN) == 0) {
                 jsonArray.element(Boolean.valueOf(element.getValue()));
-            } else if (type.compareToIgnoreCase(JSONTypes.NUMBER) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.NUMBER) == 0) {
                 // try integer first
                 try {
                     jsonArray.element(Integer.valueOf(element.getValue()));
-                } catch (NumberFormatException e) {
+                }
+                catch (NumberFormatException e) {
                     jsonArray.element(Double.valueOf(element.getValue()));
                 }
-            } else if (type.compareToIgnoreCase(JSONTypes.INTEGER) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.INTEGER) == 0) {
                 jsonArray.element(Integer.valueOf(element.getValue()));
-            } else if (type.compareToIgnoreCase(JSONTypes.FLOAT) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.FLOAT) == 0) {
                 jsonArray.element(Double.valueOf(element.getValue()));
-            } else if (type.compareToIgnoreCase(JSONTypes.FUNCTION) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.FUNCTION) == 0) {
                 String[] params = null;
                 String text = element.getValue();
                 Attribute paramsAttribute = element.getAttribute(addJsonPrefix("params"));
@@ -1192,7 +1228,8 @@ public class JsonXmlSerializer {
                     params = StringUtils.split(paramsAttribute.getValue(), ",");
                 }
                 jsonArray.element(new JSONFunction(params, text));
-            } else if (type.compareToIgnoreCase(JSONTypes.STRING) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.STRING) == 0) {
                 // see if by any chance has a 'params' attribute
                 Attribute paramsAttribute = element.getAttribute(addJsonPrefix("params"));
                 if (paramsAttribute != null) {
@@ -1200,12 +1237,15 @@ public class JsonXmlSerializer {
                     String text = element.getValue();
                     params = StringUtils.split(paramsAttribute.getValue(), ",");
                     jsonArray.element(new JSONFunction(params, text));
-                } else {
+                }
+                else {
                     if (isArray(element, false)) {
                         jsonArray.element(processArrayElement(element, defaultType));
-                    } else if (isObject(element, false)) {
+                    }
+                    else if (isObject(element, false)) {
                         jsonArray.element(simplifyValue(null, processObjectElement(element, defaultType)));
-                    } else {
+                    }
+                    else {
                         jsonArray.element(trimSpaceFromValue(element.getValue()));
                     }
                 }
@@ -1222,7 +1262,8 @@ public class JsonXmlSerializer {
         if (hasNamespaces(element) && !skipNamespaces) {
             setOrAccumulate(jsonObject, key, simplifyValue(jsonObject, processElement(element, type)));
             return;
-        } else if (element.getAttributeCount() > 0) {
+        }
+        else if (element.getAttributeCount() > 0) {
             if (isFunction(element)) {
                 Attribute paramsAttribute = element.getAttribute(addJsonPrefix("params"));
                 String text = element.getValue();
@@ -1231,8 +1272,8 @@ public class JsonXmlSerializer {
                 return;
             }/*
              * else{ setOrAccumulate( jsonObject, key, simplifyValue( jsonObject,
-			 * processElement( element, type ) ) ); return; }
-			 */
+             * processElement( element, type ) ) ); return; }
+             */
         }
 
         boolean classProcessed = false;
@@ -1240,7 +1281,8 @@ public class JsonXmlSerializer {
             if (clazz.compareToIgnoreCase(JSONTypes.ARRAY) == 0) {
                 setOrAccumulate(jsonObject, key, processArrayElement(element, type));
                 classProcessed = true;
-            } else if (clazz.compareToIgnoreCase(JSONTypes.OBJECT) == 0) {
+            }
+            else if (clazz.compareToIgnoreCase(JSONTypes.OBJECT) == 0) {
                 setOrAccumulate(jsonObject, key, simplifyValue(jsonObject, processObjectElement(element, type)));
                 classProcessed = true;
             }
@@ -1248,22 +1290,28 @@ public class JsonXmlSerializer {
         if (!classProcessed) {
             if (type.compareToIgnoreCase(JSONTypes.BOOLEAN) == 0) {
                 setOrAccumulate(jsonObject, key, Boolean.valueOf(element.getValue()));
-            } else if (type.compareToIgnoreCase(JSONTypes.NUMBER) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.NUMBER) == 0) {
                 // try integer first
                 try {
                     setOrAccumulate(jsonObject, key, Integer.valueOf(element.getValue()));
-                } catch (NumberFormatException e) {
+                }
+                catch (NumberFormatException e) {
                     try {
                         setOrAccumulate(jsonObject, key, Double.valueOf(element.getValue()));
-                    } catch (NumberFormatException e1) {
+                    }
+                    catch (NumberFormatException e1) {
                         SoapUI.log.debug("Unable to parse element " + elementName + " as number: " + element.getValue());
                     }
                 }
-            } else if (type.compareToIgnoreCase(JSONTypes.INTEGER) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.INTEGER) == 0) {
                 setOrAccumulate(jsonObject, key, Integer.valueOf(element.getValue()));
-            } else if (type.compareToIgnoreCase(JSONTypes.FLOAT) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.FLOAT) == 0) {
                 setOrAccumulate(jsonObject, key, Double.valueOf(element.getValue()));
-            } else if (type.compareToIgnoreCase(JSONTypes.FUNCTION) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.FUNCTION) == 0) {
                 String[] params = null;
                 String text = element.getValue();
                 Attribute paramsAttribute = element.getAttribute(addJsonPrefix("params"));
@@ -1271,7 +1319,8 @@ public class JsonXmlSerializer {
                     params = StringUtils.split(paramsAttribute.getValue(), ",");
                 }
                 setOrAccumulate(jsonObject, key, new JSONFunction(params, text));
-            } else if (type.compareToIgnoreCase(JSONTypes.STRING) == 0) {
+            }
+            else if (type.compareToIgnoreCase(JSONTypes.STRING) == 0) {
                 // see if by any chance has a 'params' attribute
                 Attribute paramsAttribute = element.getAttribute(addJsonPrefix("params"));
                 if (paramsAttribute != null) {
@@ -1279,13 +1328,15 @@ public class JsonXmlSerializer {
                     String text = element.getValue();
                     params = StringUtils.split(paramsAttribute.getValue(), ",");
                     setOrAccumulate(jsonObject, key, new JSONFunction(params, text));
-                } else {
+                }
+                else {
                     if (isArray(element, false)) {
                         setOrAccumulate(jsonObject, key, processArrayElement(element, defaultType));
-                    } else if (isObject(element, false)) {
-                        setOrAccumulate(jsonObject, key,
-                                simplifyValue(jsonObject, processObjectElement(element, defaultType)));
-                    } else {
+                    }
+                    else if (isObject(element, false)) {
+                        setOrAccumulate(jsonObject, key, simplifyValue(jsonObject, processObjectElement(element, defaultType)));
+                    }
+                    else {
                         setOrAccumulate(jsonObject, key, trimSpaceFromValue(element.getValue()));
                     }
                 }
@@ -1295,12 +1346,12 @@ public class JsonXmlSerializer {
 
     private Object simplifyValue(JSONObject parent, Object json) {
         if (json instanceof JSONObject) {
-            JSONObject object = (JSONObject) json;
+            JSONObject object = (JSONObject)json;
             if (parent != null) {
                 // remove all duplicated @xmlns from child
                 for (Iterator entries = parent.entrySet().iterator(); entries.hasNext(); ) {
-                    Map.Entry entry = (Map.Entry) entries.next();
-                    String key = (String) entry.getKey();
+                    Map.Entry entry = (Map.Entry)entries.next();
+                    String key = (String)entry.getKey();
                     Object value = entry.getValue();
                     if (key.startsWith("@xmlns") && value.equals(object.opt(key))) {
                         object.remove(key);
@@ -1324,24 +1375,41 @@ public class JsonXmlSerializer {
     private String writeDocument(Document doc, String encoding) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            XomSerializer serializer = (encoding == null) ? new XomSerializer(baos) : new XomSerializer(baos,
-                    encoding);
+            XomSerializer serializer = (encoding == null) ? new XomSerializer(baos) : new XomSerializer(baos, encoding);
             serializer.write(doc);
             encoding = serializer.getEncoding();
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             throw new JSONException(ioe);
         }
 
         String str = null;
         try {
             str = baos.toString(encoding);
-        } catch (UnsupportedEncodingException uee) {
+        }
+        catch (UnsupportedEncodingException uee) {
             throw new JSONException(uee);
         }
         return str;
     }
 
     private static class CustomElement extends Element {
+        private final String prefix;
+
+        public CustomElement(String name) {
+            super(getName(name));
+            prefix = getPrefix(name);
+        }
+
+        public final String getQName() {
+            if (prefix.length() == 0) {
+                return getLocalName();
+            }
+            else {
+                return prefix + ":" + getLocalName();
+            }
+        }
+
         private static String getName(String name) {
             int colon = name.indexOf(':');
             if (colon != -1) {
@@ -1357,21 +1425,6 @@ public class JsonXmlSerializer {
             }
             return "";
         }
-
-        private String prefix;
-
-        public CustomElement(String name) {
-            super(CustomElement.getName(name));
-            prefix = CustomElement.getPrefix(name);
-        }
-
-        public final String getQName() {
-            if (prefix.length() == 0) {
-                return getLocalName();
-            } else {
-                return prefix + ":" + getLocalName();
-            }
-        }
     }
 
     private class XomSerializer extends Serializer {
@@ -1383,35 +1436,34 @@ public class JsonXmlSerializer {
             super(out, encoding);
         }
 
-        protected void write(Text text) throws IOException {
-            String value = text.getValue();
-            if (value.startsWith("<![CDATA[") && value.endsWith("]]>")) {
-                value = value.substring(9);
-                value = value.substring(0, value.length() - 3);
-                writeRaw("<![CDATA[");
-                writeRaw(value);
-                writeRaw("]]>");
-            } else {
-                super.write(text);
+        protected void writeEndTag(Element element) throws IOException {
+            if (element instanceof CustomElement && isNamespaceLenient()) {
+                writeRaw("</");
+                writeRaw(((CustomElement)element).getQName());
+                writeRaw(">");
+            }
+            else {
+                super.writeEndTag(element);
+            }
+        }
+
+        protected void writeStartTag(Element element) throws IOException {
+            if (element instanceof CustomElement && isNamespaceLenient()) {
+                writeTagBeginning((CustomElement)element);
+                writeRaw(">");
+            }
+            else {
+                super.writeStartTag(element);
             }
         }
 
         protected void writeEmptyElementTag(Element element) throws IOException {
             if (element instanceof CustomElement && isNamespaceLenient()) {
-                writeTagBeginning((CustomElement) element);
+                writeTagBeginning((CustomElement)element);
                 writeRaw("/>");
-            } else {
-                super.writeEmptyElementTag(element);
             }
-        }
-
-        protected void writeEndTag(Element element) throws IOException {
-            if (element instanceof CustomElement && isNamespaceLenient()) {
-                writeRaw("</");
-                writeRaw(((CustomElement) element).getQName());
-                writeRaw(">");
-            } else {
-                super.writeEndTag(element);
+            else {
+                super.writeEmptyElementTag(element);
             }
         }
 
@@ -1421,12 +1473,17 @@ public class JsonXmlSerializer {
             }
         }
 
-        protected void writeStartTag(Element element) throws IOException {
-            if (element instanceof CustomElement && isNamespaceLenient()) {
-                writeTagBeginning((CustomElement) element);
-                writeRaw(">");
-            } else {
-                super.writeStartTag(element);
+        protected void write(Text text) throws IOException {
+            String value = text.getValue();
+            if (value.startsWith("<![CDATA[") && value.endsWith("]]>")) {
+                value = value.substring(9);
+                value = value.substring(0, value.length() - 3);
+                writeRaw("<![CDATA[");
+                writeRaw(value);
+                writeRaw("]]>");
+            }
+            else {
+                super.write(text);
             }
         }
 

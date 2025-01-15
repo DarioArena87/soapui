@@ -12,14 +12,14 @@
  * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the Licence for the specific language governing permissions and limitations
  * under the Licence.
-*/
+ */
 
 package org.syntax.jedit.tokenmarker;
 
-import javax.swing.text.Segment;
-
 import org.syntax.jedit.KeywordMap;
 import org.syntax.jedit.SyntaxUtilities;
+
+import javax.swing.text.Segment;
 
 /**
  * PHP token marker.
@@ -29,6 +29,43 @@ import org.syntax.jedit.SyntaxUtilities;
  */
 public class PHPTokenMarker extends TokenMarker {
     public static final byte SCRIPT = Token.INTERNAL_FIRST;
+    // private members
+    private static final KeywordMap keywords;
+
+    static {
+        keywords = new KeywordMap(false);
+        keywords.add("function", Token.KEYWORD2);
+        keywords.add("class", Token.KEYWORD2);
+        keywords.add("var", Token.KEYWORD2);
+        keywords.add("require", Token.KEYWORD2);
+        keywords.add("include", Token.KEYWORD2);
+        keywords.add("else", Token.KEYWORD1);
+        keywords.add("elseif", Token.KEYWORD1);
+        keywords.add("do", Token.KEYWORD1);
+        keywords.add("for", Token.KEYWORD1);
+        keywords.add("if", Token.KEYWORD1);
+        keywords.add("endif", Token.KEYWORD1);
+        keywords.add("in", Token.KEYWORD1);
+        keywords.add("new", Token.KEYWORD1);
+        keywords.add("return", Token.KEYWORD1);
+        keywords.add("while", Token.KEYWORD1);
+        keywords.add("endwhile", Token.KEYWORD1);
+        keywords.add("with", Token.KEYWORD1);
+        keywords.add("break", Token.KEYWORD1);
+        keywords.add("switch", Token.KEYWORD1);
+        keywords.add("case", Token.KEYWORD1);
+        keywords.add("continue", Token.KEYWORD1);
+        keywords.add("default", Token.KEYWORD1);
+        keywords.add("echo", Token.KEYWORD1);
+        keywords.add("false", Token.KEYWORD1);
+        keywords.add("this", Token.KEYWORD1);
+        keywords.add("true", Token.KEYWORD1);
+        keywords.add("array", Token.KEYWORD1);
+        keywords.add("extends", Token.KEYWORD1);
+    }
+
+    private int lastOffset;
+    private int lastKeyword;
 
     public byte markTokensImpl(byte token, Segment line, int lineIndex) {
         char[] array = line.array;
@@ -58,19 +95,23 @@ public class PHPTokenMarker extends TokenMarker {
                             if (SyntaxUtilities.regionMatches(false, line, i1, "!--")) {
                                 i += 3;
                                 token = Token.COMMENT1;
-                            } else if (SyntaxUtilities.regionMatches(true, line, i1, "?php")) {
+                            }
+                            else if (SyntaxUtilities.regionMatches(true, line, i1, "?php")) {
                                 addToken(5, Token.LABEL);
                                 lastOffset = lastKeyword = (i += 4) + 1;
                                 token = SCRIPT;
-                            } else if (SyntaxUtilities.regionMatches(true, line, i1, "?")) {
+                            }
+                            else if (SyntaxUtilities.regionMatches(true, line, i1, "?")) {
                                 addToken(2, Token.LABEL);
                                 lastOffset = lastKeyword = (i += 1) + 1;
                                 token = SCRIPT;
-                            } else if (SyntaxUtilities.regionMatches(true, line, i1, "script>")) {
+                            }
+                            else if (SyntaxUtilities.regionMatches(true, line, i1, "script>")) {
                                 addToken(8, Token.LABEL);
                                 lastOffset = lastKeyword = (i += 7) + 1;
                                 token = SCRIPT;
-                            } else {
+                            }
+                            else {
                                 token = Token.KEYWORD1;
                             }
                             break;
@@ -118,7 +159,8 @@ public class PHPTokenMarker extends TokenMarker {
                                 addToken(9, Token.LABEL);
                                 lastOffset = lastKeyword = (i += 8) + 1;
                                 token = Token.NULL;
-                            } else {
+                            }
+                            else {
                                 // < operator
                                 addToken(i - lastOffset, Token.KEYWORD3);
                                 addToken(1, Token.OPERATOR);
@@ -134,7 +176,8 @@ public class PHPTokenMarker extends TokenMarker {
                                 addToken(2, Token.LABEL);
                                 lastOffset = lastKeyword = (i += 1) + 1;
                                 token = Token.NULL;
-                            } else {
+                            }
+                            else {
                                 // ? operator
                                 addToken(i - lastOffset, Token.KEYWORD3);
                                 addToken(1, Token.OPERATOR);
@@ -144,7 +187,8 @@ public class PHPTokenMarker extends TokenMarker {
                         case '"':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 doKeyword(line, i, c);
                                 addToken(i - lastOffset, Token.KEYWORD3);
                                 lastOffset = lastKeyword = i;
@@ -154,7 +198,8 @@ public class PHPTokenMarker extends TokenMarker {
                         case '\'':
                             if (backslash) {
                                 backslash = false;
-                            } else {
+                            }
+                            else {
                                 doKeyword(line, i, c);
                                 addToken(i - lastOffset, Token.KEYWORD3);
                                 lastOffset = lastKeyword = i;
@@ -177,15 +222,18 @@ public class PHPTokenMarker extends TokenMarker {
                                     addToken(length - i, Token.COMMENT2);
                                     lastOffset = lastKeyword = length;
                                     break loop;
-                                } else if (array[i1] == '*') {
+                                }
+                                else if (array[i1] == '*') {
                                     token = Token.COMMENT2;
-                                } else {
+                                }
+                                else {
                                     // / operator
                                     addToken(i - lastOffset, Token.KEYWORD3);
                                     addToken(1, Token.OPERATOR);
                                     lastOffset = lastKeyword = i1;
                                 }
-                            } else {
+                            }
+                            else {
                                 // / operator
                                 addToken(i - lastOffset, Token.KEYWORD3);
                                 addToken(1, Token.OPERATOR);
@@ -209,7 +257,8 @@ public class PHPTokenMarker extends TokenMarker {
                 case Token.LITERAL1: // Script "..."
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '"') {
+                    }
+                    else if (c == '"') {
                         addToken(i1 - lastOffset, Token.LITERAL1);
                         lastOffset = lastKeyword = i1;
                         token = SCRIPT;
@@ -218,7 +267,8 @@ public class PHPTokenMarker extends TokenMarker {
                 case Token.LITERAL2: // Script '...'
                     if (backslash) {
                         backslash = false;
-                    } else if (c == '\'') {
+                    }
+                    else if (c == '\'') {
                         addToken(i1 - lastOffset, Token.LITERAL1);
                         lastOffset = lastKeyword = i1;
                         token = SCRIPT;
@@ -259,43 +309,6 @@ public class PHPTokenMarker extends TokenMarker {
         }
 
         return token;
-    }
-
-    // private members
-    private static KeywordMap keywords;
-    private int lastOffset;
-    private int lastKeyword;
-
-    static {
-        keywords = new KeywordMap(false);
-        keywords.add("function", Token.KEYWORD2);
-        keywords.add("class", Token.KEYWORD2);
-        keywords.add("var", Token.KEYWORD2);
-        keywords.add("require", Token.KEYWORD2);
-        keywords.add("include", Token.KEYWORD2);
-        keywords.add("else", Token.KEYWORD1);
-        keywords.add("elseif", Token.KEYWORD1);
-        keywords.add("do", Token.KEYWORD1);
-        keywords.add("for", Token.KEYWORD1);
-        keywords.add("if", Token.KEYWORD1);
-        keywords.add("endif", Token.KEYWORD1);
-        keywords.add("in", Token.KEYWORD1);
-        keywords.add("new", Token.KEYWORD1);
-        keywords.add("return", Token.KEYWORD1);
-        keywords.add("while", Token.KEYWORD1);
-        keywords.add("endwhile", Token.KEYWORD1);
-        keywords.add("with", Token.KEYWORD1);
-        keywords.add("break", Token.KEYWORD1);
-        keywords.add("switch", Token.KEYWORD1);
-        keywords.add("case", Token.KEYWORD1);
-        keywords.add("continue", Token.KEYWORD1);
-        keywords.add("default", Token.KEYWORD1);
-        keywords.add("echo", Token.KEYWORD1);
-        keywords.add("false", Token.KEYWORD1);
-        keywords.add("this", Token.KEYWORD1);
-        keywords.add("true", Token.KEYWORD1);
-        keywords.add("array", Token.KEYWORD1);
-        keywords.add("extends", Token.KEYWORD1);
     }
 
     private boolean doKeyword(Segment line, int i, char c) {

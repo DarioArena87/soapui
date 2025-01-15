@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl;
@@ -68,9 +68,9 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
     public static final String ICON_NAME = "/test_suite.png";
 
     private final WsdlProject project;
-    private List<WsdlTestCase> testCases = new ArrayList<WsdlTestCase>();
-    private Set<TestSuiteListener> testSuiteListeners = new HashSet<TestSuiteListener>();
-    private Set<TestSuiteRunListener> testSuiteRunListeners = new HashSet<TestSuiteRunListener>();
+    private final List<WsdlTestCase> testCases = new ArrayList<WsdlTestCase>();
+    private final Set<TestSuiteListener> testSuiteListeners = new HashSet<TestSuiteListener>();
+    private final Set<TestSuiteRunListener> testSuiteRunListeners = new HashSet<TestSuiteRunListener>();
     private SoapUIScriptEngine setupScriptEngine;
     private SoapUIScriptEngine tearDownScriptEngine;
 
@@ -100,37 +100,10 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         for (TestSuiteRunListener listener : SoapUI.getListenerRegistry().getListeners(TestSuiteRunListener.class)) {
             addTestSuiteRunListener(listener);
         }
-
     }
 
     public WsdlTestCase buildTestCase(TestCaseConfig testCaseConfig, boolean forLoadTest) {
         return new WsdlTestCase(this, testCaseConfig, forLoadTest);
-    }
-
-    public TestSuiteRunType getRunType() {
-        Enum runType = getConfig().getRunType();
-
-        if (runType.equals(TestSuiteRunTypesConfig.PARALLELL)) {
-            return TestSuiteRunType.PARALLEL;
-        } else {
-            return TestSuiteRunType.SEQUENTIAL;
-        }
-    }
-
-    public void setRunType(TestSuiteRunType runType) {
-        TestSuiteRunType oldRunType = getRunType();
-
-        if (runType == TestSuiteRunType.PARALLEL && oldRunType != TestSuiteRunType.PARALLEL) {
-            getConfig().setRunType(TestSuiteRunTypesConfig.PARALLELL);
-            notifyPropertyChanged(RUNTYPE_PROPERTY, oldRunType, runType);
-        } else if (runType == TestSuiteRunType.SEQUENTIAL && oldRunType != TestSuiteRunType.SEQUENTIAL) {
-            getConfig().setRunType(TestSuiteRunTypesConfig.SEQUENTIAL);
-            notifyPropertyChanged(RUNTYPE_PROPERTY, oldRunType, runType);
-        }
-    }
-
-    public WsdlProject getProject() {
-        return project;
     }
 
     public int getTestCaseCount() {
@@ -142,12 +115,108 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
     }
 
     public WsdlTestCase getTestCaseByName(String testCaseName) {
-        return (WsdlTestCase) getWsdlModelItemByName(testCases, testCaseName);
+        return (WsdlTestCase)getWsdlModelItemByName(testCases, testCaseName);
     }
 
     @Override
     public TestCase getTestCaseById(UUID testCaseId) {
-        return (WsdlTestCase) getWsdlModelItemById(testCases, testCaseId);
+        return (WsdlTestCase)getWsdlModelItemById(testCases, testCaseId);
+    }
+
+    public List<TestCase> getTestCaseList() {
+        List<TestCase> result = new ArrayList<TestCase>();
+        for (WsdlTestCase testCase : testCases) {
+            result.add(testCase);
+        }
+
+        return result;
+    }
+
+    public void addTestSuiteListener(TestSuiteListener listener) {
+        testSuiteListeners.add(listener);
+    }
+
+    public void removeTestSuiteListener(TestSuiteListener listener) {
+        testSuiteListeners.remove(listener);
+    }
+
+    public TestSuiteRunType getRunType() {
+        Enum runType = getConfig().getRunType();
+
+        if (runType.equals(TestSuiteRunTypesConfig.PARALLELL)) {
+            return TestSuiteRunType.PARALLEL;
+        }
+        else {
+            return TestSuiteRunType.SEQUENTIAL;
+        }
+    }
+
+    public void setRunType(TestSuiteRunType runType) {
+        TestSuiteRunType oldRunType = getRunType();
+
+        if (runType == TestSuiteRunType.PARALLEL && oldRunType != TestSuiteRunType.PARALLEL) {
+            getConfig().setRunType(TestSuiteRunTypesConfig.PARALLELL);
+            notifyPropertyChanged(RUNTYPE_PROPERTY, oldRunType, runType);
+        }
+        else if (runType == TestSuiteRunType.SEQUENTIAL && oldRunType != TestSuiteRunType.SEQUENTIAL) {
+            getConfig().setRunType(TestSuiteRunTypesConfig.SEQUENTIAL);
+            notifyPropertyChanged(RUNTYPE_PROPERTY, oldRunType, runType);
+        }
+    }
+
+    public int getIndexOfTestCase(TestCase testCase) {
+        return testCases.indexOf(testCase);
+    }
+
+    public boolean isDisabled() {
+        return getConfig().getDisabled();
+    }
+
+    public String getLabel() {
+        String name = getName();
+        if (isDisabled()) {
+            return name + " (disabled)";
+        }
+        else {
+            return name;
+        }
+    }
+
+    public WsdlTestSuiteRunner run(StringToObjectMap context, boolean async) {
+        WsdlTestSuiteRunner testSuiteRunner = new WsdlTestSuiteRunner(this, context);
+        testSuiteRunner.start(async);
+        return testSuiteRunner;
+    }
+
+    public void addTestSuiteRunListener(TestSuiteRunListener listener) {
+        testSuiteRunListeners.add(listener);
+    }
+
+    public void removeTestSuiteRunListener(TestSuiteRunListener listener) {
+        testSuiteRunListeners.remove(listener);
+    }
+
+    public void setDisabled(boolean disabled) {
+        String oldLabel = getLabel();
+
+        boolean oldDisabled = isDisabled();
+        if (oldDisabled == disabled) {
+            return;
+        }
+
+        if (disabled) {
+            getConfig().setDisabled(disabled);
+        }
+        else if (getConfig().isSetDisabled()) {
+            getConfig().unsetDisabled();
+        }
+
+        notifyPropertyChanged(DISABLED_PROPERTY, oldDisabled, disabled);
+
+        String label = getLabel();
+        if (!oldLabel.equals(label)) {
+            notifyPropertyChanged(LABEL_PROPERTY, oldLabel, label);
+        }
     }
 
     public WsdlTestCase cloneTestCase(WsdlTestCase testCase, String name) {
@@ -176,17 +245,18 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         return testCase;
     }
 
-    public WsdlTestCase importTestCase(WsdlTestCase testCase, String name, int index, boolean includeLoadTests,
-                                       boolean includeSecurityTests, boolean createCopy) {
+    public WsdlTestCase importTestCase(
+        WsdlTestCase testCase, String name, int index, boolean includeLoadTests, boolean includeSecurityTests, boolean createCopy
+    ) {
         testCase.beforeSave();
 
         if (index >= testCases.size()) {
             index = -1;
         }
 
-        TestCaseConfig testCaseConfig = index == -1 ? (TestCaseConfig) getConfig().addNewTestCase().set(
-                testCase.getConfig().copy()) : (TestCaseConfig) getConfig().insertNewTestCase(index).set(
-                testCase.getConfig().copy());
+        TestCaseConfig testCaseConfig = index == -1
+                                        ? (TestCaseConfig)getConfig().addNewTestCase().set(testCase.getConfig().copy())
+                                        : (TestCaseConfig)getConfig().insertNewTestCase(index).set(testCase.getConfig().copy());
         testCaseConfig.setName(name);
 
         if (!includeLoadTests) {
@@ -206,7 +276,8 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
 
         if (index == -1) {
             testCases.add(testCase);
-        } else {
+        }
+        else {
             testCases.add(index, testCase);
         }
 
@@ -232,7 +303,8 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         testCases.remove(ix);
         try {
             fireTestCaseRemoved(testCase);
-        } finally {
+        }
+        finally {
             testCase.release();
             getConfig().removeTestCase(ix);
         }
@@ -302,52 +374,8 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         }
     }
 
-    public void addTestSuiteListener(TestSuiteListener listener) {
-        testSuiteListeners.add(listener);
-    }
-
-    public void removeTestSuiteListener(TestSuiteListener listener) {
-        testSuiteListeners.remove(listener);
-    }
-
-    public void addTestSuiteRunListener(TestSuiteRunListener listener) {
-        testSuiteRunListeners.add(listener);
-    }
-
-    public void removeTestSuiteRunListener(TestSuiteRunListener listener) {
-        testSuiteRunListeners.remove(listener);
-    }
-
     public int getTestCaseIndex(TestCase testCase) {
         return testCases.indexOf(testCase);
-    }
-
-    @Override
-    public void release() {
-        super.release();
-
-        for (WsdlTestCase testCase : testCases) {
-            testCase.release();
-        }
-
-        testSuiteListeners.clear();
-
-        if (setupScriptEngine != null) {
-            setupScriptEngine.release();
-        }
-
-        if (tearDownScriptEngine != null) {
-            tearDownScriptEngine.release();
-        }
-    }
-
-    public List<TestCase> getTestCaseList() {
-        List<TestCase> result = new ArrayList<TestCase>();
-        for (WsdlTestCase testCase : testCases) {
-            result.add(testCase);
-        }
-
-        return result;
     }
 
     public Map<String, TestCase> getTestCases() {
@@ -383,23 +411,30 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         for (int c = 0; c < testCases.size(); c++) {
             if (offset > 0) {
                 if (c < ix) {
-                    configs[c] = (TestCaseConfig) getConfig().getTestCaseArray(c).copy();
-                } else if (c < (ix + offset)) {
-                    configs[c] = (TestCaseConfig) getConfig().getTestCaseArray(c + 1).copy();
-                } else if (c == ix + offset) {
-                    configs[c] = (TestCaseConfig) getConfig().getTestCaseArray(ix).copy();
-                } else {
-                    configs[c] = (TestCaseConfig) getConfig().getTestCaseArray(c).copy();
+                    configs[c] = (TestCaseConfig)getConfig().getTestCaseArray(c).copy();
                 }
-            } else {
+                else if (c < (ix + offset)) {
+                    configs[c] = (TestCaseConfig)getConfig().getTestCaseArray(c + 1).copy();
+                }
+                else if (c == ix + offset) {
+                    configs[c] = (TestCaseConfig)getConfig().getTestCaseArray(ix).copy();
+                }
+                else {
+                    configs[c] = (TestCaseConfig)getConfig().getTestCaseArray(c).copy();
+                }
+            }
+            else {
                 if (c < ix + offset) {
-                    configs[c] = (TestCaseConfig) getConfig().getTestCaseArray(c).copy();
-                } else if (c == ix + offset) {
-                    configs[c] = (TestCaseConfig) getConfig().getTestCaseArray(ix).copy();
-                } else if (c <= ix) {
-                    configs[c] = (TestCaseConfig) getConfig().getTestCaseArray(c - 1).copy();
-                } else {
-                    configs[c] = (TestCaseConfig) getConfig().getTestCaseArray(c).copy();
+                    configs[c] = (TestCaseConfig)getConfig().getTestCaseArray(c).copy();
+                }
+                else if (c == ix + offset) {
+                    configs[c] = (TestCaseConfig)getConfig().getTestCaseArray(ix).copy();
+                }
+                else if (c <= ix) {
+                    configs[c] = (TestCaseConfig)getConfig().getTestCaseArray(c - 1).copy();
+                }
+                else {
+                    configs[c] = (TestCaseConfig)getConfig().getTestCaseArray(c).copy();
                 }
             }
         }
@@ -413,12 +448,16 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         return testCase;
     }
 
-    public int getIndexOfTestCase(TestCase testCase) {
-        return testCases.indexOf(testCase);
-    }
-
     public List<? extends ModelItem> getChildren() {
         return getTestCaseList();
+    }
+
+    public WsdlProject getProject() {
+        return project;
+    }
+
+    public String getSetupScript() {
+        return getConfig().isSetSetupScript() ? getConfig().getSetupScript().getStringValue() : null;
     }
 
     public void setSetupScript(String script) {
@@ -436,8 +475,8 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         notifyPropertyChanged(SETUP_SCRIPT_PROPERTY, oldScript, script);
     }
 
-    public String getSetupScript() {
-        return getConfig().isSetSetupScript() ? getConfig().getSetupScript().getStringValue() : null;
+    public String getTearDownScript() {
+        return getConfig().isSetTearDownScript() ? getConfig().getTearDownScript().getStringValue() : null;
     }
 
     public void setTearDownScript(String script) {
@@ -453,10 +492,6 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         }
 
         notifyPropertyChanged(TEARDOWN_SCRIPT_PROPERTY, oldScript, script);
-    }
-
-    public String getTearDownScript() {
-        return getConfig().isSetTearDownScript() ? getConfig().getTearDownScript().getStringValue() : null;
     }
 
     public Object runSetupScript(TestSuiteRunContext context, TestSuiteRunner runner) throws Exception {
@@ -507,12 +542,22 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         }
     }
 
-    public String getLabel() {
-        String name = getName();
-        if (isDisabled()) {
-            return name + " (disabled)";
-        } else {
-            return name;
+    @Override
+    public void release() {
+        super.release();
+
+        for (WsdlTestCase testCase : testCases) {
+            testCase.release();
+        }
+
+        testSuiteListeners.clear();
+
+        if (setupScriptEngine != null) {
+            setupScriptEngine.release();
+        }
+
+        if (tearDownScriptEngine != null) {
+            tearDownScriptEngine.release();
         }
     }
 
@@ -540,32 +585,6 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         getConfig().setTimeout(timeout);
     }
 
-    public boolean isDisabled() {
-        return getConfig().getDisabled();
-    }
-
-    public void setDisabled(boolean disabled) {
-        String oldLabel = getLabel();
-
-        boolean oldDisabled = isDisabled();
-        if (oldDisabled == disabled) {
-            return;
-        }
-
-        if (disabled) {
-            getConfig().setDisabled(disabled);
-        } else if (getConfig().isSetDisabled()) {
-            getConfig().unsetDisabled();
-        }
-
-        notifyPropertyChanged(DISABLED_PROPERTY, oldDisabled, disabled);
-
-        String label = getLabel();
-        if (!oldLabel.equals(label)) {
-            notifyPropertyChanged(LABEL_PROPERTY, oldLabel, label);
-        }
-    }
-
     public void replace(WsdlTestCase testCase, TestCaseConfig newTestCase) {
 
         int ix = testCases.indexOf(testCase);
@@ -573,13 +592,13 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         testCases.remove(ix);
         try {
             fireTestCaseRemoved(testCase);
-        } finally {
+        }
+        finally {
             testCase.release();
             getConfig().removeTestCase(ix);
         }
 
-        TestCaseConfig newConfig = (TestCaseConfig) getConfig().insertNewTestCase(ix).set(newTestCase)
-                .changeType(TestCaseConfig.type);
+        TestCaseConfig newConfig = (TestCaseConfig)getConfig().insertNewTestCase(ix).set(newTestCase).changeType(TestCaseConfig.type);
         testCase = buildTestCase(newConfig, false);
         testCases.add(ix, testCase);
         testCase.afterLoad();
@@ -599,28 +618,27 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         WsdlTestCase oldTestCase = null;
         try {
             importTestCaseConfig = TestCaseDocumentConfig.Factory.parse(file).getTestCase();
-            oldTestCase =   buildTestCase(TestCaseDocumentConfig.Factory.parse(file).getTestCase(), false);
-        } catch (Exception e) {
+            oldTestCase = buildTestCase(TestCaseDocumentConfig.Factory.parse(file).getTestCase(), false);
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
         }
 
         if (importTestCaseConfig != null) {
-            TestCaseConfig newConfig = (TestCaseConfig) getConfig().addNewTestCase().set(importTestCaseConfig)
-                    .changeType(TestCaseConfig.type);
+            TestCaseConfig newConfig = (TestCaseConfig)getConfig().addNewTestCase().set(importTestCaseConfig).changeType(TestCaseConfig.type);
             WsdlTestCase newTestCase = buildTestCase(newConfig, false);
             ModelSupport.createNewIds(newTestCase);
 
-			/*
+            /*
              * security test keeps reference to test step by id, which gets changed
-			 * during importing, so old values needs to be rewritten to new ones.
-			 * 
-			 * Create tarnsition table ( old id , new id ) and use it to replace
-			 * all old ids in new imported test case.
-			 */
+             * during importing, so old values needs to be rewritten to new ones.
+             *
+             * Create tarnsition table ( old id , new id ) and use it to replace
+             * all old ids in new imported test case.
+             */
             LinkedHashMap<String, String> oldNewIds = new LinkedHashMap<String, String>();
             for (int cnt = 0; cnt < importTestCaseConfig.getTestStepList().size(); cnt++) {
-                oldNewIds.put(importTestCaseConfig.getTestStepList().get(cnt).getId(), newTestCase.getTestStepList()
-                        .get(cnt).getId());
+                oldNewIds.put(importTestCaseConfig.getTestStepList().get(cnt).getId(), newTestCase.getTestStepList().get(cnt).getId());
             }
 
             for (SecurityTest scan : newTestCase.getSecurityTests().values()) {
@@ -633,13 +651,14 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
 
             newTestCase.afterLoad();
 
-            WsdlTestSuite oldTestSuite = oldTestCase==null ? null : oldTestCase.getTestSuite();
+            WsdlTestSuite oldTestSuite = oldTestCase == null ? null : oldTestCase.getTestSuite();
             newTestCase.afterCopy(oldTestSuite, oldTestCase);
             testCases.add(newTestCase);
             fireTestCaseAdded(newTestCase);
 
             resolveImportedTestCase(newTestCase);
-        } else {
+        }
+        else {
             UISupport.showErrorMessage("Not valid test case xml");
         }
     }
@@ -652,8 +671,9 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
 
     public void export(File file) {
         try {
-            this.getConfig().newCursor().save(file);
-        } catch (IOException e) {
+            getConfig().newCursor().save(file);
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -667,13 +687,6 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
             testCase.afterCopy(oldTestSuite, oldTestCase);
             testCase.importSecurityTests(oldTestSuite, oldTestCase);
         }
-
-    }
-
-    public WsdlTestSuiteRunner run(StringToObjectMap context, boolean async) {
-        WsdlTestSuiteRunner testSuiteRunner = new WsdlTestSuiteRunner(this, context);
-        testSuiteRunner.start(async);
-        return testSuiteRunner;
     }
 
     public TestSuiteRunListener[] getTestSuiteRunListeners() {
@@ -697,7 +710,6 @@ public class WsdlTestSuite extends AbstractTestPropertyHolderWsdlModelItem<TestS
         for (int c = 0; c < a.length; c++) {
             a[c].securityTestAdded(securityTest);
         }
-
     }
 
     public void fireSecurityTestRemoved(SecurityTest securityTest) {

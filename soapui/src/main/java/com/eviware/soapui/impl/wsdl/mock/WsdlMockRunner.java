@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wsdl.mock;
@@ -50,7 +50,7 @@ public class WsdlMockRunner implements MockRunner {
 
         // TODO: move this code elsewhere when the rest counterpoint is in place
         if (mockService instanceof WsdlMockService) {
-            WsdlMockService wsdlMockService = (WsdlMockService) mockService;
+            WsdlMockService wsdlMockService = (WsdlMockService)mockService;
 
             for (int i = 0; i < mockService.getMockOperationCount(); i++) {
                 WsdlOperation operation = wsdlMockService.getMockOperationAt(i).getOperation();
@@ -70,43 +70,35 @@ public class WsdlMockRunner implements MockRunner {
         start();
     }
 
-    public WsdlMockRunContext getMockContext() {
-        return mockContext;
-    }
-
     private MockService getMockService() {
         return getMockContext().getMockService();
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    public void stop() {
-        if (!isRunning()) {
-            return;
-        }
-
-        SoapUI.getMockEngine().stopMockService(this);
-
-        MockRunListener[] mockRunListeners = getMockService().getMockRunListeners();
-
-        for (MockRunListener listener : mockRunListeners) {
-            listener.onMockRunnerStop(this);
-        }
-
-        try {
-            getMockService().runStopScript(mockContext, this);
-            running = false;
-        } catch (Exception e) {
-            SoapUI.logError(e);
-        }
     }
 
     public void release() {
         mockContext.clear();
         dispatcher = null;
+    }
 
+    @Override
+    public MockResult dispatchRequest(HttpServletRequest request, HttpServletResponse response) throws DispatchException {
+        for (MockRunListener listener : getMockService().getMockRunListeners()) {
+            Object result = listener.onMockRequest(this, request, response);
+            if (result instanceof MockResult) {
+                return (MockResult)result;
+            }
+        }
+
+        String qs = request.getQueryString();
+        if (qs != null && qs.startsWith("cmd=")) {
+            try {
+                dispatchCommand(request.getParameter("cmd"), request, response);
+            }
+            catch (IOException e) {
+                throw new DispatchException(e);
+            }
+        }
+
+        return dispatcher.dispatchRequest(request, response);
     }
 
     @Override
@@ -119,30 +111,20 @@ public class WsdlMockRunner implements MockRunner {
         return dispatcher.getMockResultAt(index);
     }
 
-    @Override
-    public MockResult dispatchRequest(HttpServletRequest request, HttpServletResponse response)
-            throws DispatchException {
-        for (MockRunListener listener : getMockService().getMockRunListeners()) {
-            Object result = listener.onMockRequest(this, request, response);
-            if (result instanceof MockResult) {
-                return (MockResult) result;
-            }
-        }
-
-        String qs = request.getQueryString();
-        if (qs != null && qs.startsWith("cmd=")) {
-            try {
-                dispatchCommand(request.getParameter("cmd"), request, response);
-            } catch (IOException e) {
-                throw new DispatchException(e);
-            }
-        }
-
-        return dispatcher.dispatchRequest(request, response);
+    public void setLogEnabled(boolean logEnabled) {
+        dispatcher.setLogEnabled(logEnabled);
     }
 
-    private void dispatchCommand(String cmd, HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    @Override
+    public void clearResults() {
+        dispatcher.clearResults();
+    }
+
+    public void setMaxResults(long maxNumberOfResults) {
+        dispatcher.setMaxResults(maxNumberOfResults);
+    }
+
+    private void dispatchCommand(String cmd, HttpServletRequest request, HttpServletResponse response) throws IOException {
         if ("stop".equals(cmd)) {
             response.setStatus(HttpServletResponse.SC_OK);
             response.flushBuffer();
@@ -152,13 +134,15 @@ public class WsdlMockRunner implements MockRunner {
                 public void run() {
                     try {
                         Thread.sleep(500);
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     stop();
                 }
             });
-        } else if ("restart".equals(cmd)) {
+        }
+        else if ("restart".equals(cmd)) {
             response.setStatus(HttpServletResponse.SC_OK);
             response.flushBuffer();
 
@@ -167,7 +151,8 @@ public class WsdlMockRunner implements MockRunner {
                 public void run() {
                     try {
                         Thread.sleep(500);
-                    } catch (InterruptedException e) {
+                    }
+                    catch (InterruptedException e) {
                         e.printStackTrace();
                     }
 
@@ -175,10 +160,10 @@ public class WsdlMockRunner implements MockRunner {
 
                     try {
                         getMockService().start();
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         e.printStackTrace();
                     }
-
                 }
             });
         }
@@ -207,17 +192,33 @@ public class WsdlMockRunner implements MockRunner {
         }
     }
 
-    public void setLogEnabled(boolean logEnabled) {
-        dispatcher.setLogEnabled(logEnabled);
+    public void stop() {
+        if (!isRunning()) {
+            return;
+        }
+
+        SoapUI.getMockEngine().stopMockService(this);
+
+        MockRunListener[] mockRunListeners = getMockService().getMockRunListeners();
+
+        for (MockRunListener listener : mockRunListeners) {
+            listener.onMockRunnerStop(this);
+        }
+
+        try {
+            getMockService().runStopScript(mockContext, this);
+            running = false;
+        }
+        catch (Exception e) {
+            SoapUI.logError(e);
+        }
     }
 
-    @Override
-    public void clearResults() {
-        dispatcher.clearResults();
+    public boolean isRunning() {
+        return running;
     }
 
-
-    public void setMaxResults(long maxNumberOfResults) {
-        dispatcher.setMaxResults(maxNumberOfResults);
+    public WsdlMockRunContext getMockContext() {
+        return mockContext;
     }
 }

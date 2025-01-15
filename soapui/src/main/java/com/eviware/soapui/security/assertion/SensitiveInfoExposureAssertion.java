@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.security.assertion;
@@ -50,12 +50,8 @@ import com.eviware.x.form.support.AForm;
 import org.apache.xmlbeans.XmlObject;
 import org.jdesktop.swingx.JXTable;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,17 +61,15 @@ import java.util.Map;
 import java.util.Set;
 
 public class SensitiveInfoExposureAssertion extends WsdlMessageAssertion implements ResponseAssertion {
-    private static final String PREFIX = "~";
     public static final String ID = "Sensitive Information Exposure";
     public static final String LABEL = "Sensitive Information Exposure";
-
-    private List<String> assertionSpecificExposureList;
-
-    private XFormDialog dialog;
+    public static final String DESCRIPTION = "Checks that the last received message does not expose an sensitive information about the target system. Applicable to REST, SOAP and HTTP TestSteps.";
+    private static final String PREFIX = "~";
     private static final String ASSERTION_SPECIFIC_EXPOSURE_LIST = "AssertionSpecificExposureList";
     private static final String INCLUDE_GLOBAL = "IncludeGlobal";
     private static final String INCLUDE_PROJECT_SPECIFIC = "IncludeProjectSpecific";
-    public static final String DESCRIPTION = "Checks that the last received message does not expose an sensitive information about the target system. Applicable to REST, SOAP and HTTP TestSteps.";
+    private List<String> assertionSpecificExposureList;
+    private XFormDialog dialog;
     private boolean includeGlobal;
     private boolean includeProjectSpecific;
     private JPanel sensitiveInfoTableForm;
@@ -105,87 +99,12 @@ public class SensitiveInfoExposureAssertion extends WsdlMessageAssertion impleme
             String[] tokens = str.split("###");
             if (tokens.length == 2) {
                 siph.setPropertyValue(tokens[0], tokens[1]);
-            } else if (tokens.length == 1) {
+            }
+            else if (tokens.length == 1) {
                 siph.setPropertyValue(tokens[0], "");
             }
         }
         sensitiveInformationTableModel = new SensitiveInformationTableModel(siph);
-    }
-
-    @Override
-    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
-        Map<String, String> checkMap = createCheckMap(context);
-        List<AssertionError> assertionErrorList = new ArrayList<AssertionError>();
-        String response = messageExchange.getResponseContent();
-        Set<String> messages = new HashSet<String>();
-
-        try {
-            for (Map.Entry<String, String> tokenEntry : checkMap.entrySet()) {
-                String token = tokenEntry.getKey();
-                boolean useRegexp = token.trim().startsWith(PREFIX);
-                String description = !tokenEntry.getValue().equals("") ? tokenEntry.getValue() : token;
-                if (useRegexp) {
-                    token = token.substring(token.indexOf(PREFIX) + 1);
-                }
-
-                String match = SecurityScanUtil.contains(context, response, token, useRegexp);
-                if (match != null) {
-                    String message = description + " - Token [" + token + "] found [" + match + "]";
-                    if (!messages.contains(message)) {
-                        assertionErrorList.add(new AssertionError(message));
-                        messages.add(message);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            SoapUI.logError(e);
-        }
-
-        if (!messages.isEmpty()) {
-            throw new AssertionException(assertionErrorList.toArray(new AssertionError[assertionErrorList.size()]));
-        }
-
-        return "OK";
-    }
-
-    //TODO check if this should be applicable to properties after all, it's not mapped for properties currently
-    protected String internalAssertProperty(TestPropertyHolder source, String propertyName,
-                                            MessageExchange messageExchange, SubmitContext context) throws AssertionException {
-
-        Map<String, String> checkMap = createCheckMap(context);
-        List<AssertionError> assertionErrorList = new ArrayList<AssertionError>();
-        String propertyValue = source.getPropertyValue(propertyName);
-        Set<String> messages = new HashSet<String>();
-
-        try {
-            for (Map.Entry<String, String> tokenEntry : checkMap.entrySet()) {
-                String token = tokenEntry.getKey();
-                boolean useRegexp = token.trim().startsWith(PREFIX);
-                String description = !tokenEntry.getValue().equals("") ? tokenEntry.getValue() : token;
-                if (useRegexp) {
-                    token = token.substring(token.indexOf(PREFIX) + 1);
-                }
-
-                String match = SecurityScanUtil.contains(context, propertyValue, token, useRegexp);
-                if (match != null) {
-                    String message = description + " - Token [" + token + "] found [" + match + "] in property "
-                            + propertyName;
-                    if (!messages.contains(message)) {
-                        assertionErrorList.add(new AssertionError(message));
-                        messages.add(message);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            SoapUI.logError(e);
-        }
-
-        if (!messages.isEmpty()) {
-            throw new AssertionException(assertionErrorList.toArray(new AssertionError[assertionErrorList.size()]));
-        }
-
-        return "OK";
     }
 
     private Map<String, String> createCheckMap(SubmitContext context) {
@@ -210,40 +129,9 @@ public class SensitiveInfoExposureAssertion extends WsdlMessageAssertion impleme
         return expanded;
     }
 
-    public static class Factory extends AbstractTestAssertionFactory {
-        @SuppressWarnings("unchecked")
-        public Factory() {
-            super(SensitiveInfoExposureAssertion.ID, SensitiveInfoExposureAssertion.LABEL,
-                    SensitiveInfoExposureAssertion.class, new Class[]{SecurityScan.class, AbstractHttpRequest.class});
-        }
-
-        @Override
-        public String getCategory() {
-            return AssertionCategoryMapping.SECURITY_CATEGORY;
-        }
-
-        @Override
-        public Class<? extends WsdlMessageAssertion> getAssertionClassType() {
-            return SensitiveInfoExposureAssertion.class;
-        }
-
-        @Override
-        public AssertionListEntry getAssertionListEntry() {
-            return new AssertionListEntry(SensitiveInfoExposureAssertion.ID, SensitiveInfoExposureAssertion.LABEL,
-                    SensitiveInfoExposureAssertion.DESCRIPTION);
-        }
-    }
-
-    @Override
-    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context)
-            throws AssertionException {
-        return null;
-    }
-
     protected XmlObject createConfiguration() {
         XmlObjectConfigurationBuilder builder = new XmlObjectConfigurationBuilder();
-        builder.add(ASSERTION_SPECIFIC_EXPOSURE_LIST,
-                assertionSpecificExposureList.toArray(new String[assertionSpecificExposureList.size()]));
+        builder.add(ASSERTION_SPECIFIC_EXPOSURE_LIST, assertionSpecificExposureList.toArray(new String[assertionSpecificExposureList.size()]));
         builder.add(INCLUDE_PROJECT_SPECIFIC, includeProjectSpecific);
         builder.add(INCLUDE_GLOBAL, includeGlobal);
         return builder.finish();
@@ -256,15 +144,104 @@ public class SensitiveInfoExposureAssertion extends WsdlMessageAssertion impleme
         }
         if (dialog.show()) {
             assertionSpecificExposureList = createListFromTable();
-            includeProjectSpecific = Boolean.valueOf(dialog.getFormField(
-                    SensitiveInformationConfigDialog.INCLUDE_PROJECT_SPECIFIC).getValue());
-            includeGlobal = Boolean.valueOf(dialog.getFormField(SensitiveInformationConfigDialog.INCLUDE_GLOBAL)
-                    .getValue());
+            includeProjectSpecific = Boolean.valueOf(dialog.getFormField(SensitiveInformationConfigDialog.INCLUDE_PROJECT_SPECIFIC).getValue());
+            includeGlobal = Boolean.valueOf(dialog.getFormField(SensitiveInformationConfigDialog.INCLUDE_GLOBAL).getValue());
             setConfiguration(createConfiguration());
 
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected String internalAssertResponse(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+        Map<String, String> checkMap = createCheckMap(context);
+        List<AssertionError> assertionErrorList = new ArrayList<AssertionError>();
+        String response = messageExchange.getResponseContent();
+        Set<String> messages = new HashSet<String>();
+
+        try {
+            for (Map.Entry<String, String> tokenEntry : checkMap.entrySet()) {
+                String token = tokenEntry.getKey();
+                boolean useRegexp = token.trim().startsWith(PREFIX);
+                String description = !tokenEntry.getValue().equals("") ? tokenEntry.getValue() : token;
+                if (useRegexp) {
+                    token = token.substring(token.indexOf(PREFIX) + 1);
+                }
+
+                String match = SecurityScanUtil.contains(context, response, token, useRegexp);
+                if (match != null) {
+                    String message = description + " - Token [" + token + "] found [" + match + "]";
+                    if (!messages.contains(message)) {
+                        assertionErrorList.add(new AssertionError(message));
+                        messages.add(message);
+                    }
+                }
+            }
+        }
+        catch (Throwable e) {
+            SoapUI.logError(e);
+        }
+
+        if (!messages.isEmpty()) {
+            throw new AssertionException(assertionErrorList.toArray(new AssertionError[assertionErrorList.size()]));
+        }
+
+        return "OK";
+    }
+
+    @Override
+    protected String internalAssertRequest(MessageExchange messageExchange, SubmitContext context) throws AssertionException {
+        return null;
+    }
+
+    //TODO check if this should be applicable to properties after all, it's not mapped for properties currently
+    protected String internalAssertProperty(
+        TestPropertyHolder source, String propertyName, MessageExchange messageExchange, SubmitContext context
+    ) throws AssertionException {
+
+        Map<String, String> checkMap = createCheckMap(context);
+        List<AssertionError> assertionErrorList = new ArrayList<AssertionError>();
+        String propertyValue = source.getPropertyValue(propertyName);
+        Set<String> messages = new HashSet<String>();
+
+        try {
+            for (Map.Entry<String, String> tokenEntry : checkMap.entrySet()) {
+                String token = tokenEntry.getKey();
+                boolean useRegexp = token.trim().startsWith(PREFIX);
+                String description = !tokenEntry.getValue().equals("") ? tokenEntry.getValue() : token;
+                if (useRegexp) {
+                    token = token.substring(token.indexOf(PREFIX) + 1);
+                }
+
+                String match = SecurityScanUtil.contains(context, propertyValue, token, useRegexp);
+                if (match != null) {
+                    String message = description + " - Token [" + token + "] found [" + match + "] in property " + propertyName;
+                    if (!messages.contains(message)) {
+                        assertionErrorList.add(new AssertionError(message));
+                        messages.add(message);
+                    }
+                }
+            }
+        }
+        catch (Throwable e) {
+            SoapUI.logError(e);
+        }
+
+        if (!messages.isEmpty()) {
+            throw new AssertionException(assertionErrorList.toArray(new AssertionError[assertionErrorList.size()]));
+        }
+
+        return "OK";
+    }
+
+    @Override
+    public void release() {
+        if (dialog != null) {
+            dialog.release();
+        }
+
+        super.release();
     }
 
     private List<String> createListFromTable() {
@@ -291,30 +268,6 @@ public class SensitiveInfoExposureAssertion extends WsdlMessageAssertion impleme
         dialog.getFormField(SensitiveInformationConfigDialog.TOKENS).setProperty("component", getForm());
     }
 
-    // TODO : update help URL
-    @AForm(description = "Configure Sensitive Information Exposure Assertion", name = "Sensitive Information Exposure Assertion", helpUrl = HelpUrls.SECURITY_SENSITIVE_INFORMATION_EXPOSURE_ASSERTION_HELP)
-    protected interface SensitiveInformationConfigDialog {
-
-        @AField(description = "Sensitive informations to check. Use ~ as prefix for values that are regular expressions.", name = "Sensitive Information Tokens", type = AFieldType.COMPONENT)
-        public final static String TOKENS = "Sensitive Information Tokens";
-
-        @AField(description = "Include project specific sensitive information configuration", name = "Project Specific", type = AFieldType.BOOLEAN)
-        public final static String INCLUDE_PROJECT_SPECIFIC = "Project Specific";
-
-        @AField(description = "Include global sensitive information configuration", name = "Global Configuration", type = AFieldType.BOOLEAN)
-        public final static String INCLUDE_GLOBAL = "Global Configuration";
-
-    }
-
-    @Override
-    public void release() {
-        if (dialog != null) {
-            dialog.release();
-        }
-
-        super.release();
-    }
-
     public JPanel getForm() {
         if (sensitiveInfoTableForm == null) {
             sensitiveInfoTableForm = new JPanel(new BorderLayout());
@@ -333,11 +286,60 @@ public class SensitiveInfoExposureAssertion extends WsdlMessageAssertion impleme
         return sensitiveInfoTableForm;
     }
 
+    // TODO : update help URL
+    @AForm(
+        description = "Configure Sensitive Information Exposure Assertion",
+        name = "Sensitive Information Exposure Assertion",
+        helpUrl = HelpUrls.SECURITY_SENSITIVE_INFORMATION_EXPOSURE_ASSERTION_HELP
+    )
+    protected interface SensitiveInformationConfigDialog {
+
+        @AField(
+            description = "Sensitive informations to check. Use ~ as prefix for values that are regular expressions.",
+            name = "Sensitive Information Tokens",
+            type = AFieldType.COMPONENT
+        )
+        String TOKENS = "Sensitive Information Tokens";
+
+        @AField(description = "Include project specific sensitive information configuration", name = "Project Specific", type = AFieldType.BOOLEAN)
+        String INCLUDE_PROJECT_SPECIFIC = "Project Specific";
+
+        @AField(description = "Include global sensitive information configuration", name = "Global Configuration", type = AFieldType.BOOLEAN)
+        String INCLUDE_GLOBAL = "Global Configuration";
+    }
+
+    public static class Factory extends AbstractTestAssertionFactory {
+        @SuppressWarnings("unchecked")
+        public Factory() {
+            super(
+                ID,
+                LABEL,
+                SensitiveInfoExposureAssertion.class,
+                new Class[]{SecurityScan.class, AbstractHttpRequest.class}
+            );
+        }
+
+        @Override
+        public Class<? extends WsdlMessageAssertion> getAssertionClassType() {
+            return SensitiveInfoExposureAssertion.class;
+        }
+
+        @Override
+        public AssertionListEntry getAssertionListEntry() {
+            return new AssertionListEntry(ID, LABEL, DESCRIPTION);
+        }
+
+        @Override
+        public String getCategory() {
+            return AssertionCategoryMapping.SECURITY_CATEGORY;
+        }
+    }
+
     class AddTokenAction extends AbstractAction {
 
         public AddTokenAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/add.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Adds a token to assertion");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/add.png"));
+            putValue(SHORT_DESCRIPTION, "Adds a token to assertion");
         }
 
         @Override
@@ -364,20 +366,18 @@ public class SensitiveInfoExposureAssertion extends WsdlMessageAssertion impleme
 
             sensitiveInformationTableModel.addToken(newToken, newValue);
         }
-
     }
 
     class RemoveTokenAction extends AbstractAction {
 
         public RemoveTokenAction() {
-            putValue(Action.SMALL_ICON, UISupport.createImageIcon("/delete.png"));
-            putValue(Action.SHORT_DESCRIPTION, "Removes token from assertion");
+            putValue(SMALL_ICON, UISupport.createImageIcon("/delete.png"));
+            putValue(SHORT_DESCRIPTION, "Removes token from assertion");
         }
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
             sensitiveInformationTableModel.removeRows(tokenTable.getSelectedRows());
         }
-
     }
 }

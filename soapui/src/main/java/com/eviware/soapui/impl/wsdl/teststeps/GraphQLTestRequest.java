@@ -63,20 +63,18 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
     private static final String QUERY = "query";
     private static final String VARIABLES = "variables";
     private static final String OPERATION_NAME = "operationName";
-
+    private final boolean forLoadTest;
     private ImageIcon validRequestIcon;
     private ImageIcon failedRequestIcon;
     private ImageIcon disabledRequestIcon;
     private ImageIcon unknownRequestIcon;
-
     private JMSPropertiesConfig jmsPropertiesConfig;
-    private final boolean forLoadTest;
-    private GraphQLRequestTestStep testStep;
+    private final GraphQLRequestTestStep testStep;
     private PropertyChangeNotifier notifier;
     private AssertionsSupport assertionsSupport;
     private HttpResponseMessageExchange messageExchange;
     private ObjectNode body;
-    private XmlBeansRestParamsTestPropertyHolder params;
+    private final XmlBeansRestParamsTestPropertyHolder params;
 
     public GraphQLTestRequest(GraphQLTestRequestConfig config, GraphQLRequestTestStep testStep, boolean forLoadTest) {
         super(config, null, ICON_PATH, forLoadTest);
@@ -105,50 +103,24 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
         return method == null ? RestRequestInterface.HttpMethod.POST : RestRequestInterface.HttpMethod.valueOf(method);
     }
 
-    protected void initIcons() {
-        validRequestIcon = UISupport.createImageIcon(PASS_ICON_PATH);
-        failedRequestIcon = UISupport.createImageIcon(FAIL_ICON_PATH);
-        unknownRequestIcon = UISupport.createImageIcon(ICON_PATH);
-        disabledRequestIcon = UISupport.createImageIcon(DISABLED_ICON_PATH);
+    @Override
+    public HttpAttachmentPart getAttachmentPart(String partName) {
+        return null;
     }
 
     protected RequestIconAnimator<?> initIconAnimator() {
         return null;
     }
 
-    private void initBody() {
-        ObjectMapper mapper = new ObjectMapper();
-        body = mapper.createObjectNode();
-        String nullValue = null;
-        body.put(QUERY, nullValue);
-        body.put(OPERATION_NAME, nullValue);
-        body.put(VARIABLES, nullValue);
-
-        String requestContent = super.getRequestContent();
-        setBodyRequest(requestContent);
-        updateParameters();
+    @Override
+    public AbstractHttpOperation getOperation() {
+        return null;
     }
 
-    private void initAssertions() {
-        assertionsSupport = new AssertionsSupport(testStep, new AssertableConfig() {
-            public TestAssertionConfig addNewAssertion() {
-                return getConfig().addNewAssertion();
-            }
-
-            public List<TestAssertionConfig> getAssertionList() {
-                return getConfig().getAssertionList();
-            }
-
-            public void removeAssertion(int ix) {
-                getConfig().removeAssertion(ix);
-            }
-
-            public TestAssertionConfig insertAssertion(TestAssertionConfig source, int ix) {
-                TestAssertionConfig conf = getConfig().insertNewAssertion(ix);
-                conf.set(source);
-                return conf;
-            }
-        });
+    @Override
+    public void setRequestContent(String request) {
+        setBodyRequest(request);
+        updateRequestContent();
     }
 
     @Override
@@ -158,9 +130,7 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
         }
 
         TestMonitor testMonitor = SoapUI.getTestMonitor();
-        if (testMonitor != null
-                && (testMonitor.hasRunningLoadTest(getTestStep().getTestCase()) || testMonitor
-                .hasRunningSecurityTest(getTestStep().getTestCase()))) {
+        if (testMonitor != null && (testMonitor.hasRunningLoadTest(getTestStep().getTestCase()) || testMonitor.hasRunningSecurityTest(getTestStep().getTestCase()))) {
             return disabledRequestIcon;
         }
 
@@ -175,9 +145,11 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
         Assertable.AssertionStatus status = getAssertionStatus();
         if (status == Assertable.AssertionStatus.VALID) {
             return validRequestIcon;
-        } else if (status == Assertable.AssertionStatus.FAILED) {
+        }
+        else if (status == Assertable.AssertionStatus.FAILED) {
             return failedRequestIcon;
-        } else if (status == Assertable.AssertionStatus.UNKNOWN) {
+        }
+        else if (status == Assertable.AssertionStatus.UNKNOWN) {
             return unknownRequestIcon;
         }
 
@@ -185,193 +157,15 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
     }
 
     @Override
-    public HttpAttachmentPart getAttachmentPart(String partName) {
-        return null;
-    }
-
-
-    @Override
-    public MessagePart.AttachmentPart[] getDefinedAttachmentParts() {
-        return new MessagePart.AttachmentPart[0];
+    public void setResponse(HttpResponse response, SubmitContext context) {
+        super.setResponse(response, context);
+        assertResponse(context);
     }
 
     @Override
-    public ModelItem getModelItem() {
-        return testStep;
-    }
-
-    @Override
-    public JMSHeaderConfig getJMSHeaderConfig() {
-        return null;
-    }
-
-    @Override
-    public JMSPropertiesConfig getJMSPropertiesConfig() {
-        if (jmsPropertiesConfig == null) {
-            if (!getConfig().isSetJmsPropertyConfig()) {
-                getConfig().addNewJmsPropertyConfig();
-            }
-            jmsPropertiesConfig = new JMSPropertiesConfig(getConfig().getJmsPropertyConfig(), this);
-        }
-        return jmsPropertiesConfig;
-    }
-
-    private String getBodyString(String fieldName) {
-        JsonNode node = body.get(fieldName);
-        if (node == null || node.isNull()) {
-            return "";
-        }
-        if (node.isObject()) {
-            try {
-                return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
-            } catch (JsonProcessingException e) {
-                return node.toString();
-            }
-        }
-        return node.asText();
-    }
-
-    @Override
-    public String getVariables() {
-        return getBodyString(VARIABLES);
-    }
-
-    @Override
-    public void setVariables(String variables) {
-        body.set(VARIABLES, createVariableNode(variables));
-        updateRequestContent();
-    }
-
-    private JsonNode createVariableNode(String variables) {
-        try {
-            return mapper.readTree(variables);
-        } catch (Exception ignore) {
-        }
-        return new TextNode(variables);
-    }
-
-    @Override
-    public String getQuery() {
-        return getBodyString(QUERY);
-    }
-
-    @Override
-    public void setQuery(String query) {
-        String processedQuery = processBodyParameterValue(query);
-        body.put(QUERY, processedQuery);
-        body.put(OPERATION_NAME, processedQuery == null ? null : getOperationName(processedQuery));
-        updateRequestContent();
-    }
-
-    public String processBodyParameterValue(String value) {
-        return StringUtils.isNullOrEmpty(value) ? null : value;
-    }
-
-    private void updateRequestContent() {
-        super.setRequestContent(body.toString());
-        updateParameters();
-    }
-
-    private String getOperationName(String query) {
-        Parser parser = new Parser();
-        Set operationList = new LinkedHashSet<String>();
-        try {
-            Document document = parser.parseDocument(query);
-            document.getDefinitions().stream().forEach(def -> {
-                if (def instanceof OperationDefinition) {
-                    String name = ((OperationDefinition) def).getName();
-                    if (StringUtils.hasContent(name)) {
-                        operationList.add(name);
-                    }
-                }
-            });
-        } catch (Exception ignore) {
-        }
-
-        final int queryWithFewOperations = 2;
-        if (operationList.size() >= queryWithFewOperations) {
-            return (String) operationList.stream().findFirst().get();
-        }
-
-        return null;
-    }
-
-    @Override
-    public void setRequestContent(String request) {
-        setBodyRequest(request);
-        updateRequestContent();
-    }
-
-    private void setBodyRequest(String request) {
-        ObjectNode bodyNode;
-        try {
-            JsonNode jsonNode = mapper.readTree(request);
-            if ((jsonNode == null) || !jsonNode.isObject()) {
-                return;
-            }
-
-            bodyNode = (ObjectNode) jsonNode;
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
-
-        if (bodyNode == null) {
-            return;
-        }
-
-        body.set(QUERY, bodyNode.get(QUERY));
-        JsonNode variablesNode = bodyNode.get(VARIABLES);
-        boolean needUpdateRequestContent = false;
-        if (!variablesNode.isObject() && !variablesNode.isNull()) {
-            variablesNode = createVariableNode(variablesNode.textValue());
-            needUpdateRequestContent = true;
-        }
-        body.set(VARIABLES, variablesNode);
-        body.set(OPERATION_NAME, bodyNode.get(OPERATION_NAME));
-        if (needUpdateRequestContent) {
-            updateRequestContent();
-        }
-    }
-
-    private void updateParameters() {
-        if (getMethod() == RestRequestInterface.HttpMethod.GET) {
-            String query = StringUtils.emptyIfNull(getBodyString(QUERY));
-            String operation = StringUtils.emptyIfNull(getBodyString(OPERATION_NAME));
-            String variables = StringUtils.emptyIfNull(getBodyString(VARIABLES));
-
-            params.setPropertyValue(QUERY, query);
-            params.setPropertyValue(OPERATION_NAME, operation);
-            params.setPropertyValue(VARIABLES, variables);
-
-        } else {
-            params.setPropertyValue(QUERY, "");
-            params.setPropertyValue(OPERATION_NAME, "");
-            params.setPropertyValue(VARIABLES, "");
-        }
-    }
-
-    @Override
-    public WsdlSubmit<GraphQLTestRequest> submit(SubmitContext submitContext, boolean async) throws SubmitException {
-        String endpoint = PropertyExpander.expandProperties(submitContext, getEndpoint());
-
-        try {
-            WsdlSubmit<GraphQLTestRequest> submitter = new WsdlSubmit<>(this, getSubmitListeners(),
-                    RequestTransportRegistry.getTransport(endpoint, submitContext));
-            submitter.submitRequest(submitContext, async);
-            return submitter;
-        } catch (Exception e) {
-            throw new SubmitException(e.toString());
-        }
-    }
-
-    @Override
-    public MessagePart[] getRequestParts() {
-        return new MessagePart[0];
-    }
-
-    @Override
-    public MessagePart[] getResponseParts() {
-        return new MessagePart[0];
+    public void resolve(ResolveContext<?> context) {
+        super.resolve(context);
+        assertionsSupport.resolve(context);
     }
 
     @Override
@@ -381,8 +175,7 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
             return;
         }
 
-        if (method != RestRequestInterface.HttpMethod.GET &&
-                method != RestRequestInterface.HttpMethod.POST) {
+        if (method != RestRequestInterface.HttpMethod.GET && method != RestRequestInterface.HttpMethod.POST) {
             throw new IllegalArgumentException(String.format("The method %s is not allowed", method.toString()));
         }
 
@@ -422,22 +215,6 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
     }
 
     @Override
-    public void updateConfig(GraphQLTestRequestConfig request) {
-        setConfig(request);
-
-        List<AttachmentConfig> attachmentConfigs = getConfig().getAttachmentList();
-        for (int i = 0; i < attachmentConfigs.size(); i++) {
-            AttachmentConfig config = attachmentConfigs.get(i);
-            getAttachmentsList().get(i).updateConfig(config);
-        }
-
-        if (jmsPropertiesConfig != null) {
-            jmsPropertiesConfig.setJmsPropertyConfConfig(request.getJmsPropertyConfig());
-        }
-        assertionsSupport.refresh();
-    }
-
-    @Override
     public String getPath() {
         return getEndpoint();
     }
@@ -445,6 +222,230 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
     @Override
     public String getMultiValueDelimiter() {
         return null;
+    }
+
+    protected void initIcons() {
+        validRequestIcon = UISupport.createImageIcon(PASS_ICON_PATH);
+        failedRequestIcon = UISupport.createImageIcon(FAIL_ICON_PATH);
+        unknownRequestIcon = UISupport.createImageIcon(ICON_PATH);
+        disabledRequestIcon = UISupport.createImageIcon(DISABLED_ICON_PATH);
+    }
+
+    private void initBody() {
+        ObjectMapper mapper = new ObjectMapper();
+        body = mapper.createObjectNode();
+        String nullValue = null;
+        body.put(QUERY, nullValue);
+        body.put(OPERATION_NAME, nullValue);
+        body.put(VARIABLES, nullValue);
+
+        String requestContent = getRequestContent();
+        setBodyRequest(requestContent);
+        updateParameters();
+    }
+
+    private void initAssertions() {
+        assertionsSupport = new AssertionsSupport(testStep, new AssertableConfig() {
+            public List<TestAssertionConfig> getAssertionList() {
+                return getConfig().getAssertionList();
+            }
+
+            public void removeAssertion(int ix) {
+                getConfig().removeAssertion(ix);
+            }
+
+            public TestAssertionConfig addNewAssertion() {
+                return getConfig().addNewAssertion();
+            }
+
+            public TestAssertionConfig insertAssertion(TestAssertionConfig source, int ix) {
+                TestAssertionConfig conf = getConfig().insertNewAssertion(ix);
+                conf.set(source);
+                return conf;
+            }
+        });
+    }
+
+    @Override
+    public MessagePart.AttachmentPart[] getDefinedAttachmentParts() {
+        return new MessagePart.AttachmentPart[0];
+    }
+
+    @Override
+    public ModelItem getModelItem() {
+        return testStep;
+    }
+
+    @Override
+    public JMSHeaderConfig getJMSHeaderConfig() {
+        return null;
+    }
+
+    @Override
+    public JMSPropertiesConfig getJMSPropertiesConfig() {
+        if (jmsPropertiesConfig == null) {
+            if (!getConfig().isSetJmsPropertyConfig()) {
+                getConfig().addNewJmsPropertyConfig();
+            }
+            jmsPropertiesConfig = new JMSPropertiesConfig(getConfig().getJmsPropertyConfig(), this);
+        }
+        return jmsPropertiesConfig;
+    }
+
+    private String getBodyString(String fieldName) {
+        JsonNode node = body.get(fieldName);
+        if (node == null || node.isNull()) {
+            return "";
+        }
+        if (node.isObject()) {
+            try {
+                return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(node);
+            }
+            catch (JsonProcessingException e) {
+                return node.toString();
+            }
+        }
+        return node.asText();
+    }
+
+    @Override
+    public String getVariables() {
+        return getBodyString(VARIABLES);
+    }
+
+    @Override
+    public void setVariables(String variables) {
+        body.set(VARIABLES, createVariableNode(variables));
+        updateRequestContent();
+    }
+
+    @Override
+    public String getQuery() {
+        return getBodyString(QUERY);
+    }
+
+    @Override
+    public void setQuery(String query) {
+        String processedQuery = processBodyParameterValue(query);
+        body.put(QUERY, processedQuery);
+        body.put(OPERATION_NAME, processedQuery == null ? null : getOperationName(processedQuery));
+        updateRequestContent();
+    }
+
+    private JsonNode createVariableNode(String variables) {
+        try {
+            return mapper.readTree(variables);
+        }
+        catch (Exception ignore) {
+        }
+        return new TextNode(variables);
+    }
+
+    public String processBodyParameterValue(String value) {
+        return StringUtils.isNullOrEmpty(value) ? null : value;
+    }
+
+    private void updateRequestContent() {
+        super.setRequestContent(body.toString());
+        updateParameters();
+    }
+
+    private String getOperationName(String query) {
+        Parser parser = new Parser();
+        Set operationList = new LinkedHashSet<String>();
+        try {
+            Document document = parser.parseDocument(query);
+            document.getDefinitions().stream().forEach(def -> {
+                if (def instanceof OperationDefinition) {
+                    String name = ((OperationDefinition)def).getName();
+                    if (StringUtils.hasContent(name)) {
+                        operationList.add(name);
+                    }
+                }
+            });
+        }
+        catch (Exception ignore) {
+        }
+
+        final int queryWithFewOperations = 2;
+        if (operationList.size() >= queryWithFewOperations) {
+            return (String)operationList.stream().findFirst().get();
+        }
+
+        return null;
+    }
+
+    private void setBodyRequest(String request) {
+        ObjectNode bodyNode;
+        try {
+            JsonNode jsonNode = mapper.readTree(request);
+            if ((jsonNode == null) || !jsonNode.isObject()) {
+                return;
+            }
+
+            bodyNode = (ObjectNode)jsonNode;
+        }
+        catch (IOException e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+
+        if (bodyNode == null) {
+            return;
+        }
+
+        body.set(QUERY, bodyNode.get(QUERY));
+        JsonNode variablesNode = bodyNode.get(VARIABLES);
+        boolean needUpdateRequestContent = false;
+        if (!variablesNode.isObject() && !variablesNode.isNull()) {
+            variablesNode = createVariableNode(variablesNode.textValue());
+            needUpdateRequestContent = true;
+        }
+        body.set(VARIABLES, variablesNode);
+        body.set(OPERATION_NAME, bodyNode.get(OPERATION_NAME));
+        if (needUpdateRequestContent) {
+            updateRequestContent();
+        }
+    }
+
+    private void updateParameters() {
+        if (getMethod() == RestRequestInterface.HttpMethod.GET) {
+            String query = StringUtils.emptyIfNull(getBodyString(QUERY));
+            String operation = StringUtils.emptyIfNull(getBodyString(OPERATION_NAME));
+            String variables = StringUtils.emptyIfNull(getBodyString(VARIABLES));
+
+            params.setPropertyValue(QUERY, query);
+            params.setPropertyValue(OPERATION_NAME, operation);
+            params.setPropertyValue(VARIABLES, variables);
+        }
+        else {
+            params.setPropertyValue(QUERY, "");
+            params.setPropertyValue(OPERATION_NAME, "");
+            params.setPropertyValue(VARIABLES, "");
+        }
+    }
+
+    @Override
+    public WsdlSubmit<GraphQLTestRequest> submit(SubmitContext submitContext, boolean async) throws SubmitException {
+        String endpoint = PropertyExpander.expandProperties(submitContext, getEndpoint());
+
+        try {
+            WsdlSubmit<GraphQLTestRequest> submitter = new WsdlSubmit<>(this, getSubmitListeners(), RequestTransportRegistry.getTransport(endpoint, submitContext));
+            submitter.submitRequest(submitContext, async);
+            return submitter;
+        }
+        catch (Exception e) {
+            throw new SubmitException(e.toString());
+        }
+    }
+
+    @Override
+    public MessagePart[] getRequestParts() {
+        return new MessagePart[0];
+    }
+
+    @Override
+    public MessagePart[] getResponseParts() {
+        return new MessagePart[0];
     }
 
     @Override
@@ -538,12 +539,6 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
     }
 
     @Override
-    public void setResponse(HttpResponse response, SubmitContext context) {
-        super.setResponse(response, context);
-        assertResponse(context);
-    }
-
-    @Override
     public void assertResponse(SubmitContext context) {
         if (notifier == null) {
             notifier = new PropertyChangeNotifier();
@@ -566,13 +561,24 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
     }
 
     @Override
-    public WsdlTestStep getTestStep() {
-        return testStep;
+    public void updateConfig(GraphQLTestRequestConfig request) {
+        setConfig(request);
+
+        List<AttachmentConfig> attachmentConfigs = getConfig().getAttachmentList();
+        for (int i = 0; i < attachmentConfigs.size(); i++) {
+            AttachmentConfig config = attachmentConfigs.get(i);
+            getAttachmentsList().get(i).updateConfig(config);
+        }
+
+        if (jmsPropertiesConfig != null) {
+            jmsPropertiesConfig.setJmsPropertyConfConfig(request.getJmsPropertyConfig());
+        }
+        assertionsSupport.refresh();
     }
 
     @Override
-    public ModelItem getParent() {
-        return getTestStep();
+    public WsdlTestStep getTestStep() {
+        return testStep;
     }
 
     @Override
@@ -581,17 +587,17 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
     }
 
     @Override
-    public AbstractHttpOperation getOperation() {
-        return null;
+    public ModelItem getParent() {
+        return getTestStep();
+    }
+
+    public boolean isDiscardResponse() {
+        return getSettings().getBoolean("discardResponse");
     }
 
     @Override
     public WsdlMessageAssertion importAssertion(WsdlMessageAssertion source, boolean overwrite, boolean createCopy, String newName) {
         return assertionsSupport.importAssertion(source, overwrite, createCopy, newName);
-    }
-
-    public boolean isDiscardResponse() {
-        return getSettings().getBoolean("discardResponse");
     }
 
     public void setDiscardResponse(boolean discardResponse) {
@@ -614,7 +620,8 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
             }
 
             return assertion;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e);
             return null;
         }
@@ -645,10 +652,10 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
         PropertyChangeNotifier notifier = new PropertyChangeNotifier();
 
         try {
-            assertionsSupport.removeAssertion((WsdlMessageAssertion) assertion);
-
-        } finally {
-            ((WsdlMessageAssertion) assertion).release();
+            assertionsSupport.removeAssertion((WsdlMessageAssertion)assertion);
+        }
+        finally {
+            ((WsdlMessageAssertion)assertion).release();
             notifier.notifyChange();
         }
     }
@@ -660,7 +667,8 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
         }
         if (!messageExchange.hasResponse() && getOperation() != null && getOperation().isBidirectional()) {
             return Assertable.AssertionStatus.FAILED;
-        } else {
+        }
+        else {
             return assertionsSupport.getAssertionStatus();
         }
     }
@@ -716,16 +724,11 @@ public class GraphQLTestRequest extends AbstractHttpRequest<GraphQLTestRequestCo
         WsdlMessageAssertion assertion = getAssertionAt(ix);
         try {
             return assertionsSupport.moveAssertion(ix, offset);
-        } finally {
+        }
+        finally {
             assertion.release();
             notifier.notifyChange();
         }
-    }
-
-    @Override
-    public void resolve(ResolveContext<?> context) {
-        super.resolve(context);
-        assertionsSupport.resolve(context);
     }
 
     private class PropertyChangeNotifier {

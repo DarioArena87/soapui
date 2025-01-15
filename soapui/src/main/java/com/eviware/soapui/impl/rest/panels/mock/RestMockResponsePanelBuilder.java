@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.rest.panels.mock;
@@ -25,20 +25,20 @@ import com.eviware.soapui.support.components.JPropertiesTable;
 import com.eviware.soapui.support.types.StringList;
 import com.eviware.soapui.ui.desktop.DesktopPanel;
 
-import java.awt.Component;
+import java.awt.*;
 
 public class RestMockResponsePanelBuilder extends EmptyPanelBuilder<RestMockResponse> {
 
-    public DesktopPanel buildDesktopPanel(RestMockResponse mockResponse) {
-        return new RestMockResponseDesktopPanel(mockResponse);
+    public boolean hasOverviewPanel() {
+        return true;
     }
 
     public boolean hasDesktopPanel() {
         return true;
     }
 
-    public boolean hasOverviewPanel() {
-        return true;
+    public DesktopPanel buildDesktopPanel(RestMockResponse mockResponse) {
+        return new RestMockResponseDesktopPanel(mockResponse);
     }
 
     public Component buildOverviewPanel(WsdlMockResponse mockResponse) {
@@ -66,12 +66,12 @@ public class RestMockResponsePanelBuilder extends EmptyPanelBuilder<RestMockResp
 
         // others
         table.addProperty("Enable Inline Files", "inlineFilesEnabled", JPropertiesTable.BOOLEAN_OPTIONS)
-                .setDescription("Enables inline file references [file:<path>] in elements with binary content");
+             .setDescription("Enables inline file references [file:<path>] in elements with binary content");
         table.addProperty("Response HTTP-Status", "responseHttpStatus", true);
         table.addProperty("Response Delay", "responseDelay", true);
         table.addProperty("Response Compression", "responseCompression", new String[]{
-                WsdlMockResponse.AUTO_RESPONSE_COMPRESSION, WsdlMockResponse.NO_RESPONSE_COMPRESSION,
-                CompressionSupport.ALG_DEFLATE, CompressionSupport.ALG_GZIP});
+            WsdlMockResponse.AUTO_RESPONSE_COMPRESSION, WsdlMockResponse.NO_RESPONSE_COMPRESSION, CompressionSupport.ALG_DEFLATE, CompressionSupport.ALG_GZIP
+        });
 
         table.addProperty("WS-Addressing", "wsAddressing", JPropertiesTable.BOOLEAN_OPTIONS);
 
@@ -79,5 +79,4 @@ public class RestMockResponsePanelBuilder extends EmptyPanelBuilder<RestMockResp
 
         return table;
     }
-
 }

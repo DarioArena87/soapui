@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.model.propertyexpansion.resolvers;
@@ -26,22 +26,19 @@ public class MockRunPropertyResolver implements PropertyResolver {
             return null;
         }
 
-        MockRunContext mrc = (MockRunContext) context;
+        MockRunContext mrc = (MockRunContext)context;
 
         // explicit item reference?
-        String value = ResolverUtils.checkForExplicitReference(propertyName, PropertyExpansion.PROJECT_REFERENCE, mrc
-                .getMockService().getProject(), mrc, globalOverride);
+        String value = ResolverUtils.checkForExplicitReference(propertyName, PropertyExpansion.PROJECT_REFERENCE, mrc.getMockService().getProject(), mrc, globalOverride);
         if (value != null) {
             return value;
         }
 
-        value = ResolverUtils.checkForExplicitReference(propertyName, PropertyExpansion.MOCKSERVICE_REFERENCE,
-                mrc.getMockService(), mrc, globalOverride);
+        value = ResolverUtils.checkForExplicitReference(propertyName, PropertyExpansion.MOCKSERVICE_REFERENCE, mrc.getMockService(), mrc, globalOverride);
         if (value != null) {
             return value;
         }
 
-        return ResolverUtils.checkForExplicitReference(propertyName, PropertyExpansion.MOCKRESPONSE_REFERENCE,
-                mrc.getMockResponse(), mrc, globalOverride);
+        return ResolverUtils.checkForExplicitReference(propertyName, PropertyExpansion.MOCKRESPONSE_REFERENCE, mrc.getMockResponse(), mrc, globalOverride);
     }
 }

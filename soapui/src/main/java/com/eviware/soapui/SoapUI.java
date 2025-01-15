@@ -56,7 +56,6 @@ import com.eviware.soapui.model.ModelItem;
 import com.eviware.soapui.model.PanelBuilder;
 import com.eviware.soapui.model.TestPropertyHolder;
 import com.eviware.soapui.model.environment.EnvironmentListener;
-import com.eviware.soapui.model.environment.Property;
 import com.eviware.soapui.model.project.SaveStatus;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionUtils;
 import com.eviware.soapui.model.settings.Settings;
@@ -192,18 +191,19 @@ public class SoapUI {
     private static final int DEFAULT_MAX_THREADPOOL_SIZE = 200;
     private static final String BROWSER_DISABLED_SYSTEM_PROPERTY = "soapui.browser.disabled";
     private final static ThreadPoolExecutor threadPool = (ThreadPoolExecutor)Executors.newFixedThreadPool(getMaxThreadpoolSize(), new SoapUIThreadCreator());
+    private static final List<Object> logCache = new ArrayList<>();
+    private static final Timer soapUITimer = new Timer();
+    private static final Logger errorLog = LogManager.getLogger("soapui.errorlog");
+    private static final StringToStringMap projectOptions = new StringToStringMap();
     // ------------------------------ FIELDS ------------------------------
     public static String FRAME_ICON = "/SoapUI-OS_16-16.png;/SoapUI-OS_24-24.png;/SoapUI-OS_32-32.png;/SoapUI-OS_48-48.png;/SoapUI-OS_256-256.png";
     public static String STARTER_PAGE_ERROR_URL = "file://" + System.getProperty("soapui.home", ".") + "/starter-page.html";
-    private static final List<Object> logCache = new ArrayList<>();
     private static SoapUICore soapUICore;
-    private static final Timer soapUITimer = new Timer();
     private static JFrame frame;
     private static Navigator navigator;
     private static SoapUIDesktop desktop;
     private static Workspace workspace;
     private static Log4JMonitor logMonitor;
-    private static final Logger errorLog = LogManager.getLogger("soapui.errorlog");
     private static boolean isStandalone;
     private static boolean isCommandLine;
     private static TestMonitor testMonitor;
@@ -212,7 +212,6 @@ public class SoapUI {
     private static Boolean launchedTestRunner = false;
     private static AutoSaveTimerTask autoSaveTimerTask;
     private static String workspaceName;
-    private static final StringToStringMap projectOptions = new StringToStringMap();
     private static URLDesktopPanel starterPageDesktopPanel;
     private static JXToolBar mainToolbar;
     private static String[] mainArgs;
@@ -233,11 +232,11 @@ public class SoapUI {
         }
     }
 
+    private final InternalDesktopListener internalDesktopListener = new InternalDesktopListener();
     private JMenu desktopMenu;
     private JDesktopPanelsList desktopPanelsList;
     private JPanel overviewPanel;
     private boolean saveOnExit = true;
-    private final InternalDesktopListener internalDesktopListener = new InternalDesktopListener();
     private JInspectorPanel mainInspector;
     private JTextField searchField;
 
@@ -1183,7 +1182,6 @@ public class SoapUI {
             catch (Exception e1) {
                 logError(e1);
             }
-
         }
         else {
             if (!UISupport.confirm("Exit SoapUI without saving?", "Question")) {
@@ -1191,7 +1189,6 @@ public class SoapUI {
                 return false;
             }
         }
-
 
         shutdown();
 
@@ -1285,7 +1282,6 @@ public class SoapUI {
                 if (getSettings().getBoolean(UISettings.SHOW_STARTUP_PAGE) && !isBrowserDisabled()) {
                     SwingUtilities.invokeLater(SoapUI::showStarterPage);
                 }
-
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -1703,8 +1699,7 @@ public class SoapUI {
         }
 
         private boolean emptyManualSettings() {
-            return StringUtils.isNullOrEmpty(getSettings().getString(ProxySettings.HOST, "")) ||
-                   StringUtils.isNullOrEmpty(getSettings().getString(ProxySettings.PORT, ""));
+            return StringUtils.isNullOrEmpty(getSettings().getString(ProxySettings.HOST, "")) || StringUtils.isNullOrEmpty(getSettings().getString(ProxySettings.PORT, ""));
         }
     }
 

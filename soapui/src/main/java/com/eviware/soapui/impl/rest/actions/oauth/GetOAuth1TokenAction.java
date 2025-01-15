@@ -5,8 +5,7 @@ import com.eviware.soapui.impl.rest.OAuth1Profile;
 import com.eviware.soapui.support.MessageSupport;
 import com.eviware.soapui.support.UISupport;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class GetOAuth1TokenAction extends AbstractAction {
@@ -15,16 +14,18 @@ public class GetOAuth1TokenAction extends AbstractAction {
 
     public GetOAuth1TokenAction(OAuth1Profile target, String name) {
         this.target = target;
-        putValue(Action.NAME, name);
-        putValue(Action.SHORT_DESCRIPTION, messages.get("GetOAuth1TokenAction.Description"));
+        putValue(NAME, name);
+        putValue(SHORT_DESCRIPTION, messages.get("GetOAuth1TokenAction.Description"));
     }
 
     public void actionPerformed(ActionEvent event) {
         try {
             getOAuthClientFacade().requestAccessToken(target);
-        } catch (InvalidOAuthParametersException e) {
+        }
+        catch (InvalidOAuthParametersException e) {
             UISupport.showErrorMessage(messages.get("GetOAuth1TokenAction.Error.InvalidParameters") + e.getMessage());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             SoapUI.logError(e, messages.get("GetOAuth1TokenAction.Error.CommonError"));
             UISupport.showErrorMessage(messages.get("GetOAuth1TokenAction.Error.GUIMessage"));
         }
@@ -33,5 +34,4 @@ public class GetOAuth1TokenAction extends AbstractAction {
     protected OAuth1ClientFacade getOAuthClientFacade() {
         return new GoogleOAuth1ClientFacade();
     }
-
 }

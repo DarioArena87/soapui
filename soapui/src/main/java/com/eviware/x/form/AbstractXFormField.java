@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.x.form;
@@ -33,51 +33,7 @@ public abstract class AbstractXFormField<T> implements XFormField {
     public AbstractXFormField() {
     }
 
-    @Override
-    public boolean isVisible() {
-        return true;
-    }
-
     public abstract T getComponent();
-
-    public void addFormFieldListener(XFormFieldListener listener) {
-        if (listeners == null) {
-            listeners = new HashSet<XFormFieldListener>();
-        }
-
-        listeners.add(listener);
-    }
-
-    public void addFormFieldValidator(XFormFieldValidator validator) {
-        if (validators == null) {
-            validators = new ArrayList<XFormFieldValidator>();
-        }
-
-        validators.add(validator);
-    }
-
-    public void addComponentEnabler(XFormField tf, String value) {
-        if (enabler == null) {
-            enabler = new ComponentEnabler(this);
-        }
-        enabler.add(tf, value);
-    }
-
-    public boolean isRequired() {
-        return requiredValidator != null;
-    }
-
-    public void removeFieldListener(XFormFieldListener listener) {
-        if (listeners != null) {
-            listeners.remove(listener);
-        }
-    }
-
-    public void removeFormFieldValidator(XFormFieldValidator validator) {
-        if (validators != null) {
-            validators.remove(validator);
-        }
-    }
 
     public void setRequired(boolean required, String message) {
         if (requiredValidator != null) {
@@ -88,6 +44,51 @@ public abstract class AbstractXFormField<T> implements XFormField {
             requiredValidator = new RequiredValidator(message);
             addFormFieldValidator(requiredValidator);
         }
+    }
+
+    public boolean isRequired() {
+        return requiredValidator != null;
+    }
+
+    public void addFormFieldListener(XFormFieldListener listener) {
+        if (listeners == null) {
+            listeners = new HashSet<XFormFieldListener>();
+        }
+
+        listeners.add(listener);
+    }
+
+    public void removeFieldListener(XFormFieldListener listener) {
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+    }
+
+    public void addFormFieldValidator(XFormFieldValidator validator) {
+        if (validators == null) {
+            validators = new ArrayList<XFormFieldValidator>();
+        }
+
+        validators.add(validator);
+    }
+
+    public void removeFormFieldValidator(XFormFieldValidator validator) {
+        if (validators != null) {
+            validators.remove(validator);
+        }
+    }
+
+    public void addComponentEnabler(XFormField tf, String value) {
+        if (enabler == null) {
+            enabler = new ComponentEnabler(this);
+        }
+        enabler.add(tf, value);
+    }
+
+    public abstract void setProperty(String name, Object value);
+
+    public Object getProperty(String name) {
+        return null;
     }
 
     public ValidationMessage[] validate() {
@@ -107,6 +108,11 @@ public abstract class AbstractXFormField<T> implements XFormField {
         return messages.toArray(new ValidationMessage[messages.size()]);
     }
 
+    @Override
+    public boolean isVisible() {
+        return true;
+    }
+
     protected void fireValueChanged(String newValue, String oldValue) {
         if (listeners == null) {
             return;
@@ -116,12 +122,6 @@ public abstract class AbstractXFormField<T> implements XFormField {
             listener.valueChanged(this, newValue, oldValue);
         }
     }
-
-    public Object getProperty(String name) {
-        return null;
-    }
-
-    public abstract void setProperty(String name, Object value);
 
     public boolean isMultiRow() {
         return false;

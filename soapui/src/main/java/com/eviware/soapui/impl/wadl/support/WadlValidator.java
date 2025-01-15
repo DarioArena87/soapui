@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.impl.wadl.support;
@@ -44,7 +44,8 @@ public class WadlValidator {
         if (restRequest != null) {
             if (messageExchange.getResponseStatusCode() >= 400) {
                 return assertResponse(messageExchange, RestRepresentation.Type.FAULT);
-            } else {
+            }
+            else {
                 return assertResponse(messageExchange, RestRepresentation.Type.RESPONSE);
             }
         }
@@ -58,15 +59,12 @@ public class WadlValidator {
         RestRequestInterface restRequest = messageExchange.getRestRequest();
         boolean asserted = false;
 
-        for (RestRepresentation representation : restRequest.getRepresentations(type,
-                messageExchange.getResponseContentType())) {
-            if (representation.getStatus().isEmpty()
-                    || representation.getStatus().contains(messageExchange.getResponseStatusCode())) {
+        for (RestRepresentation representation : restRequest.getRepresentations(type, messageExchange.getResponseContentType())) {
+            if (representation.getStatus().isEmpty() || representation.getStatus().contains(messageExchange.getResponseStatusCode())) {
                 SchemaType schemaType = representation.getSchemaType();
                 if (schemaType != null && representation.getElement().equals(responseBodyElementName)) {
                     try {
-                        XmlObject xmlObject = schemaType.getTypeSystem().parse(messageExchange.getResponseContentAsXml(),
-                                schemaType, new XmlOptions());
+                        XmlObject xmlObject = schemaType.getTypeSystem().parse(messageExchange.getResponseContentAsXml(), schemaType, new XmlOptions());
 
                         // create internal error list
                         List<?> list = new ArrayList<Object>();
@@ -78,25 +76,27 @@ public class WadlValidator {
 
                         for (Object o : list) {
                             if (o instanceof XmlError) {
-                                result.add(new AssertionError((XmlError) o));
-                            } else {
+                                result.add(new AssertionError((XmlError)o));
+                            }
+                            else {
                                 result.add(new AssertionError(o.toString()));
                             }
                         }
 
                         asserted = true;
-                    } catch (XmlException e) {
+                    }
+                    catch (XmlException e) {
                         SoapUI.logError(e);
                     }
-                } else {
+                }
+                else {
                     asserted = true;
                 }
             }
         }
 
         if (!asserted && result.isEmpty()) {
-            result.add(new AssertionError("Missing matching representation for request with contentType ["
-                    + messageExchange.getResponseContentType() + "]"));
+            result.add(new AssertionError("Missing matching representation for request with contentType [" + messageExchange.getResponseContentType() + "]"));
         }
 
         return result.toArray(new AssertionError[result.size()]);
@@ -107,10 +107,11 @@ public class WadlValidator {
             // XmlObject xmlObject = XmlObject.Factory.parse(
             // messageExchange.getResponseContentAsXml() );
             XmlObject xmlObject = XmlUtils.createXmlObject(messageExchange.getResponseContentAsXml());
-            Element docElement = ((Document) xmlObject.getDomNode()).getDocumentElement();
+            Element docElement = ((Document)xmlObject.getDomNode()).getDocumentElement();
 
             return new QName(docElement.getNamespaceURI(), docElement.getLocalName());
-        } catch (XmlException e) {
+        }
+        catch (XmlException e) {
             SoapUI.logError(e);
         }
 

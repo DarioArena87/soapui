@@ -11,18 +11,16 @@ import java.net.URI;
 public class HttpLockMethod extends HttpEntityEnclosingRequestBase {
 
     public HttpLockMethod() {
-        super();
     }
 
-    public HttpLockMethod(final URI uri) {
-        super();
+    public HttpLockMethod(URI uri) {
         setURI(uri);
     }
 
     /**
      * @throws IllegalArgumentException if the uri is invalid.
      */
-    public HttpLockMethod(final String uri) {
+    public HttpLockMethod(String uri) {
         this(URI.create(uri));
     }
 

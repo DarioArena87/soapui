@@ -8,8 +8,7 @@ public class PropertiesModelItem extends EmptyModelItem {
     private final TestPropertyHolder holder;
 
     public PropertiesModelItem(TestPropertyHolder holder) {
-        super("Properties (" + holder.getPropertyNames().length + ")", UISupport
-                .createImageIcon("/properties_step.png"));
+        super("Properties (" + holder.getPropertyNames().length + ")", UISupport.createImageIcon("/properties_step.png"));
         this.holder = holder;
     }
 
