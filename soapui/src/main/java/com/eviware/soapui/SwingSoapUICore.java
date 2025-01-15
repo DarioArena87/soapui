@@ -111,7 +111,7 @@ public class SwingSoapUICore extends DefaultSoapUICore {
                 if (settingsFile != null) {
                     try {
                         SoapuiSettingsDocumentConfig.Factory.parse(settingsFile);
-                        log.info("imported soapui-settings from [" + settingsFile.getAbsolutePath() + "]");
+                        log.info("imported soapui-settings from [{}]", settingsFile.getAbsolutePath());
                         return settingsFile.getAbsolutePath();
                     }
                     catch (Exception e) {
@@ -140,7 +140,7 @@ public class SwingSoapUICore extends DefaultSoapUICore {
                 }
 
                 try {
-                    log.info("Adding actions from [" + actionFile.getAbsolutePath() + "]");
+                    log.info("Adding actions from [{}]", actionFile.getAbsolutePath());
 
                     SoapUI.getActionRegistry().addConfig(new FileInputStream(actionFile), classLoader);
                 }

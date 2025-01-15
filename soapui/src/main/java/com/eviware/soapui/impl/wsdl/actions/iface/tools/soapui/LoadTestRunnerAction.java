@@ -253,7 +253,7 @@ public class LoadTestRunnerAction extends AbstractToolsAction<WsdlProject> {
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Launching loadtestrunner in directory [" + builder.directory() + "] with arguments [" + args + "]");
+            log.debug("Launching loadtestrunner in directory [{}] with arguments [{}]", builder.directory(), args);
         }
 
         toolHost.run(new ProcessToolRunner(builder, "SoapUI LoadTestRunner", modelItem, args));

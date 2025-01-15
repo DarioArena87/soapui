@@ -91,7 +91,7 @@ public final class XmlUtils {
             return ensureDocumentBuilder().parse(in);
         }
         catch (Exception e) {
-            log.error("Error parsing InputStream; " + e.getMessage(), e);
+            log.error("Error parsing InputStream; {}", e.getMessage(), e);
         }
 
         return null;
@@ -102,7 +102,7 @@ public final class XmlUtils {
             return ensureDocumentBuilder().parse(fileName);
         }
         catch (SAXException e) {
-            log.error("Error parsing fileName [" + fileName + "]; " + e.getMessage(), e);
+            log.error("Error parsing fileName [{}]; {}", fileName, e.getMessage(), e);
         }
 
         return null;
@@ -132,7 +132,7 @@ public final class XmlUtils {
             return out.toString();
         }
         catch (IOException e) {
-            log.error("Failed to serialize: " + e);
+            log.error("Failed to serialize: {}", e);
         }
         return null;
     }
@@ -252,7 +252,7 @@ public final class XmlUtils {
         }
         catch (Exception e) {
             xmlOptions = new XmlOptions();
-            log.error("Error creating XmlOptions; " + e.getMessage(), e);
+            log.error("Error creating XmlOptions; {}", e.getMessage(), e);
         }
         return xmlOptions;
     }
@@ -583,7 +583,7 @@ public final class XmlUtils {
             return writer.toString();
         }
         catch (Exception e) {
-            log.warn("Failed to prettyPrint xml [" + xml + "]: " + e);
+            log.warn("Failed to prettyPrint xml [{}]: {}", xml, e);
             return xml;
         }
     }
@@ -599,7 +599,7 @@ public final class XmlUtils {
             return writer.toString();
         }
         catch (Exception e) {
-            log.warn("Failed to prettyPrint xml [" + xml + "]: " + e);
+            log.warn("Failed to prettyPrint xml [{}]: {}", xml, e);
             return xml.xmlText();
         }
     }
@@ -1424,7 +1424,7 @@ public final class XmlUtils {
                 documentBuilder = dbf.newDocumentBuilder();
             }
             catch (ParserConfigurationException e) {
-                log.error("Error creating DocumentBuilder; " + e.getMessage());
+                log.error("Error creating DocumentBuilder; {}", e.getMessage());
             }
         }
 

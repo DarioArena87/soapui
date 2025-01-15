@@ -68,7 +68,7 @@ public class WsdlMockOperation extends AbstractMockOperation<MockOperationConfig
 
         Interface iface = mockService.getProject().getInterfaceByName(config.getInterface());
         if (iface == null) {
-            SoapUI.log.warn("Missing interface [" + config.getInterface() + "] for MockOperation in project");
+            SoapUI.log.warn("Missing interface [{}] for MockOperation in project", config.getInterface());
         }
         else {
             operation = (WsdlOperation)iface.getOperationByName(config.getOperation());

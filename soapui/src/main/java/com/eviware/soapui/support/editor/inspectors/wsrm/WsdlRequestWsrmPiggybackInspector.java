@@ -67,16 +67,11 @@ public class WsdlRequestWsrmPiggybackInspector extends AbstractWsrmInspector imp
 
                         if (lower == upper) {
                             LogManager.getLogger("wsrm")
-                                      .info("Acknowledgment for message " + upper + " received for identifier: " + request.getWsrmConfig().getSequenceIdentifier());
+                                      .info("Acknowledgment for message {} received for identifier: {}", upper, request.getWsrmConfig().getSequenceIdentifier());
                         }
                         else {
                             LogManager.getLogger("wsrm")
-                                      .info("Acknowledgment for messages " +
-                                            lower +
-                                            " to " +
-                                            upper +
-                                            " received for identifier: " +
-                                            request.getWsrmConfig().getSequenceIdentifier());
+                                      .info("Acknowledgment for messages {} to {} received for identifier: {}", lower, upper, request.getWsrmConfig().getSequenceIdentifier());
                         }
                     }
                 }

@@ -120,7 +120,7 @@ public class WsmcUtils {
             cursor.toFirstChild();
 
             String sequenceIdentifier = cursor.getTextValue();
-            LogManager.getLogger("wsrm").info("Sequence response Received, sequence ID: " + sequenceIdentifier);
+            LogManager.getLogger("wsrm").info("Sequence response Received, sequence ID: {}", sequenceIdentifier);
 
             // WsmcInjection receiveInjection = new WsmcInjection(request);
             // request.setAfterRequestInjection(receiveInjection);

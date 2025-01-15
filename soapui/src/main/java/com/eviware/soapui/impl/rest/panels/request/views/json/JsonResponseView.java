@@ -226,7 +226,7 @@ public class JsonResponseView extends AbstractXmlEditorView<HttpResponseDocument
                 writer.write(textArea.getText());
                 writer.close();
 
-                log.info("JSON written to [" + file.getAbsolutePath() + "]");
+                log.info("JSON written to [{}]", file.getAbsolutePath());
             }
             catch (IOException e1) {
                 UISupport.showErrorMessage("Error saving json to file: " + e1.getMessage());

@@ -130,7 +130,7 @@ public class UrlWsdlLoader extends WsdlLoader {
             return handleFile(url);
         }
 
-        log.debug("Getting wsdl component from [" + url + "]");
+        log.debug("Getting wsdl component from [{}]", url);
 
         createGetMethod(url);
 
@@ -178,7 +178,7 @@ public class UrlWsdlLoader extends WsdlLoader {
                 urlCache.put(url, content);
                 String newUrl = getMethod.getURI().toString();
                 if (!url.equals(newUrl)) {
-                    log.info("BaseURI was redirected to [" + newUrl + "]");
+                    log.info("BaseURI was redirected to [{}]", newUrl);
                 }
                 setNewBaseURI(newUrl);
                 urlCache.put(newUrl, content);
@@ -320,7 +320,7 @@ public class UrlWsdlLoader extends WsdlLoader {
                     return new NTCredentials(getUsername(), pw, workstation, null);
                 }
 
-                log.info(authScope.getHost() + ":" + authScope.getPort() + " requires Windows authentication");
+                log.info("{}:{} requires Windows authentication", authScope.getHost(), authScope.getPort());
                 if (ntDialog == null) {
                     buildNtDialog();
                 }
@@ -345,7 +345,7 @@ public class UrlWsdlLoader extends WsdlLoader {
                     return credentials;
                 }
 
-                log.info(authScope.getHost() + ":" + authScope.getPort() + " requires authentication with the realm '" + authScope.getRealm() + "'");
+                log.info("{}:{} requires authentication with the realm '{}'", authScope.getHost(), authScope.getPort(), authScope.getRealm());
                 ShowDialog showDialog = new ShowDialog();
                 showDialog.values.put("Info", "Authentication required for [" + authScope.getHost() + ":" + authScope.getPort() + "]");
 

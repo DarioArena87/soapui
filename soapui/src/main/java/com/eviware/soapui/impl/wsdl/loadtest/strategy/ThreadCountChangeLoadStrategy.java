@@ -133,7 +133,7 @@ public class ThreadCountChangeLoadStrategy extends AbstractLoadStrategy {
             synchronized (wsdlLoadTest) {
                 int newThreadCount = (int)(startThreadCount + (progress * (endThreadCount - startThreadCount) + 0.5));
                 if (newThreadCount != wsdlLoadTest.getThreadCount() && newThreadCount <= endThreadCount) {
-                    log.debug("Changing threadcount to " + newThreadCount + ", progress = " + progress);
+                    log.debug("Changing threadcount to {}, progress = {}", newThreadCount, progress);
                     wsdlLoadTest.setThreadCount(newThreadCount);
                 }
             }

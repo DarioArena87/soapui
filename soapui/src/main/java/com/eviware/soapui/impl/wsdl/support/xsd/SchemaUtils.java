@@ -127,7 +127,7 @@ public class SchemaUtils {
         SoapUIClassLoaderState state = SoapUIExtensionClassLoader.ensure();
 
         try {
-            log.info("Loading schema types from [" + wsdlUrl + "]");
+            log.info("Loading schema types from [{}]", wsdlUrl);
             ArrayList<XmlObject> schemas = new ArrayList<XmlObject>(getSchemas(wsdlUrl, loader).values());
 
             return buildSchemaTypes(schemas);
@@ -190,7 +190,7 @@ public class SchemaUtils {
                     cursor.getAllNamespaces(map);
                 }
                 else {
-                    log.warn("Can not get namespaces for " + s);
+                    log.warn("Can not get namespaces for {}", s);
                 }
 
                 String tns = getTargetNamespace(s);
@@ -226,7 +226,7 @@ public class SchemaUtils {
         }
         finally {
             for (int c = 0; c < errorList.size(); c++) {
-                log.warn("Error: " + errorList.get(c));
+                log.warn("Error: {}", errorList.get(c));
             }
 
             if (cursor != null) {
@@ -267,7 +267,7 @@ public class SchemaUtils {
         // if( add )
         // existing.put( wsdlUrl, null );
 
-        log.info("Getting schema " + wsdlUrl);
+        log.info("Getting schema {}", wsdlUrl);
 
         ArrayList<?> errorList = new ArrayList<Object>();
 
@@ -633,11 +633,11 @@ public class SchemaUtils {
             }
 
             if (cnt == 0) {
-                log.warn("Missing schema files in  schemaDirectory [" + schemaDirectory + "]");
+                log.warn("Missing schema files in  schemaDirectory [{}]", schemaDirectory);
             }
         }
         else {
-            log.warn("Failed to open schemaDirectory [" + schemaDirectory + "]");
+            log.warn("Failed to open schemaDirectory [{}]", schemaDirectory);
         }
     }
 
@@ -651,12 +651,12 @@ public class SchemaUtils {
         String targetNamespace = getTargetNamespace(xmlObject);
 
         if (defaultSchemas.containsKey(targetNamespace)) {
-            log.warn("Overriding schema for targetNamespace " + targetNamespace);
+            log.warn("Overriding schema for targetNamespace {}", targetNamespace);
         }
 
         defaultSchemas.put(targetNamespace, xmlObject);
 
-        log.info("Added default schema from " + url.getPath() + " with targetNamespace " + targetNamespace);
+        log.info("Added default schema from {} with targetNamespace {}", url.getPath(), targetNamespace);
     }
 
     private static void selectDefinitionParts(

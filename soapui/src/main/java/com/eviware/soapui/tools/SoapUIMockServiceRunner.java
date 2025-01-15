@@ -195,10 +195,10 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
         initProject();
 
         if (mockService == null) {
-            log.info("Running all MockServices in project [" + project.getName() + "]");
+            log.info("Running all MockServices in project [{}]", project.getName());
         }
         else {
-            log.info("Running MockService [" + mockService + "] in project [" + project.getName() + "]");
+            log.info("Running MockService [{}] in project [{}]", mockService, project.getName());
         }
 
         log.info("Press any key to terminate");
@@ -219,7 +219,7 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
             }
         }
 
-        log.info("Started " + runners.size() + " runner" + ((runners.size() == 1) ? "" : "s"));
+        log.info("Started {} runner{}", runners.size(), ((runners.size() == 1) ? "" : "s"));
 
         if (block) {
             System.out.println("Press any key to terminate...");
@@ -258,7 +258,7 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
         }
 
         long timeTaken = (System.nanoTime() - startTime) / 1000000;
-        log.info("time taken: " + timeTaken + "ms");
+        log.info("time taken: {}ms", timeTaken);
 
         exportReports();
 
@@ -296,37 +296,21 @@ public class SoapUIMockServiceRunner extends AbstractSoapUIRunner {
 
         public void onMockRunnerStart(MockRunner mockRunner) {
             MockRunContext mockContext = mockRunner.getMockContext();
-            log.info("MockService started on port " + mockContext.getMockService().getPort() + " at path [" + mockContext.getMockService().getPath() + "]");
+            log.info("MockService started on port {} at path [{}]", mockContext.getMockService().getPort(), mockContext.getMockService().getPath());
         }
 
         public void onMockResult(MockResult result) {
             responseCount++;
             if (result.getMockResponse() == null) {
-                log.info("Handled request " +
-                         responseCount +
-                         " - [missing mockResponse] in [" +
-                         result.getTimeTaken() +
-                         "ms] at [" +
-                         DateUtil.formatExtraFull(new Date(result.getTimestamp())) +
-                         "]");
+                log.info("Handled request {} - [missing mockResponse] in [{}ms] at [{}]", responseCount, result.getTimeTaken(), DateUtil.formatExtraFull(new Date(result.getTimestamp())));
             }
             else {
-                log.info("Handled request " +
-                         responseCount +
-                         "; [" +
-                         result.getMockResponse().getMockOperation().getName() +
-                         "] with [" +
-                         result.getMockResponse().getName() +
-                         "] in [" +
-                         result.getTimeTaken() +
-                         "ms] at [" +
-                         DateUtil.formatExtraFull(new Date(result.getTimestamp())) +
-                         "]");
+                log.info("Handled request {}; [{}] with [{}] in [{}ms] at [{}]", responseCount, result.getMockResponse().getMockOperation().getName(), result.getMockResponse().getName(), result.getTimeTaken(), DateUtil.formatExtraFull(new Date(result.getTimestamp())));
             }
         }
 
         public void onMockRunnerStop(MockRunner mockRunner) {
-            log.info("MockService stopped, handled " + responseCount + " requests");
+            log.info("MockService stopped, handled {} requests", responseCount);
         }
     }
 }

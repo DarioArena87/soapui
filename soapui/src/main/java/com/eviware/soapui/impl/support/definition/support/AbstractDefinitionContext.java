@@ -128,7 +128,7 @@ public abstract class AbstractDefinitionContext<T extends AbstractInterface<?>, 
                 schemaException = (SchemaException)loader.getError();
                 ArrayList<?> errorList = schemaException.getErrorList();
 
-                log.error("Error loading schema types from " + url + ", see log for details");
+                log.error("Error loading schema types from {}, see log for details", url);
 
                 if (errorList != null) {
                     for (int c = 0; c < errorList.size(); c++) {
@@ -166,7 +166,7 @@ public abstract class AbstractDefinitionContext<T extends AbstractInterface<?>, 
             definition.setDefinitionCache(cache);
         }
 
-        log.debug("Loaded Definition: " + (definition != null ? "ok" : "null"));
+        log.debug("Loaded Definition: {}", (definition != null ? "ok" : "null"));
 
         if (!currentLoader.isAborted() && iface != null && iface.isDefinitionShareble()) {
             definitionCache.put(url, definition);

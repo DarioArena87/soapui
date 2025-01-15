@@ -333,7 +333,7 @@ public class WsdlValidator {
 
                     XmlObject[] children = wrapper.selectChildren(partName);
                     if (children.length != 1) {
-                        log.error("Missing message part [" + part.getName() + "]");
+                        log.error("Missing message part [{}]", part.getName());
                     }
                     else {
                         QName typeName = part.getTypeName();
@@ -345,7 +345,7 @@ public class WsdlValidator {
                                 result.add(children[0].copy().changeType(type.getType()));
                             }
                             else {
-                                log.error("Missing element [" + typeName + "] in associated schema for part [" + part.getName() + "]");
+                                log.error("Missing element [{}] in associated schema for part [{}]", typeName, part.getName());
                             }
                         }
                         else {
@@ -354,7 +354,7 @@ public class WsdlValidator {
                                 result.add(children[0].copy().changeType(type));
                             }
                             else {
-                                log.error("Missing type [" + typeName + "] in associated schema for part [" + part.getName() + "]");
+                                log.error("Missing type [{}] in associated schema for part [{}]", typeName, part.getName());
                             }
                         }
                     }
@@ -891,12 +891,12 @@ public class WsdlValidator {
 
             Part[] faultParts = WsdlUtils.getFaultParts(bindingOperation, faultName);
             if (faultParts.length == 0) {
-                log.warn("Missing fault parts in wsdl for fault [" + faultName + "] in bindingOperation [" + bindingOperation.getName() + "]");
+                log.warn("Missing fault parts in wsdl for fault [{}] in bindingOperation [{}]", faultName, bindingOperation.getName());
                 continue;
             }
 
             if (faultParts.length != 1) {
-                log.info("Too many fault parts in wsdl for fault [" + faultName + "] in bindingOperation [" + bindingOperation.getName() + "]");
+                log.info("Too many fault parts in wsdl for fault [{}] in bindingOperation [{}]", faultName, bindingOperation.getName());
                 continue;
             }
 
@@ -965,15 +965,11 @@ public class WsdlValidator {
                                               "';//env:Fault/flt:detail");
 
         if (paths.length == 0) {
-            log.warn("Missing matching Fault in wsdl for bindingOperation [" + bindingOperation.getName() + "]");
+            log.warn("Missing matching Fault in wsdl for bindingOperation [{}]", bindingOperation.getName());
         }
         else {
             String xmlText = paths[0].xmlText(new XmlOptions().setSaveOuter());
-            log.warn("Missing matching Fault in wsdl for Fault Detail element [" +
-                     XmlUtils.removeUnneccessaryNamespaces(xmlText) +
-                     "] in bindingOperation [" +
-                     bindingOperation.getName() +
-                     "]");
+            log.warn("Missing matching Fault in wsdl for Fault Detail element [{}] in bindingOperation [{}]", XmlUtils.removeUnneccessaryNamespaces(xmlText), bindingOperation.getName());
         }
     }
 }

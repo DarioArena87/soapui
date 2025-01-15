@@ -210,7 +210,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
     }
 
     public DefinitionCacheConfig cacheDefinition(WsdlLoader loader) throws Throwable {
-        log.debug("Caching definition for [" + loader.getBaseURI() + "]");
+        log.debug("Caching definition for [{}]", loader.getBaseURI());
         if (getConfig().isSetDefinitionCache()) {
             getConfig().unsetDefinitionCache();
         }
@@ -339,7 +339,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         processPolicy(PolicyUtils.getAttachedPolicy(getBinding(), definition));
         Map<?, ?> serviceMap = definition.getAllServices();
         if (serviceMap.isEmpty()) {
-            log.info("Missing services in [" + url + "], check for bindings");
+            log.info("Missing services in [{}], check for bindings", url);
         }
         else {
             Iterator<?> i = serviceMap.values().iterator();
@@ -468,7 +468,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
             BindingOperation newOperation = newOperations.get(c);
             String bindingOperationName = newOperation.getName();
             if (oldOperations.containsKey(bindingOperationName)) {
-                log.info("Synchronizing existing operation [" + bindingOperationName + "]");
+                log.info("Synchronizing existing operation [{}]", bindingOperationName);
                 WsdlOperation wsdlOperation = oldOperations.get(bindingOperationName);
                 WsdlUtils.getAnonymous(wsdlOperation);
                 wsdlOperation.initFromBindingOperation(newOperation);
@@ -574,7 +574,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
         for (int c = 0; c < operations.size(); c++) {
             WsdlOperation wsdlOperation = operations.get(c);
             if (wsdlOperation.getBindingOperationName().equals(bindingOperationName)) {
-                log.info("deleting operation [" + bindingOperationName + "]");
+                log.info("deleting operation [{}]", bindingOperationName);
 
                 // remove requests first (should this be done by some listener?)
                 while (wsdlOperation.getRequestCount() > 0) {
@@ -602,7 +602,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
             throw new IllegalArgumentException(wsdlOperation.getName() + " not found");
         }
 
-        log.info("deleting operation [" + wsdlOperation.getName() + "]");
+        log.info("deleting operation [{}]", wsdlOperation.getName());
 
         // remove requests first (should this be done by some listener?)
         while (wsdlOperation.getRequestCount() > 0) {
@@ -828,7 +828,7 @@ public class WsdlInterface extends AbstractInterface<WsdlInterfaceConfig> {
             throw new IllegalArgumentException(wsdlOperation.getName() + " not found");
         }
 
-        log.info("deleting operation [" + wsdlOperation.getName() + "]");
+        log.info("deleting operation [{}]", wsdlOperation.getName());
 
         // remove requests first (should this be done by some listener?)
         while (wsdlOperation.getRequestCount() > 0) {

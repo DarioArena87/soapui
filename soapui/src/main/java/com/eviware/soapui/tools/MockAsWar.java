@@ -269,7 +269,7 @@ public class MockAsWar {
 
     protected boolean createWarFileSystem() {
         if (warDir.isDirectory()) {
-            log.info("Creating WAR directory in [" + warDir.getAbsolutePath() + "]");
+            log.info("Creating WAR directory in [{}]", warDir.getAbsolutePath());
             webInf = new File(warDir, "WEB-INF");
             if (!directoryIsUsable(webInf)) {
                 return false;

@@ -104,17 +104,7 @@ public class WsdlTestRequestStep extends WsdlTestStepWithProperties implements O
 
             wsdlOperation = findWsdlOperation();
             if (wsdlOperation == null) {
-                log.error("Could not find operation [" +
-                          requestStepConfig.getOperation() +
-                          "] in interface [" +
-                          requestStepConfig.getInterface() +
-                          "] for test request [" +
-                          getName() +
-                          "] in TestCase [" +
-                          getTestCase().getTestSuite().getName() +
-                          "/" +
-                          getTestCase().getName() +
-                          "]");
+                log.error("Could not find operation [{}] in interface [{}] for test request [{}] in TestCase [{}/{}]", requestStepConfig.getOperation(), requestStepConfig.getInterface(), getName(), getTestCase().getTestSuite().getName(), getTestCase().getName());
                 // requestStepConfig.setRequest(null);
                 setDisabled(true);
             }

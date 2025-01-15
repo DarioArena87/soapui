@@ -100,7 +100,7 @@ public class WsdlImporter {
 
         Map<?, ?> serviceMap = definition.getAllServices();
         if (serviceMap.isEmpty()) {
-            log.info("Missing services in [" + wsdlUrl + "], check for bindings");
+            log.info("Missing services in [{}], check for bindings", wsdlUrl);
         }
         else {
             Iterator<?> i = serviceMap.values().iterator();
@@ -180,7 +180,7 @@ public class WsdlImporter {
 
                 PortType portType = binding.getPortType();
                 if (portType == null) {
-                    log.warn("Missing portType for binding [" + binding.getQName().toString() + "]");
+                    log.warn("Missing portType for binding [{}]", binding.getQName().toString());
                 }
                 else {
                     String ifaceName = getInterfaceNameForBinding(binding);
@@ -232,11 +232,11 @@ public class WsdlImporter {
     }
 
     private static WsdlInterface importBinding(WsdlProject project, WsdlContext wsdlContext, Binding binding) throws Exception {
-        log.info("Finding importer for " + binding.getQName());
+        log.info("Finding importer for {}", binding.getQName());
         for (int c = 0; c < bindingImporters.size(); c++) {
             BindingImporter importer = bindingImporters.get(c);
             if (importer.canImport(binding)) {
-                log.info("Importing binding " + binding.getQName());
+                log.info("Importing binding {}", binding.getQName());
                 WsdlInterface iface = importer.importBinding(project, wsdlContext, binding);
 
                 String url = wsdlContext.getUrl();
@@ -245,7 +245,7 @@ public class WsdlImporter {
                 return iface;
             }
         }
-        log.info("Missing importer for " + binding.getQName());
+        log.info("Missing importer for {}", binding.getQName());
 
         return null;
     }

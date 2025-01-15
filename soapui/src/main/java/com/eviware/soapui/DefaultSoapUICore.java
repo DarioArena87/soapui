@@ -156,12 +156,12 @@ public class DefaultSoapUICore implements SoapUICore {
         File[] pluginFiles = pluginDirectory.listFiles();
         if (pluginFiles != null) {
             for (File pluginFile : pluginFiles) {
-                log.info("Adding plugin from [" + pluginFile.getAbsolutePath() + "]");
+                log.info("Adding plugin from [{}]", pluginFile.getAbsolutePath());
                 try {
                     loadOldStylePluginFrom(pluginFile);
                 }
                 catch (Throwable e) {
-                    log.warn("Could not load plugin from file [" + pluginFile + "]");
+                    log.warn("Could not load plugin from file [{}]", pluginFile);
                 }
             }
         }
@@ -254,7 +254,7 @@ public class DefaultSoapUICore implements SoapUICore {
 
             if (!settingsFile.exists()) {
                 if (settingsDocument == null) {
-                    log.info("Creating new settings at [" + settingsFile.getAbsolutePath() + "]");
+                    log.info("Creating new settings at [{}]", settingsFile.getAbsolutePath());
                     settingsDocument = SoapuiSettingsDocumentConfig.Factory.newInstance();
                     setInitialImport(true);
                 }
@@ -297,7 +297,7 @@ public class DefaultSoapUICore implements SoapUICore {
                     }
                 }
 
-                log.info("initialized soapui-settings from [" + settingsFile.getAbsolutePath() + "]");
+                log.info("initialized soapui-settings from [{}]", settingsFile.getAbsolutePath());
                 lastSettingsLoad = settingsFile.lastModified();
 
                 if (settingsWatcher == null) {
@@ -307,7 +307,7 @@ public class DefaultSoapUICore implements SoapUICore {
             }
         }
         catch (Exception e) {
-            log.warn("Failed to load settings from [" + e.getMessage() + "], creating new");
+            log.warn("Failed to load settings from [{}], creating new", e.getMessage());
             settingsDocument = SoapuiSettingsDocumentConfig.Factory.newInstance();
             lastSettingsLoad = 0;
         }
@@ -519,7 +519,7 @@ public class DefaultSoapUICore implements SoapUICore {
             settingsDocument.save(out);
             out.flush();
             out.close();
-            log.info("Settings saved to [" + file.getAbsolutePath() + "]");
+            log.info("Settings saved to [{}]", file.getAbsolutePath());
             lastSettingsLoad = file.lastModified();
             return file.getAbsolutePath();
         }
@@ -535,7 +535,7 @@ public class DefaultSoapUICore implements SoapUICore {
      */
     public Settings importSettings(File file) throws Exception {
         if (file != null) {
-            log.info("Importing preferences from [" + file.getAbsolutePath() + "]");
+            log.info("Importing preferences from [{}]", file.getAbsolutePath());
             return initSettings(file.getAbsolutePath());
         }
         return null;
@@ -639,7 +639,7 @@ public class DefaultSoapUICore implements SoapUICore {
                 }
 
                 try {
-                    log.info("Adding listeners from [" + actionFile.getAbsolutePath() + "]");
+                    log.info("Adding listeners from [{}]", actionFile.getAbsolutePath());
                     SoapUI.getListenerRegistry().addConfig(new FileInputStream(actionFile), classLoader);
                     // We break the general rule that you shouldn't catch Throwable, because we don't want extensions to crash SoapUI
                 }
@@ -664,7 +664,7 @@ public class DefaultSoapUICore implements SoapUICore {
                 }
 
                 try {
-                    log.info("Adding factories from [" + factoryFile.getAbsolutePath() + "]");
+                    log.info("Adding factories from [{}]", factoryFile.getAbsolutePath());
 
                     getFactoryRegistry().addConfig(new FileInputStream(factoryFile), classLoader);
                     // We break the general rule that you shouldn't catch Throwable, because we don't want extensions to crash SoapUI

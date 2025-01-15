@@ -514,7 +514,7 @@ public class WsdlInterfaceDesktopPanel extends ModelItemDesktopPanel<WsdlInterfa
                 return null;
             }
             catch (Exception e) {
-                logger.error("Failed to load WSDL; " + e.getClass().getSimpleName() + "; " + e.getMessage());
+                logger.error("Failed to load WSDL; {}; {}", e.getClass().getSimpleName(), e.getMessage());
                 add(new JLabel("Failed to load WSDL; " + e), BorderLayout.NORTH);
 
                 SoapUI.logError(e);

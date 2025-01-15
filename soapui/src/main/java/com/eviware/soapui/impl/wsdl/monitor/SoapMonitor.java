@@ -475,7 +475,7 @@ public class SoapMonitor extends JPanel {
                 SoapUI.updateProxyFromSettings();
             }
 
-            SoapUI.log.info("Started HTTP Monitor on local port " + localPort);
+            SoapUI.log.info("Started HTTP Monitor on local port {}", localPort);
         }
         else {
             stopButton.setEnabled(false);
@@ -484,7 +484,7 @@ public class SoapMonitor extends JPanel {
             infoLabel.setText("Stopped");
             progressBar.setIndeterminate(false);
 
-            SoapUI.log.info("Could not start HTTP Monitor on local port " + localPort);
+            SoapUI.log.info("Could not start HTTP Monitor on local port {}", localPort);
         }
     }
 
@@ -1060,7 +1060,7 @@ public class SoapMonitor extends JPanel {
 
         public void run() {
             running = true;
-            SoapUI.log.info("Started stackprocessor for soapmonitor in project [" + getProject().getName() + "]");
+            SoapUI.log.info("Started stackprocessor for soapmonitor in project [{}]", getProject().getName());
             while (!canceled && messageExchangeStack.size() > 0) {
                 WsdlMonitorMessageExchange messageExchange = messageExchangeStack.pop();
                 if (messageExchange != null) {

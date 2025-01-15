@@ -265,7 +265,7 @@ public class HttpClientSupport {
             int maxTotalConnections = (int)settings.getLong(HttpSettings.MAX_TOTAL_CONNECTIONS, MAX_TOTAL_CONNECTIONS_DEFAULT);
             if (maxTotalConnections < 1) {
                 settings.setLong(HttpSettings.MAX_TOTAL_CONNECTIONS, MAX_TOTAL_CONNECTIONS_DEFAULT);
-                log.warn(HttpSettings.MAX_TOTAL_CONNECTIONS_INVALID_VALUE_ERROR_MESSAGE + messages.get(CURRENT_VALUE_MESSAGE, maxTotalConnections));
+                log.warn("{}{}", HttpSettings.MAX_TOTAL_CONNECTIONS_INVALID_VALUE_ERROR_MESSAGE, messages.get(CURRENT_VALUE_MESSAGE, maxTotalConnections));
                 log.warn(messages.get(DEFAULT_VALUE_MESSAGE, MAX_TOTAL_CONNECTIONS_DEFAULT));
                 maxTotalConnections = MAX_TOTAL_CONNECTIONS_DEFAULT;
             }
@@ -273,7 +273,7 @@ public class HttpClientSupport {
             int maxConnectionsPerHost = (int)settings.getLong(HttpSettings.MAX_CONNECTIONS_PER_HOST, MAX_CONNECTIONS_PER_HOST_DEFAULT);
             if (maxConnectionsPerHost < 1) {
                 settings.setLong(HttpSettings.MAX_CONNECTIONS_PER_HOST, MAX_CONNECTIONS_PER_HOST_DEFAULT);
-                log.warn(HttpSettings.MAX_CONNECTIONS_PER_HOST_INVALID_VALUE_ERROR_MESSAGE + messages.get(CURRENT_VALUE_MESSAGE, maxConnectionsPerHost));
+                log.warn("{}{}", HttpSettings.MAX_CONNECTIONS_PER_HOST_INVALID_VALUE_ERROR_MESSAGE, messages.get(CURRENT_VALUE_MESSAGE, maxConnectionsPerHost));
                 log.warn(messages.get(DEFAULT_VALUE_MESSAGE, MAX_CONNECTIONS_PER_HOST_DEFAULT));
                 maxConnectionsPerHost = MAX_CONNECTIONS_PER_HOST_DEFAULT;
             }
@@ -651,11 +651,11 @@ public class HttpClientSupport {
                     updateSSLSocketFactory();
                 }
                 else if (name.equals(HttpSettings.MAX_CONNECTIONS_PER_HOST)) {
-                    log.info("Updating max connections per host to " + newValue);
+                    log.info("Updating max connections per host to {}", newValue);
                     httpClient.setDefaultMaxPerRoute(Integer.parseInt(newValue));
                 }
                 else if (name.equals(HttpSettings.MAX_TOTAL_CONNECTIONS)) {
-                    log.info("Updating max total connections host to " + newValue);
+                    log.info("Updating max total connections host to {}", newValue);
                     httpClient.setMaxTotal(Integer.parseInt(newValue));
                 }
             }

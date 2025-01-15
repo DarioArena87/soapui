@@ -75,7 +75,7 @@ public class SaveXmlTextAreaAction extends AbstractAction {
                 writer.close();
             }
 
-            log.info("XML written to [" + file.getAbsolutePath() + "]");
+            log.info("XML written to [{}]", file.getAbsolutePath());
         }
         catch (IOException e1) {
             UISupport.showErrorMessage("Error saving xml to file: " + e1.getMessage());

@@ -312,7 +312,7 @@ public class OAuth2TokenExtractor {
                     browserFacade.executeJavaScript(script);
                 }
                 catch (Exception e) {
-                    SoapUI.log.warn("Error when running JavaScript [" + script + "]: " + e.getMessage());
+                    SoapUI.log.warn("Error when running JavaScript [{}]: {}", script, e.getMessage());
                 }
                 pageIndex++;
             }

@@ -202,7 +202,7 @@ public class SoapMessageBuilder implements MessageBuilder {
 
             Message message = wsdlContext.getDefinition().getMessage(header.getMessage());
             if (message == null) {
-                log.error("Missing message for header: " + header.getMessage());
+                log.error("Missing message for header: {}", header.getMessage());
                 continue;
             }
 
@@ -212,7 +212,7 @@ public class SoapMessageBuilder implements MessageBuilder {
                 createElementForPart(part, cursor, xmlGenerator);
             }
             else {
-                log.error("Missing part for header; " + header.getPart());
+                log.error("Missing part for header; {}", header.getPart());
             }
         }
     }
@@ -231,7 +231,7 @@ public class SoapMessageBuilder implements MessageBuilder {
                     xmlGenerator.createSampleForType(elm.getType(), cursor);
                 }
                 else {
-                    log.error("Could not find element [" + elementName + "] specified in part [" + part.getName() + "]");
+                    log.error("Could not find element [{}] specified in part [{}]", elementName, part.getName());
                 }
             }
 
@@ -250,7 +250,7 @@ public class SoapMessageBuilder implements MessageBuilder {
                     xmlGenerator.createSampleForType(type, cursor);
                 }
                 else {
-                    log.error("Could not find type [" + typeName + "] specified in part [" + part.getName() + "]");
+                    log.error("Could not find type [{}] specified in part [{}]", typeName, part.getName());
                 }
             }
 
@@ -328,7 +328,7 @@ public class SoapMessageBuilder implements MessageBuilder {
                             c.dispose();
                         }
                         else {
-                            log.warn("Failed to find type [" + typeName + "]");
+                            log.warn("Failed to find type [{}]", typeName);
                         }
                     }
                     else {
@@ -343,7 +343,7 @@ public class SoapMessageBuilder implements MessageBuilder {
                             c.dispose();
                         }
                         else {
-                            log.warn("Failed to find element [" + part.getElementName() + "]");
+                            log.warn("Failed to find element [{}]", part.getElementName());
                         }
                     }
                 }
@@ -394,7 +394,7 @@ public class SoapMessageBuilder implements MessageBuilder {
                             c.dispose();
                         }
                         else {
-                            log.warn("Failed to find type [" + typeName + "]");
+                            log.warn("Failed to find type [{}]", typeName);
                         }
                     }
                     else {
@@ -409,7 +409,7 @@ public class SoapMessageBuilder implements MessageBuilder {
                             c.dispose();
                         }
                         else {
-                            log.warn("Failed to find element [" + part.getElementName() + "]");
+                            log.warn("Failed to find element [{}]", part.getElementName());
                         }
                     }
                 }

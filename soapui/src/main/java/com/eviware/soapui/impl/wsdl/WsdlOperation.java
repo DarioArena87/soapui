@@ -344,7 +344,7 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
 
                 Message message = wsdlContext.getDefinition().getMessage(header.getMessage());
                 if (message == null) {
-                    log.error("Missing message for header: " + header.getMessage());
+                    log.error("Missing message for header: {}", header.getMessage());
                     continue;
                 }
 
@@ -358,7 +358,7 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
                     }
                 }
                 else {
-                    log.error("Missing part for header; " + header.getPart());
+                    log.error("Missing part for header; {}", header.getPart());
                 }
             }
 
@@ -409,7 +409,7 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
 
                 Message message = wsdlContext.getDefinition().getMessage(header.getMessage());
                 if (message == null) {
-                    log.error("Missing message for header: " + header.getMessage());
+                    log.error("Missing message for header: {}", header.getMessage());
                     continue;
                 }
 
@@ -423,7 +423,7 @@ public class WsdlOperation extends AbstractWsdlModelItem<OperationConfig> implem
                     }
                 }
                 else {
-                    log.error("Missing part for header; " + header.getPart());
+                    log.error("Missing part for header; {}", header.getPart());
                 }
             }
 

@@ -140,7 +140,7 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
             String type = config.getType();
             TestAssertionFactory factory = availableAssertions.get(type);
             if (factory == null) {
-                log.error("Missing assertion for type [" + type + "]");
+                log.error("Missing assertion for type [{}]", type);
             }
             else {
                 return (WsdlMessageAssertion)factory.buildAssertion(config, assertable);
@@ -157,7 +157,7 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
         try {
             TestAssertionFactory factory = availableAssertions.get(assertionType);
             if (factory == null) {
-                log.error("Missing assertion for type [" + assertionType + "]");
+                log.error("Missing assertion for type [{}]", assertionType);
             }
             else {
                 return factory.getAssertionClassType();
@@ -175,7 +175,7 @@ public class TestAssertionRegistry implements SoapUIFactoryRegistryListener {
             String type = config.getType();
             TestAssertionFactory factory = availableAssertions.get(type);
             if (factory == null) {
-                log.error("Missing assertion for type [" + type + "]");
+                log.error("Missing assertion for type [{}]", type);
             }
             else {
                 return factory.getAssertionClassType();

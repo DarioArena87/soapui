@@ -128,7 +128,7 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
         initProject(project);
         ensureOutputFolder(project);
 
-        log.info("Running SoapUI tests in project [" + project.getName() + "]");
+        log.info("Running SoapUI tests in project [{}]", project.getName());
 
         String testSuite = getTestSuite();
         String testCase = getTestCase();
@@ -323,7 +323,7 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
                     securityScanAlertCount++;
                 }
 
-                log.info(securityCheckReqResult.getSecurityScan().getName() + " - " + securityCheckReqResult.getChangedParamsInfo(++requestIndex));
+                log.info("{} - {}", securityCheckReqResult.getSecurityScan().getName(), securityCheckReqResult.getChangedParamsInfo(++requestIndex));
             }
         });
 
@@ -331,17 +331,11 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
             securityTest.addSecurityTestRunListener(reportCollector);
         }
 
-        log.info("Running SecurityTest [" +
-                 securityTest.getName() +
-                 "] in TestCase [" +
-                 securityTest.getTestCase().getName() +
-                 "] in TestSuite [" +
-                 securityTest.getTestCase().getTestSuite().getName() +
-                 "]");
+        log.info("Running SecurityTest [{}] in TestCase [{}] in TestSuite [{}]", securityTest.getName(), securityTest.getTestCase().getName(), securityTest.getTestCase().getTestSuite().getName());
 
         SecurityTestRunner runner = securityTest.run(null, false);
         // log.info( "\n" + securityTest.getSecurityTestLog().getMessages() );
-        log.info("SecurityTest [" + securityTest.getName() + "] finished with status [" + runner.getStatus() + "] in " + (runner.getTimeTaken()) + "ms");
+        log.info("SecurityTest [{}] finished with status [{}] in {}ms", securityTest.getName(), runner.getStatus(), (runner.getTimeTaken()));
 
         if (isJUnitReport()) {
             securityTest.removeSecurityTestRunListener(reportCollector);
@@ -440,7 +434,7 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
                 String fileName = absoluteOutputFolder + File.separator + nameBase + ".txt";
 
                 if (result.getStatus() == SecurityResult.ResultStatus.FAILED) {
-                    log.error(currentStep.getName() + " failed, exporting to [" + fileName + "]");
+                    log.error("{} failed, exporting to [{}]", currentStep.getName(), fileName);
                 }
 
                 File file = new File(fileName);
@@ -478,7 +472,7 @@ public class SoapUISecurityTestRunner extends SoapUITestCaseRunner implements Se
                 setExportCount(getExportCount() + 1);
             }
             catch (Exception e) {
-                log.error("Error saving failed result: " + e, e);
+                log.error("Error saving failed result: {}", e, e);
             }
         }
 

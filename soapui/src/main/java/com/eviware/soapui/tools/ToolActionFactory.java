@@ -83,11 +83,11 @@ public class ToolActionFactory {
             log.error("Check your source code.");
         }
         catch (InstantiationException ie) {
-            log.error("Could not instantiate " + toolActionType + " for some reason.");
+            log.error("Could not instantiate {} for some reason.", toolActionType);
             log.error("Check your source code.");
         }
         catch (Exception e) {
-            log.error("Some error while instantiating " + toolActionType + " occurred.");
+            log.error("Some error while instantiating {} occurred.", toolActionType);
             log.error("Check your source code.");
         }
         return toolActionObject;

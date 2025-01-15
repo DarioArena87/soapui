@@ -115,7 +115,7 @@ public class JarClassLoader extends URLClassLoader implements PluginClassLoader 
                         File packageDirectory = new File(scriptsDirectory, pathToScript.substring(0, lastSlashIndex));
                         if (!packageDirectory.exists() || !packageDirectory.isDirectory()) {
                             if (!packageDirectory.mkdirs()) {
-                                log.error("Failed to create directory for [" + pathToScript + "]");
+                                log.error("Failed to create directory for [{}]", pathToScript);
                                 packageDirectory = null;
                             }
                         }

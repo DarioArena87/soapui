@@ -170,7 +170,7 @@ public class JettyMockEngine implements MockEngine {
             map.get(path).add(runner);
             mockRunners.add(runner);
 
-            log.info("Started mockService [" + mockService.getName() + "] on port [" + port + "] at path [" + path + "]");
+            log.info("Started mockService [{}] on port [{}] at path [{}]", mockService.getName(), port, path);
         }
     }
 
@@ -191,17 +191,17 @@ public class JettyMockEngine implements MockEngine {
 
             mockRunners.remove(runner);
 
-            log.info("Stopped MockService [" + mockService.getName() + "] on port [" + port + "]");
+            log.info("Stopped MockService [{}] on port [{}]", mockService.getName(), port);
 
             if (map.isEmpty() && !SoapUI.getSettings().getBoolean(HttpSettings.LEAVE_MOCKENGINE)) {
                 SoapUIConnector connector = connectors.get(port);
                 if (connector == null) {
-                    log.warn("Missing connectors on port [" + port + "]");
+                    log.warn("Missing connectors on port [{}]", port);
                     return;
                 }
 
                 try {
-                    log.info("Stopping connector on port " + port);
+                    log.info("Stopping connector on port {}", port);
                     if (!connector.waitUntilIdle(5000)) {
                         log.warn("Failed to wait for idle.. stopping connector anyway..");
                     }
@@ -692,7 +692,7 @@ public class JettyMockEngine implements MockEngine {
 
                     String line = reader.readLine();
                     while (line != null) {
-                        logger.info(">> \"" + line + "\"");
+                        logger.info(">> \"{}\"", line);
                         line = reader.readLine();
                     }
                 }
@@ -711,7 +711,7 @@ public class JettyMockEngine implements MockEngine {
 
                     String line = reader.readLine();
                     while (line != null) {
-                        logger.info("<< \"" + line + "\"");
+                        logger.info("<< \"{}\"", line);
                         line = reader.readLine();
                     }
                 }

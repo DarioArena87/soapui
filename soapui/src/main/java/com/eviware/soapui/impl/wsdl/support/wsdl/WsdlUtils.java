@@ -341,7 +341,7 @@ public class WsdlUtils {
 
         Binding binding = findBindingForOperation(definition, bindingOperation);
         if (binding == null) {
-            log.error("Failed to find binding for operation [" + bindingOperation.getName() + "] in definition [" + definition.getDocumentBaseURI() + "]");
+            log.error("Failed to find binding for operation [{}] in definition [{}]", bindingOperation.getName(), definition.getDocumentBaseURI());
             return false;
         }
 
@@ -601,7 +601,7 @@ public class WsdlUtils {
             }
         }
         else {
-            log.warn("Missing output message for binding operation [" + operation.getName() + "]");
+            log.warn("Missing output message for binding operation [{}]", operation.getName());
         }
 
         return result.toArray(new Part[result.size()]);
@@ -759,7 +759,7 @@ public class WsdlUtils {
                 schemaType = elm.getType();
             }
             else {
-                WsdlRequest.log.error("Could not find element [" + elementName + "] specified in part [" + part.getName() + "]");
+                WsdlRequest.log.error("Could not find element [{}] specified in part [{}]", elementName, part.getName());
             }
         }
         else {
@@ -769,7 +769,7 @@ public class WsdlUtils {
                 schemaType = wsdlContext.getSchemaTypeLoader().findType(typeName);
 
                 if (schemaType == null) {
-                    WsdlRequest.log.error("Could not find type [" + typeName + "] specified in part [" + part.getName() + "]");
+                    WsdlRequest.log.error("Could not find type [{}] specified in part [{}]", typeName, part.getName());
                 }
             }
         }

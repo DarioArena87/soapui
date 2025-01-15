@@ -107,7 +107,7 @@ public class SoapUITreeModel implements TreeModel {
             modelItemMap.remove(modelItem);
         }
         else {
-            logger.error("Failed to unmap model item [" + modelItem.getName() + "]");
+            logger.error("Failed to unmap model item [{}]", modelItem.getName());
             Thread.dumpStack();
         }
     }
@@ -171,7 +171,7 @@ public class SoapUITreeModel implements TreeModel {
 
         if (ix == -1) {
             if ((!(treeNode instanceof PropertyTreeNode) && !(treeNode instanceof PropertiesTreeNode)) || isShowProperties()) {
-                logger.error("Changed node [" + treeNode + "] not found in parent [" + parent + "]");
+                logger.error("Changed node [{}] not found in parent [{}]", treeNode, parent);
             }
 
             return;
@@ -187,7 +187,7 @@ public class SoapUITreeModel implements TreeModel {
         int ix = parent.getIndexOfChild(treeNode);
 
         if (ix == -1) {
-            logger.error("Inserted node [" + treeNode + "] not found in parent [" + parent + "]");
+            logger.error("Inserted node [{}] not found in parent [{}]", treeNode, parent);
             return;
         }
 
@@ -207,7 +207,7 @@ public class SoapUITreeModel implements TreeModel {
         int ix = parent.getIndexOfChild(treeNode);
 
         if (ix == -1) {
-            logger.error("Removed node [" + treeNode + "] not found in parent [" + parent + "]");
+            logger.error("Removed node [{}] not found in parent [{}]", treeNode, parent);
             return;
         }
 

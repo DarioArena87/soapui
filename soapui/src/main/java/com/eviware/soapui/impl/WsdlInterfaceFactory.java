@@ -70,7 +70,7 @@ public class WsdlInterfaceFactory implements InterfaceFactory<WsdlInterface> {
             throw e;
         }
         catch (Exception e) {
-            log.error("Error importing wsdl: " + e);
+            log.error("Error importing wsdl: {}", e);
             SoapUI.logError(e);
             throw new SoapUIException("Error importing wsdl", e);
         }
@@ -93,7 +93,7 @@ public class WsdlInterfaceFactory implements InterfaceFactory<WsdlInterface> {
             }
         }
         catch (Exception e) {
-            log.error("Error creating requests: " + e.getMessage());
+            log.error("Error creating requests: {}", e.getMessage());
             throw new SoapUIException("Error creating requests", e);
         }
 

@@ -46,7 +46,7 @@ public class JarPackager {
 
     public static void copyAllFromTo(File fromDir, File toDir, FileFilter filter) {
         if (fromDir.isDirectory() && toDir.isDirectory()) {
-            log.info("Coping files from " + fromDir.getAbsolutePath() + " to " + toDir.getAbsolutePath());
+            log.info("Coping files from {} to {}", fromDir.getAbsolutePath(), toDir.getAbsolutePath());
             File[] fromFiles = filter == null ? fromDir.listFiles() : fromDir.listFiles(filter);
             for (File file : fromFiles) {
                 File toFile = new File(toDir, file.getName());
@@ -55,7 +55,7 @@ public class JarPackager {
                         copyAllFromTo(file, toFile, filter);
                     }
                     else {
-                        log.error("Could not create directory " + toFile.getAbsolutePath());
+                        log.error("Could not create directory {}", toFile.getAbsolutePath());
                     }
                 }
                 else {
@@ -69,7 +69,7 @@ public class JarPackager {
             }
         }
         else {
-            log.error(fromDir.getAbsolutePath() + " or " + toDir.getAbsolutePath() + " is not directory!");
+            log.error("{} or {} is not directory!", fromDir.getAbsolutePath(), toDir.getAbsolutePath());
         }
     }
 
@@ -77,7 +77,7 @@ public class JarPackager {
         try {
             byte[] buffer = new byte[BUFFER_SIZE];
             // Open archive file
-            log.info("Creating archive [" + archiveFile.getAbsolutePath() + "]");
+            log.info("Creating archive [{}]", archiveFile.getAbsolutePath());
             FileOutputStream stream = new FileOutputStream(archiveFile);
             JarOutputStream out = new JarOutputStream(stream, new Manifest());
 
@@ -91,7 +91,7 @@ public class JarPackager {
                 jarName = jarName.replace(root.getAbsolutePath(), "").substring(1);
                 jarName = jarName.replace(File.separatorChar, '/');
                 JarEntry jarAdd = new JarEntry(jarName);
-                log.info("Adding " + jarName);
+                log.info("Adding {}", jarName);
                 jarAdd.setTime(tobeJared[i].lastModified());
                 out.putNextEntry(jarAdd);
 

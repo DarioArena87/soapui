@@ -68,7 +68,7 @@ public class SoapUIFactoryRegistry {
                         ((InitializableFactory)obj).init(factoryConfig);
                     }
 
-                    getLog().info("Adding factory [" + factoryClass + "]");
+                    getLog().info("Adding factory [{}]", factoryClass);
                     addFactory(factoryType, obj);
                 }
                 catch (Exception e) {

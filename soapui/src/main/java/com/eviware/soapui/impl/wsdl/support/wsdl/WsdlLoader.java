@@ -89,7 +89,7 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
 
     public InputSource getBaseInputSource() {
         try {
-            log.debug("Returning baseInputSource [" + url + "]");
+            log.debug("Returning baseInputSource [{}]", url);
             return new InputSource(load(url));
         }
         catch (Exception e) {
@@ -116,7 +116,7 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
 
     public String getLatestImportURI() {
         String result = last == null ? url : last;
-        log.debug("Returning latest import URI [" + result + "]");
+        log.debug("Returning latest import URI [{}]", result);
         return result;
     }
 
@@ -158,7 +158,7 @@ public abstract class WsdlLoader extends AbstractDefinitionLoader implements Wsd
 
     private InvalidDefinitionException makeInvalidDefinitionException(String url, Exception e) throws InvalidDefinitionException {
         e.printStackTrace();
-        log.error("Failed to load url [" + url + "]");
+        log.error("Failed to load url [{}]", url);
         return new InvalidDefinitionException("Error loading [" + url + "]: " + e);
     }
 

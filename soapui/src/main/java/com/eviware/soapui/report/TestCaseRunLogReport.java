@@ -129,7 +129,7 @@ public class TestCaseRunLogReport extends TestRunListenerAdapter {
             public void run() {
                 if (!testRunHasFinished) {
                     if (currentTestCaseRunLogTestStepConfig != null) {
-                        log.warn("Step [" + currentTestStep.getName() + "] was interrupted due to a timeout");
+                        log.warn("Step [{}] was interrupted due to a timeout", currentTestStep.getName());
                         currentTestCaseRunLogTestStepConfig.setName(currentTestStep.getName());
                         currentTestCaseRunLogTestStepConfig.setStatus(TIMEOUT_STATUS);
                         currentTestCaseRunLogTestStepConfig.setMessageArray(new String[]{TIMEOUT_MESSAGE});
@@ -147,7 +147,7 @@ public class TestCaseRunLogReport extends TestRunListenerAdapter {
             testCaseRunLogDocumentConfig.save(newFile);
         }
         catch (IOException e) {
-            log.error("Could not write " + REPORT_FILE_NAME + " to disk");
+            log.error("Could not write {} to disk", REPORT_FILE_NAME);
             SoapUI.logError(e);
         }
     }

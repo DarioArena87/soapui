@@ -186,7 +186,7 @@ public class SamplesModel extends AbstractTableModel {
             for (int c = 0; c < results.size(); c++) {
                 TestStepResult result = results.get(c);
                 if (result == null) {
-                    log.warn("Result [" + c + "] is null in TestCase [" + testCase.getName() + "]");
+                    log.warn("Result [{}] is null in TestCase [{}]", c, testCase.getName());
                     continue;
                 }
 

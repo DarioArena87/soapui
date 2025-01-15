@@ -166,7 +166,7 @@ public class WsdlLoadTest extends AbstractWsdlModelItem<LoadTestConfig> implemen
                 assertion.addPropertyChangeListener(LoadTestAssertion.CONFIGURATION_PROPERTY, configurationChangeListener);
             }
             else {
-                logger.warn("Failed to build LoadTestAssertion from getConfig() [" + assertionConfig + "]");
+                logger.warn("Failed to build LoadTestAssertion from getConfig() [{}]", assertionConfig);
             }
         }
 

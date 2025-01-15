@@ -79,7 +79,7 @@ public class WsdlPackagingRequestFilter extends AbstractRequestFilter {
                 requestContent = requestXmlObject.getMessageContent();
             }
             catch (Throwable e) {
-                SoapUI.log.warn("Failed to process inline/MTOM attachments; " + e);
+                SoapUI.log.warn("Failed to process inline/MTOM attachments; {}", e);
             }
         }
 

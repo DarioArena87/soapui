@@ -45,7 +45,7 @@ public class ClasspathHacker {
             method.setAccessible(true);
             method.invoke(classLoader, u);
 
-            SoapUI.log.info("Added [" + u.toString() + "] to classpath");
+            SoapUI.log.info("Added [{}] to classpath", u.toString());
         }
         catch (NoSuchMethodException e) {
             try {
@@ -53,7 +53,7 @@ public class ClasspathHacker {
                 method.setAccessible(true);
                 method.invoke(classLoader, u);
 
-                SoapUI.log.info("Added [" + u.toString() + "] to classpath");
+                SoapUI.log.info("Added [{}] to classpath", u.toString());
             }
             catch (NoSuchMethodException ex) {
                 try {
@@ -61,12 +61,12 @@ public class ClasspathHacker {
                     method.setAccessible(true);
                     method.invoke(classLoader, u);
 
-                    SoapUI.log.info("Added [" + u.toString() + "] to classpath");
+                    SoapUI.log.info("Added [{}] to classpath", u.toString());
                 }
                 catch (Throwable t) {
                     try {
                         if (classLoader.getParent() != null) {
-                            SoapUI.log.info("Failed to add jar to " + classLoader.getClass().getName() + ", trying parent");
+                            SoapUI.log.info("Failed to add jar to {}, trying parent", classLoader.getClass().getName());
                             addUrlToClassLoader(u, classLoader.getParent());
                         }
                         else {

@@ -129,7 +129,7 @@ public class MessageXmlObject {
                         }
                     }
                     else if (children.length != 1) {
-                        log.error("Missing message part [" + part.getName() + "]");
+                        log.error("Missing message part [{}]", part.getName());
                     }
                     else {
                         QName typeName = part.getTypeName();
@@ -141,7 +141,7 @@ public class MessageXmlObject {
                                 messageParts.add(new MessageXmlPart(children[0], type.getType(), part, bindingOperation, isRequest));
                             }
                             else {
-                                log.error("Missing element [" + typeName + "] in associated schema for part [" + part.getName() + "]");
+                                log.error("Missing element [{}] in associated schema for part [{}]", typeName, part.getName());
                             }
                         }
                         else {
@@ -150,7 +150,7 @@ public class MessageXmlObject {
                                 messageParts.add(new MessageXmlPart(children[0], type, part, bindingOperation, isRequest));
                             }
                             else {
-                                log.error("Missing type [" + typeName + "] in associated schema for part [" + part.getName() + "]");
+                                log.error("Missing type [{}] in associated schema for part [{}]", typeName, part.getName());
                             }
                         }
                     }

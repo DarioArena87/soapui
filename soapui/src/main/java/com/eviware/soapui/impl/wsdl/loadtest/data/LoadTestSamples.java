@@ -134,7 +134,7 @@ public class LoadTestSamples extends AbstractTableModel {
                 for (int i = 0; i < testResults.size(); i++) {
                     TestStepResult stepResult = testResults.get(i);
                     if (stepResult == null) {
-                        log.warn("Result [" + c + "] is null in TestCase [" + testRunner.getTestCase().getName() + "]");
+                        log.warn("Result [{}] is null in TestCase [{}]", c, testRunner.getTestCase().getName());
                         continue;
                     }
 

@@ -94,12 +94,12 @@ public class RestRequestConverter {
         if (autoConvert.get(project)) {
             if (options.size() > 0) {
                 method = resource.getRestMethodByName(options.get(0));
-                log.info("Placed request '" + requestName + "' under method '" + method.getName() + "' in Resource '" + resource.getName() + "'.");
+                log.info("Placed request '{}' under method '{}' in Resource '{}'.", requestName, method.getName(), resource.getName());
             }
             else {
                 method = resource.addNewMethod(methodType + " Method");
                 method.setMethod(RestRequestInterface.HttpMethod.valueOf(methodType));
-                log.info("Created new Method for Resource '" + resource.getName() + "'.");
+                log.info("Created new Method for Resource '{}'.", resource.getName());
             }
         }
         else {

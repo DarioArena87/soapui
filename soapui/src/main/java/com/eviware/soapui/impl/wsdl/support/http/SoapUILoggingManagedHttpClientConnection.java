@@ -59,7 +59,7 @@ public class SoapUILoggingManagedHttpClientConnection extends DefaultManagedHttp
     @Override
     public void shutdown() throws IOException {
         if (log.isDebugEnabled()) {
-            log.debug(getId() + ": Shutdown connection");
+            log.debug("{}: Shutdown connection", getId());
         }
         super.shutdown();
     }
@@ -85,7 +85,7 @@ public class SoapUILoggingManagedHttpClientConnection extends DefaultManagedHttp
     @Override
     public void setSocketTimeout(int timeout) {
         if (log.isDebugEnabled()) {
-            log.debug(getId() + ": set socket timeout to " + timeout);
+            log.debug("{}: set socket timeout to {}", getId(), timeout);
         }
         super.setSocketTimeout(timeout);
     }
@@ -95,7 +95,7 @@ public class SoapUILoggingManagedHttpClientConnection extends DefaultManagedHttp
 
         if (isOpen()) {
             if (log.isDebugEnabled()) {
-                log.debug(getId() + ": Close connection");
+                log.debug("{}: Close connection", getId());
             }
             super.close();
         }
@@ -104,10 +104,10 @@ public class SoapUILoggingManagedHttpClientConnection extends DefaultManagedHttp
     @Override
     protected void onResponseReceived(HttpResponse response) {
         if (response != null && headerlog.isDebugEnabled()) {
-            headerlog.debug(getId() + " << " + response.getStatusLine().toString());
+            headerlog.debug("{} << {}", getId(), response.getStatusLine().toString());
             Header[] headers = response.getAllHeaders();
             for (Header header : headers) {
-                headerlog.debug(getId() + " << " + header.toString());
+                headerlog.debug("{} << {}", getId(), header.toString());
             }
         }
     }
@@ -115,10 +115,10 @@ public class SoapUILoggingManagedHttpClientConnection extends DefaultManagedHttp
     @Override
     protected void onRequestSubmitted(HttpRequest request) {
         if (request != null && headerlog.isDebugEnabled()) {
-            headerlog.debug(getId() + " >> " + request.getRequestLine().toString());
+            headerlog.debug("{} >> {}", getId(), request.getRequestLine().toString());
             Header[] headers = request.getAllHeaders();
             for (Header header : headers) {
-                headerlog.debug(getId() + " >> " + header.toString());
+                headerlog.debug("{} >> {}", getId(), header.toString());
             }
         }
     }

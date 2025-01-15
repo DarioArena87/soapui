@@ -124,7 +124,7 @@ public class SoapUIMockAsWarGenerator extends AbstractSoapUIRunner {
 
         String endpoint = StringUtils.hasContent(localEndpoint) ? localEndpoint : project.getName();
 
-        log.info("Creating WAR file with endpoint [" + endpoint + "]");
+        log.info("Creating WAR file with endpoint [{}]", endpoint);
 
         MockAsWar mockAsWar = new MockAsWar(pFile,
                                             getSettingsFile(),

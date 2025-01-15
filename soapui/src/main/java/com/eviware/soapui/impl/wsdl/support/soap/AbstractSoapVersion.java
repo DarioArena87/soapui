@@ -65,7 +65,7 @@ public abstract class AbstractSoapVersion implements SoapVersion {
         finally {
             for (XmlError error : errorList) {
                 if (error instanceof XmlValidationError && shouldIgnore((XmlValidationError)error)) {
-                    log.warn("Ignoring validation error: " + error);
+                    log.warn("Ignoring validation error: {}", error);
                     continue;
                 }
 

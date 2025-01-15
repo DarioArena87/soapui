@@ -110,7 +110,7 @@ public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> impleme
 
             if (response != null) {
                 if (response.getTimeTaken() == 0) {
-                    logger.warn("Request took 0 in thread " + Thread.currentThread().getId() + ", response length = " + response.getContentLength());
+                    logger.warn("Request took 0 in thread {}, response length = {}", Thread.currentThread().getId(), response.getContentLength());
                 }
             }
             else {
@@ -122,7 +122,7 @@ public final class WsdlSubmit<T extends AbstractHttpRequestInterface<?>> impleme
 
             if (status != Status.CANCELED) {
                 status = Status.ERROR;
-                logger.error("Exception in request: " + e1);
+                logger.error("Exception in request: {}", e1);
                 SoapUI.logError(e1);
             }
             if (response == null) {

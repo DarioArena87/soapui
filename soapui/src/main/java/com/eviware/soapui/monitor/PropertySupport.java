@@ -38,7 +38,7 @@ public class PropertySupport {
                 try {
                     String value = context.expand(String.valueOf(properties.get(key)));
                     BeanUtils.setProperty(target, name, value);
-                    SoapUI.log.info("Set property [" + name + "] to [" + value + "] in scope [" + scope + "]");
+                    SoapUI.log.info("Set property [{}] to [{}] in scope [{}]", name, value, scope);
                 }
                 catch (Throwable e) {
                     SoapUI.logError(e);

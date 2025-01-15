@@ -196,7 +196,7 @@ public class BoundarySecurityScan extends AbstractSecurityScanWithProperties {
             }
         }
         else {
-            SoapUI.log.warn("No out of boundary value is created for restriction " + nodeName + " of baseType:" + baseType);
+            SoapUI.log.warn("No out of boundary value is created for restriction {} of baseType:{}", nodeName, baseType);
         }
     }
 

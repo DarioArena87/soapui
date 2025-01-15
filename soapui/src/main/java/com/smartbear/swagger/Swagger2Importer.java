@@ -258,7 +258,7 @@ public class Swagger2Importer implements SwaggerImporter {
         }
 
         if (StringUtils.isNullOrEmpty(parameterName)) {
-            logger.warn("Can not import property without name or ref [" + parameter + "]");
+            logger.warn("Can not import property without name or ref [{}]", parameter);
         }
         else {
             RestParameter restParameter = (RestParameter)propertyHolder.addProperty(parameterName);

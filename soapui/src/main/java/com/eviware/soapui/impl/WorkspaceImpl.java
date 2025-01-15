@@ -284,7 +284,7 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
             }
         }
         catch (IOException e) {
-            log.error(messages.get("FailedToSaveProject.Error") + e.getMessage(), e);
+            log.error("{}{}", messages.get("FailedToSaveProject.Error"), e.getMessage(), e);
         }
 
         return project;
@@ -446,7 +446,7 @@ public class WorkspaceImpl extends AbstractModelItem implements Workspace {
             saveWorkspaceConfig(projects);
         }
         catch (IOException e) {
-            log.error(messages.get("FailedToSaveWorkspace.Error") + e.getMessage(), e); //$NON-NLS-1$
+            log.error("{}{}", messages.get("FailedToSaveWorkspace.Error"), e.getMessage(), e); //$NON-NLS-1$
             return SaveStatus.FAILED;
         }
         return SaveStatus.SUCCESS;

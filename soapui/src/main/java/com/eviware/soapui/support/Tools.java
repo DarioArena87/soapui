@@ -647,7 +647,7 @@ public class Tools {
                     FileUtils.deleteDirectory(directory);
                 }
                 catch (IOException e) {
-                    log.warn("Could not delete temporary directory " + directory);
+                    log.warn("Could not delete temporary directory {}", directory);
                 }
             }
         }));

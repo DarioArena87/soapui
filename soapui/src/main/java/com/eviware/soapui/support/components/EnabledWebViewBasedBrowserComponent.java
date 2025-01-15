@@ -274,7 +274,7 @@ class EnabledWebViewBasedBrowserComponent implements WebViewBasedBrowserComponen
                     }
                 }
                 catch (Exception e) {
-                    SoapUI.log.warn("Error executing JavaScript [" + script + "]", e);
+                    SoapUI.log.warn("Error executing JavaScript [{}]", script, e);
                     for (BrowserListener listener : listeners) {
                         listener.javaScriptExecuted(script, lastLocation, e);
                     }

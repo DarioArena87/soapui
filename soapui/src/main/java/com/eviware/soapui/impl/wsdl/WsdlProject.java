@@ -228,7 +228,7 @@ public class WsdlProject extends AbstractTestPropertyHolderWsdlModelItem<Project
                 else {
                     try {
                         if (!PathUtils.isHttpPath(path)) {
-                            SoapUI.log.info("File [" + file.getAbsolutePath() + "] does not exist, trying URL instead");
+                            SoapUI.log.info("File [{}] does not exist, trying URL instead", file.getAbsolutePath());
                         }
 
                         remote = true;
@@ -302,7 +302,7 @@ public class WsdlProject extends AbstractTestPropertyHolderWsdlModelItem<Project
             loader.setUseWorker(false);
             InputStream inputStream = loader.load();
             loadProjectFromInputStream(inputStream);
-            log.info("Loaded project from [" + file + "]");
+            log.info("Loaded project from [{}]", file);
         }
         catch (Exception e) {
             if (e instanceof XmlException) {
@@ -362,14 +362,8 @@ public class WsdlProject extends AbstractTestPropertyHolderWsdlModelItem<Project
         try {
             int majorVersion = Integer.parseInt(projectDocument.getSoapuiProject().getSoapuiVersion().split("\\.")[0]);
             if (majorVersion > Integer.parseInt(SoapUI.SOAPUI_VERSION.split("\\.")[0])) {
-                log.warn("Project '" +
-                         projectDocument.getSoapuiProject().getName() +
-                         "' is from a newer version (" +
-                         projectDocument.getSoapuiProject().getSoapuiVersion() +
-                         ") of SoapUI than this (" +
-                         SoapUI.SOAPUI_VERSION +
-                         ") and parts of it may be incompatible or incorrect. " +
-                         "Saving this project with this version of SoapUI may cause it to function differently.");
+                log.warn("Project '{}' is from a newer version ({}) of SoapUI than this ({}) and parts of it may be incompatible or incorrect. " +
+                    "Saving this project with this version of SoapUI may cause it to function differently.", projectDocument.getSoapuiProject().getName(), projectDocument.getSoapuiProject().getSoapuiVersion(), SoapUI.SOAPUI_VERSION);
             }
         }
         catch (Exception e) {
@@ -1109,7 +1103,7 @@ public class WsdlProject extends AbstractTestPropertyHolderWsdlModelItem<Project
 
             // delete tempFile here so we have it as backup in case second save fails
             if (!tempFile.delete()) {
-                SoapUI.getErrorLog().warn("Failed to delete temporary project file; " + tempFile.getAbsolutePath());
+                SoapUI.getErrorLog().warn("Failed to delete temporary project file; {}", tempFile.getAbsolutePath());
                 tempFile.deleteOnExit();
             }
 
@@ -1122,7 +1116,7 @@ public class WsdlProject extends AbstractTestPropertyHolderWsdlModelItem<Project
         }
 
         lastModified = projectFile.lastModified();
-        log.info("Saved project [" + getName() + "] to [" + projectFile.getAbsolutePath() + " - " + size + " bytes");
+        log.info("Saved project [{}] to [{} - {} bytes", getName(), projectFile.getAbsolutePath(), size);
         setProjectRoot(getPath());
         return SaveStatus.SUCCESS;
     }
@@ -1169,7 +1163,7 @@ public class WsdlProject extends AbstractTestPropertyHolderWsdlModelItem<Project
 
     protected void createBackup(File projectFile) throws IOException {
         File backupFile = getBackupFile(projectFile);
-        log.info("Backing up [" + projectFile + "] to [" + backupFile + "]");
+        log.info("Backing up [{}] to [{}]", projectFile, backupFile);
         Tools.copyFile(projectFile, backupFile, true);
     }
 
@@ -1191,7 +1185,7 @@ public class WsdlProject extends AbstractTestPropertyHolderWsdlModelItem<Project
     protected void removeDefinitionCaches(SoapuiProjectDocumentConfig config) {
         for (InterfaceConfig ifaceConfig : config.getSoapuiProject().getInterfaceList()) {
             if (ifaceConfig.isSetDefinitionCache()) {
-                log.info("Removing definition cache from interface [" + ifaceConfig.getName() + "]");
+                log.info("Removing definition cache from interface [{}]", ifaceConfig.getName());
                 ifaceConfig.unsetDefinitionCache();
             }
         }

@@ -296,7 +296,7 @@ public class WsdlTestCase extends AbstractTestPropertyHolderWsdlModelItem<TestCa
             return testStep;
         }
         else {
-            logger.error("Failed to create test step for [" + tsc.getName() + "]");
+            logger.error("Failed to create test step for [{}]", tsc.getName());
             return null;
         }
     }
@@ -804,7 +804,7 @@ public class WsdlTestCase extends AbstractTestPropertyHolderWsdlModelItem<TestCa
     public void removeTestStep(WsdlTestStep testStep) {
         int ix = testSteps.indexOf(testStep);
         if (ix == -1) {
-            logger.error("TestStep [" + testStep.getName() + "] passed to removeTestStep in testCase [" + getName() + "] not found");
+            logger.error("TestStep [{}] passed to removeTestStep in testCase [{}] not found", testStep.getName(), getName());
             return;
         }
 

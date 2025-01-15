@@ -277,7 +277,7 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
             testCaseRunLogReport = new TestCaseRunLogReport(getAbsoluteOutputFolder(project));
         }
 
-        log.info("Running SoapUI tests in project [" + project.getName() + "]");
+        log.info("Running SoapUI tests in project [{}]", project.getName());
 
         long startTime = System.nanoTime();
 
@@ -418,7 +418,7 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
         try {
             log.info(("Running Project [" + project.getName() + "], runType = " + project.getRunType()));
             WsdlProjectRunner runner = project.run(new StringToObjectMap(), false);
-            log.info("Project [" + project.getName() + "] finished with status [" + runner.getStatus() + "] in " + runner.getTimeTaken() + "ms");
+            log.info("Project [{}] finished with status [{}] in {}ms", project.getName(), runner.getStatus(), runner.getTimeTaken());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -514,7 +514,7 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
         try {
             log.info(("Running TestSuite [" + suite.getName() + "], runType = " + suite.getRunType()));
             WsdlTestSuiteRunner runner = suite.run(new StringToObjectMap(), false);
-            log.info("TestSuite [" + suite.getName() + "] finished with status [" + runner.getStatus() + "] in " + (runner.getTimeTaken()) + "ms");
+            log.info("TestSuite [{}] finished with status [{}] in {}ms", suite.getName(), runner.getStatus(), (runner.getTimeTaken()));
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -532,9 +532,9 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
 
     protected void runTestCase(WsdlTestCase testCase) {
         try {
-            log.info("Running TestCase [" + testCase.getName() + "]");
+            log.info("Running TestCase [{}]", testCase.getName());
             WsdlTestCaseRunner runner = testCase.run(new StringToObjectMap(), false);
-            log.info("TestCase [" + testCase.getName() + "] finished with status [" + runner.getStatus() + "] in " + (runner.getTimeTaken()) + "ms");
+            log.info("TestCase [{}] finished with status [{}] in {}ms", testCase.getName(), runner.getStatus(), (runner.getTimeTaken()));
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -589,7 +589,7 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
         this.ignoreErrors = ignoreErrors;
     }    @Override
     public void beforeRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-        log.info("Running SoapUI testcase [" + testRunner.getTestCase().getName() + "]");
+        log.info("Running SoapUI testcase [{}]", testRunner.getTestCase().getName());
     }
 
     public boolean isPrintReport() {
@@ -599,7 +599,7 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
         super.beforeStep(testRunner, runContext, currentStep);
 
         if (currentStep != null) {
-            log.info("running step [" + currentStep.getName() + "]");
+            log.info("running step [{}]", currentStep.getName());
         }
     }
 
@@ -620,10 +620,10 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
             Assertable requestStep = (Assertable)currentStep;
             for (int c = 0; c < requestStep.getAssertionCount(); c++) {
                 TestAssertion assertion = requestStep.getAssertionAt(c);
-                log.info("Assertion [" + assertion.getName() + "] has status " + assertion.getStatus());
+                log.info("Assertion [{}] has status {}", assertion.getName(), assertion.getStatus());
                 if (assertion.getStatus() == AssertionStatus.FAILED) {
                     for (AssertionError error : assertion.getErrors()) {
-                        log.error("ASSERTION FAILED -> " + error.getMessage());
+                        log.error("ASSERTION FAILED -> {}", error.getMessage());
                     }
 
                     assertions.add(assertion);
@@ -684,7 +684,7 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
                 String fileName = absoluteOutputFolder + File.separator + nameBase + ".txt";
 
                 if (result.getStatus() == TestStepStatus.FAILED) {
-                    log.error(currentStep.getName() + " failed, exporting to [" + fileName + "]");
+                    log.error("{} failed, exporting to [{}]", currentStep.getName(), fileName);
                 }
 
                 new File(fileName).getParentFile().mkdirs();
@@ -721,7 +721,7 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
                 exportCount++;
             }
             catch (Exception e) {
-                log.error("Error saving failed result: " + e, e);
+                log.error("Error saving failed result: {}", e, e);
             }
         }
 
@@ -732,12 +732,7 @@ public class SoapUITestCaseRunner extends AbstractSoapUITestRunner {
         return saveAfterRun;
     }    @Override
     public void afterRun(TestCaseRunner testRunner, TestCaseRunContext runContext) {
-        log.info("Finished running SoapUI testcase [" +
-                 testRunner.getTestCase().getName() +
-                 "], time taken: " +
-                 testRunner.getTimeTaken() +
-                 "ms, status: " +
-                 testRunner.getStatus());
+        log.info("Finished running SoapUI testcase [{}], time taken: {}ms, status: {}", testRunner.getTestCase().getName(), testRunner.getTimeTaken(), testRunner.getStatus());
 
         if (testRunner.getStatus() == Status.FAILED) {
             failedTests.add(testRunner.getTestCase());

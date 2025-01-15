@@ -879,7 +879,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         }
 
         if (sourceStep == null) {
-            log.debug("Setting sourceStep for transfer [" + getName() + "] to null");
+            log.debug("Setting sourceStep for transfer [{}] to null", getName());
         }
 
         this.sourceStep = sourceStep;
@@ -902,7 +902,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
             currentSourceStep.addTestPropertyListener(propertyNameChangeListener);
         }
         else {
-            log.warn("Failed to get sourceStep [" + sourceStep + "]");
+            log.warn("Failed to get sourceStep [{}]", sourceStep);
         }
 
         propertyChangeSupport.firePropertyChange(SOURCE_STEP_PROPERTY, old, sourceStep);
@@ -935,7 +935,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
         }
 
         if (targetStep == null) {
-            log.debug("Setting targetStep for transfer [" + getName() + "] to null");
+            log.debug("Setting targetStep for transfer [{}] to null", getName());
         }
 
         this.targetStep = targetStep;
@@ -958,7 +958,7 @@ public class PropertyTransfer implements PropertyChangeNotifier {
             currentTargetStep.addTestPropertyListener(propertyNameChangeListener);
         }
         else {
-            log.warn("Failed to get targetStep [" + targetStep + "]");
+            log.warn("Failed to get targetStep [{}]", targetStep);
         }
 
         propertyChangeSupport.firePropertyChange(TARGET_STEP_PROPERTY, old, targetStep);
@@ -1169,34 +1169,14 @@ public class PropertyTransfer implements PropertyChangeNotifier {
     private class InternalTestPropertyListener extends TestPropertyListenerAdapter {
         public void propertyRemoved(String name) {
             if (name.equals(sourceType)) {
-                log.warn("source property for transfer [" +
-                         getName() +
-                         "] in teststep [" +
-                         testStep.getName() +
-                         "/" +
-                         testStep.getTestCase().getName() +
-                         "/" +
-                         testStep.getTestCase().getTestSuite().getName() +
-                         "] set to null, was [" +
-                         name +
-                         "]");
+                log.warn("source property for transfer [{}] in teststep [{}/{}/{}] set to null, was [{}]", getName(), testStep.getName(), testStep.getTestCase().getName(), testStep.getTestCase().getTestSuite().getName(), name);
 
                 currentSourceProperty = null;
                 setSourcePropertyName(null);
             }
 
             if (name.equals(targetType)) {
-                log.warn("target property for transfer [" +
-                         getName() +
-                         "] in teststep [" +
-                         testStep.getName() +
-                         "/" +
-                         testStep.getTestCase().getName() +
-                         "/" +
-                         testStep.getTestCase().getTestSuite().getName() +
-                         "] set to null, was [" +
-                         name +
-                         "]");
+                log.warn("target property for transfer [{}] in teststep [{}/{}/{}] set to null, was [{}]", getName(), testStep.getName(), testStep.getTestCase().getName(), testStep.getTestCase().getTestSuite().getName(), name);
 
                 currentTargetProperty = null;
                 setTargetPropertyName(null);

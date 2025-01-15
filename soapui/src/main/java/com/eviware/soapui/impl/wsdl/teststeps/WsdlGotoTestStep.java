@@ -113,7 +113,7 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
                 }
             }
             catch (Exception e) {
-                log.error("Error making condition " + condition.getName() + "; " + e);
+                log.error("Error making condition {}; {}", condition.getName(), e);
             }
         }
 
@@ -279,7 +279,7 @@ public class WsdlGotoTestStep extends WsdlTestStepWithProperties implements XPat
                 }
             }
             else {
-                log.error("Unkown condition type: " + getType());
+                log.error("Unkown condition type: {}", getType());
             }
 
             return false;

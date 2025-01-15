@@ -241,13 +241,13 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
         }
 
         if (suiteCount == 0) {
-            log.warn("No test-suites matched argument [" + testSuite + "]");
+            log.warn("No test-suites matched argument [{}]", testSuite);
         }
         else if (testCaseCount == 0) {
-            log.warn("No test-cases matched argument [" + testCase + "]");
+            log.warn("No test-cases matched argument [{}]", testCase);
         }
         else if (loadTestCount == 0) {
-            log.warn("No load-tests matched argument [" + loadTest + "]");
+            log.warn("No load-tests matched argument [{}]", loadTest);
         }
         else {
             if (saveAfterRun && !project.isRemote()) {
@@ -260,9 +260,9 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
             }
 
             if (!failedTests.isEmpty()) {
-                log.info(failedTests.size() + " load tests failed:");
+                log.info("{} load tests failed:", failedTests.size());
                 for (LoadTestRunner loadTestRunner : failedTests) {
-                    log.info(loadTestRunner.getLoadTest().getName() + ": " + loadTestRunner.getReason());
+                    log.info("{}: {}", loadTestRunner.getLoadTest().getName(), loadTestRunner.getReason());
                 }
 
                 throw new SoapUIException("LoadTests failed");
@@ -311,10 +311,10 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
                 testCaseCount++;
             }
             else {
-                log.info("Skipping testcase [" + name + "], filter is [" + testCase + "]");
+                log.info("Skipping testcase [{}], filter is [{}]", name, testCase);
             }
         }
-        log.info("SoapUI suite [" + suite.getName() + "] finished in " + (System.currentTimeMillis() - start) + "ms");
+        log.info("SoapUI suite [{}] finished in {}ms", suite.getName(), (System.currentTimeMillis() - start));
     }
 
     /**
@@ -345,14 +345,14 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
 
     protected void runWsdlLoadTest(WsdlLoadTest loadTest) {
         try {
-            log.info("Running LoadTest [" + loadTest.getName() + "]");
+            log.info("Running LoadTest [{}]", loadTest.getName());
             if (limit >= 0) {
-                log.info("Overriding limit [" + loadTest.getTestLimit() + "] with specified [" + limit + "]");
+                log.info("Overriding limit [{}] with specified [{}]", loadTest.getTestLimit(), limit);
                 loadTest.setTestLimit(limit);
             }
 
             if (threadCount >= 0) {
-                log.info("Overriding threadCount [" + loadTest.getThreadCount() + "] with specified [" + threadCount + "]");
+                log.info("Overriding threadCount [{}] with specified [{}]", loadTest.getThreadCount(), threadCount);
                 loadTest.setThreadCount(threadCount);
             }
 
@@ -362,15 +362,15 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
             // wait for test to finish
             while (!runner.hasStopped()) {
                 if (runner.getStatus() == Status.RUNNING) {
-                    log.info("LoadTest [" + loadTest.getName() + "] progress: " + runner.getProgress() + ", " + runner.getRunningThreadCount());
+                    log.info("LoadTest [{}] progress: {}, {}", loadTest.getName(), runner.getProgress(), runner.getRunningThreadCount());
                 }
                 Thread.sleep(1000);
             }
 
-            log.info("LoadTest [" + loadTest.getName() + "] finished with status " + runner.getStatus().toString());
+            log.info("LoadTest [{}] finished with status {}", loadTest.getName(), runner.getStatus().toString());
 
             if (printReport) {
-                log.info("Exporting log and statistics for LoadTest [" + loadTest.getName() + "]");
+                log.info("Exporting log and statistics for LoadTest [{}]", loadTest.getName());
 
                 loadTest.getStatisticsModel().finish();
 
@@ -393,7 +393,7 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
         }
 
         int cnt = exportStatisticsAction.exportToFile(new File(statisticsFileName));
-        log.info("Exported " + cnt + " statistics to [" + statisticsFileName + "]");
+        log.info("Exported {} statistics to [{}]", cnt, statisticsFileName);
     }
 
     private void exportLog(WsdlLoadTest loadTest) throws IOException {
@@ -407,7 +407,7 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
         }
 
         int cnt = exportLoadTestLogAction.exportToFile(new File(logFileName));
-        log.info("Exported " + cnt + " log items to [" + logFileName + "]");
+        log.info("Exported {} log items to [{}]", cnt, logFileName);
 
         int errorCnt = 0;
         for (int c = 0; c < loadTestLog.getSize(); c++) {
@@ -428,7 +428,7 @@ public class SoapUILoadTestRunner extends AbstractSoapUITestRunner implements Lo
                 }
             }
         }
-        log.info("Exported " + errorCnt + " error results");
+        log.info("Exported {} error results", errorCnt);
     }
 
     /**

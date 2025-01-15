@@ -171,12 +171,12 @@ public class SoapUIListenerRegistry implements ListenerRegistry {
                             ((InitializableListener)obj).init(listenerConfig);
                         }
 
-                        getLog().info("Adding singleton listener [" + listenerClass + "]");
+                        getLog().info("Adding singleton listener [{}]", listenerClass);
                         addSingletonListener(listenerInterface, obj);
                     }
                     else {
                         // class can be instantiated, register it
-                        getLog().info("Adding listener [" + listenerClass + "]");
+                        getLog().info("Adding listener [{}]", listenerClass);
                         addListener(listenerInterface, listenerClass, listenerConfig);
                     }
                 }

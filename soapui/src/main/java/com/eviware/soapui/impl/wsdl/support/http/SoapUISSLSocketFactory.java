@@ -290,7 +290,7 @@ public class SoapUISSLSocketFactory extends SSLConnectionSocketFactory {
         if (keyStore.trim().length() > 0) {
             File f = new File(keyStore);
             if (f.exists()) {
-                log.info("Initializing Keystore from [" + keyStore + "]");
+                log.info("Initializing Keystore from [{}]", keyStore);
                 try {
                     KeyMaterial km = new KeyMaterial(f, pwd.toCharArray());
                     ks = km.getKeyStore();

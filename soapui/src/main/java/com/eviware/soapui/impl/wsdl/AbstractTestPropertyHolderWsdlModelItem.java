@@ -58,7 +58,7 @@ public abstract class AbstractTestPropertyHolderWsdlModelItem<T extends ModelIte
             if (StringUtils.hasContent(propFile)) {
                 int result = propertyHolderSupport.addPropertiesFromFile(propFile);
                 if (result > 0) {
-                    log.info("Overriding " + result + " properties from [" + propFile + "] in [" + getName() + "]");
+                    log.info("Overriding {} properties from [{}] in [{}]", result, propFile, getName());
                 }
             }
         }

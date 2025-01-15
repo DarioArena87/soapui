@@ -105,7 +105,7 @@ public class WSIAnalyzeAction extends AbstractToolsAction<Interface> {
         File tempFile = File.createTempFile(WSI_REPORT_NAME, HTML_EXTENSION, output);
         trans.transform(xmlSource, new StreamResult(new FileWriter(tempFile)));
 
-        log.info("WSI Report created at [" + tempFile.getAbsolutePath() + "]");
+        log.info("WSI Report created at [{}]", tempFile.getAbsolutePath());
 
         return tempFile;
     }
@@ -261,7 +261,7 @@ public class WSIAnalyzeAction extends AbstractToolsAction<Interface> {
             else {
                 ProcessBuilder processBuilder = getBuilders()[0];
                 List<String> programAndArgs = processBuilder.command();
-                log.error("WSI checking failed. Exit code " + Integer.valueOf(exitCode) + ". Command line: " + getCommandDetails(programAndArgs));
+                log.error("WSI checking failed. Exit code {}. Command line: {}", Integer.valueOf(exitCode), getCommandDetails(programAndArgs));
             }
 
             closeDialog(modelItem);

@@ -107,10 +107,10 @@ public class WsdlRequestWsrmInspector extends AbstractWsrmInspector implements X
                     String lower = aResult.selectAttribute(null, "Lower").getDomNode().getNodeValue();
 
                     if (lower.equals(upper)) {
-                        LogManager.getLogger("wsrm").info("Acknowledgment for message " + upper + " received for identifier: " + request.getWsrmConfig().getSequenceIdentifier());
+                        LogManager.getLogger("wsrm").info("Acknowledgment for message {} received for identifier: {}", upper, request.getWsrmConfig().getSequenceIdentifier());
                     }
                     else {
-                        LogManager.getLogger("wsrm").info("Acknowledgment for messages " + lower + " to " + upper + " received for identifier: " + request.getWsrmConfig().getSequenceIdentifier());
+                        LogManager.getLogger("wsrm").info("Acknowledgment for messages {} to {} received for identifier: {}", lower, upper, request.getWsrmConfig().getSequenceIdentifier());
                     }
                 }
             }

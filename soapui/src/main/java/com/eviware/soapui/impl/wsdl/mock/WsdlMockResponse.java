@@ -277,7 +277,7 @@ public class WsdlMockResponse extends AbstractMockResponse<MockResponseConfig> i
 
                 Message message = wsdlContext.getDefinition().getMessage(header.getMessage());
                 if (message == null) {
-                    log.error("Missing message for header: " + header.getMessage());
+                    log.error("Missing message for header: {}", header.getMessage());
                     continue;
                 }
 
@@ -291,7 +291,7 @@ public class WsdlMockResponse extends AbstractMockResponse<MockResponseConfig> i
                     }
                 }
                 else {
-                    log.error("Missing part for header; " + header.getPart());
+                    log.error("Missing part for header; {}", header.getPart());
                 }
             }
 

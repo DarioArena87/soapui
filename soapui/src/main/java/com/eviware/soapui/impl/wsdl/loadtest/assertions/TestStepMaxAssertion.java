@@ -114,7 +114,7 @@ public class TestStepMaxAssertion extends AbstractLoadTestAssertion implements C
             for (int c = 0; c < results.size(); c++) {
                 TestStepResult result = results.get(c);
                 if (result == null) {
-                    log.warn("Result [" + c + "] is null in TestCase [" + testRunner.getTestCase().getName() + "]");
+                    log.warn("Result [{}] is null in TestCase [{}]", c, testRunner.getTestCase().getName());
                     continue;
                 }
 

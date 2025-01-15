@@ -157,7 +157,7 @@ public abstract class AbstractXmlInspector implements XmlInspector {
             parentPanel.activate(this);
         }
         else {
-            log.debug("showInPanel() called, but the inspector " + getClass().getSimpleName() + "isn't in a panel");
+            log.debug("showInPanel() called, but the inspector {}isn't in a panel", getClass().getSimpleName());
         }
     }
 }

@@ -58,7 +58,7 @@ public class TibcoSoapJMSBindingImporter extends AbstractSoapBindingImporter {
 
         String[] endpoints = WsdlUtils.getEndpointsForBinding(wsdlContext.getDefinition(), binding);
         for (int i = 0; i < endpoints.length; i++) {
-            log.info("importing endpoint " + endpoints[i]);
+            log.info("importing endpoint {}", endpoints[i]);
             iface.addEndpoint(endpoints[i]);
         }
 
@@ -70,10 +70,10 @@ public class TibcoSoapJMSBindingImporter extends AbstractSoapBindingImporter {
 
             // sanity check
             if (operation.getOperation() == null || operation.getOperation().isUndefined()) {
-                log.error("BindingOperation [" + operation.getName() + "] is missing or referring to an invalid operation");
+                log.error("BindingOperation [{}] is missing or referring to an invalid operation", operation.getName());
             }
             else {
-                log.info("importing operation " + operation.getName());
+                log.info("importing operation {}", operation.getName());
                 iface.addNewOperation(operation);
             }
         }

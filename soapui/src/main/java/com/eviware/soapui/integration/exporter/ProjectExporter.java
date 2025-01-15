@@ -191,7 +191,7 @@ public class ProjectExporter {
                         dependency.updatePath(targetDependency.getPath());
                     }
                     else {
-                        SoapUI.log.warn("Do not exists on local file system [" + originalDependency.getPath() + "]");
+                        SoapUI.log.warn("Do not exists on local file system [{}]", originalDependency.getPath());
                     }
                     break;
                 case FOLDER:

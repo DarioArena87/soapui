@@ -75,7 +75,7 @@ public class PluginManager {
         File soapUiDirectory = new File(System.getProperty("user.home"), ".soapuios");
         pluginDirectory = new File(soapUiDirectory, "plugins");
         if (!pluginDirectory.exists() && !pluginDirectory.mkdirs()) {
-            log.error("Couldn't create plugin directory in location " + pluginDirectory.getAbsolutePath());
+            log.error("Couldn't create plugin directory in location {}", pluginDirectory.getAbsolutePath());
         }
         pluginDeleteListFile = new File(pluginDirectory, "delete_files.txt");
         if (pluginDeleteListFile.exists()) {
@@ -132,7 +132,7 @@ public class PluginManager {
 
             getForkJoinPool().invoke(new LoadPluginsTask(pluginFileList));
             long timeTaken = System.currentTimeMillis() - startTime;
-            log.info(pluginFileList.size() + " plugins loaded in " + timeTaken + " ms");
+            log.info("{} plugins loaded in {} ms", pluginFileList.size(), timeTaken);
         }
     }
 
@@ -230,7 +230,7 @@ public class PluginManager {
             Plugin installedPlugin = installedPlugins.get(installedPluginFile).plugin;
             if (installedPlugin.getInfo().getId().equals(pluginInfo.getId())) {
                 if (!fileOperations.deleteFile(installedPluginFile)) {
-                    log.warn("Couldn't delete old plugin file " + installedPluginFile + " - aborting uninstall");
+                    log.warn("Couldn't delete old plugin file {} - aborting uninstall", installedPluginFile);
                     return false;
                 }
                 String uninstallMessage = "Plugin uninstalled - you should restart SoapUI to ensure that the changes to take effect";
@@ -301,16 +301,16 @@ public class PluginManager {
                 File oldPluginFile = new File(pluginDirectory, fileName.trim());
                 if (oldPluginFile.exists()) {
                     if (!oldPluginFile.delete()) {
-                        log.warn("Couldn't delete old plugin file " + fileName + " on startup");
+                        log.warn("Couldn't delete old plugin file {} on startup", fileName);
                     }
                 }
                 else {
-                    log.info("Old plugin file not found: " + fileName);
+                    log.info("Old plugin file not found: {}", fileName);
                 }
             }
         }
         catch (IOException e) {
-            log.error("Couldn't read list of old plugin files to delete from file " + pluginDeleteListFile.getAbsolutePath());
+            log.error("Couldn't read list of old plugin files to delete from file {}", pluginDeleteListFile.getAbsolutePath());
         }
         finally {
             if (!pluginDeleteListFile.delete()) {
@@ -382,7 +382,7 @@ public class PluginManager {
                     FileUtils.write(pluginDeleteListFile, fileToDelete.getName() + "\r\n", true);
                 }
                 catch (IOException e) {
-                    log.error("Couldn't schedule plugin file " + fileToDelete.getName() + " for deletion", e);
+                    log.error("Couldn't schedule plugin file {} for deletion", fileToDelete.getName(), e);
                     return false;
                 }
             }
@@ -447,20 +447,20 @@ public class PluginManager {
             List<Plugin> result = new ArrayList<Plugin>();
             for (File pluginFile : files) {
                 try {
-                    log.info("Adding plugin from [" + pluginFile.getAbsolutePath() + "]");
+                    log.info("Adding plugin from [{}]", pluginFile.getAbsolutePath());
                     try {
                         Plugin plugin = doInstallPlugin(pluginFile, findDependentClassLoaders(pluginFile));
                         result.add(plugin);
                     }
                     catch (MissingPluginClassException e) {
-                        log.error("No plugin found in [" + pluginFile + "]");
+                        log.error("No plugin found in [{}]", pluginFile);
                     }
                     catch (Exception e) {
-                        log.warn("Could not load plugin from file [" + pluginFile + "]", e);
+                        log.warn("Could not load plugin from file [{}]", pluginFile, e);
                     }
                 }
                 catch (Throwable e) {
-                    log.error("Failed to load module [" + pluginFile.getName() + "]", e);
+                    log.error("Failed to load module [{}]", pluginFile.getName(), e);
                 }
             }
             return result;

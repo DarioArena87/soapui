@@ -196,14 +196,14 @@ public class TestOnDemandCaller {
 
         // FIXME Should we remove the logging printouts before release? The upload request maybe would be to large?
 
-        log.debug("Sending request to " + uri);
+        log.debug("Sending request to {}", uri);
         log.debug(requestContent);
 
         HttpClientSupport.execute(post);
 
         byte[] responseBody = post.getResponseBody();
 
-        log.debug("Got response from " + uri);
+        log.debug("Got response from {}", uri);
         log.debug(new String(responseBody));
 
         String reponseBodyAsString = new String(responseBody);

@@ -100,11 +100,11 @@ public class SoapUIToolRunner extends AbstractSoapUIRunner implements ToolHost, 
             action = ToolActionFactory.createToolAction(toolName);
             try {
                 if (action != null) {
-                    log.info("Running tool [" + toolName + "] for Interface [" + iface.getName() + "]");
+                    log.info("Running tool [{}] for Interface [{}]", toolName, iface.getName());
                     action.performHeadless(iface, null);
                 }
                 else {
-                    log.error("Specified tool [" + toolName + "] is unknown or unsupported.");
+                    log.error("Specified tool [{}] is unknown or unsupported.", toolName);
                 }
             }
             catch (Exception e) {
@@ -205,7 +205,7 @@ public class SoapUIToolRunner extends AbstractSoapUIRunner implements ToolHost, 
         // getProjectPassword() );
         WsdlProject project = (WsdlProject)ProjectFactoryRegistry.getProjectFactory(WsdlProjectFactory.WSDL_TYPE).createNew(projectFile, getProjectPassword());
 
-        log.info("Running tools [" + tool + "] for interface [" + iface + "] in project [" + project.getName() + "]");
+        log.info("Running tools [{}] for interface [{}] in project [{}]", tool, iface, project.getName());
 
         long startTime = System.nanoTime();
 
@@ -217,7 +217,7 @@ public class SoapUIToolRunner extends AbstractSoapUIRunner implements ToolHost, 
         }
 
         long timeTaken = (System.nanoTime() - startTime) / 1000000;
-        log.info("time taken: " + timeTaken + "ms");
+        log.info("time taken: {}ms", timeTaken);
 
         return true;
     }

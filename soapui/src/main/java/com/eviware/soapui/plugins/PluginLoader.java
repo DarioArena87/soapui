@@ -76,7 +76,7 @@ public class PluginLoader extends LoaderBase {
     private Class<?> readPluginConfigurationClasses(File pluginFile, Reflections jarFileScanner) {
         Set<Class<?>> pluginClasses = jarFileScanner.getTypesAnnotatedWith(PluginConfiguration.class);
         if (pluginClasses.isEmpty()) {
-            log.warn("No plugin classes found in JAR file " + pluginFile);
+            log.warn("No plugin classes found in JAR file {}", pluginFile);
             throw new MissingPluginClassException("No plugin class found in " + pluginFile);
         }
         else if (pluginClasses.size() > 1) {

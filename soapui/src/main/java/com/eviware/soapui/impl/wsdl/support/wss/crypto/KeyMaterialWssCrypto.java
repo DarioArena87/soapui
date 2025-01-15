@@ -219,7 +219,7 @@ public class KeyMaterialWssCrypto implements WssCrypto {
             return keyStore;
         }
         catch (Exception exceptionFromNormalLoad) {
-            log.warn("Using fallback method to load keystore/truststore due to: " + exceptionFromNormalLoad.getMessage());
+            log.warn("Using fallback method to load keystore/truststore due to: {}", exceptionFromNormalLoad.getMessage());
             try {
                 keyStore = fallbackLoad();
                 return keyStore;

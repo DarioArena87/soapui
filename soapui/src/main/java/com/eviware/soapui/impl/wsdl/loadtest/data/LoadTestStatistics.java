@@ -592,7 +592,7 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
                 TestCase testCase = testRunner.getTestCase();
 
                 if (testStepResult == null) {
-                    log.warn("Result is null in TestCase [" + testCase.getName() + "]");
+                    log.warn("Result is null in TestCase [{}]", testCase.getName());
                     return;
                 }
 
@@ -627,7 +627,7 @@ public final class LoadTestStatistics extends AbstractTableModel implements Runn
             for (int c = 0; c < results.size(); c++) {
                 TestStepResult testStepResult = results.get(c);
                 if (testStepResult == null) {
-                    log.warn("Result [" + c + "] is null in TestCase [" + testCase.getName() + "]");
+                    log.warn("Result [{}] is null in TestCase [{}]", c, testCase.getName());
                     continue;
                 }
 

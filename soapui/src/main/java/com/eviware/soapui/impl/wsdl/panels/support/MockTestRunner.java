@@ -52,11 +52,11 @@ public class MockTestRunner extends AbstractMockTestRunner<WsdlTestCase> impleme
     }
 
     public void gotoStep(int index) {
-        getLog().info("Going to step " + index + " [" + getTestCase().getTestStepAt(index).getName() + "]");
+        getLog().info("Going to step {} [{}]", index, getTestCase().getTestStepAt(index).getName());
     }
 
     public void gotoStepByName(String stepName) {
-        getLog().info("Going to step [" + stepName + "]");
+        getLog().info("Going to step [{}]", stepName);
     }
 
     public TestStepResult runTestStepByName(String name) {

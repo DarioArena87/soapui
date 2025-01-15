@@ -152,7 +152,7 @@ public class OAuth2RequestFilter extends AbstractRequestFilter {
                         log.info("A new access token has been retrieved successfully.");
                     }
                     else {
-                        log.warn("OAuth2 access token retrieval timed out after " + ACCESS_TOKEN_RETRIEVAL_TIMEOUT + " ms");
+                        log.warn("OAuth2 access token retrieval timed out after {} ms", ACCESS_TOKEN_RETRIEVAL_TIMEOUT);
                         throw new RuntimeException("OAuth2 access token retrieval timed out after " + ACCESS_TOKEN_RETRIEVAL_TIMEOUT + " ms");
                     }
                 }

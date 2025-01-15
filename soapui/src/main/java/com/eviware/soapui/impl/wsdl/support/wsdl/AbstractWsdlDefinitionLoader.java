@@ -77,7 +77,7 @@ public abstract class AbstractWsdlDefinitionLoader extends AbstractDefinitionLoa
 
     public InputSource getBaseInputSource() {
         try {
-            log.debug("Returning baseInputSource [" + url + "]");
+            log.debug("Returning baseInputSource [{}]", url);
             return new InputSource(load(url));
         }
         catch (Exception e) {
@@ -104,7 +104,7 @@ public abstract class AbstractWsdlDefinitionLoader extends AbstractDefinitionLoa
 
     public String getLatestImportURI() {
         String result = last == null ? url : last;
-        log.debug("Returning latest import URI [" + result + "]");
+        log.debug("Returning latest import URI [{}]", result);
         return result;
     }
 
@@ -125,7 +125,7 @@ public abstract class AbstractWsdlDefinitionLoader extends AbstractDefinitionLoa
             return XmlUtils.createXmlObject(load(url), options);
         }
         catch (Exception e) {
-            log.error("Failed to load url [" + url + "]");
+            log.error("Failed to load url [{}]", url);
             throw e;
         }
     }

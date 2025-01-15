@@ -172,7 +172,7 @@ public class VarianceLoadStrategy extends AbstractLoadStrategy {
 
         WsdlLoadTest wsdlLoadTest = ((WsdlLoadTest)loadTestRunner.getLoadTest());
         if (wsdlLoadTest.getThreadCount() != (int)threadCount) {
-            log.debug("Changing threadcount to " + threadCount);
+            log.debug("Changing threadcount to {}", threadCount);
             wsdlLoadTest.setThreadCount((int)threadCount);
         }
     }

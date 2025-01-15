@@ -81,7 +81,7 @@ public class WebViewUserBrowserFacade implements UserBrowserFacade {
             browserComponent.close(true);
         }
         catch (Exception e) {
-            SoapUI.log.debug("Could not close window due to unexpected error: " + e.getMessage() + "!");
+            SoapUI.log.debug("Could not close window due to unexpected error: {}!", e.getMessage());
         }
     }
 

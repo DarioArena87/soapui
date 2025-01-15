@@ -408,7 +408,7 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
                 // generic mechanism.
                 String name = option.substring(0, ix);
                 String value = option.substring(ix + 1);
-                log.info("Adding global HTTP Header [" + name + "] = [" + value + "]");
+                log.info("Adding global HTTP Header [{}] = [{}]", name, value);
 
                 GlobalHttpHeadersRequestFilter.addGlobalHeader(name, value);
             }
@@ -421,7 +421,7 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
             if (ix != -1) {
                 String name = option.substring(0, ix);
                 String value = option.substring(ix + 1);
-                log.info("Setting global property [" + name + "] to [" + value + "]");
+                log.info("Setting global property [{}] to [{}]", name, value);
                 //				PropertyExpansionUtils.getGlobalProperties().setPropertyValue( name, value );
                 runnerGlobalProperties.put(name, value);
             }
@@ -435,7 +435,7 @@ public abstract class AbstractSoapUIRunner implements CmdLineRunner {
                 if (ix != -1) {
                     String name = option.substring(0, ix);
                     String value = option.substring(ix + 1);
-                    log.info("Setting project property [" + name + "] to [" + value + "]");
+                    log.info("Setting project property [{}] to [{}]", name, value);
                     project.setPropertyValue(name, value);
                 }
             }

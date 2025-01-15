@@ -162,7 +162,7 @@ public class WsrmUtils {
             cursor.toFirstChild();
             cursor.toFirstChild();
             String sequenceIdentifier = cursor.getTextValue();
-            LogManager.getLogger("wsrm").info("Sequence response Received, sequence ID: " + sequenceIdentifier);
+            LogManager.getLogger("wsrm").info("Sequence response Received, sequence ID: {}", sequenceIdentifier);
 
             // WsmcInjection receiveInjection = new WsmcInjection(request);
             // request.setAfterRequestInjection(receiveInjection);
@@ -181,7 +181,7 @@ public class WsrmUtils {
 
     private Response submitCreateSequenceRequest(String uuid, WsaRequest startSequenceRequest) throws SubmitException {
         WsdlSubmit wsdlSubmit = startSequenceRequest.submit(new WsdlSubmitContext(null), true);
-        LogManager.getLogger("wsrm").info("StartSequence Request Sent: " + uuid);
+        LogManager.getLogger("wsrm").info("StartSequence Request Sent: {}", uuid);
 
         // startSequenceRequest.getWsaConfig().setWsaEnabled(false);
         while (wsdlSubmit.getStatus() != Status.FINISHED) {
@@ -347,7 +347,7 @@ public class WsrmUtils {
 
                 closeSequenceRequest.setRequestContent(content);
 
-                LogManager.getLogger("wsrm").info("CloseSequence Request Sent for Sequence: " + identifier);
+                LogManager.getLogger("wsrm").info("CloseSequence Request Sent for Sequence: {}", identifier);
             }
             catch (XmlException e) {
                 SoapUI.logError(e);
@@ -375,15 +375,15 @@ public class WsrmUtils {
                         String lower = aResult.selectAttribute(null, "Lower").getDomNode().getNodeValue();
 
                         if (lower.equals(upper)) {
-                            LogManager.getLogger("wsrm").info("Acknowledgment for message " + upper + " received for identifier: " + identifier);
+                            LogManager.getLogger("wsrm").info("Acknowledgment for message {} received for identifier: {}", upper, identifier);
                         }
                         else {
-                            LogManager.getLogger("wsrm").info("Acknowledgment for messages " + lower + " to " + upper + " received for identifier: " + identifier);
+                            LogManager.getLogger("wsrm").info("Acknowledgment for messages {} to {} received for identifier: {}", lower, upper, identifier);
                         }
                     }
                 }
                 else {
-                    LogManager.getLogger("wsrm").info("No Acknowledgments received for identifier: " + identifier);
+                    LogManager.getLogger("wsrm").info("No Acknowledgments received for identifier: {}", identifier);
                 }
             }
             catch (SubmitException e1) {
@@ -502,7 +502,7 @@ public class WsrmUtils {
             // operation, soapVersion, uuid);
             // startSequenceRequest.setAfterRequestInjection(wsmcInjection);
 
-            LogManager.getLogger("wsrm").info("Acknowledgments Requested for Sequence: " + identifier);
+            LogManager.getLogger("wsrm").info("Acknowledgments Requested for Sequence: {}", identifier);
         }
         catch (XmlException e) {
             // TODO Auto-generated catch block

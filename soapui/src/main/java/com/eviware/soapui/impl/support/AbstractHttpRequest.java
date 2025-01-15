@@ -278,7 +278,7 @@ public abstract class AbstractHttpRequest<T extends AbstractRequestConfig> exten
             return newAttachment;
         }
         else {
-            log.error("Unknown attachment type: " + attachment);
+            log.error("Unknown attachment type: {}", attachment);
         }
 
         return null;

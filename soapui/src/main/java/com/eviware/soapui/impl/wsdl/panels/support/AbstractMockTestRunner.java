@@ -51,7 +51,7 @@ public abstract class AbstractMockTestRunner<T extends TestRunnable> implements 
     }
 
     public void start(boolean async) {
-        logger.info("Started with async [" + async + "]");
+        logger.info("Started with async [{}]", async);
         startTime = System.currentTimeMillis();
     }
 
@@ -71,13 +71,13 @@ public abstract class AbstractMockTestRunner<T extends TestRunnable> implements 
     public void cancel(String reason) {
         this.reason = reason;
         status = Status.CANCELED;
-        logger.info("Canceled with reason [" + reason + "]");
+        logger.info("Canceled with reason [{}]", reason);
     }
 
     public void fail(String reason) {
         this.reason = reason;
         status = Status.FAILED;
-        logger.error("Failed with reason [" + reason + "]");
+        logger.error("Failed with reason [{}]", reason);
     }
 
     public String getReason() {

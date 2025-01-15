@@ -1301,7 +1301,7 @@ public class JsonXmlSerializer {
                         setOrAccumulate(jsonObject, key, Double.valueOf(element.getValue()));
                     }
                     catch (NumberFormatException e1) {
-                        SoapUI.log.debug("Unable to parse element " + elementName + " as number: " + element.getValue());
+                        SoapUI.log.debug("Unable to parse element {} as number: {}", elementName, element.getValue());
                     }
                 }
             }

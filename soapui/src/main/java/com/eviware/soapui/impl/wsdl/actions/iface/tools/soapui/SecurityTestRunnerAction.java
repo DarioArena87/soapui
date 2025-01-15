@@ -246,7 +246,7 @@ public class SecurityTestRunnerAction extends AbstractToolsAction<WsdlProject> {
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("Launching security testrunner in directory [" + builder.directory() + "] with arguments [" + args + "]");
+            log.debug("Launching security testrunner in directory [{}] with arguments [{}]", builder.directory(), args);
         }
 
         toolHost.run(new ProcessToolRunner(builder, "SoapUI Security TestRunner", modelItem, args));

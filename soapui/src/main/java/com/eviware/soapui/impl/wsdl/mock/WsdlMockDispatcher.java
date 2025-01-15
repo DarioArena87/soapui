@@ -93,7 +93,7 @@ public class WsdlMockDispatcher extends AbstractMockDispatcher {
 
                 wsdlCache.put(iface.getName(), parts);
 
-                log.info("Mounted WSDL for interface [" + iface.getName() + "] at [" + getOverviewUrl() + "]");
+                log.info("Mounted WSDL for interface [{}] at [{}]", iface.getName(), getOverviewUrl());
             }
             catch (Exception e) {
                 SoapUI.logError(e);

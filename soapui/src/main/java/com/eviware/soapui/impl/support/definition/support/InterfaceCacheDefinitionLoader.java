@@ -88,7 +88,7 @@ public class InterfaceCacheDefinitionLoader extends AbstractWsdlDefinitionLoader
             }
         }
 
-        log.error("Failed to find [" + url + "] in InterfaceCache");
+        log.error("Failed to find [{}] in InterfaceCache", url);
 
         return null;
     }
