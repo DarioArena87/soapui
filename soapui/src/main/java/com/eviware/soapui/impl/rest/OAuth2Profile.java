@@ -27,7 +27,6 @@ import com.eviware.soapui.model.propertyexpansion.PropertyExpansion;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionContainer;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionsResult;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -307,7 +306,7 @@ public class OAuth2Profile implements PropertyExpansionContainer {
     }
 
     private void setAccessTokenStartingStatus(@Nonnull AccessTokenStatus startingStatus) {
-        Preconditions.checkNotNull(startingStatus);
+        java.util.Objects.requireNonNull(startingStatus);
         saveAccessTokenStartingStatusEnum(startingStatus, configuration);
     }
 
@@ -320,7 +319,7 @@ public class OAuth2Profile implements PropertyExpansionContainer {
     }
 
     public void setAccessTokenPosition(@Nonnull AccessTokenPosition newAccessTokenPosition) {
-        Preconditions.checkNotNull(newAccessTokenPosition);
+        java.util.Objects.requireNonNull(newAccessTokenPosition);
 
         AccessTokenPosition oldAccessTokenPosition = getSavedAccessTokenPositionEnum(configuration.getAccessTokenPosition());
 
@@ -334,7 +333,7 @@ public class OAuth2Profile implements PropertyExpansionContainer {
     }
 
     public void setRefreshAccessTokenMethod(@Nonnull RefreshAccessTokenMethods newRefreshAccessTokenMethod) {
-        Preconditions.checkNotNull(newRefreshAccessTokenMethod);
+        java.util.Objects.requireNonNull(newRefreshAccessTokenMethod);
 
         RefreshAccessTokenMethods oldRefreshTokenMethod = getSavedRefreshAccessTokenMethodsEnum(configuration.getRefreshAccessTokenMethod());
 

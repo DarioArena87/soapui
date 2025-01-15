@@ -3,10 +3,10 @@ package com.eviware.soapui.support.editor.inspectors.auth;
 import com.eviware.soapui.config.AccessTokenStatusConfig;
 import com.eviware.soapui.impl.rest.OAuth1Profile;
 import com.eviware.soapui.support.MessageSupport;
-import com.google.common.base.Preconditions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Objects;
 
 public class OAuth1TokenStatusChangeManager implements PropertyChangeListener {
     private static final MessageSupport messages = MessageSupport.getMessages(OAuth1TokenStatusChangeManager.class);
@@ -32,7 +32,7 @@ public class OAuth1TokenStatusChangeManager implements PropertyChangeListener {
      * Start receiving Access Token Status change events
      */
     public void register() {
-        Preconditions.checkNotNull(listener.getProfile(), messages.get("OAuth1TokenStatusChangeManager.Error.MissingProfile"));
+        Objects.requireNonNull(listener.getProfile(), messages.get("OAuth1TokenStatusChangeManager.Error.MissingProfile"));
         listener.getProfile().addPropertyChangeListener(this);
     }
 
@@ -40,7 +40,7 @@ public class OAuth1TokenStatusChangeManager implements PropertyChangeListener {
      * Stop receiving Access Token Status change events.
      */
     public void unregister() {
-        Preconditions.checkNotNull(listener.getProfile(), messages.get("OAuth1TokenStatusChangeManager.Error.MissingProfile"));
+        Objects.requireNonNull(listener.getProfile(), messages.get("OAuth1TokenStatusChangeManager.Error.MissingProfile"));
         listener.getProfile().removePropertyChangeListener(this);
     }
 }

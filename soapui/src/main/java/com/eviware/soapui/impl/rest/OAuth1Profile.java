@@ -9,7 +9,6 @@ import com.eviware.soapui.model.propertyexpansion.PropertyExpansion;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionContainer;
 import com.eviware.soapui.model.propertyexpansion.PropertyExpansionsResult;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -295,7 +294,7 @@ public class OAuth1Profile implements PropertyExpansionContainer {
     }
 
     private void setAccessTokenStartingStatus(@Nonnull AccessTokenStatusConfig.Enum startingStatus) {
-        Preconditions.checkNotNull(startingStatus);
+        java.util.Objects.requireNonNull(startingStatus);
         saveAccessTokenStartingStatusEnum(startingStatus, configuration);
     }
 
@@ -308,7 +307,7 @@ public class OAuth1Profile implements PropertyExpansionContainer {
     }
 
     public void setAccessTokenPosition(@Nonnull AccessTokenPositionConfig.Enum newAccessTokenPosition) {
-        Preconditions.checkNotNull(newAccessTokenPosition);
+        java.util.Objects.requireNonNull(newAccessTokenPosition);
 
         AccessTokenPositionConfig.Enum oldAccessTokenPosition = getSavedAccessTokenPositionEnum(configuration.getAccessTokenPosition());
 

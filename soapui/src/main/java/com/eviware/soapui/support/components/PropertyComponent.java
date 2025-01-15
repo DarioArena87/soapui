@@ -16,11 +16,11 @@
 
 package com.eviware.soapui.support.components;
 
-import com.google.common.base.Preconditions;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.swing.*;
+
+import java.util.Objects;
 
 /**
  * A wrapper class to accociate
@@ -38,7 +38,7 @@ public final class PropertyComponent {
     public PropertyComponent(String property, JComponent component) {
         this.property = property;
 
-        Preconditions.checkNotNull("You must provide a component", component);
+        Objects.requireNonNull("You must provide a component", String.valueOf(component));
         this.component = component;
     }
 

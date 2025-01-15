@@ -17,10 +17,10 @@
 package com.eviware.soapui.support.editor.inspectors.auth;
 
 import com.eviware.soapui.impl.rest.OAuth2Profile;
-import com.google.common.base.Preconditions;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Objects;
 
 /**
  * Helper class used to subscribe to Access Token Status changes
@@ -46,7 +46,7 @@ final class OAuth2AccessTokenStatusChangeManager implements PropertyChangeListen
      * Start receiving Access Token Status change events
      */
     public void register() {
-        Preconditions.checkNotNull(listener.getProfile(), "Could not get OAuth 2 profile from the listener");
+        Objects.requireNonNull(listener.getProfile(), "Could not get OAuth 2 profile from the listener");
         listener.getProfile().addPropertyChangeListener(this);
     }
 
@@ -54,7 +54,7 @@ final class OAuth2AccessTokenStatusChangeManager implements PropertyChangeListen
      * Stop receiving Access Token Status change events.
      */
     public void unregister() {
-        Preconditions.checkNotNull(listener.getProfile(), "Could not get OAuth 2 profile from the listener");
+        Objects.requireNonNull(listener.getProfile(), "Could not get OAuth 2 profile from the listener");
         listener.getProfile().removePropertyChangeListener(this);
     }
 }
