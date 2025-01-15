@@ -17,8 +17,6 @@
 package com.eviware.soapui.impl.actions;
 
 import com.eviware.soapui.SoapUI;
-import com.eviware.soapui.analytics.Analytics;
-import com.eviware.soapui.analytics.SoapUIActions;
 import com.eviware.soapui.impl.WorkspaceImpl;
 import com.eviware.soapui.impl.wsdl.WsdlProject;
 import com.eviware.soapui.support.MessageSupport;
@@ -70,9 +68,6 @@ public class NewRestProjectAction extends AbstractSoapUIAction<WorkspaceImpl> {
                     serviceBuilder.createRestService(project, uri);
                 }
                 // If there is no exception or error we break out
-                if (param != null && param instanceof SoapUIActions) {
-                    Analytics.trackAction((SoapUIActions) param);
-                }
                 break;
 
             } catch (Exception ex) {

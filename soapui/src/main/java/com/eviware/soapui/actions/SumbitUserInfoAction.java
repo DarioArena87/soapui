@@ -16,13 +16,10 @@
 
 package com.eviware.soapui.actions;
 
-import com.eviware.soapui.analytics.Analytics;
-import com.eviware.soapui.analytics.UniqueUserIdentifier;
 import com.eviware.soapui.support.DefaultHyperlinkListener;
 import com.eviware.soapui.support.StringUtils;
 import com.eviware.soapui.support.UISupport;
 import com.eviware.soapui.support.components.JFriendlyTextField;
-import com.smartbear.analytics.OSUserDescription;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -42,9 +39,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import static com.eviware.soapui.analytics.SoapUIActions.STAY_TUNED_DIALOG_ACCEPTED;
-import static com.eviware.soapui.analytics.SoapUIActions.STAY_TUNED_DIALOG_SKIPPED;
 
 public class SumbitUserInfoAction {
     private static final String FIRST_NAME_HINT = "Enter your first name";
@@ -203,7 +197,6 @@ public class SumbitUserInfoAction {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (handleOk()) {
-                        Analytics.trackAction(STAY_TUNED_DIALOG_ACCEPTED);
                         setVisible(false);
                     }
                 }
@@ -225,7 +218,6 @@ public class SumbitUserInfoAction {
             jSkip.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    Analytics.trackAction(STAY_TUNED_DIALOG_SKIPPED);
                     setVisible(false);
                 }
             });
@@ -265,14 +257,7 @@ public class SumbitUserInfoAction {
         }
 
         protected boolean handleOk() {
-            if (!validateFormValues()) {
-                return false;
-            }
-            UniqueUserIdentifier userIdentifier = UniqueUserIdentifier.getInstance();
-            OSUserDescription osUserDescription = new OSUserDescription(
-                    getUserFirstName(), getUserLastname(), getUserEMail(), userIdentifier.getUserId());
-            Analytics.trackUserInfo(osUserDescription);
-            return true;
+            return validateFormValues();
         }
 
         private boolean validateFormValues() {

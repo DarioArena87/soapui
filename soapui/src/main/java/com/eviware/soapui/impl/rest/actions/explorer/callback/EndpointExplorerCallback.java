@@ -1,7 +1,6 @@
 package com.eviware.soapui.impl.rest.actions.explorer.callback;
 
 import com.eviware.soapui.SoapUI;
-import com.eviware.soapui.analytics.Analytics;
 import com.eviware.soapui.impl.rest.RestRequestInterface.HttpMethod;
 import com.eviware.soapui.impl.rest.RestURIParser;
 import com.eviware.soapui.impl.rest.actions.explorer.RequestInspectionData;
@@ -43,13 +42,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.eviware.soapui.analytics.SoapUIActions.EXPLORE_API_ADD_HEADER;
-import static com.eviware.soapui.analytics.SoapUIActions.EXPLORE_API_CHANGE_HTTP_METHOD;
-import static com.eviware.soapui.analytics.SoapUIActions.EXPLORE_API_CLICK_AUTH_HEADERS_TAB;
-import static com.eviware.soapui.analytics.SoapUIActions.EXPLORE_API_CLICK_BODY_TAB;
-import static com.eviware.soapui.analytics.SoapUIActions.EXPLORE_API_CLICK_SAVE_REQUEST;
-import static com.eviware.soapui.analytics.SoapUIActions.EXPLORE_API_CLICK_SEND;
-import static com.eviware.soapui.analytics.SoapUIActions.EXPLORE_API_DONT_SHOW_ON_LAUNCH;
 import static com.eviware.soapui.settings.UISettings.SHOW_ENDPOINT_EXPLORER_ON_START;
 
 public class EndpointExplorerCallback {
@@ -91,9 +83,6 @@ public class EndpointExplorerCallback {
             SoapUI.logError(e);
             return;
         }
-        Analytics.trackAction(EXPLORE_API_CLICK_SAVE_REQUEST,
-                "HTTPMethod", extractMethod(request),
-                "Endpoint", extractUrl(request));
 
         String url = extractUrl(request);
         if (StringUtils.isNullOrEmpty(url)) {
@@ -122,7 +111,6 @@ public class EndpointExplorerCallback {
     }
 
     public String sendRequest(String json) {
-        Analytics.trackAction(EXPLORE_API_CLICK_SEND);
 
         String url = "";
         String method = "";
@@ -210,25 +198,22 @@ public class EndpointExplorerCallback {
     }
 
     public void exploreAPIAddHeader() {
-        Analytics.trackAction(EXPLORE_API_ADD_HEADER);
+
     }
 
     public void exploreAPIchangeHTTPMethod(String changeMethodTo) {
-        Analytics.trackAction(EXPLORE_API_CHANGE_HTTP_METHOD, "ChangeMethodTo", changeMethodTo);
+
     }
 
     public void exploreAPIClickAuthHeadersTab() {
-        Analytics.trackAction(EXPLORE_API_CLICK_AUTH_HEADERS_TAB);
+
     }
 
     public void exploreAPIClickBodyTab() {
-        Analytics.trackAction(EXPLORE_API_CLICK_BODY_TAB);
+
     }
 
     public void exploreAPIDontShowAgain(boolean newValue) {
-        if (newValue) {
-            Analytics.trackAction(EXPLORE_API_DONT_SHOW_ON_LAUNCH);
-        }
         SoapUI.getSettings().setBoolean(SHOW_ENDPOINT_EXPLORER_ON_START, !newValue);
     }
 

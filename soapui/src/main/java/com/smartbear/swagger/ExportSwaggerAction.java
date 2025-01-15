@@ -17,7 +17,6 @@ import com.eviware.x.form.support.AField;
 import com.eviware.x.form.support.AField.AFieldType;
 import com.eviware.x.form.support.AForm;
 import com.eviware.x.impl.swing.FileFormField;
-import com.smartbear.analytics.Analytics;
 
 import java.io.File;
 import java.util.List;
@@ -124,12 +123,6 @@ public class ExportSwaggerAction extends AbstractSoapUIAction<WsdlProject> {
                 settings.setString(FORMAT, dialog.getValue(Form.FORMAT));
                 settings.setString(VERSION, dialog.getValue(Form.VERSION));
                 settings.setString(SWAGGER_VERSION, dialog.getValue(Form.SWAGGER_VERSION));
-
-                Analytics.trackAction("ExportSwagger",
-                        "Type", "Swagger",
-                        "ExportedDefinitionType", "Swagger",
-                        "Version", dialog.getValue(Form.SWAGGER_VERSION),
-                        "Format", dialog.getValue(Form.FORMAT));
 
                 break;
             } catch (Exception ex) {

@@ -193,18 +193,6 @@
             <version>${log4j2.version}</version>
         </dependency>
 
-        <!-- In-app analytics -->
-        <dependency>
-            <groupId>com.smartbear.utils.analytics</groupId>
-            <artifactId>analytics-core</artifactId>
-            <version>${analytics.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.smartbear.utils.analytics</groupId>
-            <artifactId>out-app-analytics-provider</artifactId>
-            <version>${analytics.version}</version>
-        </dependency>
 
         <!-- JGoodies -->
 
@@ -821,6 +809,11 @@
             <groupId>io.swagger</groupId>
             <artifactId>swagger-parser</artifactId>
             <version>${io.swagger.swagger-parser.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
         </dependency>
 
 

@@ -15,7 +15,6 @@ import com.eviware.x.form.support.ADialogBuilder;
 import com.eviware.x.form.support.AField;
 import com.eviware.x.form.support.AForm;
 import com.google.common.io.Files;
-import com.smartbear.analytics.Analytics;
 import com.smartbear.swagger.Swagger2Exporter;
 import com.smartbear.swagger.SwaggerExporter;
 import org.apache.http.HttpResponse;
@@ -31,7 +30,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.smartbear.analytics.AnalyticsManager.Category.CUSTOM_PLUGIN_ACTION;
 import static com.smartbear.integrations.swaggerhub.component.ImportFromSwaggerHubDialog.*;
 
 public class PublishToSwaggerHubAction extends AbstractSoapUIAction<RestService> {
@@ -146,7 +144,6 @@ public class PublishToSwaggerHubAction extends AbstractSoapUIAction<RestService>
         params.put("ProductArea", "MainMenu");
         params.put("Type", "REST");
         params.put("Source", "SwaggerHub");
-        Analytics.getAnalyticsManager().trackAction(CUSTOM_PLUGIN_ACTION, action, params);
     }
 
     @AForm(name = "Publish Definition to SwaggerHub", description = "Publishes the selected REST definition to SwaggerHub (in Swagger 2.0/OpenAPI 3.0 format)")
