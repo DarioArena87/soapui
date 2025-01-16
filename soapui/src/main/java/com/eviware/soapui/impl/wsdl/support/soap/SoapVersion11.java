@@ -24,26 +24,19 @@ import com.eviware.soapui.support.xml.XmlUtils;
 import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.SchemaTypeLoader;
 import org.apache.xmlbeans.XmlBeans;
-import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 import org.xmlsoap.schemas.soap.envelope.EnvelopeDocument;
 
 import javax.xml.namespace.QName;
-import java.io.IOException;
 
 /**
  * SoapVersion for SOAP 1.1
  *
  * @author ole.matzura
  */
-
 public class SoapVersion11 extends AbstractSoapVersion {
     public final static SoapVersion11 instance = new SoapVersion11();
-    private final static QName envelopeQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Envelope");
-    private final static QName bodyQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Body");
-    private final static QName faultQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Fault");
-    private final static QName headerQName = new QName(Constants.SOAP11_ENVELOPE_NS, "Header");
     SchemaTypeLoader soapSchema;
     SchemaType soapEnvelopeType;
     private XmlObject soapSchemaXml;
@@ -61,18 +54,12 @@ public class SoapVersion11 extends AbstractSoapVersion {
             options.setCompileNoUpaRule();
             options.setValidateTreatLaxAsSkip();
 
-            // soapSchemaXml = XmlObject.Factory.parse(
-            // SoapUI.class.getResource(
-            // "/com/eviware/soapui/resources/xsds/soapEnvelope.xsd" ), options );
             soapSchemaXml = XmlUtils.createXmlObject(SoapUI.class.getResource("/com/eviware/soapui/resources/xsds/soapEnvelope.xsd"), options);
             soapSchema = XmlBeans.loadXsd(new XmlObject[]{soapSchemaXml});
 
-            soapEnvelopeType = soapSchema.findDocumentType(envelopeQName);
-            soapFaultType = soapSchema.findDocumentType(faultQName);
+            soapEnvelopeType = soapSchema.findDocumentType(new QName(Constants.SOAP11_ENVELOPE_NS, "Envelope"));
+            soapFaultType = soapSchema.findDocumentType(new QName(Constants.SOAP11_ENVELOPE_NS, "Fault"));
 
-            // soapEncodingXml = XmlObject.Factory.parse(
-            // SoapUI.class.getResource(
-            // "/com/eviware/soapui/resources/xsds/soapEncoding.xsd" ), options );
             soapEncodingXml = XmlUtils.createXmlObject(SoapUI.class.getResource("/com/eviware/soapui/resources/xsds/soapEncoding.xsd"), options);
         }
         catch (Exception e) {
@@ -88,19 +75,19 @@ public class SoapVersion11 extends AbstractSoapVersion {
     }
 
     public QName getEnvelopeQName() {
-        return envelopeQName;
+        return new QName(Constants.SOAP11_ENVELOPE_NS, "Envelope");
     }
 
     public QName getBodyQName() {
-        return bodyQName;
+        return new QName(Constants.SOAP11_ENVELOPE_NS, "Body");
     }
 
     public QName getHeaderQName() {
-        return headerQName;
+        return new QName(Constants.SOAP11_ENVELOPE_NS, "Header");
     }
 
     public String getContentTypeHttpHeader(String encoding, String soapAction) {
-        if (encoding == null || encoding.trim().length() == 0) {
+        if (encoding == null || encoding.trim().isEmpty()) {
             return getContentType();
         }
         else {
@@ -120,11 +107,11 @@ public class SoapVersion11 extends AbstractSoapVersion {
         return Constants.SOAP_ENCODING_NS;
     }
 
-    public XmlObject getSoapEncodingSchema() throws XmlException, IOException {
+    public XmlObject getSoapEncodingSchema() {
         return soapEncodingXml;
     }
 
-    public XmlObject getSoapEnvelopeSchema() throws XmlException, IOException {
+    public XmlObject getSoapEnvelopeSchema() {
         return soapSchemaXml;
     }
 
@@ -137,7 +124,7 @@ public class SoapVersion11 extends AbstractSoapVersion {
     }
 
     public String getSoapActionHeader(String soapAction) {
-        if (soapAction == null || soapAction.length() == 0) {
+        if (soapAction == null || soapAction.isEmpty()) {
             soapAction = "\"\"";
         }
         else {
@@ -147,15 +134,15 @@ public class SoapVersion11 extends AbstractSoapVersion {
         return soapAction;
     }
 
-    protected SchemaTypeLoader getSoapEnvelopeSchemaLoader() {
-        return soapSchema;
+    public SchemaType getEnvelopeType() {
+        return EnvelopeDocument.type;
     }
 
     public SchemaType getFaultType() {
         return soapFaultType;
     }
 
-    public SchemaType getEnvelopeType() {
-        return EnvelopeDocument.type;
+    protected SchemaTypeLoader getSoapEnvelopeSchemaLoader() {
+        return soapSchema;
     }
 }
