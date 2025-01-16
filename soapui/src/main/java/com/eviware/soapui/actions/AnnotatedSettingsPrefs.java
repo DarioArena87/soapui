@@ -38,8 +38,8 @@ import java.util.List;
 
 public class AnnotatedSettingsPrefs implements Prefs {
     private final String title;
-    private SimpleForm simpleForm;
     private final Class<?> settingsClass;
+    private SimpleForm simpleForm;
 
     public AnnotatedSettingsPrefs(Class<?> settingsClass, String title) {
         this.settingsClass = settingsClass;
@@ -120,38 +120,14 @@ public class AnnotatedSettingsPrefs implements Prefs {
         List<Setting> settings = getSettings();
         for (Setting annotation : settings) {
             switch (annotation.type()) {
-                case BOOLEAN: {
-                    form.appendCheckBox(annotation.name(), annotation.description(), false);
-                    break;
-                }
-                case FILE: {
-                    form.append(annotation.name(), new FileFormComponent(annotation.description()));
-                    break;
-                }
-                case FILELIST: {
-                    form.append(annotation.name(), new FileListFormComponent(annotation.description()));
-                    break;
-                }
-                case STRINGLIST: {
-                    form.append(annotation.name(), new StringListFormComponent(annotation.description()));
-                    break;
-                }
-                case FOLDER: {
-                    form.append(annotation.name(), new DirectoryFormComponent(annotation.description()));
-                    break;
-                }
-                case ENUMERATION: {
-                    form.appendComboBox(annotation.name(), annotation.values(), annotation.description());
-                    break;
-                }
-                case PASSWORD: {
-                    form.appendPasswordField(annotation.name(), annotation.description());
-                    break;
-                }
-                default: {
-                    form.appendTextField(annotation.name(), annotation.description());
-                    break;
-                }
+                case BOOLEAN -> form.appendCheckBox(annotation.name(), annotation.description(), false);
+                case FILE -> form.append(annotation.name(), new FileFormComponent(annotation.description()));
+                case FILELIST -> form.append(annotation.name(), new FileListFormComponent(annotation.description()));
+                case STRINGLIST -> form.append(annotation.name(), new StringListFormComponent(annotation.description()));
+                case FOLDER -> form.append(annotation.name(), new DirectoryFormComponent(annotation.description()));
+                case ENUMERATION -> form.appendComboBox(annotation.name(), annotation.values(), annotation.description());
+                case PASSWORD -> form.appendPasswordField(annotation.name(), annotation.description());
+                default -> form.appendTextField(annotation.name(), annotation.description());
             }
         }
     }
