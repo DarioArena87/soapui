@@ -329,10 +329,10 @@ class SoapUI {
         }
         if (workspaceName) {
             workspace = WorkspaceFactory.instance.openWorkspace(workspaceName, projectOptions)
-            soapUICore.getSettings().setString(CURRENT_SOAPUI_WORKSPACE, workspaceName)
+            soapUICore.settings.setString(CURRENT_SOAPUI_WORKSPACE, workspaceName)
         }
         else {
-            String workspaceFile = soapUICore.getSettings().getString(CURRENT_SOAPUI_WORKSPACE, System.getProperty("user.home") + File.separatorChar + DEFAULT_WORKSPACE_FILE)
+            String workspaceFile = soapUICore.settings.getString(CURRENT_SOAPUI_WORKSPACE, System.getProperty("user.home") + File.separatorChar + DEFAULT_WORKSPACE_FILE)
             UISupport.dialogs = new SwingDialogs(null)
             try {
                 workspace = WorkspaceFactory.instance.openWorkspace(workspaceFile, projectOptions)

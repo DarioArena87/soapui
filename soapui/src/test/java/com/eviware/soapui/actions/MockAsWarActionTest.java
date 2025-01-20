@@ -1,17 +1,17 @@
 /*
  * SoapUI, Copyright (C) 2004-2022 SmartBear Software
  *
- * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent 
- * versions of the EUPL (the "Licence"); 
- * You may not use this work except in compliance with the Licence. 
- * You may obtain a copy of the Licence at: 
- * 
- * http://ec.europa.eu/idabc/eupl 
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the Licence is 
- * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either 
- * express or implied. See the Licence for the specific language governing permissions and limitations 
- * under the Licence. 
+ * Licensed under the EUPL, Version 1.1 or - as soon as they will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://ec.europa.eu/idabc/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the Licence for the specific language governing permissions and limitations
+ * under the Licence.
  */
 
 package com.eviware.soapui.actions;
@@ -43,12 +43,12 @@ import static org.mockito.Mockito.when;
 public class MockAsWarActionTest {
 
     private final String SOAPUI_HOME = "soapui.home";
-    private WsdlProject project;
-    private XFormDialog mockedDialog;
-    private String soapuiOriginalHome;
     private final File warTestDir = new File("wartestdir");
     private final String warDirectoryPath = warTestDir.getPath() + File.separator + "wardirectory";
     private final String warFileName = warTestDir.getPath() + File.separator + "mock.war";
+    private WsdlProject project;
+    private XFormDialog mockedDialog;
+    private String soapuiOriginalHome;
 
     @Before
     public void setUp() throws SoapUIException, URISyntaxException, IOException, XmlException {
@@ -104,7 +104,8 @@ public class MockAsWarActionTest {
 
         if (soapuiOriginalHome == null) {
             System.getProperties().remove(SOAPUI_HOME);
-        } else {
+        }
+        else {
             System.setProperty(SOAPUI_HOME, soapuiOriginalHome);
         }
 
@@ -126,14 +127,11 @@ public class MockAsWarActionTest {
 
     private void assertValidWarFile(String warFileName) throws IOException {
 
-        JarFile jarFile = new JarFile(warFileName);
-        try {
+        try (JarFile jarFile = new JarFile(warFileName)) {
             for (String fileName : getExpectedWarContents()) {
                 JarEntry jarEntry = jarFile.getJarEntry(fileName);
                 assertNotNull(jarEntry);
             }
-        } finally {
-            jarFile.close();
         }
     }
 
@@ -148,11 +146,7 @@ public class MockAsWarActionTest {
     private String[] getExpectedWarContents() {
 
         return new String[]{
-                "WEB-INF/web.xml",
-                "WEB-INF/lib/soapui.jar",
-                "WEB-INF/soapui/BasicMock-soapui-4.6.3-Project.xml"
+            "WEB-INF/web.xml", "WEB-INF/lib/soapui.jar", "WEB-INF/soapui/BasicMock-soapui-4.6.3-Project.xml"
         };
-
     }
-
 }

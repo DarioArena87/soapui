@@ -68,6 +68,7 @@
                     <javaSource>17</javaSource>
                     <verbose>false</verbose>
                     <schemaDirectory>src/main/xsd</schemaDirectory>
+                    <verbose>true</verbose>
                 </configuration>
             </plugin>
 

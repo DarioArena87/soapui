@@ -88,11 +88,13 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
     public String getValue() {
         String text = textField.getText().trim();
 
-        if (projectRoot != null && text.length() > 0) {
-            String tempName = projectRoot + File.separatorChar + text;
-            if (new File(tempName).exists()) {
-                text = tempName;
-            }
+        if (projectRoot == null || text.isEmpty()) {
+            return text;
+        }
+
+        String tempName = projectRoot + File.separatorChar + text;
+        if (new File(tempName).exists()) {
+            text = tempName;
         }
 
         return text;
@@ -103,16 +105,6 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
         oldValue = null;
         updateValue(value);
         updating = false;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return textField.isEnabled();
-    }
-
-    public void setEnabled(boolean enabled) {
-        textField.setEnabled(enabled);
-        selectDirectoryButton.setEnabled(enabled);
     }
 
     public void setProperty(String name, Object value) {
@@ -126,6 +118,16 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
             currentDirectory = (String)value;
             log.debug("Set currentDirectory to [{}]", currentDirectory);
         }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return textField.isEnabled();
+    }
+
+    public void setEnabled(boolean enabled) {
+        textField.setEnabled(enabled);
+        selectDirectoryButton.setEnabled(enabled);
     }
 
     public void setWidth(int columns) {
@@ -149,20 +151,20 @@ public class FileFormField extends AbstractSwingXFormField<JPanel> implements XF
 
         public void actionPerformed(ActionEvent e) {
             if (fileChooser == null) {
-                if (type == FieldType.FILE_OR_FOLDER) {
-                    fileChooser = new JFileChooser();
-                    fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                }
-                else if (type == FieldType.FOLDER || type == FieldType.PROJECT_FOLDER) {
-                    fileChooser = new JFileChooser();
-                    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                }
-                else {
-                    fileChooser = new JFileChooser();
+                switch (type) {
+                    case FILE_OR_FOLDER -> {
+                        fileChooser = new JFileChooser();
+                        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                    }
+                    case FOLDER, PROJECT_FOLDER -> {
+                        fileChooser = new JFileChooser();
+                        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    }
+                    default -> fileChooser = new JFileChooser();
                 }
             }
 
-            File file = null;
+            File file;
             String startingDirectory = StringUtils.hasContent(currentDirectory) ? currentDirectory : StringUtils.hasContent(projectRoot) ? projectRoot : null;
             if (startingDirectory != null) {
                 startingDirectory = FilenameUtils.normalize(startingDirectory);
